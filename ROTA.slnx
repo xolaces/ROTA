@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ROTA.Api/ROTA.Api.csproj" />
+    <Project Path="src/ROTA.Application/ROTA.Application.csproj" />
+    <Project Path="src/ROTA.Domain/ROTA.Domain.csproj" />
+    <Project Path="src/ROTA.Infrastructure/ROTA.Infrastructure.csproj" />
+    <Project Path="src/ROTA.Shared/ROTA.Shared.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ROTA.IntegrationTests/ROTA.IntegrationTests.csproj" />
+    <Project Path="tests/ROTA.UnitTests/ROTA.UnitTests.csproj" />
+  </Folder>
+</Solution>
