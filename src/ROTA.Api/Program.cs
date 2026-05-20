@@ -1,41 +1,194 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using StackExchange.Redis;
+using System.Security.Cryptography;
+using ROTA.Infrastructure.Persistence;
+using ROTA.Api.Middleware;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// ---------------------------------------------------------------
+// SERVICES
+// ---------------------------------------------------------------
+
+builder.Services.AddControllers();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new() { Title = "ROTA API", Version = "v1" });
+    options.AddSecurityDefinition("Bearer", new()
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Enter your JWT access token."
+    });
+    options.AddSecurityRequirement(new()
+    {
+        {
+            new() { Reference = new() { Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme, Id = "Bearer" } },
+            Array.Empty<string>()
+        }
+    });
+});
+
+// CORS
+var allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>() ?? Array.Empty<string>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("RotaPolicy", policy =>
+    {
+        if (builder.Environment.IsDevelopment() && allowedOrigins.Length > 0)
+        {
+            policy.WithOrigins(allowedOrigins)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        }
+        else
+        {
+            policy.WithOrigins(allowedOrigins)
+                  .AllowAnyHeader()
+                  .WithMethods("GET", "POST", "PUT", "DELETE")
+                  .AllowCredentials();
+        }
+    });
+});
+
+// JWT Authentication (RS256)
+// SECURITY: RS256 uses asymmetric keys. Private key signs tokens (server only).
+// Public key verifies them. HS256 is banned - shared secret is a single point of compromise.
+var rsaPublicKey = RSA.Create();
+rsaPublicKey.ImportFromPem(builder.Configuration["Jwt:PublicKey"]
+    ?? throw new InvalidOperationException("Jwt:PublicKey is not configured."));
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new RsaSecurityKey(rsaPublicKey),
+            // SECURITY: explicitly whitelist RS256 - blocks algorithm confusion attacks
+            ValidAlgorithms = new[] { SecurityAlgorithms.RsaSha256 },
+            // SECURITY: zero clock skew - tokens expire exactly when they say they do
+            ClockSkew = TimeSpan.Zero
+        };
+
+        // SignalR requires JWT via query string - WebSocket handshake cannot set headers
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                    context.Token = accessToken;
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+builder.Services.AddSignalR();
+
+// EF Core + PostgreSQL
+builder.Services.AddDbContext<RotaDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Redis
+builder.Services.AddSingleton<IConnectionMultiplexer>(
+    ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!));
+
+// Health checks
+builder.Services.AddHealthChecks();
+
+// ---------------------------------------------------------------
+// MIDDLEWARE PIPELINE - ORDER IS SECURITY-CRITICAL
+// ---------------------------------------------------------------
+// 1. Exception handler   - catches anything that escapes lower layers
+// 2. HTTPS               - redirects HTTP to HTTPS in production
+// 3. Request logging     - structured log, never logs tokens or passwords
+// 4. CORS                - preflight checks before any work
+// 5. Rate limiting       - per-player + per-IP, cheap Redis check
+// 6. Routing             - matches URL to endpoint
+// 7. Authentication      - validates JWT
+// 8. Authorization       - checks [Authorize] attributes
+// 9. Audit logging       - records state-changing requests with verified PlayerId
+// 10. Endpoints          - controllers and hubs
+// ---------------------------------------------------------------
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+// [1] Global exception handler
+// SECURITY: raw exceptions must never reach the client - stack traces leak architecture
+app.UseExceptionHandler("/error");
+app.Map("/error", (HttpContext ctx) =>
+    Results.Problem(
+        title: "An unexpected error occurred.",
+        detail: null,
+        statusCode: 500
+    ));
 
+// [2] HTTPS enforcement
+if (!app.Environment.IsDevelopment())
+    app.UseHsts();
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+// [3] Request logging
+// BETA-PLACEHOLDER: swap for Serilog in Phase 1
+app.UseMiddleware<RequestLoggingMiddleware>();
 
-app.MapGet("/weatherforecast", () =>
+// [4] CORS
+app.UseCors("RotaPolicy");
+
+// [5] Rate limiting
+// Runs BEFORE JWT validation - bots are dropped before any expensive DB work
+// BETA-PLACEHOLDER: Redis-backed per-player rate limiter added in Week 2
+app.UseMiddleware<RateLimitMiddleware>();
+
+// [6] Routing
+app.UseRouting();
+
+// [7] Authentication
+app.UseAuthentication();
+
+// [8] Authorization
+app.UseAuthorization();
+
+// [9] Audit logging
+// Runs after auth so we have a verified PlayerId to write to audit_log
+app.UseMiddleware<AuditLogMiddleware>();
+
+// [10] Swagger (dev only)
+if (app.Environment.IsDevelopment())
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+    app.UseSwagger();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ROTA API v1"));
+}
+
+// [10] Endpoints
+app.MapControllers();
+app.MapHealthChecks("/health");
+
+// SignalR hubs registered here as systems are built
+// app.MapHub<RaidHub>("/hubs/raid");
+// app.MapHub<GuildHub>("/hubs/guild");
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+// Expose for integration tests (Testcontainers + WebApplicationFactory)
+public partial class Program { }
