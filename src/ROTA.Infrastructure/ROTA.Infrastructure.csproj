@@ -12,6 +12,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.*" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.*" />
     <PackageReference Include="StackExchange.Redis" Version="2.*" />
   </ItemGroup>
@@ -20,6 +23,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <UserSecretsId>5f9d627a-f735-4d55-bb3b-aac0e421090d</UserSecretsId>
   </PropertyGroup>
 
 </Project>
