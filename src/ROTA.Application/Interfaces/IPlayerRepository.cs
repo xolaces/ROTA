@@ -22,4 +22,10 @@ public interface IPlayerRepository
 
     /// <summary>Persists a new player and its seeded child records (Stats, Resources).</summary>
     Task<Player> CreateAsync(Player player, CancellationToken ct = default);
+
+    /// <summary>Returns a player with their Resources collection eagerly loaded, or null if not found/deleted.</summary>
+    Task<Player?> FindByIdWithResourcesAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>Persists changes to an existing tracked player entity.</summary>
+    Task UpdateAsync(Player player, CancellationToken ct = default);
 }

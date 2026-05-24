@@ -1,31 +1,48 @@
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Services;
+using ROTA.Application.Validators;
 using ROTA.Infrastructure.Persistence.Repositories;
+using ROTA.Infrastructure.Services;
 
 namespace ROTA.Infrastructure;
 
-// BETA - Full implementation. Add new registrations here as systems are built.
-/// <summary>
-/// Extension method to register all Infrastructure and Application services in DI.
-/// Called once from Program.cs: builder.Services.AddRotaServices();
-/// </summary>
+// BETA — add new registrations here as systems are built.
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddRotaServices(this IServiceCollection services)
+    /// <param name="contentRootPath">
+    /// The application content root — used to locate content/quests.json.
+    /// Pass env.ContentRootPath from Program.cs.
+    /// </param>
+    public static IServiceCollection AddRotaServices(
+        this IServiceCollection services,
+        string contentRootPath = "")
     {
-        // Repositories
-        // Scoped: one instance per HTTP request. Matches DbContext lifetime.
+        // Repositories — scoped to match DbContext lifetime
         services.AddScoped<IPlayerRepository, PlayerRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+        services.AddScoped<IPlayerResourceRepository, PlayerResourceRepository>();
+        services.AddScoped<IGemTransactionRepository, GemTransactionRepository>();
+        services.AddScoped<IQuestProgressRepository, QuestProgressRepository>();
 
-        // Application Services
+        // Infrastructure services
+        services.AddScoped<IAuthLockoutService, AuthLockoutService>();
+
+        // Quest definitions — singleton: JSON file read once at startup
+        services.AddSingleton<IQuestDefinitionProvider>(
+            _ => new QuestDefinitionProvider(contentRootPath));
+
+        // Application services
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IEnergyService, EnergyService>();
+        services.AddScoped<IPlayerService, PlayerService>();
+        services.AddScoped<IGemService, GemService>();
+        services.AddScoped<IQuestService, QuestService>();
 
-        // TODO-PHASE1: register remaining services as systems are built
-        // services.AddScoped<IEnergyService,  EnergyService>();
-        // services.AddScoped<IQuestService,   QuestService>();
-        // services.AddScoped<ICombatService,  CombatService>();
+        // FluentValidation — scan Application assembly for all IValidator<T> implementations
+        services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
 
         return services;
     }

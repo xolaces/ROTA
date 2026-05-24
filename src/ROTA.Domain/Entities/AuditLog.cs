@@ -7,6 +7,21 @@ namespace ROTA.Domain.Entities;
 /// </summary>
 public class AuditLog
 {
+    public static AuditLog Create(
+        Guid? playerId,
+        string action,
+        string? inputHash,
+        string? resultSummary,
+        string? ipAddress) => new AuditLog
+        {
+            PlayerId = playerId,
+            Action = action,
+            InputHash = inputHash,
+            ResultSummary = resultSummary,
+            IpAddress = ipAddress,
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+
     public long Id { get; private set; }
 
     /// <summary>
@@ -15,18 +30,18 @@ public class AuditLog
     public Guid? PlayerId { get; private set; }
 
     /// <summary>
-    /// Action identifier — e.g. "QuestAttempt", "EnergyRefill", "LoginFailed".
+    /// Action identifier ï¿½ e.g. "QuestAttempt", "EnergyRefill", "LoginFailed".
     /// </summary>
     public string Action { get; private set; } = string.Empty;
 
     /// <summary>
     /// SHA256 hash of the incoming request payload.
-    /// Stored for tamper detection — never the raw payload.
+    /// Stored for tamper detection ï¿½ never the raw payload.
     /// </summary>
     public string? InputHash { get; private set; }
 
     /// <summary>
-    /// Human-readable summary of the outcome — e.g. "Quest 42 completed. XP +150."
+    /// Human-readable summary of the outcome ï¿½ e.g. "Quest 42 completed. XP +150."
     /// </summary>
     public string? ResultSummary { get; private set; }
 

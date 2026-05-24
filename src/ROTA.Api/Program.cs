@@ -112,7 +112,7 @@ builder.Services.AddSignalR();
 builder.Services.AddDbContext<RotaDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddRotaServices();
+builder.Services.AddRotaServices(builder.Environment.ContentRootPath);
 
 // Redis
 builder.Services.AddSingleton<IConnectionMultiplexer>(
@@ -154,7 +154,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // [3] Request logging
-// BETA-PLACEHOLDER: swap for Serilog in Phase 1
+// BETA-PLACEHOLDER: replace with Serilog structured logging (Phase 2)
 app.UseMiddleware<RequestLoggingMiddleware>();
 
 // [4] CORS
@@ -162,7 +162,7 @@ app.UseCors("RotaPolicy");
 
 // [5] Rate limiting
 // Runs BEFORE JWT validation - bots are dropped before any expensive DB work
-// BETA-PLACEHOLDER: Redis-backed per-player rate limiter added in Week 2
+// BETA: per-IP on auth endpoints (10/min), per-player on game endpoints (60/min)
 app.UseMiddleware<RateLimitMiddleware>();
 
 // [6] Routing

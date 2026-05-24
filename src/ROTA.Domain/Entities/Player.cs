@@ -1,5 +1,5 @@
 // Core player identity, progression, and economy state.
-// Effective stats are never stored here — computed server-side on demand.
+// Effective stats are never stored here ï¿½ computed server-side on demand.
 namespace ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
 
@@ -56,7 +56,7 @@ public class Player
 
     // Economy
     public long Gold { get; private set; } = 0;
-    // Gem balance is never stored — computed from gem_transactions ledger
+    // Gem balance is never stored ï¿½ computed from gem_transactions ledger
 
     // Guild
     public Guid? GuildId { get; private set; }
@@ -76,5 +76,36 @@ public class Player
     public ICollection<PlayerResource> Resources { get; private set; } = new List<PlayerResource>();
 
     // Domain methods
-    public void Revoke() { /* BETA-PLACEHOLDER: ban logic */ }
+    public void Ban(string reason)
+    {
+        IsBanned = true;
+        BanReason = reason;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    public void SoftDelete()
+    {
+        IsDeleted = true;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    public void UpdateUsername(string username)
+    {
+        Username = username;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    // Level formula: every 1000 XP = 1 level. Level 1 starts at 0 XP.
+    public void AddExperience(long amount)
+    {
+        Experience += amount;
+        Level = (int)(Experience / 1000) + 1;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    public void AddGold(long amount)
+    {
+        Gold += amount;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
 }

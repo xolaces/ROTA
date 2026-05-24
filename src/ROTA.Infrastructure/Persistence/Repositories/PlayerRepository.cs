@@ -48,4 +48,18 @@ public sealed class PlayerRepository : IPlayerRepository
         await _db.SaveChangesAsync(ct);
         return player;
     }
+
+    /// <inheritdoc />
+    public async Task<Player?> FindByIdWithResourcesAsync(Guid id, CancellationToken ct = default)
+        => await _db.Players
+            .Include(p => p.Resources)
+            .Where(p => p.Id == id && !p.IsDeleted)
+            .FirstOrDefaultAsync(ct);
+
+    /// <inheritdoc />
+    public async Task UpdateAsync(Player player, CancellationToken ct = default)
+    {
+        _db.Players.Update(player);
+        await _db.SaveChangesAsync(ct);
+    }
 }

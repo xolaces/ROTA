@@ -1,42 +1,47 @@
+using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ROTA.Application.Interfaces;
 using ROTA.Shared.DTOs;
 
 namespace ROTA.Api.Controllers;
 
-// BETA - Full implementation. Controller is intentionally thin.
-// All business logic lives in IAuthService. No logic here except HTTP translation.
-/// <summary>
-/// Handles player authentication: register, login, token refresh, logout.
-/// All endpoints are public (no [Authorize]) - they exist to obtain tokens.
-/// </summary>
+// BETA — thin controller, zero business logic. All decisions in IAuthService.
 [ApiController]
 [Route("api/auth")]
 public sealed class AuthController : ControllerBase
 {
     private readonly IAuthService _auth;
+    private readonly IValidator<RegisterRequest> _registerValidator;
+    private readonly IValidator<LoginRequest> _loginValidator;
+    private readonly IValidator<RefreshRequest> _refreshValidator;
 
-    public AuthController(IAuthService auth)
+    public AuthController(
+        IAuthService auth,
+        IValidator<RegisterRequest> registerValidator,
+        IValidator<LoginRequest> loginValidator,
+        IValidator<RefreshRequest> refreshValidator)
     {
         _auth = auth;
+        _registerValidator = registerValidator;
+        _loginValidator = loginValidator;
+        _refreshValidator = refreshValidator;
     }
 
     /// <summary>
     /// Registers a new player account.
-    /// Returns 409 if username or email is already taken.
+    /// Returns 409 if username or email is already taken (without specifying which).
     /// </summary>
-    /// <remarks>
-    /// SECURITY NOTE: The 409 response does not specify WHICH field was duplicate.
-    /// Leaking that information enables account enumeration attacks.
-    /// </remarks>
     [HttpPost("register")]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        var result = await _auth.RegisterAsync(request, GetIpAddress());
+        var v = await _registerValidator.ValidateAsync(request);
+        if (!v.IsValid) return InvalidRequest(v);
 
+        var result = await _auth.RegisterAsync(request, GetIpAddress());
         if (result is null)
             return Conflict(new { message = "Username or email is already in use." });
 
@@ -44,68 +49,64 @@ public sealed class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Authenticates a player and issues a token pair.
-    /// Returns 401 for invalid credentials, banned account, or non-existent email.
+    /// Authenticates a player. Returns 401 for any failure to prevent account enumeration.
     /// </summary>
-    /// <remarks>
-    /// SECURITY NOTE: 401 response is intentionally generic. Differentiating
-    /// "wrong password" from "email not found" enables account enumeration.
-    /// </remarks>
     [HttpPost("login")]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        var result = await _auth.LoginAsync(request, GetIpAddress());
+        var v = await _loginValidator.ValidateAsync(request);
+        if (!v.IsValid) return InvalidRequest(v);
 
+        var result = await _auth.LoginAsync(request, GetIpAddress());
         if (result is null)
             return Unauthorized(new { message = "Invalid credentials." });
 
         return Ok(result);
     }
 
-    /// <summary>
-    /// Rotates a refresh token. Issues new access + refresh token pair.
-    /// The consumed refresh token is immediately invalidated.
-    /// </summary>
+    /// <summary>Rotates a refresh token, issuing a new access + refresh pair.</summary>
     [HttpPost("refresh")]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Refresh([FromBody] RefreshRequest request)
     {
-        var result = await _auth.RefreshAsync(request, GetIpAddress());
+        var v = await _refreshValidator.ValidateAsync(request);
+        if (!v.IsValid) return InvalidRequest(v);
 
+        var result = await _auth.RefreshAsync(request, GetIpAddress());
         if (result is null)
             return Unauthorized(new { message = "Invalid or expired refresh token." });
 
         return Ok(result);
     }
 
-    /// <summary>
-    /// Revokes the provided refresh token, ending the session.
-    /// Idempotent - calling with an already-revoked token returns 204.
-    /// </summary>
+    /// <summary>Revokes the provided refresh token. Requires a valid access token.</summary>
     [HttpPost("logout")]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Logout([FromBody] RefreshRequest request)
     {
+        var v = await _refreshValidator.ValidateAsync(request);
+        if (!v.IsValid) return InvalidRequest(v);
+
         await _auth.LogoutAsync(request);
         return NoContent();
     }
 
-    // HELPERS
-
-    /// <summary>
-    /// Returns the client IP for audit logging.
-    /// SECURITY: reads the connection's RemoteIpAddress directly. Do NOT parse
-    /// X-Forwarded-For by hand - that header is client-spoofable. When ROTA runs
-    /// behind a reverse proxy, configure ForwardedHeadersMiddleware with a trusted
-    /// proxy list in Program.cs; it populates RemoteIpAddress correctly and safely.
-    /// TODO-PHASE1: add ForwardedHeaders middleware once the prod proxy is known.
-    /// </summary>
+    // SECURITY: read from connection, not X-Forwarded-For (spoofable).
     private string GetIpAddress()
         => HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+    private IActionResult InvalidRequest(FluentValidation.Results.ValidationResult v)
+    {
+        foreach (var e in v.Errors)
+            ModelState.AddModelError(e.PropertyName, e.ErrorMessage);
+        return ValidationProblem();
+    }
 }

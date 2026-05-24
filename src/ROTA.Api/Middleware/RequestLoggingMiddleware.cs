@@ -1,6 +1,6 @@
 namespace ROTA.Api.Middleware;
 
-// BETA-PLACEHOLDER: full Serilog structured logging implemented in Phase 1
+// BETA-PLACEHOLDER: replace with Serilog structured logging (Phase 2)
 // Logs method, path, status code, and duration.
 // SECURITY: never logs Authorization headers, passwords, or JWT payloads.
 public class RequestLoggingMiddleware
