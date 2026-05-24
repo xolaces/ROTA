@@ -7,6 +7,7 @@ using ROTA.Infrastructure.Persistence;
 using ROTA.Api.Middleware;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Services;
+using ROTA.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -110,6 +111,8 @@ builder.Services.AddSignalR();
 // EF Core + PostgreSQL
 builder.Services.AddDbContext<RotaDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddRotaServices();
 
 // Redis
 builder.Services.AddSingleton<IConnectionMultiplexer>(

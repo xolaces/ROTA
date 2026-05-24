@@ -1,11 +1,42 @@
 // Core player identity, progression, and economy state.
 // Effective stats are never stored here — computed server-side on demand.
 namespace ROTA.Domain.Entities;
+using ROTA.Domain.Enums;
 
 public class Player
 {
+
     // Required by EF Core
     private Player() { }
+    public static Player Create(string username, string email, string passwordHash)
+    {
+        var player = new Player
+        {
+            Id = Guid.NewGuid(),
+            Username = username,
+            Email = email.ToLowerInvariant(),
+            PasswordHash = passwordHash,
+            Level = 1,
+            Experience = 0,
+            Gold = 0,
+            IsBanned = false,
+            IsDeleted = false,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+
+        player.Stats = PlayerStats.Create(player.Id);
+
+
+        player.Resources = new List<PlayerResource>
+    {
+        PlayerResource.Create(player.Id, ResourceType.Energy,       maxValue: 25, regenPerMinute: 2),
+        PlayerResource.Create(player.Id, ResourceType.Stamina,      maxValue: 5,  regenPerMinute: 1),
+        PlayerResource.Create(player.Id, ResourceType.GuildStamina, maxValue: 1,  regenPerMinute: 0),
+    };
+
+        return player;
+    }
 
     public Player(string username, string email, string passwordHash)
     {

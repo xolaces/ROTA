@@ -25,6 +25,8 @@ public class RefreshToken
     public string? IpAddress { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; } = DateTimeOffset.UtcNow;
 
+    public bool IsActive => !IsRevoked && ExpiresAt > DateTimeOffset.UtcNow;
+
     /// <summary>Revokes this token, invalidating the session immediately.</summary>
     public void Revoke() => IsRevoked = true;
 }

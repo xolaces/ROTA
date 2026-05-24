@@ -13,7 +13,24 @@ namespace ROTA.Domain.Entities;
 /// </summary>
 public class PlayerResource
 {
-	public Guid Id { get; private set; } = Guid.NewGuid();
+    /// <summary>Factory used during player creation to seed default resource pools.</summary>
+    public static PlayerResource Create(
+        Guid playerId,
+        ResourceType type,
+        int maxValue,
+        int regenPerMinute)
+        => new PlayerResource
+        {
+            Id = Guid.NewGuid(),
+            PlayerId = playerId,
+            ResourceType = type,
+            CurrentValue = maxValue,
+            MaxValue = maxValue,
+            RegenPerMinute = regenPerMinute,
+            LastRegenAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+    public Guid Id { get; private set; } = Guid.NewGuid();
 
 	public Guid PlayerId { get; private set; }
 	public Player Player { get; private set; } = null!;
