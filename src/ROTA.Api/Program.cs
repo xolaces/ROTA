@@ -5,6 +5,8 @@ using StackExchange.Redis;
 using System.Security.Cryptography;
 using ROTA.Infrastructure.Persistence;
 using ROTA.Api.Middleware;
+using ROTA.Application.Interfaces;
+using ROTA.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
