@@ -57,6 +57,13 @@ public sealed class PlayerRepository : IPlayerRepository
             .FirstOrDefaultAsync(ct);
 
     /// <inheritdoc />
+    public async Task<Player?> FindByIdWithStatsAsync(Guid id, CancellationToken ct = default)
+        => await _db.Players
+            .Include(p => p.Stats)
+            .Where(p => p.Id == id && !p.IsDeleted)
+            .FirstOrDefaultAsync(ct);
+
+    /// <inheritdoc />
     public async Task UpdateAsync(Player player, CancellationToken ct = default)
     {
         _db.Players.Update(player);

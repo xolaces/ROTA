@@ -52,8 +52,8 @@ Phase 0: COMPLETE
 - IAuthService interface defined, AuthDTOs defined
 - Keys: RS256 key pair generated and stored in Secret Manager
 
-Phase 1 — Systems 1-8: COMPLETE (2026-05-24)
-Build: 0 errors, 0 warnings. Tests: 47/47 passing.
+Phase 1 — Systems 1-9: COMPLETE (2026-05-25)
+Build: 0 errors, 0 warnings. Tests: 60/60 passing.
 
 System 1 — AuthService (BETA)
 - AuthService: register/login/refresh/logout with BCrypt(12), RS256 JWT, token rotation
@@ -110,7 +110,17 @@ System 8 — Quest System (COMPLETE)
 - Gem rewards idempotent via referenceId = "quest:{questId}:{playerId}:{completionCount}"
 - Tests: 7 unit tests (prereq filter, success, energy fail, prereq fail, bad id, level up, gem key)
 
-Phase 1 — remaining: combat system
+System 9 — Combat / Raid Engine (BETA)
+- GET /api/raids → list all active raids with caller's damage/hit stats; POST /api/raids/{id}/summon → 201/404; POST /api/raids/{id}/hit → 200/400/404/409/410/422
+- Server-seeded RNG damage formula: base = (ATK×4 + DEF) × hitSize × RNG(0.85..1.15); hitSize ∈ {1,5,20}
+- Redis idempotency cache (raidhit:{key}, 24h TTL): duplicate submissions return cached response with zero reprocessing
+- Contribution tiers on kill: Legendary (top 3), Epic (top 10%), Rare (≥ minContributionForLoot damage), Participant
+- Gem rewards idempotent via referenceId = "raid:{raidId}:{playerId}"; denormalized ParticipantCount for O(1) read
+- Static raid definitions from content/raids.json (two bosses: raid_ironcolossus, raid_malachar)
+- New entities: ActiveRaid, RaidParticipant; migration: AddRaidSystem
+- Tests: 13 unit tests (summon, hit×3 sizes, damage formula, idempotency, expired, defeated, stamina fail, kill rewards, tiers, gem key, list filtering, damage tracking)
+
+## Phase 1 BACKEND COMPLETE
 
 ## Documentation Index
 - [Game Design & Unity UI Reference](docs/ui/ROTA_GameDesign_UI_Reference.md) — DotD mechanics analysis, screen-by-screen UI blueprints, Unity implementation prompt, content pipeline guide

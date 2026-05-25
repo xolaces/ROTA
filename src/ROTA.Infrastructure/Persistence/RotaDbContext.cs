@@ -23,13 +23,12 @@ public class RotaDbContext : DbContext
     // ----- Phase 1 — Beta Core -----
     public DbSet<GemTransaction> GemTransactions => Set<GemTransaction>();
     public DbSet<PlayerQuestProgress> PlayerQuestProgress => Set<PlayerQuestProgress>();
+    public DbSet<ActiveRaid> ActiveRaids => Set<ActiveRaid>();
+    public DbSet<RaidParticipant> RaidParticipants => Set<RaidParticipant>();
     // public DbSet<ItemDefinition> ItemDefinitions => Set<ItemDefinition>();
     // public DbSet<PlayerInventory> PlayerInventory => Set<PlayerInventory>();
     // public DbSet<DragonDefinition> DragonDefinitions => Set<DragonDefinition>();
     // public DbSet<PlayerDragon> PlayerDragons => Set<PlayerDragon>();
-    // public DbSet<RaidDefinition> RaidDefinitions => Set<RaidDefinition>();
-    // public DbSet<ActiveRaid> ActiveRaids => Set<ActiveRaid>();
-    // public DbSet<RaidParticipation> RaidParticipation => Set<RaidParticipation>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
