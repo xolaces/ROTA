@@ -12,7 +12,7 @@ namespace ROTA.Infrastructure;
 public static class ServiceCollectionExtensions
 {
     /// <param name="contentRootPath">
-    /// The application content root — used to locate content/quests.json.
+    /// The application content root — used to locate content/quests.json and content/raids.json.
     /// Pass env.ContentRootPath from Program.cs.
     /// </param>
     public static IServiceCollection AddRotaServices(
@@ -26,13 +26,18 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPlayerResourceRepository, PlayerResourceRepository>();
         services.AddScoped<IGemTransactionRepository, GemTransactionRepository>();
         services.AddScoped<IQuestProgressRepository, QuestProgressRepository>();
+        services.AddScoped<IActiveRaidRepository, ActiveRaidRepository>();
+        services.AddScoped<IRaidParticipantRepository, RaidParticipantRepository>();
 
         // Infrastructure services
         services.AddScoped<IAuthLockoutService, AuthLockoutService>();
+        services.AddScoped<IRaidHitCache, RaidHitCache>();
 
-        // Quest definitions — singleton: JSON file read once at startup
+        // Content definition providers — singletons: JSON files read once at startup
         services.AddSingleton<IQuestDefinitionProvider>(
             _ => new QuestDefinitionProvider(contentRootPath));
+        services.AddSingleton<IRaidDefinitionProvider>(
+            _ => new RaidDefinitionProvider(contentRootPath));
 
         // Application services
         services.AddScoped<IAuthService, AuthService>();
@@ -40,6 +45,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPlayerService, PlayerService>();
         services.AddScoped<IGemService, GemService>();
         services.AddScoped<IQuestService, QuestService>();
+        services.AddScoped<IRaidService, RaidService>();
 
         // FluentValidation — scan Application assembly for all IValidator<T> implementations
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();

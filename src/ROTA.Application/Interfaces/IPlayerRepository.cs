@@ -26,6 +26,9 @@ public interface IPlayerRepository
     /// <summary>Returns a player with their Resources collection eagerly loaded, or null if not found/deleted.</summary>
     Task<Player?> FindByIdWithResourcesAsync(Guid id, CancellationToken ct = default);
 
+    /// <summary>Returns a player with their Stats eagerly loaded, or null if not found/deleted.</summary>
+    Task<Player?> FindByIdWithStatsAsync(Guid id, CancellationToken ct = default);
+
     /// <summary>Persists changes to an existing tracked player entity.</summary>
     Task UpdateAsync(Player player, CancellationToken ct = default);
 }

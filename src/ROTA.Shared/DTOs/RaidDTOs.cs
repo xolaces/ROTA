@@ -1,0 +1,97 @@
+namespace ROTA.Shared.DTOs;
+
+public class ActiveRaidResponse
+{
+    public Guid ActiveRaidId { get; set; }
+    public string RaidDefinitionId { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public long CurrentHp { get; set; }
+    public long MaxHp { get; set; }
+    public double HpPercent { get; set; }
+    public bool IsDefeated { get; set; }
+    public DateTimeOffset ExpiresAt { get; set; }
+    public long TimerRemainingSeconds { get; set; }
+    public string SummonedByUsername { get; set; } = string.Empty;
+    public int ParticipantCount { get; set; }
+    public long YourTotalDamage { get; set; }
+    public int YourHitCount { get; set; }
+    public string Tier { get; set; } = string.Empty;
+}
+
+public class RaidHitResponse
+{
+    public bool Success { get; set; }
+    public long DamageDealt { get; set; }
+    public long CurrentHp { get; set; }
+    public long MaxHp { get; set; }
+    public double HpPercent { get; set; }
+    public bool IsDefeated { get; set; }
+    public long YourTotalDamage { get; set; }
+    public int YourHitCount { get; set; }
+    public int ParticipantCount { get; set; }
+    public int NewStaminaValue { get; set; }
+    public int NewStaminaMax { get; set; }
+    public RaidRewards? Rewards { get; set; }
+    public DateTimeOffset ExpiresAt { get; set; }
+}
+
+public class RaidRewards
+{
+    public long GoldGranted { get; set; }
+    public int ExperienceGranted { get; set; }
+    public int GemsGranted { get; set; }
+    public long NewPlayerGold { get; set; }
+    public long NewPlayerExperience { get; set; }
+    public int? NewPlayerLevel { get; set; }
+    public string ContributionTier { get; set; } = string.Empty;
+}
+
+public class SummonRaidResponse
+{
+    public Guid ActiveRaidId { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public long MaxHp { get; set; }
+    public DateTimeOffset ExpiresAt { get; set; }
+    public long TimerRemainingSeconds { get; set; }
+}
+
+public class RaidHitRequest
+{
+    public int HitSize { get; set; }
+    public string IdempotencyKey { get; set; } = string.Empty;
+}
+
+// --- Service result wrappers ---
+
+public class SummonRaidResult
+{
+    public bool Success { get; set; }
+    public SummonRaidFailureCode FailureCode { get; set; }
+    public string? FailureReason { get; set; }
+    public SummonRaidResponse? Response { get; set; }
+}
+
+public class RaidHitResult
+{
+    public bool Success { get; set; }
+    public RaidHitFailureCode FailureCode { get; set; }
+    public string? FailureReason { get; set; }
+    public RaidHitResponse? Response { get; set; }
+}
+
+public enum SummonRaidFailureCode
+{
+    None                = 0,
+    DefinitionNotFound  = 1,
+    PlayerNotFound      = 2,
+}
+
+public enum RaidHitFailureCode
+{
+    None                = 0,
+    RaidNotFound        = 1,
+    RaidExpired         = 2,
+    RaidAlreadyDefeated = 3,
+    InvalidHitSize      = 4,
+    InsufficientStamina = 5,
+}
