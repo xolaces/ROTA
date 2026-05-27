@@ -104,23 +104,172 @@ System 7 — Gem Ledger (COMPLETE)
 - DailyRefill once-per-day enforced through referenceId = "daily:{yyyy-MM-dd}" — no extra timestamp column
 - Tests: 5 unit tests (balance sum, duplicate ref rejection, insufficient balance, daily grant/reject)
 
-System 8 — Quest System (COMPLETE)
+System 8 — Quest System + Difficulty (BETA)
 - Static quest definitions from content/quests.json loaded once at startup; no DB table for definitions
 - Quest attempt: energy spent first; if insufficient, returns failure with zero side effects guaranteed
-- Gem rewards idempotent via referenceId = "quest:{questId}:{playerId}:{completionCount}"
-- Tests: 7 unit tests (prereq filter, success, energy fail, prereq fail, bad id, level up, gem key)
+- Gem rewards idempotent via referenceId = "quest:{questId}:{playerId}:{completionCount}:{difficulty}"
+- Difficulty system: Normal/Hard/Legendary/Nightmare with energy multipliers ×1.0/1.5/2.0/3.0 and reward multipliers ×1.0/1.5/2.0/3.5
+- Difficulty gates server-enforced; PlayerQuestDifficultyProgress tracks per-difficulty completion
+- Boss nodes drop Sigils: guaranteed on first per-difficulty completion, chance-based after (sigilDropChance)
+- Loot table processing: guaranteedDrops + chanceDrops per difficulty (from content/loot_tables.json)
+- Tests: 11 unit tests (prereq filter, unlock, success, multipliers, difficulty gate, energy fail, prereq fail, bad id, level up, sigil boss drop, loot table, gem key)
 
-System 9 — Combat / Raid Engine (BETA)
-- GET /api/raids → list all active raids with caller's damage/hit stats; POST /api/raids/{id}/summon → 201/404; POST /api/raids/{id}/hit → 200/400/404/409/410/422
+System 9 — Combat / Raid Engine + Difficulty (BETA)
+- GET /api/raids → list all active raids with caller's damage/hit stats
+- POST /api/raids/{id}/summon → 201/404 (accepts { "difficulty": "Normal" } body)
+- POST /api/raids/{id}/hit → 200/400/404/409/410/422
 - Server-seeded RNG damage formula: base = (ATK×4 + DEF) × hitSize × RNG(0.85..1.15); hitSize ∈ {1,5,20}
 - Redis idempotency cache (raidhit:{key}, 24h TTL): duplicate submissions return cached response with zero reprocessing
-- Contribution tiers on kill: Legendary (top 3), Epic (top 10%), Rare (≥ minContributionForLoot damage), Participant
+- Difficulty HP multipliers: Normal×1.0, Hard×1.4, Legendary×2.0, Nightmare×3.6
+- Contribution tiers on kill: Legendary1/2/3 (top 3), Epic (top 10% when >30 players), Rare (≥minContributionPercent%), Participant
+- Tier multipliers applied to all rewards; gems to Rare+ only
+- Cumulative threshold loot from content/loot_tables.json; Attack/Defense/Discernment SP for World/Event raids only
 - Gem rewards idempotent via referenceId = "raid:{raidId}:{playerId}"; denormalized ParticipantCount for O(1) read
-- Static raid definitions from content/raids.json (two bosses: raid_ironcolossus, raid_malachar)
-- New entities: ActiveRaid, RaidParticipant; migration: AddRaidSystem
-- Tests: 13 unit tests (summon, hit×3 sizes, damage formula, idempotency, expired, defeated, stamina fail, kill rewards, tiers, gem key, list filtering, damage tracking)
+- Static raid definitions from content/raids.json (two bosses: raid_ironcolossus, raid_malachar, Tier=World)
+- New entities: ActiveRaid (with Difficulty), RaidParticipant; migrations: AddRaidSystem, AddRaidDifficulty
+- Tests: 13 unit tests (summon×4 difficulties, hit×3 sizes, damage formula, idempotency, expired, defeated, stamina fail, kill rewards tier mult, participant no gems, cumulative thresholds, gem key, list filtering, damage tracking)
+
+System 10 — Item System (BETA)
+- GET /api/items → returns authenticated player's inventory (hydrated with definition data)
+- POST /api/items/{itemDefinitionId}/use → 200/404/422
+- StatBag: grants unassigned SkillPoints (StatPointsOnUse × quantity); no LSI check on grant
+- Sigil: summons raid at configured difficulty, consumes sigil from inventory on success
+- Materials/Equipment: ItemNotUsable (Phase 2)
+- content/items.json: 12 items (2 materials, 2 stat bags, 8 sigils — 4 difficulties × 2 raids)
+- PlayerInventoryItem entity; unique index on (player_id, item_definition_id)
+- Migrations: AddItemSystem
+- Tests: 8 unit tests (inventory list, zero-quantity filter, stat bag SP, stat bag stack, sigil summon+consume, insufficient quantity, not usable, not found)
+
+System 11 — Stat Allocation (BETA)
+- POST /api/stats/allocate → 200/400/422 — FluentValidation then allocates SkillPoints to a stat type
+- GET /api/stats/me → 200/404 — returns full stat sheet (investments, computed caps, LSI, health)
+- AllocateStatPointAsync: validates SkillPoints, LSI cap check for Energy/Stamina (cap=9.0), updates max resource values
+- GetStatsAsync: returns PlayerStatsResponse with all investment fields, computed MaxEnergy/MaxStamina/MaxGuildStamina, LSI
+- GrantLevelUpPointsAsync: +10 SkillPoints per level; +5 gems at every multiple of 5 levels
+- AddUnassignedPointsAsync: direct SkillPoint grant from items/raids (no LSI cap check)
+- PlayerStats extended: EnergyInvestment, StaminaInvestment, DiscernmentInvestment, SkillPoints
+- AllocateStatResponse: Success/FailureReason + New* prefixed fields (NewSkillPointsRemaining, NewEnergyInvestment, etc.)
+- PHASE-2: DiscernmentInvestment effects (quest drop quality, raid crit bonus) — not yet applied
+- Migrations: AddStatInvestmentFields
+- Tests: 7 unit tests (allocate Attack/Defense/Health/Discernment, LSI cap enforce/allow, insufficient SP, level-up gems at 5/10/15 and not at 3, AddUnassigned no LSI check)
 
 ## Phase 1 BACKEND COMPLETE
+## Phase 1 Extensions COMPLETE (2026-05-26)
+Build: 0 errors, 0 warnings. Tests: 95/95 unit + 1/1 integration = 96 total, all passing.
+Migrations applied: AddRaidSystem, AddStatInvestmentFields, AddQuestDifficultySystem, AddItemSystem, AddRaidDifficulty
+
+## PHASE-2 Deferred Items
+- DiscernmentInvestment effects: quest drop quality, raid critical damage bonus (StatService.cs, QuestService.cs, RaidService.cs)
+- Explicit DB transaction scope for quest/raid reward steps (currently energy committed but rewards not atomic)
+- Equipment item type: wearable gear with stat bonuses (can push LSI above cap)
+- Consumable item type: potions and buffs
+- Crafting system: Material → Equipment recipes
+- Guild system: GuildStamina, guild raids
+- Phase 2 migration: split loot table format for quest/raid clarity
+
+## Phase 1 Extensions — Design Decisions (Pre-Build)
+All of the following are confirmed and locked. Build against
+these specs exactly.
+
+### Skill Points & LSI
+- 10 SkillPoints granted per level-up (not 3)
+- LSI formula: (EnergyInvestment + (StaminaInvestment × 2))
+  / Player.Level
+- LSI cap: 9.0 (player-investable, server-enforced)
+- Gear and item bonuses CAN push effective LSI above 9.0
+- MaxEnergy = 10 + EnergyInvestment
+- MaxStamina = 10 + StaminaInvestment
+- MaxGuildStamina = Player.Level exactly (1:1, no investment)
+- Discernment (renamed from Perception): no LSI cap,
+  invest freely, affects quest drop quality and raid
+  critical damage bonus (// PHASE-2 for bonus effects)
+
+### Gems on Level-Up
+- Every 5 levels: 5 gems granted (levels 5, 10, 15, 20...)
+- ReferenceId = "levelup:gems:{playerId}:{level}"
+- Idempotent via GemTransactionType.LevelUpReward
+
+### Quest Difficulty System
+Four difficulties (mirrors DotD exactly):
+  Normal    — Green   — energy ×1.0 — rewards ×1.0
+  Hard      — Yellow  — energy ×1.5 — rewards ×1.5
+  Legendary — Red     — energy ×2.0 — rewards ×2.0
+  Nightmare — Purple  — energy ×3.0 — rewards ×3.5
+Note: Nightmare reward ×3.5 vs cost ×3.0 — intentional,
+      rewards players who push to hardest content.
+
+Unlock gates (server-enforced):
+  Hard:      requires Normal CompletionCount >= 1
+  Legendary: requires Hard CompletionCount >= 1
+  Nightmare: requires Legendary CompletionCount >= 1
+
+XP-per-energy ratio scales with zone index:
+  baseRatio = 1.2 + (zoneIndex × 0.05)
+  Boss quests always use ratio 2.0 regardless of zone
+  Difficulty reward multiplier applied on top.
+
+### Raid Difficulty System
+Four difficulties with HP multipliers (from DotD wiki data):
+  Normal:    baseHp × 1.0  — Green
+  Hard:      baseHp × 1.4  — Yellow
+  Legendary: baseHp × 2.0  — Red
+  Nightmare: baseHp × 3.6  — Purple
+
+Raids defined with baseHp only in raids.json.
+Server applies multiplier at summon time.
+No hardcoded HP per difficulty in JSON.
+
+### Contribution Tier Multipliers
+Applied to all rewards (gold, XP, gems, stat points, items):
+  Legendary Rank 1: ×1.50 (top damage dealer)
+  Legendary Rank 2: ×1.25
+  Legendary Rank 3: ×1.10
+  Epic (top 10%):   ×1.00
+  Rare (threshold): ×0.75
+  Participant:      ×0.25
+Gems granted to Rare and above only.
+Highest tier wins when a player qualifies for multiple.
+
+### Item Rarity System
+  Grey=0, White=1, Green=2, Blue=3, Purple=4, Orange=5
+Orange is the permanent ceiling. Never add above it.
+
+### Item Types
+  Equipment  — wearable gear (Phase 2 stats)
+  Material   — crafting ingredient, no direct stats
+  StatBag    — consumable, grants unassigned SkillPoints
+  Sigil      — summons a raid at a specific difficulty
+  Consumable — potions, buffs (Phase 2)
+
+### Sigil System (renamed from Essence/Scroll)
+- Sigils are dropped by quest bosses only
+- One Sigil type per boss per difficulty (4 per boss)
+- First defeat on a difficulty: guaranteed Sigil drop
+- Subsequent defeats: chance-based (defined in quest JSON)
+- Using a Sigil summons that boss at that difficulty
+- Sigil rarity matches difficulty:
+    Normal=White, Hard=Green, Legendary=Blue, Nightmare=Purple
+
+### Loot Tables
+- Per-difficulty tiers within each loot table
+- Threshold rewards are CUMULATIVE (5% gives 0.1%+1%+5%)
+- Attack/Defense/Discernment stat points:
+    World and Event raids ONLY — never Standard or Guild
+- On-hit drops: World and Event raids ONLY
+    Standard raids always have hasOnHitDrops: false
+- Startup validation: server throws on misconfigured tables
+
+### Stat Point Rewards from Raids
+- Unassigned SkillPoints: all raid tiers, all difficulties
+- Attack/Defense/Discernment points: World/Event only,
+    higher contribution thresholds only (not floor tier)
+- Materials and StatBags: all raids, scales with difficulty
+- Items (Equipment): future content additions via JSON
+
+### GuildStamina
+  MaxGuildStamina = Player.Level × 1 (exact, no investment)
+
+---
 
 ## Documentation Index
 - [Game Design & Unity UI Reference](docs/ui/ROTA_GameDesign_UI_Reference.md) — DotD mechanics analysis, screen-by-screen UI blueprints, Unity implementation prompt, content pipeline guide

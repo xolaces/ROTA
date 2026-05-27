@@ -1,4 +1,4 @@
-namespace ROTA.Shared.DTOs;
+﻿namespace ROTA.Shared.DTOs;
 
 public class ActiveRaidResponse
 {
@@ -16,6 +16,9 @@ public class ActiveRaidResponse
     public long YourTotalDamage { get; set; }
     public int YourHitCount { get; set; }
     public string Tier { get; set; } = string.Empty;
+    public string Difficulty { get; set; } = string.Empty;
+    public string DifficultyColor { get; set; } = string.Empty;
+    public string YourCurrentTier { get; set; } = string.Empty;
 }
 
 public class RaidHitResponse
@@ -33,6 +36,10 @@ public class RaidHitResponse
     public int NewStaminaMax { get; set; }
     public RaidRewards? Rewards { get; set; }
     public DateTimeOffset ExpiresAt { get; set; }
+    public string Difficulty { get; set; } = string.Empty;
+    public string DifficultyColor { get; set; } = string.Empty;
+    public List<ItemGrantDTO>? OnHitDrops { get; set; }
+    public string YourCurrentTier { get; set; } = string.Empty;
 }
 
 public class RaidRewards
@@ -44,6 +51,12 @@ public class RaidRewards
     public long NewPlayerExperience { get; set; }
     public int? NewPlayerLevel { get; set; }
     public string ContributionTier { get; set; } = string.Empty;
+    public decimal TierMultiplier { get; set; }
+    public int UnassignedStatPointsGranted { get; set; }
+    public int AttackPointsGranted { get; set; }
+    public int DefensePointsGranted { get; set; }
+    public int DiscernmentPointsGranted { get; set; }
+    public List<ItemGrantDTO> ItemsGranted { get; set; } = new();
 }
 
 public class SummonRaidResponse
@@ -53,6 +66,13 @@ public class SummonRaidResponse
     public long MaxHp { get; set; }
     public DateTimeOffset ExpiresAt { get; set; }
     public long TimerRemainingSeconds { get; set; }
+    public string Difficulty { get; set; } = string.Empty;
+    public string DifficultyColor { get; set; } = string.Empty;
+}
+
+public class SummonRaidRequest
+{
+    public string Difficulty { get; set; } = "Normal";
 }
 
 public class RaidHitRequest

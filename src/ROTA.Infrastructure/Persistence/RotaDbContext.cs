@@ -1,14 +1,9 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ROTA.Domain.Entities;
 using ROTA.Infrastructure.Persistence.Configurations;
 
 namespace ROTA.Infrastructure.Persistence;
 
-/// <summary>
-/// Primary EF Core database context for ROTA.
-/// All entity configurations are defined in separate Fluent API
-/// configuration classes — no data annotations on domain entities.
-/// </summary>
 public class RotaDbContext : DbContext
 {
     public RotaDbContext(DbContextOptions<RotaDbContext> options) : base(options) { }
@@ -25,18 +20,14 @@ public class RotaDbContext : DbContext
     public DbSet<PlayerQuestProgress> PlayerQuestProgress => Set<PlayerQuestProgress>();
     public DbSet<ActiveRaid> ActiveRaids => Set<ActiveRaid>();
     public DbSet<RaidParticipant> RaidParticipants => Set<RaidParticipant>();
-    // public DbSet<ItemDefinition> ItemDefinitions => Set<ItemDefinition>();
-    // public DbSet<PlayerInventory> PlayerInventory => Set<PlayerInventory>();
-    // public DbSet<DragonDefinition> DragonDefinitions => Set<DragonDefinition>();
-    // public DbSet<PlayerDragon> PlayerDragons => Set<PlayerDragon>();
+
+    // ----- Phase 1 Extensions -----
+    public DbSet<PlayerQuestDifficultyProgress> PlayerQuestDifficultyProgress => Set<PlayerQuestDifficultyProgress>();
+    public DbSet<PlayerInventoryItem> PlayerInventoryItems => Set<PlayerInventoryItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        // Apply all entity configurations from this assembly automatically.
-        // Any class implementing IEntityTypeConfiguration<T> in this project
-        // is picked up here — no manual registration needed per entity.
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(RotaDbContext).Assembly);
     }
 }

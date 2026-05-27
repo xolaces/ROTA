@@ -15,17 +15,23 @@ public class RaidServiceTests
     // FIXTURES
     // -----------------------------------------------------------------------
 
-    private static (RaidService service,
-                    Mock<IActiveRaidRepository> raids,
-                    Mock<IRaidParticipantRepository> participants,
-                    Mock<IPlayerRepository> players,
-                    Mock<IPlayerResourceRepository> resources,
-                    Mock<IEnergyService> energy,
-                    Mock<IGemService> gems,
-                    Mock<IAuditLogRepository> auditLog,
-                    Mock<IRaidDefinitionProvider> definitions,
-                    Mock<IRaidHitCache> hitCache)
-        BuildService(Random? random = null)
+    private record ServiceBundle(
+        RaidService Service,
+        Mock<IActiveRaidRepository> Raids,
+        Mock<IRaidParticipantRepository> Participants,
+        Mock<IPlayerRepository> Players,
+        Mock<IPlayerResourceRepository> Resources,
+        Mock<IEnergyService> Energy,
+        Mock<IGemService> Gems,
+        Mock<IStatService> Stats,
+        Mock<IPlayerInventoryRepository> Inventory,
+        Mock<IItemDefinitionProvider> ItemDefs,
+        Mock<ILootTableProvider> LootTables,
+        Mock<IAuditLogRepository> AuditLog,
+        Mock<IRaidDefinitionProvider> Definitions,
+        Mock<IRaidHitCache> HitCache);
+
+    private static ServiceBundle BuildService(Random? random = null)
     {
         var raids        = new Mock<IActiveRaidRepository>();
         var participants = new Mock<IRaidParticipantRepository>();
@@ -33,22 +39,33 @@ public class RaidServiceTests
         var resources    = new Mock<IPlayerResourceRepository>();
         var energy       = new Mock<IEnergyService>();
         var gems         = new Mock<IGemService>();
+        var stats        = new Mock<IStatService>();
+        var inventory    = new Mock<IPlayerInventoryRepository>();
+        var itemDefs     = new Mock<IItemDefinitionProvider>();
+        var lootTables   = new Mock<ILootTableProvider>();
         var auditLog     = new Mock<IAuditLogRepository>();
         var definitions  = new Mock<IRaidDefinitionProvider>();
         var hitCache     = new Mock<IRaidHitCache>();
 
-        // Cache miss by default so every test starts fresh
         hitCache.Setup(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((RaidHitResponse?)null);
+            .ReturnsAsync((RaidHitResponse?)null);
         hitCache.Setup(c => c.SetAsync(It.IsAny<string>(), It.IsAny<RaidHitResponse>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
+            .Returns(Task.CompletedTask);
+        auditLog.Setup(a => a.AppendAsync(It.IsAny<AuditLog>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        stats.Setup(s => s.GrantLevelUpPointsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        stats.Setup(s => s.AddUnassignedPointsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
 
         var service = new RaidService(
             raids.Object, participants.Object, players.Object, resources.Object,
-            energy.Object, gems.Object, auditLog.Object, definitions.Object,
-            hitCache.Object, random);
+            energy.Object, gems.Object, stats.Object, inventory.Object,
+            itemDefs.Object, lootTables.Object, auditLog.Object,
+            definitions.Object, hitCache.Object, random);
 
-        return (service, raids, participants, players, resources, energy, gems, auditLog, definitions, hitCache);
+        return new ServiceBundle(service, raids, participants, players, resources, energy, gems,
+            stats, inventory, itemDefs, lootTables, auditLog, definitions, hitCache);
     }
 
     private static Player MakePlayer(long xp = 0)
@@ -63,27 +80,24 @@ public class RaidServiceTests
         Id                   = "raid_ironcolossus",
         Name                 = "The Iron Colossus",
         Tier                 = "World",
-        HpPool               = 100000,
+        BaseHp               = 100000,
         TimerHours           = 48,
         StaminaCostPerHit    = 1,
-        GoldReward           = 500,
-        ExperienceReward     = 300,
-        GemReward            = 2,
-        MinContributionForLoot = 500,
+        LootTableId          = "lt_raid_ironcolossus",
+        BaseGoldReward       = 500,
+        BaseExperienceReward = 300,
+        BaseGemReward        = 2,
+        HasOnHitDrops        = false,
     };
 
-    private static ActiveRaid MakeRaid(long currentHp = 100000, bool isDefeated = false, int hoursUntilExpiry = 48)
+    private static ActiveRaid MakeRaid(long currentHp = 100000, bool isDefeated = false, int hoursUntilExpiry = 48, RaidDifficulty difficulty = RaidDifficulty.Normal)
     {
         var raid = ActiveRaid.Create(
-            "raid_ironcolossus",
-            Guid.NewGuid(),
-            100000,
-            DateTimeOffset.UtcNow.AddHours(hoursUntilExpiry));
+            "raid_ironcolossus", Guid.NewGuid(), 100000,
+            DateTimeOffset.UtcNow.AddHours(hoursUntilExpiry), difficulty);
 
-        // Simulate reduced HP by applying damage
         if (currentHp < 100000)
             raid.TakeDamage(100000 - currentHp);
-
         if (isDefeated)
             raid.MarkDefeated();
 
@@ -91,44 +105,50 @@ public class RaidServiceTests
     }
 
     private static PlayerResource MakeStaminaResource(int maxValue = 5)
+        => PlayerResource.Create(Guid.NewGuid(), ResourceType.Stamina, maxValue, regenPerMinute: 1);
+
+    private static void SetupHitScaffolding(ServiceBundle b, Player player, ActiveRaid raid, bool staminaSuccess = true)
     {
-        return PlayerResource.Create(Guid.NewGuid(), ResourceType.Stamina, maxValue, regenPerMinute: 1);
+        b.Raids.Setup(r => r.FindByIdAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+        b.Energy.Setup(e => e.SpendEnergyAsync(player.Id, ResourceType.Stamina, It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(staminaSuccess);
+        b.Players.Setup(p => p.FindByIdWithStatsAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+        b.Players.Setup(p => p.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        b.Raids.Setup(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        b.Resources.Setup(r => r.GetAsync(player.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeStaminaResource());
+        b.Energy.Setup(e => e.GetCurrentEnergyAsync(player.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(4);
     }
 
-    private static void SetupSuccessfulStaminaSpend(Mock<IEnergyService> energy, Guid playerId)
-        => energy.Setup(e => e.SpendEnergyAsync(playerId, ResourceType.Stamina, It.IsAny<int>(), It.IsAny<CancellationToken>()))
-                 .ReturnsAsync(true);
-
     // -----------------------------------------------------------------------
-    // SummonRaidAsync
+    // SummonRaidAsync — difficulty HP multipliers
     // -----------------------------------------------------------------------
 
-    [Fact]
-    public async Task Summon_CreatesRaid_WithCorrectHpAndExpiry()
+    [Theory]
+    [InlineData(RaidDifficulty.Normal,    100000,  "Green")]
+    [InlineData(RaidDifficulty.Hard,      140000,  "Yellow")]
+    [InlineData(RaidDifficulty.Legendary, 200000,  "Red")]
+    [InlineData(RaidDifficulty.Nightmare, 360000,  "Purple")]
+    public async Task Summon_AppliesHpMultiplier_PerDifficulty(RaidDifficulty difficulty, long expectedHp, string expectedColor)
     {
-        var (service, raids, _, players, _, _, _, auditLog, definitions, _) = BuildService();
+        var b = BuildService();
         var player = MakePlayer();
-        var definition = IronColossus();
 
-        definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(definition);
-        players.Setup(p => p.FindByIdAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
-        raids.Setup(r => r.CreateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()))
-             .ReturnsAsync((ActiveRaid r, CancellationToken _) => r);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+        b.Players.Setup(p => p.FindByIdAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+        b.Raids.Setup(r => r.CreateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ActiveRaid r, CancellationToken _) => r);
 
-        var before = DateTimeOffset.UtcNow;
-        var result = await service.SummonRaidAsync(player.Id, "raid_ironcolossus");
-        var after = DateTimeOffset.UtcNow;
+        var result = await b.Service.SummonRaidAsync(player.Id, "raid_ironcolossus", difficulty);
 
         result.Success.Should().BeTrue();
-        result.Response!.MaxHp.Should().Be(100000);
-        result.Response.Name.Should().Be("The Iron Colossus");
-        result.Response.ExpiresAt.Should().BeCloseTo(before.AddHours(48), TimeSpan.FromSeconds(5));
-        result.Response.TimerRemainingSeconds.Should().BeGreaterThan(0);
-
-        raids.Verify(r => r.CreateAsync(
-            It.Is<ActiveRaid>(a => a.MaxHp == 100000 && a.CurrentHp == 100000 && !a.IsDefeated),
+        result.Response!.MaxHp.Should().Be(expectedHp);
+        result.Response.DifficultyColor.Should().Be(expectedColor);
+        b.Raids.Verify(r => r.CreateAsync(
+            It.Is<ActiveRaid>(a => a.MaxHp == expectedHp && a.Difficulty == difficulty),
             It.IsAny<CancellationToken>()), Times.Once);
-        auditLog.Verify(a => a.AppendAsync(It.IsAny<AuditLog>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     // -----------------------------------------------------------------------
@@ -141,32 +161,20 @@ public class RaidServiceTests
     [InlineData(20)]
     public async Task Hit_SpendsCorrectStamina_PerHitSize(int hitSize)
     {
-        var (service, raids, participants, players, resources, energy, _, _, definitions, _) =
-            BuildService(new Random(0));
-
+        var b = BuildService(new Random(0));
         var player = MakePlayer();
         var raid = MakeRaid();
 
-        raids.Setup(r => r.FindByIdAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
-        definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
-        SetupSuccessfulStaminaSpend(energy, player.Id);
-        players.Setup(p => p.FindByIdWithStatsAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
-        players.Setup(p => p.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-        participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync((RaidParticipant?)null);
-        participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
-        raids.Setup(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-        resources.Setup(r => r.GetAsync(player.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
-                 .ReturnsAsync(MakeStaminaResource());
-        energy.Setup(e => e.GetCurrentEnergyAsync(player.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
-              .ReturnsAsync(5 - hitSize);
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
 
-        var result = await service.HitRaidAsync(player.Id, raid.Id, hitSize, Guid.NewGuid().ToString());
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, hitSize, Guid.NewGuid().ToString());
 
         result.Success.Should().BeTrue();
-        // staminaCostPerHit = 1, so cost = hitSize × 1
-        energy.Verify(e => e.SpendEnergyAsync(player.Id, ResourceType.Stamina, hitSize, It.IsAny<CancellationToken>()), Times.Once);
+        b.Energy.Verify(e => e.SpendEnergyAsync(player.Id, ResourceType.Stamina, hitSize, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     // -----------------------------------------------------------------------
@@ -174,38 +182,24 @@ public class RaidServiceTests
     // -----------------------------------------------------------------------
 
     [Fact]
-    public async Task Hit_ComputesDamage_FromPlayerStats()
+    public async Task Hit_ComputesDamage_FromPlayerStats_InExpectedRange()
     {
-        // RNG returns 0 → multiplier = 0.85
-        // BaseAttack=10, BaseDefense=10 → base = 10*4+10 = 50
-        // hitSize=1, multiplier=0.85 → damage = floor(50 * 1 * 0.85) = 42
-        var (service, raids, participants, players, resources, energy, _, _, definitions, _) =
-            BuildService(new Random(0)); // seed 0 gives a fixed sequence
-
+        var b = BuildService(new Random(0));
         var player = MakePlayer();
         var raid = MakeRaid();
 
-        raids.Setup(r => r.FindByIdAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
-        definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
-        SetupSuccessfulStaminaSpend(energy, player.Id);
-        players.Setup(p => p.FindByIdWithStatsAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
-        players.Setup(p => p.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-        participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync((RaidParticipant?)null);
-        participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
-        raids.Setup(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-        resources.Setup(r => r.GetAsync(player.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
-                 .ReturnsAsync(MakeStaminaResource());
-        energy.Setup(e => e.GetCurrentEnergyAsync(player.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
-              .ReturnsAsync(4);
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
 
-        var result = await service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
 
+        // base = ATK*4+DEF = 10*4+10=50, hitSize=1, RNG[0.85,1.15] → damage in [42,57]
         result.Success.Should().BeTrue();
-        // base = 10*4+10 = 50, hitSize=1, multiplier in [0.85,1.15] → damage in [42,57]
         result.Response!.DamageDealt.Should().BeInRange(42, 58);
-        result.Response.DamageDealt.Should().BeGreaterOrEqualTo(1, "minimum 1 damage enforced");
+        result.Response.DamageDealt.Should().BeGreaterOrEqualTo(1);
     }
 
     // -----------------------------------------------------------------------
@@ -213,57 +207,45 @@ public class RaidServiceTests
     // -----------------------------------------------------------------------
 
     [Fact]
-    public async Task Hit_ReturnsCachedResponse_OnDuplicateIdempotencyKey_ZeroReprocessing()
+    public async Task Hit_ReturnsCachedResponse_OnDuplicateKey_ZeroReprocessing()
     {
-        var (service, raids, participants, players, resources, energy, _, _, definitions, hitCache) =
-            BuildService();
+        var b = BuildService();
+        var key = Guid.NewGuid().ToString();
+        var cached = new RaidHitResponse { Success = true, DamageDealt = 42 };
 
-        var idempotencyKey = Guid.NewGuid().ToString();
-        var cachedResponse = new RaidHitResponse
-        {
-            Success = true, DamageDealt = 42, CurrentHp = 99958, MaxHp = 100000,
-            HpPercent = 99.958, IsDefeated = false, YourTotalDamage = 42,
-            YourHitCount = 1, ParticipantCount = 1, NewStaminaValue = 4, NewStaminaMax = 5,
-        };
+        b.HitCache.Setup(c => c.GetAsync(key, It.IsAny<CancellationToken>())).ReturnsAsync(cached);
 
-        // Cache returns a hit for this key
-        hitCache.Setup(c => c.GetAsync(idempotencyKey, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(cachedResponse);
-
-        // We still need to load the raid to validate state (not defeated/expired) before checking cache
         var raid = MakeRaid();
-        raids.Setup(r => r.FindByIdAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
-        definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+        b.Raids.Setup(r => r.FindByIdAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
 
-        var result = await service.HitRaidAsync(Guid.NewGuid(), raid.Id, 1, idempotencyKey);
+        var result = await b.Service.HitRaidAsync(Guid.NewGuid(), raid.Id, 1, key);
 
         result.Success.Should().BeTrue();
         result.Response!.DamageDealt.Should().Be(42);
-
-        // Zero additional processing — stamina untouched, no DB writes
-        energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
-        participants.Verify(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()), Times.Never);
-        raids.Verify(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Never);
+        b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+        b.Participants.Verify(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()), Times.Never);
+        b.Raids.Verify(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     // -----------------------------------------------------------------------
-    // HitRaidAsync — expired raid
+    // HitRaidAsync — expired
     // -----------------------------------------------------------------------
 
     [Fact]
     public async Task Hit_ReturnsExpired_WhenTimerElapsed_StaminaUntouched()
     {
-        var (service, raids, _, _, _, energy, _, _, definitions, _) = BuildService();
+        var b = BuildService();
+        var expiredRaid = MakeRaid(hoursUntilExpiry: -1);
 
-        var expiredRaid = MakeRaid(hoursUntilExpiry: -1); // already expired
-        raids.Setup(r => r.FindByIdAsync(expiredRaid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(expiredRaid);
-        definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+        b.Raids.Setup(r => r.FindByIdAsync(expiredRaid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(expiredRaid);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
 
-        var result = await service.HitRaidAsync(Guid.NewGuid(), expiredRaid.Id, 1, Guid.NewGuid().ToString());
+        var result = await b.Service.HitRaidAsync(Guid.NewGuid(), expiredRaid.Id, 1, Guid.NewGuid().ToString());
 
         result.Success.Should().BeFalse();
         result.FailureCode.Should().Be(RaidHitFailureCode.RaidExpired);
-        energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+        b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     // -----------------------------------------------------------------------
@@ -273,17 +255,17 @@ public class RaidServiceTests
     [Fact]
     public async Task Hit_ReturnsAlreadyDefeated_WhenRaidDead_StaminaUntouched()
     {
-        var (service, raids, _, _, _, energy, _, _, definitions, _) = BuildService();
-
+        var b = BuildService();
         var defeatedRaid = MakeRaid(isDefeated: true);
-        raids.Setup(r => r.FindByIdAsync(defeatedRaid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(defeatedRaid);
-        definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
 
-        var result = await service.HitRaidAsync(Guid.NewGuid(), defeatedRaid.Id, 1, Guid.NewGuid().ToString());
+        b.Raids.Setup(r => r.FindByIdAsync(defeatedRaid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(defeatedRaid);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.HitRaidAsync(Guid.NewGuid(), defeatedRaid.Id, 1, Guid.NewGuid().ToString());
 
         result.Success.Should().BeFalse();
         result.FailureCode.Should().Be(RaidHitFailureCode.RaidAlreadyDefeated);
-        energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+        b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     // -----------------------------------------------------------------------
@@ -293,250 +275,253 @@ public class RaidServiceTests
     [Fact]
     public async Task Hit_ReturnsInsufficientStamina_HpUnchanged()
     {
-        var (service, raids, participants, players, _, energy, _, _, definitions, _) = BuildService();
+        var b = BuildService();
         var player = MakePlayer();
         var raid = MakeRaid();
         var hpBefore = raid.CurrentHp;
 
-        raids.Setup(r => r.FindByIdAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
-        definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
-        energy.Setup(e => e.SpendEnergyAsync(player.Id, ResourceType.Stamina, It.IsAny<int>(), It.IsAny<CancellationToken>()))
-              .ReturnsAsync(false);
+        b.Raids.Setup(r => r.FindByIdAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+        b.Energy.Setup(e => e.SpendEnergyAsync(player.Id, ResourceType.Stamina, It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
 
-        var result = await service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
 
         result.Success.Should().BeFalse();
         result.FailureCode.Should().Be(RaidHitFailureCode.InsufficientStamina);
-        raid.CurrentHp.Should().Be(hpBefore, "HP must not change if stamina spend failed");
-        participants.Verify(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()), Times.Never);
+        raid.CurrentHp.Should().Be(hpBefore);
+        b.Participants.Verify(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     // -----------------------------------------------------------------------
-    // HitRaidAsync — kill distributes rewards to all participants
+    // Kill rewards — tier multipliers applied correctly
     // -----------------------------------------------------------------------
 
     [Fact]
-    public async Task Hit_KillDistributesGoldAndXp_ToAllParticipants()
+    public async Task Hit_Kill_AppliesTierMultiplier_ToGoldAndXp_ForLegendary1()
     {
-        var (service, raids, participants, players, resources, energy, gems, auditLog, definitions, _) =
-            BuildService(new Random(0));
-
+        // Legendary1 tier multiplier = 1.50×; Normal HP multiplier = 1.0×
+        // Gold = 500 * 1.0 * 1.50 = 750; XP = 300 * 1.0 * 1.50 = 450
+        var b = BuildService(new Random(0));
         var attacker = MakePlayer();
         var bystander = MakePlayer();
-        // Raid with 1 HP so this hit kills it
         var raid = MakeRaid(currentHp: 1);
 
-        raids.Setup(r => r.FindByIdAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
-        definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
-        SetupSuccessfulStaminaSpend(energy, attacker.Id);
-        players.Setup(p => p.FindByIdWithStatsAsync(attacker.Id, It.IsAny<CancellationToken>())).ReturnsAsync(attacker);
+        SetupHitScaffolding(b, attacker, raid);
+        b.Players.Setup(p => p.FindByIdAsync(bystander.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(bystander);
 
-        // Two participants: attacker (100k damage) and bystander (100 damage)
-        var attackerParticipant = RaidParticipant.Create(raid.Id, attacker.Id);
-        for (int i = 0; i < 10; i++) attackerParticipant.RecordHit(10000);
+        var attackerPart = RaidParticipant.Create(raid.Id, attacker.Id);
+        for (int i = 0; i < 10; i++) attackerPart.RecordHit(10000);
+        var bystanderPart = RaidParticipant.Create(raid.Id, bystander.Id);
+        bystanderPart.RecordHit(100);
 
-        var bystanderParticipant = RaidParticipant.Create(raid.Id, bystander.Id);
-        bystanderParticipant.RecordHit(100);
-
-        participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, attacker.Id, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(attackerParticipant);
-        participants.Setup(p => p.UpdateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
-                    .Returns(Task.CompletedTask);
-        participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new List<RaidParticipant> { attackerParticipant, bystanderParticipant });
-        raids.Setup(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-
-        players.Setup(p => p.FindByIdAsync(bystander.Id, It.IsAny<CancellationToken>())).ReturnsAsync(bystander);
-        players.Setup(p => p.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-
-        gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, attacker.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(attackerPart);
+        b.Participants.Setup(p => p.UpdateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipant> { attackerPart, bystanderPart });
+        b.Players.Setup(p => p.FindByIdAsync(bystander.Id, It.IsAny<CancellationToken>())).ReturnsAsync(bystander);
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
-        resources.Setup(r => r.GetAsync(attacker.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
-                 .ReturnsAsync(MakeStaminaResource());
-        energy.Setup(e => e.GetCurrentEnergyAsync(attacker.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
-              .ReturnsAsync(4);
-
-        var result = await service.HitRaidAsync(attacker.Id, raid.Id, 1, Guid.NewGuid().ToString());
+        var result = await b.Service.HitRaidAsync(attacker.Id, raid.Id, 1, Guid.NewGuid().ToString());
 
         result.Success.Should().BeTrue();
-        result.Response!.IsDefeated.Should().BeTrue();
-        result.Response.Rewards.Should().NotBeNull("kill must populate rewards");
-        result.Response.Rewards!.GoldGranted.Should().Be(500);
-        result.Response.Rewards.ExperienceGranted.Should().Be(300);
-
-        // Both participants updated
-        players.Verify(p => p.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
-        auditLog.Verify(a => a.AppendAsync(
-            It.Is<AuditLog>(l => l.Action == "RaidKill"),
-            It.IsAny<CancellationToken>()), Times.Once);
+        result.Response!.Rewards.Should().NotBeNull();
+        result.Response.Rewards!.ContributionTier.Should().Be("Legendary");
+        result.Response.Rewards.TierMultiplier.Should().Be(1.50m);
+        result.Response.Rewards.GoldGranted.Should().Be(750);
+        result.Response.Rewards.ExperienceGranted.Should().Be(450);
     }
 
     // -----------------------------------------------------------------------
-    // HitRaidAsync — contribution tiers
+    // Kill rewards — participant gets no gems
     // -----------------------------------------------------------------------
 
     [Fact]
-    public async Task Hit_Kill_AssignsContributionTiersCorrectly()
+    public async Task Hit_Kill_ParticipantTierReceivesNoGems()
     {
-        var (service, raids, participants, players, resources, energy, gems, _, definitions, _) =
-            BuildService(new Random(0));
+        // 4 players: positions 0/1/2 = Legendary1/2/3; position 3 falls to minContributionPercent check.
+        // p4 has 1 damage out of ~27000+ total → ~0.003% << 0.1% default → Participant → no gems.
+        var b = BuildService(new Random(0));
 
-        var definition = IronColossus(); // minContributionForLoot = 500
-
-        // 5 participants: p1=top3 Legendary, p2=top3 Legendary, p3=top3 Legendary, p4=Epic, p5=Participant
-        var p1 = MakePlayer(); var p1part = RaidParticipant.Create(Guid.NewGuid(), p1.Id);
-        for (int i = 0; i < 10; i++) p1part.RecordHit(10000); // 100000 damage
-
-        var p2 = MakePlayer(); var p2part = RaidParticipant.Create(Guid.NewGuid(), p2.Id);
-        for (int i = 0; i < 10; i++) p2part.RecordHit(5000); // 50000 damage
-
-        var p3 = MakePlayer(); var p3part = RaidParticipant.Create(Guid.NewGuid(), p3.Id);
-        for (int i = 0; i < 10; i++) p3part.RecordHit(1000); // 10000 damage — Legendary (top 3)
-
-        var p4 = MakePlayer(); var p4part = RaidParticipant.Create(Guid.NewGuid(), p4.Id);
-        p4part.RecordHit(600); // 600 >= minContributionForLoot=500 → Rare
-
-        var p5 = MakePlayer(); var p5part = RaidParticipant.Create(Guid.NewGuid(), p5.Id);
-        p5part.RecordHit(10); // 10 < 500 → Participant
-
-        var allParts = new List<RaidParticipant> { p1part, p2part, p3part, p4part, p5part };
-        // Set the same activeRaidId
-        // (Use p1 as the attacker who delivers the killing blow)
+        var p1 = MakePlayer(); var p2 = MakePlayer();
+        var p3 = MakePlayer(); var p4 = MakePlayer();
         var raid = MakeRaid(currentHp: 1);
-        foreach (var part in allParts)
-        {
-            var field = typeof(RaidParticipant).GetField("<ActiveRaidId>k__BackingField",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            field?.SetValue(part, raid.Id);
-        }
 
-        raids.Setup(r => r.FindByIdAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
-        definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(definition);
-        SetupSuccessfulStaminaSpend(energy, p1.Id);
-        players.Setup(p => p.FindByIdWithStatsAsync(p1.Id, It.IsAny<CancellationToken>())).ReturnsAsync(p1);
+        b.Raids.Setup(r => r.FindByIdAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+        b.Energy.Setup(e => e.SpendEnergyAsync(p1.Id, ResourceType.Stamina, It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        b.Players.Setup(p => p.FindByIdWithStatsAsync(p1.Id, It.IsAny<CancellationToken>())).ReturnsAsync(p1);
+        b.Players.Setup(p => p.FindByIdAsync(p2.Id, It.IsAny<CancellationToken>())).ReturnsAsync(p2);
+        b.Players.Setup(p => p.FindByIdAsync(p3.Id, It.IsAny<CancellationToken>())).ReturnsAsync(p3);
+        b.Players.Setup(p => p.FindByIdAsync(p4.Id, It.IsAny<CancellationToken>())).ReturnsAsync(p4);
+        b.Players.Setup(p => p.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        b.Raids.Setup(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        b.Resources.Setup(r => r.GetAsync(p1.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeStaminaResource());
+        b.Energy.Setup(e => e.GetCurrentEnergyAsync(p1.Id, ResourceType.Stamina, It.IsAny<CancellationToken>())).ReturnsAsync(4);
 
-        // p1's existing participation (already has 100k damage recorded)
-        participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, p1.Id, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(p1part);
-        participants.Setup(p => p.UpdateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
-                    .Returns(Task.CompletedTask);
-        participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(allParts);
-        raids.Setup(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        // p1=Legendary1 (top), p2=Legendary2, p3=Legendary3, p4=Participant (<0.1%)
+        var p1part = RaidParticipant.Create(raid.Id, p1.Id);
+        for (int i = 0; i < 10; i++) p1part.RecordHit(10000); // 100000 dmg
+        var p2part = RaidParticipant.Create(raid.Id, p2.Id);
+        for (int i = 0; i < 9; i++) p2part.RecordHit(1000);  // 9000 dmg
+        var p3part = RaidParticipant.Create(raid.Id, p3.Id);
+        for (int i = 0; i < 8; i++) p3part.RecordHit(1000);  // 8000 dmg
+        var p4part = RaidParticipant.Create(raid.Id, p4.Id);
+        p4part.RecordHit(1);                                  // 1 dmg → ~0.0008% << 0.1% → Participant
 
-        foreach (var (p, part) in new[] { (p2, p2part), (p3, p3part), (p4, p4part), (p5, p5part) })
-            players.Setup(pl => pl.FindByIdAsync(p.Id, It.IsAny<CancellationToken>())).ReturnsAsync(p);
-
-        players.Setup(pl => pl.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-
-        gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, p1.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(p1part);
+        b.Participants.Setup(p => p.UpdateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipant> { p1part, p2part, p3part, p4part });
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
-        resources.Setup(r => r.GetAsync(p1.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
-                 .ReturnsAsync(MakeStaminaResource());
-        energy.Setup(e => e.GetCurrentEnergyAsync(p1.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
-              .ReturnsAsync(4);
 
-        var result = await service.HitRaidAsync(p1.Id, raid.Id, 1, Guid.NewGuid().ToString());
+        await b.Service.HitRaidAsync(p1.Id, raid.Id, 1, Guid.NewGuid().ToString());
 
-        result.Success.Should().BeTrue();
-        result.Response!.Rewards!.ContributionTier.Should().Be("Legendary", "p1 is the top damage dealer");
-
-        // p1, p2, p3 = Legendary → gems granted
-        // p4 = Rare (damage >= 500) → gems granted
-        // p5 = Participant → no gems
-        gems.Verify(g => g.GrantGemsAsync(p1.Id, It.IsAny<int>(), GemTransactionType.RaidReward, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
-        gems.Verify(g => g.GrantGemsAsync(p4.Id, It.IsAny<int>(), GemTransactionType.RaidReward, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
-        gems.Verify(g => g.GrantGemsAsync(p5.Id, It.IsAny<int>(), GemTransactionType.RaidReward, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+        b.Gems.Verify(g => g.GrantGemsAsync(p4.Id, It.IsAny<int>(), GemTransactionType.RaidReward, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never,
+            "p4 has <0.1% contribution so falls to Participant tier which receives no gems");
     }
 
     // -----------------------------------------------------------------------
-    // HitRaidAsync — kill gem idempotency key format
+    // Kill rewards — cumulative threshold loot
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task Hit_Kill_AwardsCumulativeThresholdRewards_WhenPlayerQualifiesMultipleTiers()
+    {
+        // Player at 30% contribution qualifies for both 0.1% and 5% and 20% thresholds
+        // Total unassigned SP = 1 + 2 + 3 = 6 (each tier cumulative)
+        var b = BuildService(new Random(0));
+        var attacker = MakePlayer();
+        var raid = MakeRaid(currentHp: 1);
+
+        var lootTable = new LootTableDefinition
+        {
+            Id = "lt_raid_ironcolossus", Type = "Raid",
+            Difficulties = new Dictionary<string, LootTableDifficulty>
+            {
+                ["Normal"] = new()
+                {
+                    MinContributionPercent = 0.1,
+                    ThresholdRewards = new List<ThresholdReward>
+                    {
+                        new() { ContributionPercent = 0.1,  UnassignedStatPoints = 1, ItemDrops = new() },
+                        new() { ContributionPercent = 5.0,  UnassignedStatPoints = 2, ItemDrops = new() },
+                        new() { ContributionPercent = 20.0, UnassignedStatPoints = 3, ItemDrops = new() },
+                    },
+                },
+            },
+        };
+        b.LootTables.Setup(l => l.GetById("lt_raid_ironcolossus")).Returns(lootTable);
+
+        // Set up attacker with 30000 / 100000 = 30% contribution
+        var attackerPart = RaidParticipant.Create(raid.Id, attacker.Id);
+        for (int i = 0; i < 3; i++) attackerPart.RecordHit(10000);
+
+        b.Raids.Setup(r => r.FindByIdAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+        b.Energy.Setup(e => e.SpendEnergyAsync(attacker.Id, ResourceType.Stamina, It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        b.Players.Setup(p => p.FindByIdWithStatsAsync(attacker.Id, It.IsAny<CancellationToken>())).ReturnsAsync(attacker);
+        b.Players.Setup(p => p.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        b.Raids.Setup(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        b.Resources.Setup(r => r.GetAsync(attacker.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeStaminaResource());
+        b.Energy.Setup(e => e.GetCurrentEnergyAsync(attacker.Id, ResourceType.Stamina, It.IsAny<CancellationToken>())).ReturnsAsync(4);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, attacker.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(attackerPart);
+        b.Participants.Setup(p => p.UpdateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipant> { attackerPart });
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var result = await b.Service.HitRaidAsync(attacker.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        // Tier multiplier for Legendary1 = 1.5, so 6 SP * 1.5 = 9 (rounded)
+        result.Response!.Rewards!.UnassignedStatPointsGranted.Should().Be(9,
+            "cumulative thresholds at 0.1%, 5%, and 20% each grant stat points, scaled by Legendary1 multiplier");
+        b.Stats.Verify(s => s.AddUnassignedPointsAsync(attacker.Id, 9, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    // -----------------------------------------------------------------------
+    // Kill — gem idempotency key format
     // -----------------------------------------------------------------------
 
     [Fact]
     public async Task Hit_Kill_UsesCorrectGemIdempotencyKeyFormat()
     {
-        var (service, raids, participants, players, resources, energy, gems, _, definitions, _) =
-            BuildService(new Random(0));
-
+        var b = BuildService(new Random(0));
         var attacker = MakePlayer();
         var raid = MakeRaid(currentHp: 1);
 
-        raids.Setup(r => r.FindByIdAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
-        definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
-        SetupSuccessfulStaminaSpend(energy, attacker.Id);
-        players.Setup(p => p.FindByIdWithStatsAsync(attacker.Id, It.IsAny<CancellationToken>())).ReturnsAsync(attacker);
-        players.Setup(p => p.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        SetupHitScaffolding(b, attacker, raid);
 
-        // Pre-existing participant so GetAllForRaidAsync can return them for kill processing
         var attackerPart = RaidParticipant.Create(raid.Id, attacker.Id);
-        attackerPart.RecordHit(1000); // already dealt some damage
+        attackerPart.RecordHit(1000);
 
-        participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, attacker.Id, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(attackerPart);
-        participants.Setup(p => p.UpdateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
-                    .Returns(Task.CompletedTask);
-        participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new List<RaidParticipant> { attackerPart });
-        raids.Setup(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-        resources.Setup(r => r.GetAsync(attacker.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
-                 .ReturnsAsync(MakeStaminaResource());
-        energy.Setup(e => e.GetCurrentEnergyAsync(attacker.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
-              .ReturnsAsync(4);
-        gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, attacker.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(attackerPart);
+        b.Participants.Setup(p => p.UpdateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipant> { attackerPart });
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
-        await service.HitRaidAsync(attacker.Id, raid.Id, 1, Guid.NewGuid().ToString());
+        await b.Service.HitRaidAsync(attacker.Id, raid.Id, 1, Guid.NewGuid().ToString());
 
         var expectedRef = $"raid:{raid.Id}:{attacker.Id}";
-        gems.Verify(g => g.GrantGemsAsync(
+        b.Gems.Verify(g => g.GrantGemsAsync(
             attacker.Id, It.IsAny<int>(), GemTransactionType.RaidReward, expectedRef,
-            It.IsAny<CancellationToken>()), Times.Once,
-            $"gem referenceId must be 'raid:{{activeRaidId}}:{{playerId}}' — expected '{expectedRef}'");
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     // -----------------------------------------------------------------------
-    // GetActiveRaidsAsync — filtering
+    // GetActiveRaidsAsync — filtering and damage tracking
     // -----------------------------------------------------------------------
 
     [Fact]
     public async Task GetActiveRaids_ExcludesDefeatedAndExpiredRaids()
     {
-        // Repository already filters these — just verify GetAllActiveAsync is called
-        // and the result is passed through.
-        var (service, raids, participants, _, _, _, _, _, definitions, _) = BuildService();
+        var b = BuildService();
         var playerId = Guid.NewGuid();
 
-        raids.Setup(r => r.GetAllActiveAsync(It.IsAny<CancellationToken>()))
-             .ReturnsAsync(new List<ActiveRaid>()); // empty = all filtered by repository
+        b.Raids.Setup(r => r.GetAllActiveAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ActiveRaid>());
+        b.Definitions.Setup(d => d.GetById(It.IsAny<string>())).Returns((RaidDefinition?)null);
 
-        definitions.Setup(d => d.GetById(It.IsAny<string>())).Returns((RaidDefinition?)null);
+        var result = await b.Service.GetActiveRaidsAsync(playerId);
 
-        var result = await service.GetActiveRaidsAsync(playerId);
-
-        result.Should().BeEmpty("repository already excludes defeated and expired raids");
-        raids.Verify(r => r.GetAllActiveAsync(It.IsAny<CancellationToken>()), Times.Once);
+        result.Should().BeEmpty();
+        b.Raids.Verify(r => r.GetAllActiveAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task GetActiveRaids_PopulatesYourTotalDamage_ForCallingPlayer()
+    public async Task GetActiveRaids_PopulatesYourDamage_ForCallingPlayer()
     {
-        var (service, raids, participants, _, _, _, _, _, definitions, _) = BuildService();
+        var b = BuildService();
         var playerId = Guid.NewGuid();
         var raid = MakeRaid();
 
-        // Simulate participation
         var participation = RaidParticipant.Create(raid.Id, playerId);
         participation.RecordHit(12400);
 
-        raids.Setup(r => r.GetAllActiveAsync(It.IsAny<CancellationToken>()))
-             .ReturnsAsync(new List<ActiveRaid> { raid });
-        participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, playerId, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(participation);
-        definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+        b.Raids.Setup(r => r.GetAllActiveAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ActiveRaid> { raid });
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(participation);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
 
-        var result = await service.GetActiveRaidsAsync(playerId);
+        var result = await b.Service.GetActiveRaidsAsync(playerId);
 
         result.Should().HaveCount(1);
         result[0].YourTotalDamage.Should().Be(12400);

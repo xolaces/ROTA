@@ -1,4 +1,4 @@
-using ROTA.Domain.Entities;
+﻿using ROTA.Domain.Entities;
 
 namespace ROTA.Application.Interfaces;
 
@@ -31,4 +31,7 @@ public interface IPlayerRepository
 
     /// <summary>Persists changes to an existing tracked player entity.</summary>
     Task UpdateAsync(Player player, CancellationToken ct = default);
+
+    /// <summary>Persists changes to a tracked PlayerStats entity.</summary>
+    Task UpdateStatsAsync(Domain.Entities.PlayerStats stats, CancellationToken ct = default);
 }

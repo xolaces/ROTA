@@ -1,3 +1,4 @@
+﻿using ROTA.Domain.Enums;
 namespace ROTA.Domain.Entities;
 
 public class ActiveRaid
@@ -9,7 +10,8 @@ public class ActiveRaid
         string raidDefinitionId,
         Guid summonedByPlayerId,
         long maxHp,
-        DateTimeOffset expiresAt)
+        DateTimeOffset expiresAt,
+        RaidDifficulty difficulty = RaidDifficulty.Normal)
     {
         return new ActiveRaid
         {
@@ -19,6 +21,7 @@ public class ActiveRaid
             CurrentHp          = maxHp,
             MaxHp              = maxHp,
             IsDefeated         = false,
+            Difficulty         = difficulty,
             ParticipantCount   = 0,
             ExpiresAt          = expiresAt,
             CreatedAt          = DateTimeOffset.UtcNow,
@@ -33,16 +36,17 @@ public class ActiveRaid
     public long CurrentHp { get; private set; }
     public long MaxHp { get; private set; }
     public bool IsDefeated { get; private set; }
+    public RaidDifficulty Difficulty { get; private set; }
     public DateTimeOffset ExpiresAt { get; private set; }
 
-    // Denormalised for O(1) participant count on every hit response — incremented on first hit per player.
+    // Denormalised for O(1) participant count on every hit response â€” incremented on first hit per player.
     public int ParticipantCount { get; private set; }
 
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
     public bool IsDeleted { get; private set; }
 
-    // Navigation property — populated by repository Include() calls only
+    // Navigation property â€” populated by repository Include() calls only
     public Player? SummonedByPlayer { get; private set; }
 
     // Domain methods
@@ -65,3 +69,4 @@ public class ActiveRaid
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 }
+

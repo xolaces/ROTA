@@ -1,4 +1,4 @@
-using ROTA.Domain.Enums;
+﻿using ROTA.Domain.Enums;
 
 namespace ROTA.Application.Interfaces;
 
@@ -20,4 +20,10 @@ public interface IEnergyService
     /// Adds <paramref name="amount"/> to the live value, capped at MaxValue.
     /// </summary>
     Task RefillEnergyAsync(Guid playerId, ResourceType type, int amount, CancellationToken ct = default);
+
+    /// <summary>
+    /// Updates the MaxValue for a resource pool (called after stat investment changes).
+    /// Caps the live checkpoint at the new max to avoid over-refill.
+    /// </summary>
+    Task UpdateMaxAsync(Guid playerId, ResourceType type, int newMax, CancellationToken ct = default);
 }

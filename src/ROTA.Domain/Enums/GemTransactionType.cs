@@ -7,4 +7,5 @@ public enum GemTransactionType
     EnergyRefill = 3,
     AdminGrant   = 4,
     RaidReward   = 5,
+    LevelUpReward = 6,
 }

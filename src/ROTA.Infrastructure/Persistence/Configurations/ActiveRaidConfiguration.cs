@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ROTA.Domain.Entities;
+using ROTA.Domain.Enums;
 
 namespace ROTA.Infrastructure.Persistence.Configurations;
 
@@ -36,6 +37,10 @@ public class ActiveRaidConfiguration : IEntityTypeConfiguration<ActiveRaid>
 
         builder.Property(r => r.ExpiresAt)
             .HasColumnName("expires_at");
+
+        builder.Property(r => r.Difficulty)
+            .HasColumnName("difficulty")
+            .HasDefaultValue(RaidDifficulty.Normal);
 
         builder.Property(r => r.ParticipantCount)
             .HasColumnName("participant_count")

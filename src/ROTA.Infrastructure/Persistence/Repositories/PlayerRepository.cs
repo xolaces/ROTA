@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ROTA.Application.Interfaces;
 using ROTA.Domain.Entities;
 using ROTA.Infrastructure.Persistence;
@@ -67,6 +67,13 @@ public sealed class PlayerRepository : IPlayerRepository
     public async Task UpdateAsync(Player player, CancellationToken ct = default)
     {
         _db.Players.Update(player);
+        await _db.SaveChangesAsync(ct);
+    }
+
+    /// <inheritdoc />
+    public async Task UpdateStatsAsync(Domain.Entities.PlayerStats stats, CancellationToken ct = default)
+    {
+        _db.PlayerStats.Update(stats);
         await _db.SaveChangesAsync(ct);
     }
 }

@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Services;
@@ -12,7 +12,7 @@ namespace ROTA.Infrastructure;
 public static class ServiceCollectionExtensions
 {
     /// <param name="contentRootPath">
-    /// The application content root — used to locate content/quests.json and content/raids.json.
+    /// The application content root — used to locate content/*.json files.
     /// Pass env.ContentRootPath from Program.cs.
     /// </param>
     public static IServiceCollection AddRotaServices(
@@ -26,8 +26,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPlayerResourceRepository, PlayerResourceRepository>();
         services.AddScoped<IGemTransactionRepository, GemTransactionRepository>();
         services.AddScoped<IQuestProgressRepository, QuestProgressRepository>();
+        services.AddScoped<IQuestDifficultyProgressRepository, QuestDifficultyProgressRepository>();
         services.AddScoped<IActiveRaidRepository, ActiveRaidRepository>();
         services.AddScoped<IRaidParticipantRepository, RaidParticipantRepository>();
+        services.AddScoped<IPlayerInventoryRepository, PlayerInventoryRepository>();
 
         // Infrastructure services
         services.AddScoped<IAuthLockoutService, AuthLockoutService>();
@@ -38,14 +40,20 @@ public static class ServiceCollectionExtensions
             _ => new QuestDefinitionProvider(contentRootPath));
         services.AddSingleton<IRaidDefinitionProvider>(
             _ => new RaidDefinitionProvider(contentRootPath));
+        services.AddSingleton<IItemDefinitionProvider>(
+            _ => new ItemDefinitionProvider(contentRootPath));
+        services.AddSingleton<ILootTableProvider>(sp =>
+            new LootTableProvider(contentRootPath, sp.GetRequiredService<IRaidDefinitionProvider>()));
 
         // Application services
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IEnergyService, EnergyService>();
         services.AddScoped<IPlayerService, PlayerService>();
         services.AddScoped<IGemService, GemService>();
+        services.AddScoped<IStatService, StatService>();
         services.AddScoped<IQuestService, QuestService>();
         services.AddScoped<IRaidService, RaidService>();
+        services.AddScoped<IItemService, ItemService>();
 
         // FluentValidation — scan Application assembly for all IValidator<T> implementations
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
