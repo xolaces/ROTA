@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ROTA.Domain.Entities;
 
@@ -34,6 +34,23 @@ public class PlayerStatsConfiguration : IEntityTypeConfiguration<PlayerStats>
         builder.Property(s => s.CurrentHealth)
             .HasColumnName("current_health")
             .HasDefaultValue(100);
+
+        // Investable stat fields
+        builder.Property(s => s.EnergyInvestment)
+            .HasColumnName("energy_investment")
+            .HasDefaultValue(0);
+
+        builder.Property(s => s.StaminaInvestment)
+            .HasColumnName("stamina_investment")
+            .HasDefaultValue(0);
+
+        builder.Property(s => s.DiscernmentInvestment)
+            .HasColumnName("discernment_investment")
+            .HasDefaultValue(0);
+
+        builder.Property(s => s.SkillPoints)
+            .HasColumnName("skill_points")
+            .HasDefaultValue(0);
 
         builder.Property(s => s.UpdatedAt)
             .HasColumnName("updated_at")

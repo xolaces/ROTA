@@ -1,4 +1,5 @@
-using ROTA.Application.Interfaces;
+﻿using ROTA.Application.Interfaces;
+using ROTA.Application.Models;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
 using ROTA.Shared.DTOs;
@@ -9,12 +10,47 @@ namespace ROTA.Application.Services;
 //        a crash mid-reward is unfair but acceptable. Phase 2: explicit transaction scope.
 public sealed class RaidService : IRaidService
 {
+    // HP multipliers per difficulty
+    private static readonly IReadOnlyDictionary<RaidDifficulty, double> HpMultipliers =
+        new Dictionary<RaidDifficulty, double>
+        {
+            [RaidDifficulty.Normal]    = 1.0,
+            [RaidDifficulty.Hard]      = 1.4,
+            [RaidDifficulty.Legendary] = 2.0,
+            [RaidDifficulty.Nightmare] = 3.6,
+        };
+
+    // Contribution tier multipliers — applied to ALL rewards
+    private static readonly IReadOnlyDictionary<string, decimal> TierMultipliers =
+        new Dictionary<string, decimal>
+        {
+            ["Legendary1"]  = 1.50m,
+            ["Legendary2"]  = 1.25m,
+            ["Legendary3"]  = 1.10m,
+            ["Epic"]        = 1.00m,
+            ["Rare"]        = 0.75m,
+            ["Participant"] = 0.25m,
+        };
+
+    private static readonly IReadOnlyDictionary<RaidDifficulty, string> DifficultyColors =
+        new Dictionary<RaidDifficulty, string>
+        {
+            [RaidDifficulty.Normal]    = "Green",
+            [RaidDifficulty.Hard]      = "Yellow",
+            [RaidDifficulty.Legendary] = "Red",
+            [RaidDifficulty.Nightmare] = "Purple",
+        };
+
     private readonly IActiveRaidRepository _raids;
     private readonly IRaidParticipantRepository _participants;
     private readonly IPlayerRepository _players;
     private readonly IPlayerResourceRepository _resources;
     private readonly IEnergyService _energy;
     private readonly IGemService _gems;
+    private readonly IStatService _stats;
+    private readonly IPlayerInventoryRepository _inventory;
+    private readonly IItemDefinitionProvider _itemDefs;
+    private readonly ILootTableProvider _lootTables;
     private readonly IAuditLogRepository _auditLog;
     private readonly IRaidDefinitionProvider _raidDefinitions;
     private readonly IRaidHitCache _hitCache;
@@ -27,6 +63,10 @@ public sealed class RaidService : IRaidService
         IPlayerResourceRepository resources,
         IEnergyService energy,
         IGemService gems,
+        IStatService stats,
+        IPlayerInventoryRepository inventory,
+        IItemDefinitionProvider itemDefs,
+        ILootTableProvider lootTables,
         IAuditLogRepository auditLog,
         IRaidDefinitionProvider raidDefinitions,
         IRaidHitCache hitCache,
@@ -38,6 +78,10 @@ public sealed class RaidService : IRaidService
         _resources       = resources;
         _energy          = energy;
         _gems            = gems;
+        _stats           = stats;
+        _inventory       = inventory;
+        _itemDefs        = itemDefs;
+        _lootTables      = lootTables;
         _auditLog        = auditLog;
         _raidDefinitions = raidDefinitions;
         _hitCache        = hitCache;
@@ -72,7 +116,10 @@ public sealed class RaidService : IRaidService
                 ParticipantCount      = raid.ParticipantCount,
                 YourTotalDamage       = participant?.TotalDamageDealt ?? 0,
                 YourHitCount          = participant?.HitCount ?? 0,
-                Tier                  = definition?.Tier ?? "World",
+                Tier                  = definition?.Tier ?? "Standard",
+                Difficulty            = raid.Difficulty.ToString(),
+                DifficultyColor       = DifficultyColors[raid.Difficulty],
+                YourCurrentTier       = ComputeTier(participant?.TotalDamageDealt ?? 0, activeRaids.Count, participant, null),
             });
         }
 
@@ -81,7 +128,7 @@ public sealed class RaidService : IRaidService
 
     /// <inheritdoc />
     public async Task<SummonRaidResult> SummonRaidAsync(
-        Guid playerId, string raidDefinitionId, CancellationToken ct = default)
+        Guid playerId, string raidDefinitionId, RaidDifficulty difficulty, CancellationToken ct = default)
     {
         var definition = _raidDefinitions.GetById(raidDefinitionId);
         if (definition is null)
@@ -99,13 +146,14 @@ public sealed class RaidService : IRaidService
                 FailureReason = "Player not found.",
             };
 
+        long finalHp = (long)(definition.BaseHp * HpMultipliers[difficulty]);
         var expiresAt = DateTimeOffset.UtcNow.AddHours(definition.TimerHours);
-        var raid = ActiveRaid.Create(raidDefinitionId, playerId, definition.HpPool, expiresAt);
+        var raid = ActiveRaid.Create(raidDefinitionId, playerId, finalHp, expiresAt, difficulty);
         await _raids.CreateAsync(raid, ct);
 
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, "RaidSummon", null,
-            $"Summoned raid '{definition.Name}' (id={raid.Id}). HP={raid.MaxHp}, expires={expiresAt:O}",
+            $"Summoned '{definition.Name}' [{difficulty}] (id={raid.Id}). HP={raid.MaxHp}, expires={expiresAt:O}",
             null), ct);
 
         return new SummonRaidResult
@@ -118,6 +166,8 @@ public sealed class RaidService : IRaidService
                 MaxHp                 = raid.MaxHp,
                 ExpiresAt             = raid.ExpiresAt,
                 TimerRemainingSeconds = (long)(expiresAt - DateTimeOffset.UtcNow).TotalSeconds,
+                Difficulty            = difficulty.ToString(),
+                DifficultyColor       = DifficultyColors[difficulty],
             },
         };
     }
@@ -132,34 +182,33 @@ public sealed class RaidService : IRaidService
         if (raid is null)
             return HitFail(RaidHitFailureCode.RaidNotFound, "Raid not found.");
 
-        // 2. Timer expired — 410 Gone
+        // 2. Timer expired
         if (raid.ExpiresAt < DateTimeOffset.UtcNow)
             return HitFail(RaidHitFailureCode.RaidExpired, "Raid timer has expired.");
 
-        // 3. Already defeated — 409 Conflict
+        // 3. Already defeated
         if (raid.IsDefeated)
             return HitFail(RaidHitFailureCode.RaidAlreadyDefeated, "Raid has already been defeated.");
 
-        // 4. Idempotency — check Redis before any processing, zero reprocessing on duplicate
+        // 4. Idempotency check
         var cached = await _hitCache.GetAsync(idempotencyKey, ct);
         if (cached is not null)
             return new RaidHitResult { Success = true, Response = cached };
 
-        // 5. Validate hit size — mirrors DotD ×1 / ×5 / ×20 exactly
+        // 5. Validate hit size
         if (hitSize != 1 && hitSize != 5 && hitSize != 20)
             return HitFail(RaidHitFailureCode.InvalidHitSize, "Hit size must be 1, 5, or 20.");
 
         var definition = _raidDefinitions.GetById(raid.RaidDefinitionId)
             ?? throw new InvalidOperationException($"Raid definition '{raid.RaidDefinitionId}' not found.");
 
-        // 6. Spend stamina — if insufficient, return immediately (zero side effects)
+        // 6. Spend stamina
         int staminaCost = hitSize * definition.StaminaCostPerHit;
         var staminaSpent = await _energy.SpendEnergyAsync(playerId, ResourceType.Stamina, staminaCost, ct);
         if (!staminaSpent)
             return HitFail(RaidHitFailureCode.InsufficientStamina, "Insufficient stamina.");
 
         // 7. Compute damage — server-seeded RNG, never client
-        // Formula mirrors DotD: base = ATK×4 + DEF per stamina hit
         var player = await _players.FindByIdWithStatsAsync(playerId, ct)
             ?? throw new InvalidOperationException($"Player {playerId} not found after stamina spend.");
 
@@ -167,7 +216,7 @@ public sealed class RaidService : IRaidService
         long baseValue = (player.Stats!.BaseAttack * 4L) + player.Stats.BaseDefense;
         long damage = Math.Max(1, (long)(baseValue * hitSize * multiplier));
 
-        // 8. Deduct from CurrentHp, floor at 0
+        // 8. Deduct HP
         raid.TakeDamage(damage);
 
         // 9. Upsert RaidParticipant
@@ -197,19 +246,21 @@ public sealed class RaidService : IRaidService
         {
             var allParticipants = await _participants.GetAllForRaidAsync(activeRaidId, ct);
             rewards = await DistributeKillRewardsAsync(
-                playerId, player, raid.Id, definition, allParticipants, ct);
+                playerId, player, raid, definition, allParticipants, ct);
         }
 
         // 11. Audit
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, "RaidHit", null,
-            $"Hit raid {activeRaidId} ({definition.Name}) for {damage} damage (×{hitSize}). HP: {raid.CurrentHp}/{raid.MaxHp}. Kill: {isKill}",
+            $"Hit raid {activeRaidId} ({definition.Name}) [{raid.Difficulty}] for {damage} dmg (x{hitSize}). HP: {raid.CurrentHp}/{raid.MaxHp}. Kill: {isKill}",
             null), ct);
 
-        // Get live stamina for header bar — no second round-trip needed by client
         var newStaminaValue = await _energy.GetCurrentEnergyAsync(playerId, ResourceType.Stamina, ct);
         var staminaResource = await _resources.GetAsync(playerId, ResourceType.Stamina, ct);
         int newStaminaMax = staminaResource?.MaxValue ?? 0;
+
+        var allParts = isKill ? null : (IReadOnlyList<RaidParticipant>?)null;
+        string callerTier = rewards?.ContributionTier ?? "Participant";
 
         var response = new RaidHitResponse
         {
@@ -226,9 +277,11 @@ public sealed class RaidService : IRaidService
             NewStaminaMax    = newStaminaMax,
             Rewards          = rewards,
             ExpiresAt        = raid.ExpiresAt,
+            Difficulty       = raid.Difficulty.ToString(),
+            DifficultyColor  = DifficultyColors[raid.Difficulty],
+            YourCurrentTier  = callerTier,
         };
 
-        // 12. Cache in Redis with 24h TTL — duplicate submissions return this response immediately
         await _hitCache.SetAsync(idempotencyKey, response, ct);
 
         return new RaidHitResult { Success = true, Response = response };
@@ -241,78 +294,146 @@ public sealed class RaidService : IRaidService
     private async Task<RaidRewards> DistributeKillRewardsAsync(
         Guid callerPlayerId,
         Player callerPlayer,
-        Guid activeRaidId,
-        Models.RaidDefinition definition,
+        ActiveRaid raid,
+        RaidDefinition definition,
         IReadOnlyList<RaidParticipant> allParticipants,
         CancellationToken ct)
     {
-        // Assign contribution tiers
         var sorted = allParticipants.OrderByDescending(p => p.TotalDamageDealt).ToList();
-        var top3Ids = sorted.Take(3).Select(p => p.PlayerId).ToHashSet();
-        int epicCutoff = (int)Math.Ceiling(sorted.Count * 0.10);
-        var epicIds = sorted.Take(epicCutoff).Select(p => p.PlayerId).ToHashSet();
+        long totalDamage = sorted.Sum(p => p.TotalDamageDealt);
+
+        // Assign tiers
+        var tierAssignments = new Dictionary<Guid, (string tier, decimal multiplier)>();
+        int epicCutoff = Math.Max(1, (int)Math.Ceiling(sorted.Count * 0.10));
+
+        for (int i = 0; i < sorted.Count; i++)
+        {
+            var p = sorted[i];
+            string tierKey;
+            if (i == 0)      tierKey = "Legendary1";
+            else if (i == 1) tierKey = "Legendary2";
+            else if (i == 2) tierKey = "Legendary3";
+            else if (i < epicCutoff) tierKey = "Epic";
+            else
+            {
+                double pct = totalDamage > 0 ? (double)p.TotalDamageDealt / totalDamage * 100.0 : 0;
+                // Load loot table to get minContributionPercent
+                var lt = _lootTables.GetById(definition.LootTableId);
+                double minPct = lt?.Difficulties?.GetValueOrDefault(raid.Difficulty.ToString())
+                    ?.MinContributionPercent ?? 0.1;
+                tierKey = pct >= minPct ? "Rare" : "Participant";
+            }
+            tierAssignments[p.PlayerId] = (tierKey, TierMultipliers[tierKey]);
+        }
 
         string callerTier = "Participant";
+        decimal callerMultiplier = 0.25m;
         int callerGemsGranted = 0;
-        int levelBefore = callerPlayer.Level;
+        int callerUnassignedSP = 0;
+        var callerItems = new List<ItemGrantDTO>();
 
         foreach (var p in allParticipants)
         {
-            string tier;
-            if (top3Ids.Contains(p.PlayerId))
-                tier = "Legendary";
-            else if (epicIds.Contains(p.PlayerId))
-                tier = "Epic";
-            else if (p.TotalDamageDealt >= definition.MinContributionForLoot)
-                tier = "Rare";
-            else
-                tier = "Participant";
+            var (tier, multiplier) = tierAssignments.GetValueOrDefault(p.PlayerId, ("Participant", 0.25m));
+            string displayTier = tier.StartsWith("Legendary") ? "Legendary" : tier;
 
-            Player? participantPlayer;
-            if (p.PlayerId == callerPlayerId)
-            {
-                participantPlayer = callerPlayer; // already in memory
-            }
-            else
-            {
-                participantPlayer = await _players.FindByIdAsync(p.PlayerId, ct);
-                if (participantPlayer is null) continue;
-            }
+            Player? participantPlayer = p.PlayerId == callerPlayerId
+                ? callerPlayer
+                : await _players.FindByIdAsync(p.PlayerId, ct);
+            if (participantPlayer is null) continue;
 
-            participantPlayer.AddGold(definition.GoldReward);
-            participantPlayer.AddExperience(definition.ExperienceReward);
+            int levelBefore = participantPlayer.Level;
+
+            // Gold and XP scaled by difficulty (same multiplier as HP) then by tier
+            double diffMult = HpMultipliers[raid.Difficulty];
+            long gold = (long)Math.Round(definition.BaseGoldReward * diffMult * (double)multiplier);
+            int xp    = (int)Math.Round(definition.BaseExperienceReward * diffMult * (double)multiplier);
+
+            participantPlayer.AddGold(gold);
+            participantPlayer.AddExperience(xp);
             await _players.UpdateAsync(participantPlayer, ct);
 
-            if (tier is "Legendary" or "Epic" or "Rare")
-            {
-                var gemRef = $"raid:{activeRaidId}:{p.PlayerId}";
-                var granted = await _gems.GrantGemsAsync(
-                    p.PlayerId, definition.GemReward, GemTransactionType.RaidReward, gemRef, ct);
+            // Grant level-up points for each level gained
+            for (int lvl = levelBefore + 1; lvl <= participantPlayer.Level; lvl++)
+                await _stats.GrantLevelUpPointsAsync(p.PlayerId, lvl, ct);
 
-                if (p.PlayerId == callerPlayerId && granted)
-                    callerGemsGranted = definition.GemReward;
+            // Gems — Rare+ only
+            if (displayTier is not "Participant")
+            {
+                int gemAmount = (int)Math.Round(definition.BaseGemReward * (double)multiplier);
+                if (gemAmount > 0)
+                {
+                    var gemRef = $"raid:{raid.Id}:{p.PlayerId}";
+                    var granted = await _gems.GrantGemsAsync(
+                        p.PlayerId, gemAmount, GemTransactionType.RaidReward, gemRef, ct);
+                    if (p.PlayerId == callerPlayerId && granted)
+                        callerGemsGranted = gemAmount;
+                }
             }
 
+            // Loot table — stat points and items (cumulative thresholds)
+            int unassignedSP = 0;
+            var items = new List<ItemGrantDTO>();
+            if (!string.IsNullOrEmpty(definition.LootTableId))
+            {
+                var lt = _lootTables.GetById(definition.LootTableId);
+                if (lt?.Difficulties is not null
+                    && lt.Difficulties.TryGetValue(raid.Difficulty.ToString(), out var diffLoot)
+                    && diffLoot.ThresholdRewards is not null)
+                {
+                    double contribPct = totalDamage > 0
+                        ? (double)p.TotalDamageDealt / totalDamage * 100.0
+                        : 0;
+
+                    // Cumulative: collect all threshold tiers the player qualifies for
+                    foreach (var threshold in diffLoot.ThresholdRewards
+                        .OrderBy(t => t.ContributionPercent)
+                        .Where(t => contribPct >= t.ContributionPercent))
+                    {
+                        unassignedSP += (int)Math.Round(threshold.UnassignedStatPoints * (double)multiplier);
+
+                        foreach (var drop in threshold.ItemDrops)
+                        {
+                            if (_random.NextDouble() < drop.Chance)
+                            {
+                                int qty = (int)Math.Max(1, Math.Round(drop.Quantity * (double)multiplier));
+                                await GrantInventoryItemAsync(p.PlayerId, drop.ItemId, qty, items, ct);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (unassignedSP > 0)
+                await _stats.AddUnassignedPointsAsync(p.PlayerId, unassignedSP, ct);
+
             if (p.PlayerId == callerPlayerId)
-                callerTier = tier;
+            {
+                callerTier = displayTier;
+                callerMultiplier = multiplier;
+                callerUnassignedSP = unassignedSP;
+                callerItems = items;
+            }
         }
 
         await _auditLog.AppendAsync(AuditLog.Create(
             callerPlayerId, "RaidKill", null,
-            $"Raid {activeRaidId} ({definition.Name}) defeated. {allParticipants.Count} participants rewarded.",
+            $"Raid {raid.Id} ({definition.Name}) [{raid.Difficulty}] defeated. {allParticipants.Count} participants rewarded.",
             null), ct);
 
-        bool leveledUp = callerPlayer.Level > levelBefore;
-
+        var caller = callerPlayer;
         return new RaidRewards
         {
-            GoldGranted       = definition.GoldReward,
-            ExperienceGranted = definition.ExperienceReward,
-            GemsGranted       = callerGemsGranted,
-            NewPlayerGold     = callerPlayer.Gold,
-            NewPlayerExperience = callerPlayer.Experience,
-            NewPlayerLevel    = leveledUp ? callerPlayer.Level : null,
-            ContributionTier  = callerTier,
+            GoldGranted              = (long)Math.Round(definition.BaseGoldReward * HpMultipliers[raid.Difficulty] * (double)callerMultiplier),
+            ExperienceGranted        = (int)Math.Round(definition.BaseExperienceReward * HpMultipliers[raid.Difficulty] * (double)callerMultiplier),
+            GemsGranted              = callerGemsGranted,
+            NewPlayerGold            = caller.Gold,
+            NewPlayerExperience      = caller.Experience,
+            NewPlayerLevel           = caller.Level,
+            ContributionTier         = callerTier,
+            TierMultiplier           = callerMultiplier,
+            UnassignedStatPointsGranted = callerUnassignedSP,
+            ItemsGranted             = callerItems,
         };
     }
 
@@ -320,6 +441,39 @@ public sealed class RaidService : IRaidService
     // HELPERS
     // -------------------------------------------------------------------
 
+    private static string ComputeTier(long damage, int totalParticipants, RaidParticipant? p, IReadOnlyList<RaidParticipant>? all)
+        => "Participant"; // placeholder for live tier shown before kill
+
+    private async Task GrantInventoryItemAsync(
+        Guid playerId, string itemDefId, int quantity,
+        List<ItemGrantDTO> itemsGranted, CancellationToken ct)
+    {
+        var existing = await _inventory.GetAsync(playerId, itemDefId, ct);
+        if (existing is not null)
+        {
+            existing.AddQuantity(quantity);
+            await _inventory.UpdateAsync(existing, ct);
+        }
+        else
+        {
+            var newItem = PlayerInventoryItem.Create(playerId, itemDefId, quantity);
+            await _inventory.CreateAsync(newItem, ct);
+        }
+
+        var def = _itemDefs.GetById(itemDefId);
+        if (def is not null)
+        {
+            itemsGranted.Add(new ItemGrantDTO
+            {
+                ItemId   = itemDefId,
+                ItemName = def.Name,
+                Quantity = quantity,
+                Rarity   = def.Rarity.ToString(),
+                ArtKey   = def.ArtKey,
+            });
+        }
+    }
+
     private static RaidHitResult HitFail(RaidHitFailureCode code, string reason)
-        => new RaidHitResult { FailureCode = code, FailureReason = reason };
+        => new() { FailureCode = code, FailureReason = reason };
 }

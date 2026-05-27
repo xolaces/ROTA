@@ -1,0 +1,323 @@
+[
+  {
+    "id": "lt_raid_ironcolossus",
+    "type": "Raid",
+    "difficulties": {
+      "Normal": {
+        "minContributionPercent": 0.1,
+        "thresholdRewards": [
+          {
+            "contributionPercent": 0.1,
+            "unassignedStatPoints": 1,
+            "attackPoints": 0,
+            "defensePoints": 0,
+            "discernmentPoints": 0,
+            "itemDrops": [
+              { "itemId": "mat_iron_shard", "quantity": 1, "chance": 0.50 }
+            ]
+          },
+          {
+            "contributionPercent": 5.0,
+            "unassignedStatPoints": 2,
+            "attackPoints": 1,
+            "defensePoints": 0,
+            "discernmentPoints": 0,
+            "itemDrops": [
+              { "itemId": "mat_iron_shard", "quantity": 2, "chance": 0.75 },
+              { "itemId": "statbag_minor", "quantity": 1, "chance": 0.15 }
+            ]
+          },
+          {
+            "contributionPercent": 20.0,
+            "unassignedStatPoints": 3,
+            "attackPoints": 1,
+            "defensePoints": 1,
+            "discernmentPoints": 0,
+            "itemDrops": [
+              { "itemId": "mat_iron_shard", "quantity": 3, "chance": 1.0 },
+              { "itemId": "statbag_minor", "quantity": 1, "chance": 0.30 }
+            ]
+          }
+        ],
+        "onHitDrops": null
+      },
+      "Hard": {
+        "minContributionPercent": 0.1,
+        "thresholdRewards": [
+          {
+            "contributionPercent": 0.1,
+            "unassignedStatPoints": 2,
+            "attackPoints": 0,
+            "defensePoints": 0,
+            "discernmentPoints": 0,
+            "itemDrops": [
+              { "itemId": "mat_iron_shard", "quantity": 1, "chance": 0.65 }
+            ]
+          },
+          {
+            "contributionPercent": 5.0,
+            "unassignedStatPoints": 3,
+            "attackPoints": 1,
+            "defensePoints": 1,
+            "discernmentPoints": 0,
+            "itemDrops": [
+              { "itemId": "mat_iron_shard", "quantity": 2, "chance": 0.85 },
+              { "itemId": "statbag_minor", "quantity": 1, "chance": 0.25 }
+            ]
+          },
+          {
+            "contributionPercent": 20.0,
+            "unassignedStatPoints": 4,
+            "attackPoints": 2,
+            "defensePoints": 1,
+            "discernmentPoints": 1,
+            "itemDrops": [
+              { "itemId": "mat_iron_shard", "quantity": 4, "chance": 1.0 },
+              { "itemId": "statbag_minor", "quantity": 1, "chance": 0.50 },
+              { "itemId": "statbag_major", "quantity": 1, "chance": 0.10 }
+            ]
+          }
+        ],
+        "onHitDrops": null
+      },
+      "Legendary": {
+        "minContributionPercent": 0.1,
+        "thresholdRewards": [
+          {
+            "contributionPercent": 0.1,
+            "unassignedStatPoints": 3,
+            "attackPoints": 1,
+            "defensePoints": 0,
+            "discernmentPoints": 0,
+            "itemDrops": [
+              { "itemId": "mat_iron_shard", "quantity": 2, "chance": 0.75 }
+            ]
+          },
+          {
+            "contributionPercent": 5.0,
+            "unassignedStatPoints": 5,
+            "attackPoints": 2,
+            "defensePoints": 1,
+            "discernmentPoints": 1,
+            "itemDrops": [
+              { "itemId": "mat_iron_shard", "quantity": 3, "chance": 1.0 },
+              { "itemId": "statbag_minor", "quantity": 1, "chance": 0.40 },
+              { "itemId": "statbag_major", "quantity": 1, "chance": 0.15 }
+            ]
+          },
+          {
+            "contributionPercent": 20.0,
+            "unassignedStatPoints": 6,
+            "attackPoints": 3,
+            "defensePoints": 2,
+            "discernmentPoints": 1,
+            "itemDrops": [
+              { "itemId": "mat_iron_shard", "quantity": 5, "chance": 1.0 },
+              { "itemId": "statbag_major", "quantity": 1, "chance": 0.30 }
+            ]
+          }
+        ],
+        "onHitDrops": null
+      },
+      "Nightmare": {
+        "minContributionPercent": 0.05,
+        "thresholdRewards": [
+          {
+            "contributionPercent": 0.05,
+            "unassignedStatPoints": 5,
+            "attackPoints": 2,
+            "defensePoints": 1,
+            "discernmentPoints": 1,
+            "itemDrops": [
+              { "itemId": "mat_iron_shard", "quantity": 3, "chance": 1.0 },
+              { "itemId": "statbag_minor", "quantity": 1, "chance": 0.50 }
+            ]
+          },
+          {
+            "contributionPercent": 5.0,
+            "unassignedStatPoints": 7,
+            "attackPoints": 3,
+            "defensePoints": 2,
+            "discernmentPoints": 2,
+            "itemDrops": [
+              { "itemId": "mat_iron_shard", "quantity": 5, "chance": 1.0 },
+              { "itemId": "statbag_major", "quantity": 1, "chance": 0.35 }
+            ]
+          },
+          {
+            "contributionPercent": 20.0,
+            "unassignedStatPoints": 10,
+            "attackPoints": 5,
+            "defensePoints": 3,
+            "discernmentPoints": 2,
+            "itemDrops": [
+              { "itemId": "mat_iron_shard", "quantity": 8, "chance": 1.0 },
+              { "itemId": "statbag_major", "quantity": 2, "chance": 0.50 }
+            ]
+          }
+        ],
+        "onHitDrops": null
+      }
+    }
+  },
+  {
+    "id": "lt_raid_malachar",
+    "type": "Raid",
+    "difficulties": {
+      "Normal": {
+        "minContributionPercent": 0.1,
+        "thresholdRewards": [
+          {
+            "contributionPercent": 0.1,
+            "unassignedStatPoints": 2,
+            "attackPoints": 0,
+            "defensePoints": 0,
+            "discernmentPoints": 0,
+            "itemDrops": [
+              { "itemId": "mat_arcane_dust", "quantity": 1, "chance": 0.50 }
+            ]
+          },
+          {
+            "contributionPercent": 5.0,
+            "unassignedStatPoints": 3,
+            "attackPoints": 1,
+            "defensePoints": 1,
+            "discernmentPoints": 0,
+            "itemDrops": [
+              { "itemId": "mat_arcane_dust", "quantity": 2, "chance": 0.75 },
+              { "itemId": "statbag_minor", "quantity": 1, "chance": 0.20 }
+            ]
+          },
+          {
+            "contributionPercent": 20.0,
+            "unassignedStatPoints": 4,
+            "attackPoints": 2,
+            "defensePoints": 1,
+            "discernmentPoints": 1,
+            "itemDrops": [
+              { "itemId": "mat_arcane_dust", "quantity": 4, "chance": 1.0 },
+              { "itemId": "statbag_minor", "quantity": 1, "chance": 0.40 }
+            ]
+          }
+        ],
+        "onHitDrops": null
+      },
+      "Hard": {
+        "minContributionPercent": 0.1,
+        "thresholdRewards": [
+          {
+            "contributionPercent": 0.1,
+            "unassignedStatPoints": 3,
+            "attackPoints": 1,
+            "defensePoints": 0,
+            "discernmentPoints": 0,
+            "itemDrops": [
+              { "itemId": "mat_arcane_dust", "quantity": 1, "chance": 0.65 }
+            ]
+          },
+          {
+            "contributionPercent": 5.0,
+            "unassignedStatPoints": 5,
+            "attackPoints": 2,
+            "defensePoints": 1,
+            "discernmentPoints": 1,
+            "itemDrops": [
+              { "itemId": "mat_arcane_dust", "quantity": 3, "chance": 0.85 },
+              { "itemId": "statbag_minor", "quantity": 1, "chance": 0.30 }
+            ]
+          },
+          {
+            "contributionPercent": 20.0,
+            "unassignedStatPoints": 7,
+            "attackPoints": 3,
+            "defensePoints": 2,
+            "discernmentPoints": 1,
+            "itemDrops": [
+              { "itemId": "mat_arcane_dust", "quantity": 5, "chance": 1.0 },
+              { "itemId": "statbag_minor", "quantity": 1, "chance": 0.50 },
+              { "itemId": "statbag_major", "quantity": 1, "chance": 0.15 }
+            ]
+          }
+        ],
+        "onHitDrops": null
+      },
+      "Legendary": {
+        "minContributionPercent": 0.1,
+        "thresholdRewards": [
+          {
+            "contributionPercent": 0.1,
+            "unassignedStatPoints": 5,
+            "attackPoints": 2,
+            "defensePoints": 1,
+            "discernmentPoints": 0,
+            "itemDrops": [
+              { "itemId": "mat_arcane_dust", "quantity": 2, "chance": 0.75 }
+            ]
+          },
+          {
+            "contributionPercent": 5.0,
+            "unassignedStatPoints": 8,
+            "attackPoints": 3,
+            "defensePoints": 2,
+            "discernmentPoints": 2,
+            "itemDrops": [
+              { "itemId": "mat_arcane_dust", "quantity": 4, "chance": 1.0 },
+              { "itemId": "statbag_major", "quantity": 1, "chance": 0.20 }
+            ]
+          },
+          {
+            "contributionPercent": 20.0,
+            "unassignedStatPoints": 10,
+            "attackPoints": 5,
+            "defensePoints": 3,
+            "discernmentPoints": 2,
+            "itemDrops": [
+              { "itemId": "mat_arcane_dust", "quantity": 6, "chance": 1.0 },
+              { "itemId": "statbag_major", "quantity": 1, "chance": 0.40 }
+            ]
+          }
+        ],
+        "onHitDrops": null
+      },
+      "Nightmare": {
+        "minContributionPercent": 0.05,
+        "thresholdRewards": [
+          {
+            "contributionPercent": 0.05,
+            "unassignedStatPoints": 8,
+            "attackPoints": 3,
+            "defensePoints": 2,
+            "discernmentPoints": 2,
+            "itemDrops": [
+              { "itemId": "mat_arcane_dust", "quantity": 4, "chance": 1.0 },
+              { "itemId": "statbag_minor", "quantity": 1, "chance": 0.50 }
+            ]
+          },
+          {
+            "contributionPercent": 5.0,
+            "unassignedStatPoints": 12,
+            "attackPoints": 5,
+            "defensePoints": 3,
+            "discernmentPoints": 3,
+            "itemDrops": [
+              { "itemId": "mat_arcane_dust", "quantity": 6, "chance": 1.0 },
+              { "itemId": "statbag_major", "quantity": 1, "chance": 0.50 }
+            ]
+          },
+          {
+            "contributionPercent": 20.0,
+            "unassignedStatPoints": 18,
+            "attackPoints": 8,
+            "defensePoints": 5,
+            "discernmentPoints": 4,
+            "itemDrops": [
+              { "itemId": "mat_arcane_dust", "quantity": 10, "chance": 1.0 },
+              { "itemId": "statbag_major", "quantity": 3, "chance": 0.75 }
+            ]
+          }
+        ],
+        "onHitDrops": null
+      }
+    }
+  }
+]

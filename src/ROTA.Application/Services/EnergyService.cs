@@ -1,4 +1,4 @@
-using ROTA.Application.Interfaces;
+﻿using ROTA.Application.Interfaces;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
 
@@ -65,14 +65,22 @@ public sealed class EnergyService : IEnergyService
         }, ct);
     }
 
+    /// <inheritdoc />
+    public async Task UpdateMaxAsync(Guid playerId, ResourceType type, int newMax, CancellationToken ct = default)
+    {
+        var now = DateTimeOffset.UtcNow;
+
+        await _resources.AtomicUpdateAsync(playerId, type, resource =>
+        {
+            resource.SetMaxValue(newMax, now);
+            return true;
+        }, ct);
+    }
+
     // -------------------------------------------------------------------
     // DOMAIN LOGIC — live value computation
     // -------------------------------------------------------------------
 
-    /// <summary>
-    /// Computes the actual current value at <paramref name="now"/> by applying regen
-    /// since the last checkpoint. Caps at MaxValue. Never reads stored CurrentValue directly.
-    /// </summary>
     private static int ComputeLiveValue(PlayerResource resource, DateTimeOffset? now = null)
     {
         var reference = now ?? DateTimeOffset.UtcNow;

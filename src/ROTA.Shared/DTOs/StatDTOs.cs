@@ -1,0 +1,46 @@
+namespace ROTA.Shared.DTOs;
+
+public class AllocateStatRequest
+{
+    public string StatType { get; set; } = string.Empty;
+    public int Amount { get; set; } = 1;
+}
+
+/// <summary>
+/// Returned on successful stat allocation (200) and on failure (422).
+/// Success=false means FailureReason describes the rejection.
+/// </summary>
+public class AllocateStatResponse
+{
+    public bool Success { get; set; }
+    public string? FailureReason { get; set; }
+
+    // Fields populated only on success
+    public string StatType { get; set; } = string.Empty;
+    public int AmountAllocated { get; set; }
+    public int NewSkillPointsRemaining { get; set; }
+    public int NewEnergyInvestment { get; set; }
+    public int NewStaminaInvestment { get; set; }
+    public int NewDiscernmentInvestment { get; set; }
+    public int NewMaxEnergy { get; set; }
+    public int NewMaxStamina { get; set; }
+    public int NewMaxGuildStamina { get; set; }
+    public decimal CurrentLsi { get; set; }
+}
+
+/// <summary>Returned by GET /api/stats/me.</summary>
+public class PlayerStatsResponse
+{
+    public int SkillPoints { get; set; }
+    public int EnergyInvestment { get; set; }
+    public int StaminaInvestment { get; set; }
+    public int DiscernmentInvestment { get; set; }
+    public decimal CurrentLsi { get; set; }
+    public int MaxEnergy { get; set; }
+    public int MaxStamina { get; set; }
+    public int MaxGuildStamina { get; set; }
+    public int BaseAttack { get; set; }
+    public int BaseDefense { get; set; }
+    public int BaseMaxHealth { get; set; }
+    public int CurrentHealth { get; set; }
+}

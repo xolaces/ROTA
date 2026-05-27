@@ -1,7 +1,8 @@
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ROTA.Application.Interfaces;
+using ROTA.Domain.Enums;
 using ROTA.Shared.DTOs;
 
 namespace ROTA.Api.Controllers;
@@ -19,7 +20,6 @@ public sealed class RaidController : ControllerBase
         _raids = raids;
     }
 
-    /// <summary>Returns all active (non-defeated, non-expired) raids with the caller's damage fields.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<ActiveRaidResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetActive()
@@ -28,13 +28,21 @@ public sealed class RaidController : ControllerBase
         return Ok(result);
     }
 
-    /// <summary>Summons a new raid from the specified static definition.</summary>
+    /// <summary>
+    /// Summons a new raid. Body: { "difficulty": "Normal" } — defaults to Normal if omitted.
+    /// </summary>
     [HttpPost("{raidDefinitionId}/summon")]
     [ProducesResponseType(typeof(SummonRaidResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Summon([FromRoute] string raidDefinitionId)
+    public async Task<IActionResult> Summon(
+        [FromRoute] string raidDefinitionId,
+        [FromBody] SummonRaidRequest? request = null)
     {
-        var result = await _raids.SummonRaidAsync(GetPlayerId(), raidDefinitionId);
+        var diffStr = request?.Difficulty ?? "Normal";
+        if (!Enum.TryParse<RaidDifficulty>(diffStr, ignoreCase: true, out var difficulty))
+            return BadRequest(new { message = $"Invalid difficulty '{diffStr}'. Valid values: Normal, Hard, Legendary, Nightmare." });
+
+        var result = await _raids.SummonRaidAsync(GetPlayerId(), raidDefinitionId, difficulty);
 
         if (result.Success)
             return StatusCode(StatusCodes.Status201Created, result.Response);
@@ -47,11 +55,6 @@ public sealed class RaidController : ControllerBase
         };
     }
 
-    /// <summary>
-    /// Hits an active raid with the specified stamina multiplier.
-    /// Body: { "hitSize": 1|5|20, "idempotencyKey": "client-generated-uuid" }
-    /// Duplicate idempotencyKey returns the cached response with zero reprocessing.
-    /// </summary>
     [HttpPost("{activeRaidId}/hit")]
     [ProducesResponseType(typeof(RaidHitResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

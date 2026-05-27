@@ -40,6 +40,12 @@ namespace ROTA.Infrastructure.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("current_hp");
 
+                    b.Property<int>("Difficulty")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("difficulty");
+
                     b.Property<DateTimeOffset>("ExpiresAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("expires_at");
@@ -289,6 +295,132 @@ namespace ROTA.Infrastructure.Migrations
                     b.ToTable("players", (string)null);
                 });
 
+            modelBuilder.Entity("ROTA.Domain.Entities.PlayerInventoryItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<DateTimeOffset>("AcquiredAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("acquired_at")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<bool>("IsUsed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_used");
+
+                    b.Property<string>("ItemDefinitionId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("item_definition_id");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("player_id");
+
+                    b.Property<int>("Quantity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1)
+                        .HasColumnName("quantity");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId")
+                        .HasDatabaseName("ix_player_inventory_items_player_id");
+
+                    b.HasIndex("PlayerId", "ItemDefinitionId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_player_inventory_items_player_item");
+
+                    b.ToTable("player_inventory_items", (string)null);
+                });
+
+            modelBuilder.Entity("ROTA.Domain.Entities.PlayerQuestDifficultyProgress", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<int>("CompletionCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("completion_count");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<int>("Difficulty")
+                        .HasColumnType("integer")
+                        .HasColumnName("difficulty");
+
+                    b.Property<DateTimeOffset?>("FirstCompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("first_completed_at");
+
+                    b.Property<bool>("FirstSigilDropped")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("first_sigil_dropped");
+
+                    b.Property<DateTimeOffset?>("LastCompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_completed_at");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("player_id");
+
+                    b.Property<string>("QuestId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("quest_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId")
+                        .HasDatabaseName("ix_player_quest_difficulty_progress_player_id");
+
+                    b.HasIndex("PlayerId", "QuestId", "Difficulty")
+                        .IsUnique()
+                        .HasDatabaseName("ix_player_quest_difficulty_progress_unique");
+
+                    b.ToTable("player_quest_difficulty_progress", (string)null);
+                });
+
             modelBuilder.Entity("ROTA.Domain.Entities.PlayerQuestProgress", b =>
                 {
                     b.Property<Guid>("Id")
@@ -429,9 +561,33 @@ namespace ROTA.Infrastructure.Migrations
                         .HasDefaultValue(100)
                         .HasColumnName("current_health");
 
+                    b.Property<int>("DiscernmentInvestment")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("discernment_investment");
+
+                    b.Property<int>("EnergyInvestment")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("energy_investment");
+
                     b.Property<Guid>("PlayerId")
                         .HasColumnType("uuid")
                         .HasColumnName("player_id");
+
+                    b.Property<int>("SkillPoints")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("skill_points");
+
+                    b.Property<int>("StaminaInvestment")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("stamina_investment");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()

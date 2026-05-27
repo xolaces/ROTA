@@ -45,7 +45,8 @@ DotD's quest structure was a **chapter-based zone map**. Each zone was a geograp
 **Zone structure:**
 - Each zone had 10–20 quest nodes
 - Nodes unlocked sequentially (complete node 3 to unlock node 4)
-- Each node had: Normal / Nightmare / Legendary difficulty tiers
+- Each node had: Normal / Hard / Legendary / Nightmare difficulty tiers
+  Colors: Normal=Green, Hard=Yellow, Legendary=Red, Nightmare=Purple
 - Harder difficulties cost more Energy but gave better loot
 - Boss nodes at the end of each zone triggered a **Raid summon** — the boss appeared as a world raid others could join
 - Completing a zone unlocked the next zone/chapter
@@ -65,7 +66,7 @@ Quest Map Structure:
 Each Zone:
   - 8–15 quest nodes
   - Node types: Story, Battle, Exploration, Boss (raid trigger)
-  - Difficulty: Normal → Heroic → Legendary
+  - Difficulty: Normal (Green) → Hard (Yellow) → Legendary (Red) → Nightmare (Purple)
   - Prerequisites: previous node completion
   - Rewards: Gold, XP, Gems (rare), Equipment (random from loot table), Raid Key (boss nodes)
 Quest Definition (content/quests.json — static, loaded at startup):
@@ -74,18 +75,19 @@ Quest Definition (content/quests.json — static, loaded at startup):
   "zoneId": "zone_01",
   "chapterId": "chapter_01",
   "name": "The Fallen Gate",
-  "type": "Battle",
-  "difficulty": "Normal",
-  "energyCost": 5,
-  "rewards": {
-    "gold": 100,
-    "experience": 50,
-    "lootTableId": "lt_zone1_common"
-  },
+  "nodeType": "Battle",
+  "baseEnergyCost": 5,
+  "baseXpRatio": 1.25,
+  "lootTableId": "lt_zone1_common",
+  "sigilDropChance": 0,
+  "sigils": null,
   "prerequisiteQuestId": null,
   "triggersRaidId": null,
   "artKey": "zone1_gate"
 }
+Note: difficulty is NOT stored per-definition. It is passed at attempt
+time (Normal/Hard/Legendary/Nightmare). The server applies energy and
+reward multipliers based on the requested difficulty.
 ```
 
 **Adding quests = adding JSON entries.** No schema changes, no code changes, no redeployment required. The content pipeline is file-based.
@@ -122,7 +124,9 @@ Phase 2 Full Raid:
   - Async co-op (players attack independently, not simultaneously)
   - Boss HP shared across all participants
   - Contribution tracking per player
-  - Loot tier buckets: Legendary (top 3 contributors), Epic (top 10%), Rare (anyone who hit)
+  - Loot tier buckets: Legendary (top 3 contributors), Epic (top 10%), Rare (threshold), Participant
+    Multipliers: Legendary Rank 1=×1.50, Rank 2=×1.25, Rank 3=×1.10,
+                 Epic=×1.00, Rare=×0.75, Participant=×0.25
   - 48-hour timer
   - Guild Raids: honor-gated, guild-only, guild XP rewards
   - Raid feed: live updates of who hit and for how much
@@ -178,6 +182,59 @@ Guild Perks: server-computed bonuses applied to all members' effective stats
 Guild Shop: spend GRep on exclusive gear, cosmetics, and raid consumables
 Real-time guild chat via SignalR hub
 ```
+
+---
+### 1.8 Item & Sigil System
+
+ITEM RARITY (color-coded, Orange is the permanent ceiling):
+  Grey → White → Green → Blue → Purple → Orange
+
+ITEM TYPES:
+  Material  — crafting ingredient dropped from raids/quests
+  StatBag   — consumable granting unassigned SkillPoints
+  Sigil     — single-use raid summon item
+  Equipment — wearable gear (Phase 2)
+
+SIGIL PIPELINE (replaces DotD's Essence system):
+  Boss quest defeated on Normal    → drops Normal Sigil (White)
+  Boss quest defeated on Hard      → drops Hard Sigil (Green)
+  Boss quest defeated on Legendary → drops Legendary Sigil (Blue)
+  Boss quest defeated on Nightmare → drops Nightmare Sigil (Purple)
+  First defeat on each difficulty: guaranteed drop
+  Subsequent defeats: 15% base chance (configurable per boss)
+  Using a Sigil: consumed from inventory, raid summoned at
+  matching difficulty with HP = baseHp × difficultyMultiplier
+
+STAT BAG TIERS:
+  Adventurer's Stat Bag (White) — 10 unassigned SkillPoints
+  Champion's Stat Bag (Blue)    — 50 unassigned SkillPoints
+  (Higher tiers added via items.json as content is built)
+
+---
+### 1.9 LSI & Skill Point System
+
+SKILL POINTS:
+  Granted: 10 per level-up
+  Spent via: AllocateStatPointAsync (server-validated)
+  Stats: Energy, Stamina, Attack, Defense, Health,
+         Discernment (renamed from Perception)
+
+LSI (Leveling Speed Index):
+  Formula: (EnergyInvestment + (StaminaInvestment × 2))
+           / Player.Level
+  Cap: 9.0 (faster than DotD's 7 for modern retention)
+  Gear bonuses can exceed the cap (same as DotD)
+  At LSI 9.0, Level 100: ~300 base Stamina
+
+DISCERNMENT (ROTA name for DotD's Perception):
+  No investment cap — spend freely
+  Effects (// PHASE-2): quest drop quality bonus,
+  raid critical damage bonus
+  Current: investment tracked, bonus effects flagged
+
+BSI (Battle Strength Index, for reference):
+  Formula: (Attack + Defense) / Player.Level
+  No cap — invest freely into combat stats
 
 ---
 ### 1.7 What DotD Got Wrong (ROTA Fixes These)
@@ -243,8 +300,10 @@ Real-time guild chat via SignalR hub
 └─────────────────────────────────────────────────────────┘
 ```
 
-**Difficulty dropdown:** Normal → Heroic → Legendary
-Each difficulty is a separate server-side quest definition with different costs and rewards. Client shows the selector; server validates the difficulty value.
+**Difficulty dropdown:** Normal (Green) → Hard (Yellow) → Legendary (Red) → Nightmare (Purple)
+Difficulty is passed at attempt time — not stored per definition. Server applies multipliers
+(energy ×1.0/1.5/2.0/3.0; rewards ×1.0/1.5/2.0/3.5). Server enforces unlock gates:
+Hard requires Normal completion, Legendary requires Hard, Nightmare requires Legendary.
 **Attempt flow:**
 1. Player taps ATTEMPT
 2. Client sends: `POST /api/quests/{questId}/attempt`
@@ -556,19 +615,18 @@ perform an action, verify server response updates the UI.
   "zoneId": "zone_03",
   "chapterId": "chapter_02",
   "name": "The Bone Wastes",
-  "type": "Battle",
-  "difficulty": "Normal",
-  "energyCost": 8,
-  "rewards": {
-    "gold": 200,
-    "experience": 120,
-    "lootTableId": "lt_zone3_common"
-  },
+  "nodeType": "Battle",
+  "baseEnergyCost": 8,
+  "baseXpRatio": 1.35,
+  "lootTableId": "lt_zone3_common",
+  "sigilDropChance": 0,
+  "sigils": null,
   "prerequisiteQuestId": "z2_q08",
   "triggersRaidId": null,
   "artKey": "zone3_bonewastes"
 }
 ```
+Note: difficulty is passed at attempt time. Rewards scale via difficulty multiplier server-side.
 
 3. Add node positions to `content/zone_layouts.json`
 4. Restart backend — client picks up automatically
@@ -578,16 +636,17 @@ perform an action, verify server response updates the UI.
 
 ```json
 {
-  "id": "raid_malachar_nm",
-  "name": "Lord Malachar (Nightmare)",
+  "id": "raid_malachar",
+  "name": "Lord Malachar",
   "tier": "World",
-  "difficulty": "Nightmare",
-  "hpPool": 5000000,
+  "baseHp": 250000,
   "timerHours": 48,
-  "lootTableId": "lt_raid_malachar_nm",
-  "minContributionForLoot": 1000
+  "lootTableId": "lt_raid_malachar",
+  "hasOnHitDrops": false
 }
 ```
+Note: difficulty is passed at summon time. Server computes finalHp = baseHp × multiplier
+(Normal×1.0, Hard×1.4, Legendary×2.0, Nightmare×3.6). No per-difficulty HP in JSON.
 
 3. No code changes required
 ### Adding a New Item
@@ -596,6 +655,6 @@ perform an action, verify server response updates the UI.
 3. Add item to relevant loot table in `content/loot_tables.json`
 4. No code changes, no migration required
 ---
-*Document version: Phase 0 Complete / Phase 1 In Progress*
-*Last updated: 2026-05-24*
+*Document version: Phase 1 Complete / Phase 1 Extensions In Progress*
+*Last updated: 2026-05-25*
 *Owner: xolaces*
