@@ -8,7 +8,6 @@ using ROTA.Shared.DTOs;
 
 namespace ROTA.Api.Controllers;
 
-// BETA — thin controller, zero business logic. PlayerId always from verified JWT.
 [ApiController]
 [Route("api/stats")]
 [Authorize]
@@ -23,9 +22,6 @@ public sealed class StatController : ControllerBase
         _allocateValidator = allocateValidator;
     }
 
-    /// <summary>
-    /// Returns the authenticated player's full stat sheet.
-    /// </summary>
     [HttpGet("me")]
     [ProducesResponseType(typeof(PlayerStatsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -38,11 +34,6 @@ public sealed class StatController : ControllerBase
         return Ok(result);
     }
 
-    /// <summary>
-    /// Allocates SkillPoints to a stat type.
-    /// Returns 422 with Success=false when the business rule rejects the request
-    /// (insufficient SP, LSI cap exceeded). Returns 400 for malformed input.
-    /// </summary>
     [HttpPost("allocate")]
     [ProducesResponseType(typeof(AllocateStatResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

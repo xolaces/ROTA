@@ -1,10 +1,9 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Models;
 
 namespace ROTA.Infrastructure.Services;
 
-// BETA — items.json is read once at startup and held in memory.
 public sealed class ItemDefinitionProvider : IItemDefinitionProvider
 {
     private readonly IReadOnlyDictionary<string, ItemDefinition> _items;

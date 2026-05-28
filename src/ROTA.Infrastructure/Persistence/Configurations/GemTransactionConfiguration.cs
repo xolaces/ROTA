@@ -4,11 +4,6 @@ using ROTA.Domain.Entities;
 
 namespace ROTA.Infrastructure.Persistence.Configurations;
 
-/// <summary>
-/// EF Core Fluent API mapping for GemTransaction.
-/// This table is append-only forever — no UpdatedAt, no IsDeleted.
-/// IMPORTANT: The DB role must have no UPDATE or DELETE permission on gem_transactions.
-/// </summary>
 public class GemTransactionConfiguration : IEntityTypeConfiguration<GemTransaction>
 {
     public void Configure(EntityTypeBuilder<GemTransaction> builder)

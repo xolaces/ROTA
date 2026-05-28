@@ -4,7 +4,6 @@ using ROTA.Domain.Enums;
 
 namespace ROTA.Application.Services;
 
-// BETA — SpendGemsAsync is not transactional; balance check + insert are separate DB calls.
 //        A concurrent double-spend is possible under high contention. Phase 2: advisory lock.
 public sealed class GemService : IGemService
 {
@@ -19,11 +18,9 @@ public sealed class GemService : IGemService
         _auditLog = auditLog;
     }
 
-    /// <inheritdoc />
     public Task<int> GetBalanceAsync(Guid playerId, CancellationToken ct = default)
         => _transactions.GetBalanceAsync(playerId, ct);
 
-    /// <inheritdoc />
     public async Task<bool> GrantGemsAsync(
         Guid playerId, int amount, GemTransactionType type, string? referenceId,
         CancellationToken ct = default)
@@ -41,7 +38,6 @@ public sealed class GemService : IGemService
         return true;
     }
 
-    /// <inheritdoc />
     public async Task<bool> SpendGemsAsync(
         Guid playerId, int amount, GemTransactionType type, string? referenceId,
         CancellationToken ct = default)
@@ -62,7 +58,6 @@ public sealed class GemService : IGemService
         return true;
     }
 
-    /// <inheritdoc />
     public Task<bool> DailyRefillAsync(Guid playerId, CancellationToken ct = default)
     {
         var referenceId = $"daily:{DateTimeOffset.UtcNow:yyyy-MM-dd}";

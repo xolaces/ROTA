@@ -6,7 +6,6 @@ using ROTA.Infrastructure.Persistence;
 
 namespace ROTA.Infrastructure.Persistence.Repositories;
 
-// BETA — balance is a full table SUM per request. Phase 2: cached balance with Redis.
 public sealed class GemTransactionRepository : IGemTransactionRepository
 {
     private readonly RotaDbContext _db;
@@ -16,13 +15,11 @@ public sealed class GemTransactionRepository : IGemTransactionRepository
         _db = db;
     }
 
-    /// <inheritdoc />
     public async Task<int> GetBalanceAsync(Guid playerId, CancellationToken ct = default)
         => await _db.GemTransactions
             .Where(t => t.PlayerId == playerId)
             .SumAsync(t => t.Amount, ct);
 
-    /// <inheritdoc />
     public async Task<bool> ReferenceExistsAsync(
         Guid playerId, GemTransactionType type, string referenceId,
         CancellationToken ct = default)
@@ -31,7 +28,6 @@ public sealed class GemTransactionRepository : IGemTransactionRepository
                         && t.TransactionType == type
                         && t.ReferenceId == referenceId, ct);
 
-    /// <inheritdoc />
     public async Task CreateAsync(GemTransaction transaction, CancellationToken ct = default)
     {
         _db.GemTransactions.Add(transaction);

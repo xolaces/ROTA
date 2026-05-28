@@ -6,7 +6,6 @@ using ROTA.Infrastructure.Persistence;
 
 namespace ROTA.Infrastructure.Persistence.Repositories;
 
-// BETA — AtomicUpdateAsync uses FOR UPDATE to prevent double-spend races.
 public sealed class PlayerResourceRepository : IPlayerResourceRepository
 {
     private readonly RotaDbContext _db;
@@ -20,7 +19,6 @@ public sealed class PlayerResourceRepository : IPlayerResourceRepository
         => await _db.PlayerResources
             .FirstOrDefaultAsync(r => r.PlayerId == playerId && r.ResourceType == type, ct);
 
-    /// <inheritdoc />
     public async Task<bool> AtomicUpdateAsync(
         Guid playerId,
         ResourceType type,

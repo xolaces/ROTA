@@ -8,7 +8,6 @@ using StackExchange.Redis;
 
 namespace ROTA.Api.Middleware;
 
-// BETA — Redis sliding-window rate limiter.
 // Per-IP:     auth endpoints   → 10 req/min  (key: ratelimit:ip:{ip}:{path})
 // Per-player: all other routes → 60 req/min  (key: ratelimit:player:{playerId})
 // Runs before JWT validation; player ID is extracted without signature verification

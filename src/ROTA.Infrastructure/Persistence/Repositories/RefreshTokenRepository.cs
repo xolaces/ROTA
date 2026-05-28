@@ -5,11 +5,6 @@ using ROTA.Infrastructure.Persistence;
 
 namespace ROTA.Infrastructure.Persistence.Repositories;
 
-// BETA - Full implementation. Covers all IRefreshTokenRepository contract methods.
-/// <summary>
-/// EF Core implementation of IRefreshTokenRepository.
-/// A token is "active" if is_revoked = false AND expires_at > UtcNow.
-/// </summary>
 public sealed class RefreshTokenRepository : IRefreshTokenRepository
 {
     private readonly RotaDbContext _db;
@@ -19,12 +14,10 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
         _db = db;
     }
 
-    /// <inheritdoc />
     public async Task<RefreshToken?> FindByTokenHashAsync(string tokenHash, CancellationToken ct = default)
         => await _db.RefreshTokens
             .FirstOrDefaultAsync(t => t.TokenHash == tokenHash, ct);
 
-    /// <inheritdoc />
     public async Task<int> CountActiveSessionsAsync(Guid playerId, CancellationToken ct = default)
         => await _db.RefreshTokens
             .CountAsync(t =>
@@ -33,7 +26,6 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
                 t.ExpiresAt > DateTimeOffset.UtcNow,
                 ct);
 
-    /// <inheritdoc />
     public async Task<RefreshToken?> FindOldestActiveAsync(Guid playerId, CancellationToken ct = default)
         => await _db.RefreshTokens
             .Where(t =>
@@ -43,7 +35,6 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
             .OrderBy(t => t.CreatedAt)
             .FirstOrDefaultAsync(ct);
 
-    /// <inheritdoc />
     public async Task<RefreshToken> CreateAsync(RefreshToken token, CancellationToken ct = default)
     {
         _db.RefreshTokens.Add(token);
@@ -51,7 +42,6 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
         return token;
     }
 
-    /// <inheritdoc />
     public async Task RevokeAsync(RefreshToken token, CancellationToken ct = default)
     {
         token.Revoke();

@@ -4,11 +4,6 @@ using Microsoft.Extensions.Configuration;
 
 namespace ROTA.Infrastructure.Persistence;
 
-/// <summary>
-/// Design-time factory for RotaDbContext.
-/// Used by EF Core CLI tools (migrations) when running outside the full app host.
-/// Reads connection string from user secrets or environment variables.
-/// </summary>
 public class RotaDbContextFactory : IDesignTimeDbContextFactory<RotaDbContext>
 {
     public RotaDbContext CreateDbContext(string[] args)

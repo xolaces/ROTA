@@ -1,4 +1,4 @@
-﻿using ROTA.Shared.DTOs;
+using ROTA.Shared.DTOs;
 
 namespace ROTA.Application.Interfaces;
 

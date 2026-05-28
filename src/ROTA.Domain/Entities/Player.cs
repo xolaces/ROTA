@@ -95,12 +95,6 @@ public class Player
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    /// <summary>
-    /// Adds XP and processes level-ups using the configurable milestone-floor formula.
-    /// Experience represents XP toward the NEXT level (not cumulative).
-    /// Returns a list of each new level reached (e.g. [2, 3] for a two-level jump).
-    /// The caller is responsible for firing level-up side effects for each returned level.
-    /// </summary>
     public IReadOnlyList<int> AddExperience(long amount, Func<int, int> xpToNextLevel)
     {
         Experience += amount;

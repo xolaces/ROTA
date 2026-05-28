@@ -6,10 +6,6 @@ public class AllocateStatRequest
     public int Amount { get; set; } = 1;
 }
 
-/// <summary>
-/// Returned on successful stat allocation (200) and on failure (422).
-/// Success=false means FailureReason describes the rejection.
-/// </summary>
 public class AllocateStatResponse
 {
     public bool Success { get; set; }
@@ -28,7 +24,6 @@ public class AllocateStatResponse
     public decimal CurrentLsi { get; set; }
 }
 
-/// <summary>Returned by GET /api/stats/me.</summary>
 public class PlayerStatsResponse
 {
     public int SkillPoints { get; set; }

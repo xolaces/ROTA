@@ -4,11 +4,6 @@ using ROTA.Domain.Entities;
 
 namespace ROTA.Infrastructure.Persistence.Configurations;
 
-/// <summary>
-/// EF Core Fluent API mapping for the Player entity.
-/// Defines table name, column constraints, and indexes.
-/// No data annotations on the domain entity — all config lives here.
-/// </summary>
 public class PlayerConfiguration : IEntityTypeConfiguration<Player>
 {
     public void Configure(EntityTypeBuilder<Player> builder)

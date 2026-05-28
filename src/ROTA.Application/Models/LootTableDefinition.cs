@@ -1,4 +1,4 @@
-﻿namespace ROTA.Application.Models;
+namespace ROTA.Application.Models;
 
 public class LootTableDefinition
 {

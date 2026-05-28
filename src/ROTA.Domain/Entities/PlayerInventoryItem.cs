@@ -1,4 +1,4 @@
-﻿namespace ROTA.Domain.Entities;
+namespace ROTA.Domain.Entities;
 
 public class PlayerInventoryItem
 {

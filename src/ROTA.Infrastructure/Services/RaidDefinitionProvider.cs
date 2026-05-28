@@ -4,7 +4,6 @@ using ROTA.Application.Models;
 
 namespace ROTA.Infrastructure.Services;
 
-// BETA — raids.json is read once at application start and held in memory for the lifetime
 //        of the process. Adding raids requires a redeploy.
 public sealed class RaidDefinitionProvider : IRaidDefinitionProvider
 {

@@ -1,4 +1,4 @@
-﻿using ROTA.Domain.Entities;
+using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
 
 namespace ROTA.Application.Interfaces;

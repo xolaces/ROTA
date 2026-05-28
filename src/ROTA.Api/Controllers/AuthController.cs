@@ -6,7 +6,6 @@ using ROTA.Shared.DTOs;
 
 namespace ROTA.Api.Controllers;
 
-// BETA — thin controller, zero business logic. All decisions in IAuthService.
 [ApiController]
 [Route("api/auth")]
 public sealed class AuthController : ControllerBase
@@ -28,10 +27,6 @@ public sealed class AuthController : ControllerBase
         _refreshValidator = refreshValidator;
     }
 
-    /// <summary>
-    /// Registers a new player account.
-    /// Returns 409 if username or email is already taken (without specifying which).
-    /// </summary>
     [HttpPost("register")]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -48,9 +43,6 @@ public sealed class AuthController : ControllerBase
         return Created(string.Empty, result);
     }
 
-    /// <summary>
-    /// Authenticates a player. Returns 401 for any failure to prevent account enumeration.
-    /// </summary>
     [HttpPost("login")]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -67,7 +59,6 @@ public sealed class AuthController : ControllerBase
         return Ok(result);
     }
 
-    /// <summary>Rotates a refresh token, issuing a new access + refresh pair.</summary>
     [HttpPost("refresh")]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -84,7 +75,6 @@ public sealed class AuthController : ControllerBase
         return Ok(result);
     }
 
-    /// <summary>Revokes the provided refresh token. Requires a valid access token.</summary>
     [HttpPost("logout")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

@@ -1,4 +1,4 @@
-﻿using ROTA.Application.Interfaces;
+using ROTA.Application.Interfaces;
 using ROTA.Application.Models;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
@@ -6,7 +6,6 @@ using ROTA.Shared.DTOs;
 
 namespace ROTA.Application.Services;
 
-// BETA — reward steps are not wrapped in a single DB transaction. Energy is spent first;
 //        a server crash mid-reward would be unfair but acceptable. Phase 2: wrap in an explicit transaction.
 public sealed class QuestService : IQuestService
 {
@@ -87,7 +86,6 @@ public sealed class QuestService : IQuestService
         _random            = random ?? Random.Shared;
     }
 
-    /// <inheritdoc />
     public async Task<IReadOnlyList<QuestAvailabilityResponse>> GetAvailableQuestsAsync(
         Guid playerId, CancellationToken ct = default)
     {
@@ -126,7 +124,6 @@ public sealed class QuestService : IQuestService
         return result;
     }
 
-    /// <inheritdoc />
     public async Task<QuestResultResponse> AttemptQuestAsync(
         Guid playerId, string questId, QuestDifficulty difficulty, CancellationToken ct = default)
     {

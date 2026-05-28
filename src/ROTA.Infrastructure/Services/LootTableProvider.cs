@@ -1,10 +1,9 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Models;
 
 namespace ROTA.Infrastructure.Services;
 
-// BETA — loot_tables.json is read once at startup. Startup validation throws on misconfigured tables.
 public sealed class LootTableProvider : ILootTableProvider
 {
     private readonly IReadOnlyDictionary<string, LootTableDefinition> _tables;

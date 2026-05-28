@@ -1,5 +1,5 @@
 // Refresh token issued alongside a JWT access token.
-// Raw token is never stored — only a SHA256 hash. Rotated on every use.
+// Raw token is never stored ï¿½ only a SHA256 hash. Rotated on every use.
 namespace ROTA.Domain.Entities;
 
 public class RefreshToken
@@ -27,6 +27,5 @@ public class RefreshToken
 
     public bool IsActive => !IsRevoked && ExpiresAt > DateTimeOffset.UtcNow;
 
-    /// <summary>Revokes this token, invalidating the session immediately.</summary>
     public void Revoke() => IsRevoked = true;
 }

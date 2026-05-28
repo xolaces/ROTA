@@ -4,7 +4,6 @@ using ROTA.Infrastructure.Persistence;
 
 namespace ROTA.Infrastructure.Persistence.Repositories;
 
-// BETA — append-only; the DB role has no UPDATE or DELETE on audit_log.
 public sealed class AuditLogRepository : IAuditLogRepository
 {
     private readonly RotaDbContext _db;

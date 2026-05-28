@@ -1,4 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ROTA.Application.Interfaces;
@@ -7,7 +7,6 @@ using ROTA.Shared.DTOs;
 
 namespace ROTA.Api.Controllers;
 
-// BETA — thin controller, zero business logic. PlayerId always from verified JWT.
 [ApiController]
 [Route("api/raids")]
 [Authorize]
@@ -28,9 +27,6 @@ public sealed class RaidController : ControllerBase
         return Ok(result);
     }
 
-    /// <summary>
-    /// Summons a new raid. Body: { "difficulty": "Normal" } — defaults to Normal if omitted.
-    /// </summary>
     [HttpPost("{raidDefinitionId}/summon")]
     [ProducesResponseType(typeof(SummonRaidResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

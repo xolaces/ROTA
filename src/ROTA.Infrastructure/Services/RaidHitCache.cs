@@ -5,7 +5,6 @@ using StackExchange.Redis;
 
 namespace ROTA.Infrastructure.Services;
 
-// BETA — Redis-backed. Key: raidhit:{idempotencyKey}, TTL: 24h.
 public sealed class RaidHitCache : IRaidHitCache
 {
     private static readonly TimeSpan Ttl = TimeSpan.FromHours(24);
