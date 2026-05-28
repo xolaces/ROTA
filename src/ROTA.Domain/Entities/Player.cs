@@ -95,12 +95,32 @@ public class Player
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    // Level formula: every 1000 XP = 1 level. Level 1 starts at 0 XP.
-    public void AddExperience(long amount)
+    /// <summary>
+    /// Adds XP and processes level-ups using the configurable milestone-floor formula.
+    /// Experience represents XP toward the NEXT level (not cumulative).
+    /// Returns a list of each new level reached (e.g. [2, 3] for a two-level jump).
+    /// The caller is responsible for firing level-up side effects for each returned level.
+    /// </summary>
+    public IReadOnlyList<int> AddExperience(long amount, Func<int, int> xpToNextLevel)
     {
         Experience += amount;
-        Level = (int)(Experience / 1000) + 1;
+        var levelUps = new List<int>();
+        int xpNeeded = xpToNextLevel(Level);
+        if (xpNeeded <= 0) // safety: malformed config guard
+        {
+            UpdatedAt = DateTimeOffset.UtcNow;
+            return levelUps;
+        }
+        while (Experience >= xpNeeded)
+        {
+            Experience -= xpNeeded;
+            Level++;
+            levelUps.Add(Level);
+            xpNeeded = xpToNextLevel(Level);
+            if (xpNeeded <= 0) break; // safety
+        }
         UpdatedAt = DateTimeOffset.UtcNow;
+        return levelUps;
     }
 
     public void AddGold(long amount)

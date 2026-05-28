@@ -174,10 +174,13 @@ public sealed class QuestService : IQuestService
             return Fail(QuestFailureCode.InsufficientEnergy, "Insufficient energy.");
 
         // 7. Apply rewards (energy committed — errors from here propagate as 500)
-        int levelBefore = player.Level;
         player.AddGold(goldReward);
-        player.AddExperience(xpReward);
+        var levelUps = player.AddExperience(xpReward, lvl => _stats.XpToNextLevel(lvl));
         await _players.UpdateAsync(player, ct);
+
+        // Fire level-up side effects for each level gained
+        foreach (var newLevel in levelUps)
+            await _stats.GrantLevelUpPointsAsync(playerId, newLevel, ct);
 
         // 8. Record per-node progress (prerequisite tracking — difficulty agnostic)
         var progress = await _questProgress.GetAsync(playerId, questId, ct);
@@ -207,10 +210,6 @@ public sealed class QuestService : IQuestService
                 playerId, gemReward, GemTransactionType.QuestReward, referenceId, ct);
             if (granted) gemsGranted = gemReward;
         }
-
-        // 11. Grant level-up skill points for each level gained
-        for (int lvl = levelBefore + 1; lvl <= player.Level; lvl++)
-            await _stats.GrantLevelUpPointsAsync(playerId, lvl, ct);
 
         // 12. Process loot table
         var itemsGranted = new List<ItemGrantDTO>();
@@ -271,6 +270,10 @@ public sealed class QuestService : IQuestService
             Difficulty        = difficulty.ToString(),
             DifficultyColor   = DifficultyColors[difficulty],
             ItemsGranted      = itemsGranted,
+            XpGained          = xpReward,
+            CurrentLevelXp    = player.Experience,
+            XpToNextLevel     = _stats.XpToNextLevel(player.Level),
+            LevelsGained      = levelUps.Count,
         };
     }
 

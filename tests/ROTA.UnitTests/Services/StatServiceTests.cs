@@ -1,5 +1,7 @@
 using FluentAssertions;
+using Microsoft.Extensions.Options;
 using Moq;
+using ROTA.Application.Configuration;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Services;
 using ROTA.Domain.Entities;
@@ -21,6 +23,22 @@ public class StatServiceTests
         Mock<IGemService> Gems,
         Mock<IAuditLogRepository> AuditLog);
 
+    private static IOptions<LevelingConfig> DefaultLevelingConfig() =>
+        Options.Create(new LevelingConfig
+        {
+            XpBaseMultiplier = 30.0,
+            XpExponent = 0.7,
+            MilestoneFloors = new Dictionary<int, int>
+            {
+                [100]   = 500,
+                [500]   = 3000,
+                [1000]  = 15000,
+                [2500]  = 35000,
+                [5000]  = 75000,
+                [10000] = 200000,
+            }
+        });
+
     private static ServiceBundle BuildService()
     {
         var players  = new Mock<IPlayerRepository>();
@@ -35,7 +53,8 @@ public class StatServiceTests
         players.Setup(p => p.UpdateStatsAsync(It.IsAny<PlayerStats>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        return new ServiceBundle(new StatService(players.Object, energy.Object, gems.Object, auditLog.Object),
+        return new ServiceBundle(
+            new StatService(players.Object, energy.Object, gems.Object, auditLog.Object, DefaultLevelingConfig()),
             players, energy, gems, auditLog);
     }
 
@@ -43,9 +62,9 @@ public class StatServiceTests
     private static Player MakePlayerWithStats(int level = 1, int skillPoints = 10)
     {
         var player = Player.Create("testuser", "test@rota.test", "hash");
-        // Advance to desired level
+        // Advance to desired level using a flat 1000 XP/level function (test-only formula)
         for (int i = 1; i < level; i++)
-            player.AddExperience(1000);
+            player.AddExperience(1000, _ => 1000);
 
         var stats = PlayerStats.Create(player.Id);
         stats.AddSkillPoints(skillPoints);
@@ -207,5 +226,70 @@ public class StatServiceTests
         b.Players.Verify(p => p.UpdateStatsAsync(player.Stats, It.IsAny<CancellationToken>()), Times.Once);
         // No LSI check — these can exceed cap via items/raids (only manual allocation is capped)
         b.Energy.Verify(e => e.UpdateMaxAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    // -----------------------------------------------------------------------
+    // XpToNextLevel — formula and milestone floors
+    // Formula: Math.Max(floor, (int)Math.Round(30.0 × level^0.7))
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public void XpToNextLevel_Level1_ReturnsFormulaValue_NoFloor()
+    {
+        // 30.0 × 1^0.7 = 30.0 → round = 30; no milestone floor applies at level 1 → result = 30
+        var b = BuildService();
+        b.Service.XpToNextLevel(1).Should().Be(30);
+    }
+
+    [Fact]
+    public void XpToNextLevel_Level99_ReturnsFormulaValue_BelowMilestoneKey100()
+    {
+        // Level 99 < milestone key 100, so floor = 0. Formula: 30 × 99^0.7 ≈ 748.
+        // Verify: result is the formula value, no floor constrains it.
+        var b = BuildService();
+        var result = b.Service.XpToNextLevel(99);
+        result.Should().BeGreaterThan(0);
+        result.Should().BeLessThan(3000); // well below the milestone-500 floor
+        // Exact formula value (within 1 of expected due to double precision)
+        result.Should().BeInRange(745, 755);
+    }
+
+    [Fact]
+    public void XpToNextLevel_Level100_ReturnsFormulaValue_FloorDoesNotConstrain()
+    {
+        // Milestone floor at key 100 is 500. Formula at 100: 30 × 100^0.7 ≈ 754 > 500.
+        // Formula value wins — floor is set but does not constrain at this level.
+        var b = BuildService();
+        var result = b.Service.XpToNextLevel(100);
+        result.Should().BeGreaterThanOrEqualTo(500); // floor is the minimum guarantee
+        result.Should().BeInRange(750, 760);          // formula value (~754) wins
+    }
+
+    [Fact]
+    public void XpToNextLevel_Level500_ReturnsMilestoneFloor_FormulaIsBelow()
+    {
+        // Formula at 500: 30 × 500^0.7 ≈ 2326. Floor at milestone 500 = 3000. Floor kicks in.
+        var b = BuildService();
+        b.Service.XpToNextLevel(500).Should().Be(3000);
+    }
+
+    [Fact]
+    public void XpToNextLevel_Level1000_ReturnsMilestoneFloor_FormulaIsBelow()
+    {
+        // Formula at 1000: 30 × 1000^0.7 ≈ 3777. Floor at milestone 1000 = 15000. Floor kicks in.
+        var b = BuildService();
+        b.Service.XpToNextLevel(1000).Should().Be(15000);
+    }
+
+    [Fact]
+    public void XpToNextLevel_Level999_ReturnsFormulaValue_NotLevel1000Floor()
+    {
+        // Level 999: highest matching milestone is key 500 (floor 3000). Formula ≈ 3774 > 3000.
+        // Formula wins. Must NOT return 15000 (which is the level-1000 floor).
+        var b = BuildService();
+        var result = b.Service.XpToNextLevel(999);
+        result.Should().NotBe(15000);
+        result.Should().BeGreaterThan(3000); // formula exceeds the milestone-500 floor
+        result.Should().BeInRange(3770, 3780);
     }
 }
