@@ -21,7 +21,8 @@ public class StatServiceTests
         Mock<IPlayerRepository> Players,
         Mock<IEnergyService> Energy,
         Mock<IGemService> Gems,
-        Mock<IAuditLogRepository> AuditLog);
+        Mock<IAuditLogRepository> AuditLog,
+        Mock<IClassService> Classes);
 
     private static IOptions<LevelingConfig> DefaultLevelingConfig() =>
         Options.Create(new LevelingConfig
@@ -45,6 +46,7 @@ public class StatServiceTests
         var energy   = new Mock<IEnergyService>();
         var gems     = new Mock<IGemService>();
         var auditLog = new Mock<IAuditLogRepository>();
+        var classes  = new Mock<IClassService>();
 
         auditLog.Setup(a => a.AppendAsync(It.IsAny<AuditLog>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -52,10 +54,16 @@ public class StatServiceTests
             .Returns(Task.CompletedTask);
         players.Setup(p => p.UpdateStatsAsync(It.IsAny<PlayerStats>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        players.Setup(p => p.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        // Default: no auto-advance (returns current class unchanged)
+        classes.Setup(c => c.ComputeAutoAdvance(It.IsAny<int>(), It.IsAny<PlayerClass>()))
+            .Returns((int _, PlayerClass current) => current);
 
         return new ServiceBundle(
-            new StatService(players.Object, energy.Object, gems.Object, auditLog.Object, DefaultLevelingConfig()),
-            players, energy, gems, auditLog);
+            new StatService(players.Object, energy.Object, gems.Object, auditLog.Object,
+                DefaultLevelingConfig(), classes.Object),
+            players, energy, gems, auditLog, classes);
     }
 
     // Creates a player that has FindByIdWithStatsAsync returning it with fully initialised stats

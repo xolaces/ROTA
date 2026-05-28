@@ -16,19 +16,22 @@ public sealed class StatService : IStatService
     private readonly IGemService _gems;
     private readonly IAuditLogRepository _auditLog;
     private readonly IOptions<LevelingConfig> _levelingConfig;
+    private readonly IClassService _classService;
 
     public StatService(
         IPlayerRepository players,
         IEnergyService energy,
         IGemService gems,
         IAuditLogRepository auditLog,
-        IOptions<LevelingConfig> levelingConfig)
+        IOptions<LevelingConfig> levelingConfig,
+        IClassService classService)
     {
         _players        = players;
         _energy         = energy;
         _gems           = gems;
         _auditLog       = auditLog;
         _levelingConfig = levelingConfig;
+        _classService   = classService;
     }
 
     public async Task<AllocateStatResponse> AllocateStatPointAsync(
@@ -113,9 +116,18 @@ public sealed class StatService : IStatService
                 playerId, 5, GemTransactionType.LevelUpReward, referenceId, ct);
         }
 
+        // Auto-advance class on milestone levels (500, 1000, 2000, 5000, etc.)
+        var advanced    = _classService.ComputeAutoAdvance(newLevel, player.Class);
+        var classChanged = advanced != player.Class;
+        if (classChanged)
+        {
+            player.SetClass(advanced);
+            await _players.UpdateAsync(player, ct);
+        }
+
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, "LevelUpReward", null,
-            $"Level {newLevel} reward: +10 SkillPoints{(newLevel % 5 == 0 ? ", +5 Gems" : "")}",
+            $"Level {newLevel} reward: +10 SkillPoints{(newLevel % 5 == 0 ? ", +5 Gems" : "")}{(classChanged ? $", class → {advanced}" : "")}",
             null), ct);
     }
 

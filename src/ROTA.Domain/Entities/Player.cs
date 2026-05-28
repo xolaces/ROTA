@@ -53,6 +53,7 @@ public class Player
     // Progression
     public int Level { get; private set; } = 1;
     public long Experience { get; private set; } = 0;
+    public PlayerClass Class { get; private set; } = PlayerClass.Conscript;
 
     // Economy
     public long Gold { get; private set; } = 0;
@@ -115,6 +116,12 @@ public class Player
         }
         UpdatedAt = DateTimeOffset.UtcNow;
         return levelUps;
+    }
+
+    public void SetClass(PlayerClass newClass)
+    {
+        Class = newClass;
+        UpdatedAt = DateTimeOffset.UtcNow;
     }
 
     public void AddGold(long amount)

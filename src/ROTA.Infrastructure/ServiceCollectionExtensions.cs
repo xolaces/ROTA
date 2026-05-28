@@ -41,6 +41,7 @@ public static class ServiceCollectionExtensions
             new LootTableProvider(contentRootPath, sp.GetRequiredService<IRaidDefinitionProvider>()));
 
         // Application services
+        services.AddScoped<IClassService, ClassService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IEnergyService, EnergyService>();
         services.AddScoped<IPlayerService, PlayerService>();

@@ -116,6 +116,9 @@ builder.Services.AddDbContext<RotaDbContext>(options =>
 builder.Services.Configure<LevelingConfig>(
     builder.Configuration.GetSection("LevelingConfig"));
 
+builder.Services.Configure<ClassConfig>(
+    builder.Configuration.GetSection("ClassConfig"));
+
 builder.Services.AddRotaServices(builder.Environment.ContentRootPath);
 
 // Redis
