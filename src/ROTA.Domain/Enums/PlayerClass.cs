@@ -50,4 +50,14 @@ public enum PlayerClass
     AscendantIroncladSentinel = 230,
     AscendantVoidwalker       = 231,
     AscendantDawnblade        = 232,
+
+    // Tier 6 — AUTO at L2000 — ALL paths converge here. Path identity ends.
+    Luminary     = 300,
+
+    // Tier 7+ — AUTO, single title per milestone
+    Immortal     = 400,   // L5000
+    Archon       = 500,   // L7500
+    Ancient      = 600,   // L10000
+    ElderAncient = 700,   // L15000
+    Eternal      = 800,   // L25000
 }

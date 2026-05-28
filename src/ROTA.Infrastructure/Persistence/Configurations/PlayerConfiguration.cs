@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ROTA.Domain.Entities;
+using ROTA.Domain.Enums;
 
 namespace ROTA.Infrastructure.Persistence.Configurations;
 
@@ -36,6 +37,11 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
         builder.Property(p => p.Experience)
             .HasColumnName("experience")
             .HasDefaultValue(0L);
+
+        builder.Property(p => p.Class)
+            .HasColumnName("class")
+            .HasConversion<int>()
+            .HasDefaultValue(PlayerClass.Conscript);
 
         builder.Property(p => p.Gold)
             .HasColumnName("gold")

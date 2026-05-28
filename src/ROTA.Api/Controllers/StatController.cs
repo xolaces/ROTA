@@ -14,11 +14,16 @@ namespace ROTA.Api.Controllers;
 public sealed class StatController : ControllerBase
 {
     private readonly IStatService _stats;
+    private readonly IClassService _classes;
     private readonly IValidator<AllocateStatRequest> _allocateValidator;
 
-    public StatController(IStatService stats, IValidator<AllocateStatRequest> allocateValidator)
+    public StatController(
+        IStatService stats,
+        IClassService classes,
+        IValidator<AllocateStatRequest> allocateValidator)
     {
         _stats             = stats;
+        _classes           = classes;
         _allocateValidator = allocateValidator;
     }
 
@@ -50,6 +55,35 @@ public sealed class StatController : ControllerBase
 
         if (!result.Success)
             return UnprocessableEntity(result);
+
+        return Ok(result);
+    }
+
+    [HttpGet("class")]
+    [ProducesResponseType(typeof(ClassRegenRates), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetClass()
+    {
+        var result = await _classes.GetClassInfoAsync(GetPlayerId());
+        if (result is null)
+            return NotFound(new { message = "Player not found." });
+
+        return Ok(result);
+    }
+
+    [HttpPost("class/choose")]
+    [ProducesResponseType(typeof(ClassRegenRates), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> ChooseClass([FromBody] ChooseClassRequest request)
+    {
+        if (!Enum.TryParse<PlayerClass>(request.PlayerClass, ignoreCase: true, out var playerClass))
+            return BadRequest(new { message = $"Invalid class '{request.PlayerClass}'." });
+
+        var result = await _classes.AssignClassAsync(GetPlayerId(), playerClass);
+        if (result is null)
+            return StatusCode(StatusCodes.Status403Forbidden,
+                new { message = "Class is not available at your current level or progression." });
 
         return Ok(result);
     }
