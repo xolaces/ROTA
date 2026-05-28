@@ -1,4 +1,4 @@
-﻿using ROTA.Application.Interfaces;
+using ROTA.Application.Interfaces;
 using ROTA.Application.Models;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
@@ -6,7 +6,6 @@ using ROTA.Shared.DTOs;
 
 namespace ROTA.Application.Services;
 
-// BETA — reward steps are not wrapped in a single DB transaction. Stamina is spent first;
 //        a crash mid-reward is unfair but acceptable. Phase 2: explicit transaction scope.
 public sealed class RaidService : IRaidService
 {
@@ -88,7 +87,6 @@ public sealed class RaidService : IRaidService
         _random          = random ?? Random.Shared;
     }
 
-    /// <inheritdoc />
     public async Task<IReadOnlyList<ActiveRaidResponse>> GetActiveRaidsAsync(
         Guid playerId, CancellationToken ct = default)
     {
@@ -126,7 +124,6 @@ public sealed class RaidService : IRaidService
         return result;
     }
 
-    /// <inheritdoc />
     public async Task<SummonRaidResult> SummonRaidAsync(
         Guid playerId, string raidDefinitionId, RaidDifficulty difficulty, CancellationToken ct = default)
     {
@@ -172,7 +169,6 @@ public sealed class RaidService : IRaidService
         };
     }
 
-    /// <inheritdoc />
     public async Task<RaidHitResult> HitRaidAsync(
         Guid playerId, Guid activeRaidId, int hitSize, string idempotencyKey,
         CancellationToken ct = default)

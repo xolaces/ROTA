@@ -1,11 +1,10 @@
-﻿using ROTA.Application.Interfaces;
+using ROTA.Application.Interfaces;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
 using ROTA.Shared.DTOs;
 
 namespace ROTA.Application.Services;
 
-// BETA — item usage pipeline: StatBags and Sigils.
 public sealed class ItemService : IItemService
 {
     private readonly IPlayerInventoryRepository _inventory;
@@ -28,7 +27,6 @@ public sealed class ItemService : IItemService
         _auditLog  = auditLog;
     }
 
-    /// <inheritdoc />
     public async Task<IReadOnlyList<InventoryItemResponse>> GetInventoryAsync(
         Guid playerId, CancellationToken ct = default)
     {
@@ -53,7 +51,6 @@ public sealed class ItemService : IItemService
         return result;
     }
 
-    /// <inheritdoc />
     public async Task<UseItemResponse> UseItemAsync(
         Guid playerId, string itemDefinitionId, int quantity, CancellationToken ct = default)
     {

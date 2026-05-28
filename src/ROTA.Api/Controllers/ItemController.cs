@@ -1,4 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ROTA.Application.Interfaces;
@@ -6,7 +6,6 @@ using ROTA.Shared.DTOs;
 
 namespace ROTA.Api.Controllers;
 
-// BETA — thin controller, zero business logic. PlayerId always from verified JWT.
 [ApiController]
 [Route("api/items")]
 [Authorize]
@@ -19,7 +18,6 @@ public sealed class ItemController : ControllerBase
         _items = items;
     }
 
-    /// <summary>Returns the authenticated player's full inventory.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<InventoryItemResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetInventory()
@@ -28,10 +26,6 @@ public sealed class ItemController : ControllerBase
         return Ok(result);
     }
 
-    /// <summary>
-    /// Uses the specified item. Body: { "quantity": 1 }
-    /// StatBags grant SkillPoints; Sigils summon a raid and are consumed.
-    /// </summary>
     [HttpPost("{itemDefinitionId}/use")]
     [ProducesResponseType(typeof(UseItemResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(UseItemResponse), StatusCodes.Status422UnprocessableEntity)]

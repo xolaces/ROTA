@@ -1,4 +1,4 @@
-﻿using ROTA.Domain.Enums;
+using ROTA.Domain.Enums;
 namespace ROTA.Domain.Entities;
 
 public class ActiveRaid

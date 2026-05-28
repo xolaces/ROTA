@@ -14,21 +14,18 @@ public sealed class RaidParticipantRepository : IRaidParticipantRepository
         _db = db;
     }
 
-    /// <inheritdoc />
     public async Task<RaidParticipant?> FindByRaidAndPlayerAsync(
         Guid activeRaidId, Guid playerId, CancellationToken ct = default)
         => await _db.RaidParticipants
             .Where(p => p.ActiveRaidId == activeRaidId && p.PlayerId == playerId && !p.IsDeleted)
             .FirstOrDefaultAsync(ct);
 
-    /// <inheritdoc />
     public async Task<IReadOnlyList<RaidParticipant>> GetAllForRaidAsync(
         Guid activeRaidId, CancellationToken ct = default)
         => await _db.RaidParticipants
             .Where(p => p.ActiveRaidId == activeRaidId && !p.IsDeleted)
             .ToListAsync(ct);
 
-    /// <inheritdoc />
     public async Task<RaidParticipant> CreateAsync(RaidParticipant participant, CancellationToken ct = default)
     {
         _db.RaidParticipants.Add(participant);
@@ -36,7 +33,6 @@ public sealed class RaidParticipantRepository : IRaidParticipantRepository
         return participant;
     }
 
-    /// <inheritdoc />
     public async Task UpdateAsync(RaidParticipant participant, CancellationToken ct = default)
     {
         _db.RaidParticipants.Update(participant);

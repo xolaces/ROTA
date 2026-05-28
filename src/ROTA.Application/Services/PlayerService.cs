@@ -5,7 +5,6 @@ using ROTA.Shared.DTOs;
 
 namespace ROTA.Application.Services;
 
-// BETA — profile GET always calls IEnergyService per resource; never returns stored checkpoint values.
 public sealed class PlayerService : IPlayerService
 {
     private readonly IPlayerRepository _players;
@@ -22,7 +21,6 @@ public sealed class PlayerService : IPlayerService
         _auditLog = auditLog;
     }
 
-    /// <inheritdoc />
     public async Task<PlayerProfileResponse?> GetProfileAsync(Guid playerId, CancellationToken ct = default)
     {
         var player = await _players.FindByIdWithResourcesAsync(playerId, ct);
@@ -57,7 +55,6 @@ public sealed class PlayerService : IPlayerService
         };
     }
 
-    /// <inheritdoc />
     public async Task<UpdateUsernameResult> UpdateUsernameAsync(Guid playerId, UpdateUsernameRequest request, CancellationToken ct = default)
     {
         var player = await _players.FindByIdAsync(playerId, ct);

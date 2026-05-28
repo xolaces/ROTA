@@ -3,7 +3,6 @@ using StackExchange.Redis;
 
 namespace ROTA.Infrastructure.Services;
 
-// BETA — Redis-backed. Key: auth:lockout:{email}, value: failure count, TTL: 15 min.
 public sealed class AuthLockoutService : IAuthLockoutService
 {
     private const int MaxAttempts = 5;

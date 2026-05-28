@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Services;
@@ -8,13 +8,8 @@ using ROTA.Infrastructure.Services;
 
 namespace ROTA.Infrastructure;
 
-// BETA — add new registrations here as systems are built.
 public static class ServiceCollectionExtensions
 {
-    /// <param name="contentRootPath">
-    /// The application content root — used to locate content/*.json files.
-    /// Pass env.ContentRootPath from Program.cs.
-    /// </param>
     public static IServiceCollection AddRotaServices(
         this IServiceCollection services,
         string contentRootPath = "")

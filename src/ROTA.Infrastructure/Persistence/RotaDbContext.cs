@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ROTA.Domain.Entities;
 using ROTA.Infrastructure.Persistence.Configurations;
 

@@ -3,13 +3,9 @@ using ROTA.Shared.DTOs;
 
 namespace ROTA.Application.Validators;
 
-// BETA - Full implementation. Runs at binding, before any service-layer code.
 // SECURITY: first line of defense against malformed input. These validators do NOT
 // check DB state (no async) - business-rule checks (duplicates) happen in the service.
 
-/// <summary>
-/// Validates <see cref="RegisterRequest"/> inputs before the service layer is invoked.
-/// </summary>
 public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 {
     public RegisterRequestValidator()
@@ -38,10 +34,6 @@ public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest
     }
 }
 
-/// <summary>
-/// Validates <see cref="LoginRequest"/> inputs.
-/// Kept intentionally minimal - specific validation would leak user existence.
-/// </summary>
 public sealed class LoginRequestValidator : AbstractValidator<LoginRequest>
 {
     public LoginRequestValidator()
@@ -56,9 +48,6 @@ public sealed class LoginRequestValidator : AbstractValidator<LoginRequest>
     }
 }
 
-/// <summary>
-/// Validates <see cref="RefreshRequest"/> inputs.
-/// </summary>
 public sealed class RefreshRequestValidator : AbstractValidator<RefreshRequest>
 {
     public RefreshRequestValidator()

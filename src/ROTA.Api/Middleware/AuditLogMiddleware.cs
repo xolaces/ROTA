@@ -6,7 +6,6 @@ using ROTA.Domain.Entities;
 
 namespace ROTA.Api.Middleware;
 
-// BETA — writes one audit_log row per state-changing request (POST/PUT/DELETE).
 // Runs after authentication so PlayerId is available from verified JWT claims.
 // Never logs raw request body — stores SHA256 hash only.
 public class AuditLogMiddleware

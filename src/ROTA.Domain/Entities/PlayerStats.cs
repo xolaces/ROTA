@@ -1,4 +1,4 @@
-﻿namespace ROTA.Domain.Entities;
+namespace ROTA.Domain.Entities;
 
 public class PlayerStats
 {
@@ -34,7 +34,7 @@ public class PlayerStats
     // Investable resource pools (from SkillPoints)
     public int EnergyInvestment { get; private set; }
     public int StaminaInvestment { get; private set; }
-    // PHASE-2: DiscernmentInvestment affects quest drop quality and raid critical damage bonus
+    // P2: effects deferred
     public int DiscernmentInvestment { get; private set; }
     public int SkillPoints { get; private set; }
 

@@ -7,7 +7,6 @@ using ROTA.Shared.DTOs;
 
 namespace ROTA.Application.Services;
 
-// BETA — stat allocation, level-up rewards, and XP formula.
 public sealed class StatService : IStatService
 {
     private const double LsiCap = 9.0;
@@ -32,7 +31,6 @@ public sealed class StatService : IStatService
         _levelingConfig = levelingConfig;
     }
 
-    /// <inheritdoc />
     public async Task<AllocateStatResponse> AllocateStatPointAsync(
         Guid playerId, StatType statType, int amount, CancellationToken ct = default)
     {
@@ -100,7 +98,6 @@ public sealed class StatService : IStatService
         };
     }
 
-    /// <inheritdoc />
     public async Task GrantLevelUpPointsAsync(Guid playerId, int newLevel, CancellationToken ct = default)
     {
         var player = await _players.FindByIdWithStatsAsync(playerId, ct);
@@ -122,7 +119,6 @@ public sealed class StatService : IStatService
             null), ct);
     }
 
-    /// <inheritdoc />
     public async Task AddUnassignedPointsAsync(Guid playerId, int amount, CancellationToken ct = default)
     {
         var player = await _players.FindByIdWithStatsAsync(playerId, ct);
@@ -137,7 +133,6 @@ public sealed class StatService : IStatService
             null), ct);
     }
 
-    /// <inheritdoc />
     public async Task<PlayerStatsResponse?> GetStatsAsync(Guid playerId, CancellationToken ct = default)
     {
         var player = await _players.FindByIdWithStatsAsync(playerId, ct);
@@ -161,7 +156,6 @@ public sealed class StatService : IStatService
         };
     }
 
-    /// <inheritdoc />
     public int XpToNextLevel(int level)
     {
         var cfg = _levelingConfig.Value;

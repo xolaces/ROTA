@@ -1,10 +1,9 @@
-﻿using ROTA.Application.Interfaces;
+using ROTA.Application.Interfaces;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
 
 namespace ROTA.Application.Services;
 
-// BETA — all writes go through AtomicUpdateAsync (row-level lock) to prevent double-spend.
 public sealed class EnergyService : IEnergyService
 {
     private readonly IPlayerResourceRepository _resources;
@@ -16,7 +15,6 @@ public sealed class EnergyService : IEnergyService
         _auditLog = auditLog;
     }
 
-    /// <inheritdoc />
     public async Task<int> GetCurrentEnergyAsync(Guid playerId, ResourceType type, CancellationToken ct = default)
     {
         var resource = await _resources.GetAsync(playerId, type, ct)
@@ -25,7 +23,6 @@ public sealed class EnergyService : IEnergyService
         return ComputeLiveValue(resource);
     }
 
-    /// <inheritdoc />
     public async Task<bool> SpendEnergyAsync(Guid playerId, ResourceType type, int amount, CancellationToken ct = default)
     {
         var now = DateTimeOffset.UtcNow;
@@ -52,7 +49,6 @@ public sealed class EnergyService : IEnergyService
         return success;
     }
 
-    /// <inheritdoc />
     public async Task RefillEnergyAsync(Guid playerId, ResourceType type, int amount, CancellationToken ct = default)
     {
         var now = DateTimeOffset.UtcNow;
@@ -65,7 +61,6 @@ public sealed class EnergyService : IEnergyService
         }, ct);
     }
 
-    /// <inheritdoc />
     public async Task UpdateMaxAsync(Guid playerId, ResourceType type, int newMax, CancellationToken ct = default)
     {
         var now = DateTimeOffset.UtcNow;

@@ -1,4 +1,4 @@
-﻿using ROTA.Domain.Enums;
+using ROTA.Domain.Enums;
 using ROTA.Shared.DTOs;
 
 namespace ROTA.Application.Interfaces;
@@ -17,9 +17,5 @@ public interface IStatService
     Task<PlayerStatsResponse?> GetStatsAsync(
         Guid playerId, CancellationToken ct = default);
 
-    /// <summary>
-    /// Computes XP required to advance from <paramref name="level"/> to level+1.
-    /// Uses milestone floor formula: max(floor, round(XpBaseMultiplier × level^XpExponent)).
-    /// </summary>
     int XpToNextLevel(int level);
 }

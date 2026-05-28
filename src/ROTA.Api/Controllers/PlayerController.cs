@@ -7,7 +7,6 @@ using ROTA.Shared.DTOs;
 
 namespace ROTA.Api.Controllers;
 
-// BETA — thin controller, zero business logic. PlayerId always sourced from verified JWT.
 [ApiController]
 [Route("api/players")]
 [Authorize]
@@ -22,7 +21,6 @@ public sealed class PlayerController : ControllerBase
         _usernameValidator = usernameValidator;
     }
 
-    /// <summary>Returns the authenticated player's full profile with live resource values.</summary>
     [HttpGet("me")]
     [ProducesResponseType(typeof(PlayerProfileResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -33,7 +31,6 @@ public sealed class PlayerController : ControllerBase
         return Ok(result);
     }
 
-    /// <summary>Updates the authenticated player's username. Cannot change email or password.</summary>
     [HttpPut("me")]
     [ProducesResponseType(typeof(UpdateUsernameResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

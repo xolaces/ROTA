@@ -1,4 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ROTA.Application.Interfaces;
@@ -7,7 +7,6 @@ using ROTA.Shared.DTOs;
 
 namespace ROTA.Api.Controllers;
 
-// BETA — thin controller, zero business logic. PlayerId always from verified JWT.
 [ApiController]
 [Route("api/quests")]
 [Authorize]
@@ -28,10 +27,6 @@ public sealed class QuestController : ControllerBase
         return Ok(result);
     }
 
-    /// <summary>
-    /// Attempts the specified quest at the given difficulty.
-    /// Body: { "difficulty": "Normal" } — defaults to Normal if omitted.
-    /// </summary>
     [HttpPost("{questId}/attempt")]
     [ProducesResponseType(typeof(QuestResultResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(QuestResultResponse), StatusCodes.Status403Forbidden)]

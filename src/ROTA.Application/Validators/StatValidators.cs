@@ -3,7 +3,6 @@ using ROTA.Shared.DTOs;
 
 namespace ROTA.Application.Validators;
 
-// BETA — validates stat allocation requests before they reach StatService.
 public class AllocateStatRequestValidator : AbstractValidator<AllocateStatRequest>
 {
     private static readonly HashSet<string> ValidStatTypes = new(StringComparer.OrdinalIgnoreCase)

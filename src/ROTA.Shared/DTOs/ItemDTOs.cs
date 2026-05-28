@@ -1,4 +1,4 @@
-﻿namespace ROTA.Shared.DTOs;
+namespace ROTA.Shared.DTOs;
 
 public class InventoryItemResponse
 {

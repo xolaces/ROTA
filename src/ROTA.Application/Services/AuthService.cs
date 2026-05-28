@@ -11,7 +11,6 @@ using ROTA.Shared.DTOs;
 
 namespace ROTA.Application.Services;
 
-// BETA - Full implementation. Rate limiting and audit log middleware handle
 //        per-IP and per-player throttling. Service enforces business rules only.
 public sealed class AuthService : IAuthService
 {
