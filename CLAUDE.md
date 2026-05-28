@@ -154,18 +154,44 @@ System 11 — Stat Allocation (BETA)
 - Tests: 7 unit tests (allocate Attack/Defense/Health/Discernment, LSI cap enforce/allow, insufficient SP, level-up gems at 5/10/15 and not at 3, AddUnassigned no LSI check)
 
 ## Phase 1 BACKEND COMPLETE
-## Phase 1 Extensions COMPLETE (2026-05-26)
-Build: 0 errors, 0 warnings. Tests: 95/95 unit + 1/1 integration = 96 total, all passing.
-Migrations applied: AddRaidSystem, AddStatInvestmentFields, AddQuestDifficultySystem, AddItemSystem, AddRaidDifficulty
+## Phase 1 Extensions COMPLETE (2026-05-28)
+Build: 0 errors, 0 warnings. Tests: 148/148 unit + 1/1 integration = 149 total, all passing.
+Migrations applied: AddRaidSystem, AddStatInvestmentFields, AddQuestDifficultySystem, AddItemSystem, AddRaidDifficulty, AddPlayerClass
+
+## Session 2026-05-28 — XP Formula + Class System (Sections A+B)
+Section A — XP Formula:
+- Player.AddExperience: new carry-over signature (long, Func<int,int>) returns level list
+- LevelingConfig: 30×level^0.7 formula with milestone floors; registered from appsettings.json
+- XpToNextLevel(int) on IStatService/StatService; floors only constrain at L500+ and L1000+
+- QuestService + RaidService: level-up firing per returned level via AddExperience
+- XP progress fields added to QuestResultResponse and RaidRewards DTOs
+- 105 tests (was 96, +9 XpFormula + 4 QuestLevelUp)
+Section B — Class System:
+- PlayerClass enum: Tier 1-5 (Conscript, Tier2 paths, Tier3 specs, Legendary, Ascendant)
+  + Tier 6-11 convergence: Luminary(L2000), Immortal(L5000), Archon(L7500),
+    Ancient(L10000), ElderAncient(L15000), Eternal(L25000)
+- Player.Class + SetClass; migration AddPlayerClass applied
+- ClassConfig: regen lookup (strips Legendary/Ascendant prefix), convergence level map
+- IClassService + ClassService: GetAvailableChoices, ComputeAutoAdvance, AssignClassAsync,
+  GetRegenRates, IsConvergedClass; auto-advance fires in StatService.GrantLevelUpPointsAsync
+- ClassDTOs: ClassRegenRates, ChooseClassRequest
+- StatController: GET /api/stats/class, POST /api/stats/class/choose
+- 149 tests (was 105, +43 ClassServiceTests +1 StatServiceTests mock update)
+Pre-build tasks:
+- docs/ROTA_Function_Reference.md generated (all interfaces, controllers, entities, enums, P2 backlog)
+- Verbose comment labels stripped from all 101 src/ .cs files (excl. migrations)
+- MilestoneFloors updated with convergence gates: 2000, 7500, 15000, 25000
 
 ## PHASE-2 Deferred Items
-- DiscernmentInvestment effects: quest drop quality, raid critical damage bonus (StatService.cs, QuestService.cs, RaidService.cs)
-- Explicit DB transaction scope for quest/raid reward steps (currently energy committed but rewards not atomic)
+- DiscernmentInvestment effects: quest drop quality, raid critical damage bonus
+- Wire IClassService into EnergyService: regen should read from ClassConfig not stored RegenPerMinute
+- Explicit DB transaction scope for quest/raid reward steps (energy committed but rewards not atomic)
 - Equipment item type: wearable gear with stat bonuses (can push LSI above cap)
 - Consumable item type: potions and buffs
 - Crafting system: Material → Equipment recipes
 - Guild system: GuildStamina, guild raids
 - Phase 2 migration: split loot table format for quest/raid clarity
+- Content pipeline refactor: IContentLoader, folder structure, sigil templates, formula-based loot tables
 
 ## Phase 1 Extensions — Design Decisions (Pre-Build)
 All of the following are confirmed and locked. Build against
