@@ -331,6 +331,7 @@ public sealed class RaidService : IRaidService
         int callerGemsGranted = 0;
         int callerUnassignedSP = 0;
         var callerItems = new List<ItemGrantDTO>();
+        IReadOnlyList<int> callerLevelUps = Array.Empty<int>();
 
         foreach (var p in allParticipants)
         {
@@ -342,20 +343,18 @@ public sealed class RaidService : IRaidService
                 : await _players.FindByIdAsync(p.PlayerId, ct);
             if (participantPlayer is null) continue;
 
-            int levelBefore = participantPlayer.Level;
-
             // Gold and XP scaled by difficulty (same multiplier as HP) then by tier
             double diffMult = HpMultipliers[raid.Difficulty];
             long gold = (long)Math.Round(definition.BaseGoldReward * diffMult * (double)multiplier);
             int xp    = (int)Math.Round(definition.BaseExperienceReward * diffMult * (double)multiplier);
 
             participantPlayer.AddGold(gold);
-            participantPlayer.AddExperience(xp);
+            var levelUps = participantPlayer.AddExperience(xp, lvl => _stats.XpToNextLevel(lvl));
             await _players.UpdateAsync(participantPlayer, ct);
 
-            // Grant level-up points for each level gained
-            for (int lvl = levelBefore + 1; lvl <= participantPlayer.Level; lvl++)
-                await _stats.GrantLevelUpPointsAsync(p.PlayerId, lvl, ct);
+            // Fire level-up side effects for each level gained
+            foreach (var newLevel in levelUps)
+                await _stats.GrantLevelUpPointsAsync(p.PlayerId, newLevel, ct);
 
             // Gems — Rare+ only
             if (displayTier is not "Participant")
@@ -409,10 +408,11 @@ public sealed class RaidService : IRaidService
 
             if (p.PlayerId == callerPlayerId)
             {
-                callerTier = displayTier;
+                callerTier     = displayTier;
                 callerMultiplier = multiplier;
                 callerUnassignedSP = unassignedSP;
-                callerItems = items;
+                callerItems    = items;
+                callerLevelUps = levelUps;
             }
         }
 
@@ -434,6 +434,9 @@ public sealed class RaidService : IRaidService
             TierMultiplier           = callerMultiplier,
             UnassignedStatPointsGranted = callerUnassignedSP,
             ItemsGranted             = callerItems,
+            XpToNextLevel            = _stats.XpToNextLevel(caller.Level),
+            CurrentLevelXp           = caller.Experience,
+            LevelsGained             = callerLevelUps.Count,
         };
     }
 

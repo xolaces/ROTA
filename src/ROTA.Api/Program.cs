@@ -7,6 +7,7 @@ using ROTA.Infrastructure.Persistence;
 using ROTA.Api.Middleware;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Services;
+using ROTA.Application.Configuration;
 using ROTA.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -111,6 +112,9 @@ builder.Services.AddSignalR();
 // EF Core + PostgreSQL
 builder.Services.AddDbContext<RotaDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.Configure<LevelingConfig>(
+    builder.Configuration.GetSection("LevelingConfig"));
 
 builder.Services.AddRotaServices(builder.Environment.ContentRootPath);
 

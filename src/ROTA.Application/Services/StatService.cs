@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Options;
+using ROTA.Application.Configuration;
 using ROTA.Application.Interfaces;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
@@ -5,7 +7,7 @@ using ROTA.Shared.DTOs;
 
 namespace ROTA.Application.Services;
 
-// BETA — stat allocation and level-up rewards.
+// BETA — stat allocation, level-up rewards, and XP formula.
 public sealed class StatService : IStatService
 {
     private const double LsiCap = 9.0;
@@ -14,17 +16,20 @@ public sealed class StatService : IStatService
     private readonly IEnergyService _energy;
     private readonly IGemService _gems;
     private readonly IAuditLogRepository _auditLog;
+    private readonly IOptions<LevelingConfig> _levelingConfig;
 
     public StatService(
         IPlayerRepository players,
         IEnergyService energy,
         IGemService gems,
-        IAuditLogRepository auditLog)
+        IAuditLogRepository auditLog,
+        IOptions<LevelingConfig> levelingConfig)
     {
-        _players  = players;
-        _energy   = energy;
-        _gems     = gems;
-        _auditLog = auditLog;
+        _players        = players;
+        _energy         = energy;
+        _gems           = gems;
+        _auditLog       = auditLog;
+        _levelingConfig = levelingConfig;
     }
 
     /// <inheritdoc />
@@ -154,6 +159,15 @@ public sealed class StatService : IStatService
             BaseMaxHealth         = stats.BaseMaxHealth,
             CurrentHealth         = stats.CurrentHealth,
         };
+    }
+
+    /// <inheritdoc />
+    public int XpToNextLevel(int level)
+    {
+        var cfg = _levelingConfig.Value;
+        double baseXp = cfg.XpBaseMultiplier * Math.Pow(level, cfg.XpExponent);
+        int floor = cfg.GetFloor(level);
+        return Math.Max(floor, (int)Math.Round(baseXp));
     }
 
     private static AllocateStatResponse Fail(string reason)

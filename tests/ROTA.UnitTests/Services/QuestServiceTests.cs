@@ -53,6 +53,8 @@ public class QuestServiceTests
 
         stats.Setup(s => s.GrantLevelUpPointsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        // Default: 1000 XP per level — keeps existing tests from triggering level-ups
+        stats.Setup(s => s.XpToNextLevel(It.IsAny<int>())).Returns(1000);
 
         inventory.Setup(r => r.GetAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((PlayerInventoryItem?)null);
@@ -103,7 +105,7 @@ public class QuestServiceTests
     private static Player MakePlayer(long xp = 0)
     {
         var p = Player.Create("testuser", "test@rota.test", "hash");
-        if (xp > 0) p.AddExperience(xp);
+        if (xp > 0) p.AddExperience(xp, _ => 1000);
         return p;
     }
 
@@ -320,14 +322,16 @@ public class QuestServiceTests
     }
 
     // -----------------------------------------------------------------------
-    // AttemptQuestAsync — level up triggers skill point grant
+    // AttemptQuestAsync — level-up wiring (AddExperience with milestone formula)
+    // XpToNextLevel is mocked to return 1000 (from BuildService default).
     // -----------------------------------------------------------------------
 
     [Fact]
-    public async Task AttemptQuest_TriggersLevelUp_WhenXpCrossesThreshold()
+    public async Task AttemptQuest_ExactLevelUp_AtThreshold_GrantsLevelUpPoints()
     {
-        var b = BuildService();
-        var player = MakePlayer(xp: 990); // 990 XP; quest gives 50 → crosses 1000 threshold
+        // Player has 950 XP toward level 2. Quest grants 50 XP. 950+50=1000 = exactly one level.
+        var b = BuildService(); // XpToNextLevel → 1000
+        var player = MakePlayer(xp: 950); // AddExperience(950, _=>1000): Level=1, Experience=950
 
         var quest = new QuestDefinition
         {
@@ -341,8 +345,85 @@ public class QuestServiceTests
 
         result.Success.Should().BeTrue();
         result.NewLevel.Should().Be(2);
-        result.NewExperience.Should().Be(1040);
+        // XP carries over: 950+50=1000, level-up consumes 1000 → 0 remaining
+        result.CurrentLevelXp.Should().Be(0);
+        result.LevelsGained.Should().Be(1);
         b.Stats.Verify(s => s.GrantLevelUpPointsAsync(player.Id, 2, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_XpCarriesOver_AfterLevelUp()
+    {
+        // Player has 980 XP. Quest grants 50. Total 1030: level up consumes 1000, 30 carries over.
+        var b = BuildService(); // XpToNextLevel → 1000
+        var player = MakePlayer(xp: 980);
+
+        var quest = new QuestDefinition
+        {
+            Id = "xp_quest", Name = "XP Quest", Chapter = 1, BaseEnergyCost = 5,
+            GoldReward = 0, ExperienceReward = 50, GemReward = 0,
+        };
+        b.Definitions.Setup(d => d.GetById("xp_quest")).Returns(quest);
+        SetupPlayerAndEnergy(b, player);
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "xp_quest", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue();
+        result.NewLevel.Should().Be(2);
+        result.CurrentLevelXp.Should().Be(30); // 1030 - 1000 = 30 carry-over
+        result.LevelsGained.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_ChainLevelUp_ThreeLevels_FromOneGrant()
+    {
+        // XpToNextLevel returns 20 → each level costs 20 XP. Quest grants 60 XP → 3 level-ups.
+        var b = BuildService();
+        b.Stats.Setup(s => s.XpToNextLevel(It.IsAny<int>())).Returns(20); // override default 1000
+
+        var player = MakePlayer(); // Level=1, Experience=0
+
+        var quest = new QuestDefinition
+        {
+            Id = "xp_quest", Name = "XP Quest", Chapter = 1, BaseEnergyCost = 5,
+            GoldReward = 0, ExperienceReward = 60, GemReward = 0,
+        };
+        b.Definitions.Setup(d => d.GetById("xp_quest")).Returns(quest);
+        SetupPlayerAndEnergy(b, player);
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "xp_quest", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue();
+        result.NewLevel.Should().Be(4); // 1→2, 2→3, 3→4
+        result.LevelsGained.Should().Be(3);
+        result.CurrentLevelXp.Should().Be(0); // 60 = 3×20, nothing left over
+        b.Stats.Verify(s => s.GrantLevelUpPointsAsync(player.Id, 2, It.IsAny<CancellationToken>()), Times.Once);
+        b.Stats.Verify(s => s.GrantLevelUpPointsAsync(player.Id, 3, It.IsAny<CancellationToken>()), Times.Once);
+        b.Stats.Verify(s => s.GrantLevelUpPointsAsync(player.Id, 4, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_GrantLevelUpPointsAsync_CalledOncePerLevelGained()
+    {
+        // XpToNextLevel → 1000. Quest gives 2500 XP → exactly 2 level-ups with 500 left over.
+        var b = BuildService(); // XpToNextLevel → 1000
+        var player = MakePlayer(); // Level=1, XP=0
+
+        var quest = new QuestDefinition
+        {
+            Id = "xp_quest", Name = "XP Quest", Chapter = 1, BaseEnergyCost = 5,
+            GoldReward = 0, ExperienceReward = 2500, GemReward = 0,
+        };
+        b.Definitions.Setup(d => d.GetById("xp_quest")).Returns(quest);
+        SetupPlayerAndEnergy(b, player);
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "xp_quest", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue();
+        result.LevelsGained.Should().Be(2); // 2500 / 1000 = 2 full levels, 500 left over
+        result.NewLevel.Should().Be(3);
+        b.Stats.Verify(s => s.GrantLevelUpPointsAsync(player.Id, It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Exactly(2), "GrantLevelUpPointsAsync called once per level gained, not more");
     }
 
     // -----------------------------------------------------------------------

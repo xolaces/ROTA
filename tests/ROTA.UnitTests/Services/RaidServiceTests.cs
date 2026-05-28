@@ -57,6 +57,8 @@ public class RaidServiceTests
             .Returns(Task.CompletedTask);
         stats.Setup(s => s.AddUnassignedPointsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        // Default: 1000 XP per level — keeps existing kill-reward tests from triggering extra level-ups
+        stats.Setup(s => s.XpToNextLevel(It.IsAny<int>())).Returns(1000);
 
         var service = new RaidService(
             raids.Object, participants.Object, players.Object, resources.Object,
@@ -71,7 +73,7 @@ public class RaidServiceTests
     private static Player MakePlayer(long xp = 0)
     {
         var p = Player.Create("testuser", "test@rota.test", "hash");
-        if (xp > 0) p.AddExperience(xp);
+        if (xp > 0) p.AddExperience(xp, _ => 1000);
         return p;
     }
 

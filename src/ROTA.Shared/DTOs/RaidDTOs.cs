@@ -57,6 +57,11 @@ public class RaidRewards
     public int DefensePointsGranted { get; set; }
     public int DiscernmentPointsGranted { get; set; }
     public List<ItemGrantDTO> ItemsGranted { get; set; } = new();
+
+    // XP progression detail
+    public int XpToNextLevel { get; set; }
+    public long CurrentLevelXp { get; set; }
+    public int LevelsGained { get; set; }
 }
 
 public class SummonRaidResponse

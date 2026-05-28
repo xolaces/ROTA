@@ -36,6 +36,12 @@ public class QuestResultResponse
     public string Difficulty { get; set; } = string.Empty;
     public string DifficultyColor { get; set; } = string.Empty;
     public List<ItemGrantDTO> ItemsGranted { get; set; } = new();
+
+    // XP progression detail
+    public int XpGained { get; set; }
+    public long CurrentLevelXp { get; set; }
+    public int XpToNextLevel { get; set; }
+    public int LevelsGained { get; set; }
 }
 
 public enum QuestFailureCode
