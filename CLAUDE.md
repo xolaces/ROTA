@@ -274,6 +274,13 @@ Orange is the permanent ceiling. Never add above it.
 ## Documentation Index
 - [Game Design & Unity UI Reference](docs/ui/ROTA_GameDesign_UI_Reference.md) — DotD mechanics analysis, screen-by-screen UI blueprints, Unity implementation prompt, content pipeline guide
 
+## Function Reference
+Full method signatures, entity fields, endpoint map:
+docs/ROTA_Function_Reference.md
+Read this at session start instead of opening
+individual files when planning where to make changes.
+PHASE-2 backlog is tracked at the bottom of this file.
+
 ## Run commands
 docker-compose up -d                    ← start postgres + redis
 dotnet build                            ← build check
