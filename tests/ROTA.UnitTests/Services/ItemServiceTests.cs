@@ -176,7 +176,7 @@ public class ItemServiceTests
             MaxHp = 100000, ExpiresAt = DateTimeOffset.UtcNow.AddHours(48),
             Difficulty = "Normal", DifficultyColor = "Green",
         };
-        b.Raids.Setup(r => r.SummonRaidAsync(playerId, "raid_ironcolossus", RaidDifficulty.Normal, It.IsAny<CancellationToken>()))
+        b.Raids.Setup(r => r.SummonRaidAsync(playerId, "raid_ironcolossus", RaidDifficulty.Normal, RaidSize.Personal, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new SummonRaidResult { Success = true, Response = summonResponse });
 
         var result = await b.Service.UseItemAsync(playerId, def.Id, 1);
@@ -185,7 +185,7 @@ public class ItemServiceTests
         result.RaidSummoned.Should().NotBeNull();
         result.RaidSummoned!.Name.Should().Be("The Iron Colossus");
         result.RemainingQuantity.Should().Be(0);
-        b.Raids.Verify(r => r.SummonRaidAsync(playerId, "raid_ironcolossus", RaidDifficulty.Normal, It.IsAny<CancellationToken>()), Times.Once);
+        b.Raids.Verify(r => r.SummonRaidAsync(playerId, "raid_ironcolossus", RaidDifficulty.Normal, RaidSize.Personal, It.IsAny<CancellationToken>()), Times.Once);
         b.Inventory.Verify(r => r.UpdateAsync(It.Is<PlayerInventoryItem>(i => i.Quantity == 0 && i.IsUsed), It.IsAny<CancellationToken>()), Times.Once);
     }
 

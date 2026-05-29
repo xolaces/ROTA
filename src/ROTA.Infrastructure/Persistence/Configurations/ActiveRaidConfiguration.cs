@@ -42,6 +42,10 @@ public class ActiveRaidConfiguration : IEntityTypeConfiguration<ActiveRaid>
             .HasColumnName("difficulty")
             .HasDefaultValue(RaidDifficulty.Normal);
 
+        builder.Property(r => r.Size)
+            .HasColumnName("size")
+            .HasDefaultValue(RaidSize.Large);
+
         builder.Property(r => r.ParticipantCount)
             .HasColumnName("participant_count")
             .HasDefaultValue(0);

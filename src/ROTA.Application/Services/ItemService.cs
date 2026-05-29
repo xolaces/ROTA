@@ -77,11 +77,16 @@ public sealed class ItemService : IItemService
                 if (!Enum.TryParse<RaidDifficulty>(def.SummonDifficulty, out var raidDiff))
                     return UseFail(UseItemFailureCode.ItemNotUsable, "Sigil has invalid difficulty configuration.");
 
+                // Sigils default to Personal; content can override via SummonSize.
+                var raidSize = (def.SummonSize is not null
+                    && Enum.TryParse<RaidSize>(def.SummonSize, out var parsedSize))
+                    ? parsedSize : RaidSize.Personal;
+
                 // Ordering: summon first, then consume.  A failed summon returns early (line below)
                 // and leaves inventory untouched.  A successful summon followed by a consume failure
                 // (e.g., SaveChanges throws) would grant a free raid — acceptable crash-risk for BETA;
                 // Phase 2 wraps summon+consume in an explicit DB transaction.
-                var summonResult = await _raids.SummonRaidAsync(playerId, def.SummonRaidId, raidDiff, ct);
+                var summonResult = await _raids.SummonRaidAsync(playerId, def.SummonRaidId, raidDiff, raidSize, ct);
                 if (!summonResult.Success)
                     return UseFail(UseItemFailureCode.RaidSummonFailed,
                         summonResult.FailureReason ?? "Raid summon failed.");

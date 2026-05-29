@@ -11,7 +11,8 @@ public class ActiveRaid
         Guid summonedByPlayerId,
         long maxHp,
         DateTimeOffset expiresAt,
-        RaidDifficulty difficulty = RaidDifficulty.Normal)
+        RaidDifficulty difficulty = RaidDifficulty.Normal,
+        RaidSize size = RaidSize.Large)
     {
         return new ActiveRaid
         {
@@ -22,6 +23,7 @@ public class ActiveRaid
             MaxHp              = maxHp,
             IsDefeated         = false,
             Difficulty         = difficulty,
+            Size               = size,
             ParticipantCount   = 0,
             ExpiresAt          = expiresAt,
             CreatedAt          = DateTimeOffset.UtcNow,
@@ -37,6 +39,7 @@ public class ActiveRaid
     public long MaxHp { get; private set; }
     public bool IsDefeated { get; private set; }
     public RaidDifficulty Difficulty { get; private set; }
+    public RaidSize Size { get; private set; }
     public DateTimeOffset ExpiresAt { get; private set; }
 
     // Denormalised for O(1) participant count on every hit response â€” incremented on first hit per player.
