@@ -100,9 +100,10 @@ public class PlayerRoleTests
         => new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Jwt:Issuer"]     = "rota-test",
-                ["Jwt:Audience"]   = "rota-client",
-                ["Jwt:PrivateKey"] = privateKey,
+                ["Jwt:Issuer"]       = "rota-test",
+                ["Jwt:Audience"]     = "rota-client",
+                ["Jwt:PrivateKey"]   = privateKey,
+                ["BetaGate:Enabled"] = "false",
             })
             .Build();
 
@@ -112,6 +113,7 @@ public class PlayerRoleTests
         var tokens   = new Mock<IRefreshTokenRepository>();
         var lockout  = new Mock<IAuthLockoutService>();
         var auditLog = new Mock<IAuditLogRepository>();
+        var betaKeys = new Mock<IBetaKeyRepository>();
 
         lockout.Setup(l => l.IsLockedOutAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                .ReturnsAsync(false);
@@ -127,7 +129,7 @@ public class PlayerRoleTests
         tokens.Setup(r => r.CreateAsync(It.IsAny<RefreshToken>(), It.IsAny<CancellationToken>()))
               .ReturnsAsync((RefreshToken t, CancellationToken _) => t);
 
-        return new AuthService(players.Object, tokens.Object, BuildConfig(privateKey), lockout.Object, auditLog.Object);
+        return new AuthService(players.Object, tokens.Object, BuildConfig(privateKey), lockout.Object, auditLog.Object, betaKeys.Object);
     }
 
     [Fact]
@@ -175,7 +177,8 @@ public class PlayerRoleTests
         tokens.Setup(r => r.CreateAsync(It.IsAny<RefreshToken>(), It.IsAny<CancellationToken>()))
               .ReturnsAsync((RefreshToken t, CancellationToken _) => t);
 
-        var service = new AuthService(players.Object, tokens.Object, BuildConfig(key), lockout.Object, auditLog.Object);
+        var betaKeysMock = new Mock<IBetaKeyRepository>();
+        var service = new AuthService(players.Object, tokens.Object, BuildConfig(key), lockout.Object, auditLog.Object, betaKeysMock.Object);
 
         var result = await service.LoginAsync(
             new LoginRequest { Email = "admin@rota.test", Password = "Secure1Pass" },

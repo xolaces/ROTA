@@ -43,6 +43,42 @@ public class Player
         return player;
     }
 
+    /// <summary>
+    /// Creates a new player with a pre-allocated <paramref name="id"/>.
+    /// Used during beta-gated registration where the player ID must be known before the row
+    /// is inserted (so the beta key can be linked atomically in one transaction).
+    /// </summary>
+    public static Player CreateWithId(Guid id, string username, string email, string passwordHash)
+    {
+        var player = new Player
+        {
+            Id = id,
+            Username = username,
+            Email = email.ToLowerInvariant(),
+            PasswordHash = passwordHash,
+            Level = 1,
+            Experience = 0,
+            Gold = 0,
+            Roles = PlayerRoles.Player,
+            DisplayName = username,
+            IsBanned = false,
+            IsDeleted = false,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+
+        player.Stats = PlayerStats.Create(id);
+
+        player.Resources = new List<PlayerResource>
+        {
+            PlayerResource.Create(id, ResourceType.Energy,       maxValue: 25, regenPerMinute: 2),
+            PlayerResource.Create(id, ResourceType.Stamina,      maxValue: 5,  regenPerMinute: 1),
+            PlayerResource.Create(id, ResourceType.GuildStamina, maxValue: 1,  regenPerMinute: 0),
+        };
+
+        return player;
+    }
+
     public Player(string username, string email, string passwordHash)
     {
         Username = username;

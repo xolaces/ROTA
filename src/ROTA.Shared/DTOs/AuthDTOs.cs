@@ -7,6 +7,8 @@ public class RegisterRequest
     public string Username { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
+    /// <summary>Beta access key in ROTA-XXXX-XXXX-XXXX format. Required when BetaGate:Enabled is true.</summary>
+    public string BetaKey { get; set; } = string.Empty;
 }
 
 public class LoginRequest
