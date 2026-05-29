@@ -105,7 +105,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
+// Admin allowlist — no Player.IsAdmin column yet (Phase 2 full role system).
+// Populate via user secrets or environment: Admin:PlayerIds:0 = "<guid>"
+var adminPlayerIds = builder.Configuration
+    .GetSection("Admin:PlayerIds")
+    .Get<string[]>() ?? Array.Empty<string>();
+
+builder.Services.AddAuthorization(options =>
+{
+    // "AdminOnly" policy: JWT must belong to a player whose ID is in the Admin:PlayerIds config list.
+    // Apply [Authorize(Policy="AdminOnly")] to any endpoint that should be staff-only.
+    options.AddPolicy("AdminOnly", policy =>
+        policy.RequireAuthenticatedUser()
+              .RequireAssertion(ctx =>
+              {
+                  var sub = ctx.User.FindFirst("sub")?.Value;
+                  return sub is not null
+                      && adminPlayerIds.Contains(sub, StringComparer.OrdinalIgnoreCase);
+              }));
+});
 
 builder.Services.AddSignalR();
 
@@ -121,9 +139,12 @@ builder.Services.Configure<ClassConfig>(
 
 builder.Services.AddRotaServices(builder.Environment.ContentRootPath);
 
-// Redis
-builder.Services.AddSingleton<IConnectionMultiplexer>(
-    ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!));
+// Redis — factory-based so the connection string is resolved from the fully-built
+// IConfiguration (after all sources, including test overrides, have been applied)
+// rather than from builder.Configuration at service-registration time.
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+    ConnectionMultiplexer.Connect(
+        sp.GetRequiredService<IConfiguration>().GetConnectionString("Redis")!));
 
 // Health checks
 builder.Services.AddHealthChecks();

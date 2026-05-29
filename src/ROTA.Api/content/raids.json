@@ -2,22 +2,28 @@
   {
     "id": "raid_ironcolossus",
     "name": "The Iron Colossus",
-    "tier": "Standard",
+    "tier": "World",
     "baseHp": 100000,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "lootTableId": "lt_raid_ironcolossus",
+    "baseGoldReward": 500,
+    "baseExperienceReward": 300,
+    "baseGemReward": 2,
     "hasOnHitDrops": false,
     "artKey": "raid_ironcolossus"
   },
   {
     "id": "raid_malachar",
     "name": "Lord Malachar",
-    "tier": "Standard",
+    "tier": "World",
     "baseHp": 250000,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "lootTableId": "lt_raid_malachar",
+    "baseGoldReward": 1200,
+    "baseExperienceReward": 700,
+    "baseGemReward": 4,
     "hasOnHitDrops": false,
     "artKey": "raid_malachar"
   }

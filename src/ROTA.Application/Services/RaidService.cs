@@ -6,7 +6,7 @@ using ROTA.Shared.DTOs;
 
 namespace ROTA.Application.Services;
 
-//        a crash mid-reward is unfair but acceptable. Phase 2: explicit transaction scope.
+// BETA
 public sealed class RaidService : IRaidService
 {
     // HP multipliers per difficulty
@@ -173,112 +173,171 @@ public sealed class RaidService : IRaidService
         Guid playerId, Guid activeRaidId, int hitSize, string idempotencyKey,
         CancellationToken ct = default)
     {
-        // 1. Load raid
+        // 1. Load raid — fast pre-check before any expensive work.
         var raid = await _raids.FindByIdAsync(activeRaidId, ct);
         if (raid is null)
             return HitFail(RaidHitFailureCode.RaidNotFound, "Raid not found.");
 
-        // 2. Timer expired
+        // 2. Timer expired (pre-spend, no cost to player).
         if (raid.ExpiresAt < DateTimeOffset.UtcNow)
-            return HitFail(RaidHitFailureCode.RaidExpired, "Raid timer has expired.");
+            return HitFail(RaidHitFailureCode.RaidExpired,
+                "The raid has faded into the void — no rewards, no stamina spent.");
 
-        // 3. Already defeated
+        // 3. Already defeated (pre-spend, no cost to player).
         if (raid.IsDefeated)
-            return HitFail(RaidHitFailureCode.RaidAlreadyDefeated, "Raid has already been defeated.");
+            return HitFail(RaidHitFailureCode.RaidAlreadyDefeated,
+                "The creature has already fallen. Your blade finds only silence — no stamina spent.");
 
-        // 4. Idempotency check
-        var cached = await _hitCache.GetAsync(idempotencyKey, ct);
-        if (cached is not null)
-            return new RaidHitResult { Success = true, Response = cached };
+        // 4. Atomic idempotency: reserve the slot (SET NX) or return cached response.
+        //    Closes the check-then-set race from the previous GetAsync/SetAsync pattern.
+        var (slotAcquired, existingResponse) = await _hitCache.TryAcquireSlotAsync(idempotencyKey, ct);
+        if (!slotAcquired)
+        {
+            if (existingResponse is not null)
+                return new RaidHitResult { Success = true, Response = existingResponse };
+            // Concurrent in-flight duplicate — treat as duplicate-in-progress.
+            return HitFail(RaidHitFailureCode.RaidNotFound, "Request already in progress.");
+        }
 
-        // 5. Validate hit size
+        // 5. Validate hit size.
         if (hitSize != 1 && hitSize != 5 && hitSize != 20)
             return HitFail(RaidHitFailureCode.InvalidHitSize, "Hit size must be 1, 5, or 20.");
 
         var definition = _raidDefinitions.GetById(raid.RaidDefinitionId)
             ?? throw new InvalidOperationException($"Raid definition '{raid.RaidDefinitionId}' not found.");
 
-        // 6. Spend stamina
+        // 6. Spend stamina — EnergyService opens its OWN transaction (AtomicUpdateAsync).
+        //    It is NOT enrolled in the AtomicApplyHitAsync transaction that follows.
+        //    The refund-on-race path (step 8) closes the fairness gap.
+        //    STAMINA-TRANSACTION CAVEAT (BETA): a process crash between spend and refund
+        //    could lose stamina — acceptable for beta, Phase 2.
         int staminaCost = hitSize * definition.StaminaCostPerHit;
         var staminaSpent = await _energy.SpendEnergyAsync(playerId, ResourceType.Stamina, staminaCost, ct);
         if (!staminaSpent)
             return HitFail(RaidHitFailureCode.InsufficientStamina, "Insufficient stamina.");
 
-        // 7. Compute damage — server-seeded RNG, never client
+        // 7. Load player stats for the damage formula.
         var player = await _players.FindByIdWithStatsAsync(playerId, ct)
             ?? throw new InvalidOperationException($"Player {playerId} not found after stamina spend.");
 
-        var multiplier = 0.85 + _random.NextDouble() * 0.30; // uniform [0.85, 1.15]
-        long baseValue = (player.Stats!.BaseAttack * 4L) + player.Stats.BaseDefense;
-        long damage = Math.Max(1, (long)(baseValue * hitSize * multiplier));
-
-        // 8. Deduct HP
-        raid.TakeDamage(damage);
-
-        // 9. Upsert RaidParticipant
-        var participant = await _participants.FindByRaidAndPlayerAsync(activeRaidId, playerId, ct);
-        bool isNewParticipant = participant is null;
-        if (isNewParticipant)
-        {
-            participant = RaidParticipant.Create(activeRaidId, playerId);
-            raid.IncrementParticipantCount();
-        }
-        participant!.RecordHit(damage);
-
-        if (isNewParticipant)
-            await _participants.CreateAsync(participant, ct);
-        else
-            await _participants.UpdateAsync(participant, ct);
-
-        // 10. Kill processing
-        bool isKill = raid.CurrentHp == 0;
-        if (isKill)
-            raid.MarkDefeated();
-
-        await _raids.UpdateAsync(raid, ct);
-
+        // 8. Apply hit atomically.
+        //    AtomicApplyHitAsync begins a PostgreSQL transaction then acquires an advisory
+        //    lock on raidId (pg_advisory_xact_lock), which blocks any concurrent call for
+        //    the same raid until the transaction ends.  After the lock is held the entity
+        //    is reloaded from the DB so the loser always sees the winner's committed state
+        //    (IsDefeated=true) and returns false, triggering the refund below.
+        //    All repositories sharing this DbContext participate in the same transaction,
+        //    so kill rewards are committed exactly once.
+        bool raceCondition   = false;
+        long damageFinal     = 0;
+        long finalHp         = 0;
+        bool finalDefeated   = false;
+        RaidParticipant? participantFinal = null;
         RaidRewards? rewards = null;
-        if (isKill)
+
+        var applied = await _raids.AtomicApplyHitAsync(activeRaidId, async lockedRaid =>
         {
-            var allParticipants = await _participants.GetAllForRaidAsync(activeRaidId, ct);
-            rewards = await DistributeKillRewardsAsync(
-                playerId, player, raid, definition, allParticipants, ct);
+            // Re-check under lock — covers the window between the pre-spend check and now.
+            if (lockedRaid.IsDefeated || lockedRaid.ExpiresAt < DateTimeOffset.UtcNow)
+            {
+                raceCondition = true;
+                return false;
+            }
+
+            // Compute damage — server RNG, never client.
+            var multiplier = 0.85 + _random.NextDouble() * 0.30; // uniform [0.85, 1.15]
+            long baseValue = (player.Stats!.BaseAttack * 4L) + player.Stats.BaseDefense;
+            damageFinal = Math.Max(1, (long)(baseValue * hitSize * multiplier));
+
+            lockedRaid.TakeDamage(damageFinal);
+
+            // Upsert participant — CreateAsync/UpdateAsync call SaveChanges on the shared
+            // DbContext, flushing all tracked changes within the open transaction.
+            var existingPart = await _participants.FindByRaidAndPlayerAsync(activeRaidId, playerId, ct);
+            bool isNew = existingPart is null;
+            if (isNew)
+            {
+                participantFinal = RaidParticipant.Create(activeRaidId, playerId);
+                lockedRaid.IncrementParticipantCount();
+            }
+            else
+            {
+                participantFinal = existingPart;
+            }
+            participantFinal!.RecordHit(damageFinal);
+
+            if (isNew)
+                await _participants.CreateAsync(participantFinal, ct);
+            else
+                await _participants.UpdateAsync(participantFinal, ct);
+
+            // Kill detection and reward distribution — fully inside the advisory lock.
+            bool isKill = lockedRaid.CurrentHp == 0;
+            if (isKill)
+            {
+                lockedRaid.MarkDefeated();
+                // GetAllForRaidAsync sees the participant saved above (same tx).
+                var allParticipants = await _participants.GetAllForRaidAsync(activeRaidId, ct);
+                rewards = await DistributeKillRewardsAsync(
+                    playerId, player, lockedRaid, definition, allParticipants, ct);
+            }
+
+            finalHp       = lockedRaid.CurrentHp;
+            finalDefeated = lockedRaid.IsDefeated;
+            return true;
+        }, ct);
+
+        // 9. Handle race: the loser was blocked by the advisory lock, then loaded the fresh
+        //    entity (IsDefeated=true), and mutate returned false.
+        //    Refund stamina so the loser loses nothing.
+        if (!applied)
+        {
+            await _energy.RefillEnergyAsync(playerId, ResourceType.Stamina, staminaCost, ct);
+            await _auditLog.AppendAsync(AuditLog.Create(
+                playerId, "RaidHitRefund", null,
+                $"Refunded {staminaCost} stamina — raid {activeRaidId} ended in race window.",
+                null), ct);
+
+            return raceCondition
+                ? HitFail(RaidHitFailureCode.RaidAlreadyDefeated,
+                    "The creature fell just before your strike landed. Your stamina has been returned — the battle is over.")
+                : HitFail(RaidHitFailureCode.RaidNotFound,
+                    "Raid no longer available — your stamina has been refunded.");
         }
 
-        // 11. Audit
+        // 10. Audit the successful hit.
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, "RaidHit", null,
-            $"Hit raid {activeRaidId} ({definition.Name}) [{raid.Difficulty}] for {damage} dmg (x{hitSize}). HP: {raid.CurrentHp}/{raid.MaxHp}. Kill: {isKill}",
+            $"Hit raid {activeRaidId} ({definition.Name}) [{raid.Difficulty}] for {damageFinal} dmg (x{hitSize}). " +
+            $"HP: {finalHp}/{raid.MaxHp}. Kill: {finalDefeated}",
             null), ct);
 
         var newStaminaValue = await _energy.GetCurrentEnergyAsync(playerId, ResourceType.Stamina, ct);
         var staminaResource = await _resources.GetAsync(playerId, ResourceType.Stamina, ct);
-        int newStaminaMax = staminaResource?.MaxValue ?? 0;
-
-        var allParts = isKill ? null : (IReadOnlyList<RaidParticipant>?)null;
-        string callerTier = rewards?.ContributionTier ?? "Participant";
+        int newStaminaMax   = staminaResource?.MaxValue ?? 0;
+        string callerTier   = rewards?.ContributionTier ?? "Participant";
 
         var response = new RaidHitResponse
         {
-            Success          = true,
-            DamageDealt      = damage,
-            CurrentHp        = raid.CurrentHp,
-            MaxHp            = raid.MaxHp,
-            HpPercent        = raid.MaxHp > 0 ? (double)raid.CurrentHp / raid.MaxHp * 100.0 : 0,
-            IsDefeated       = raid.IsDefeated,
-            YourTotalDamage  = participant.TotalDamageDealt,
-            YourHitCount     = participant.HitCount,
-            ParticipantCount = raid.ParticipantCount,
-            NewStaminaValue  = newStaminaValue,
-            NewStaminaMax    = newStaminaMax,
-            Rewards          = rewards,
-            ExpiresAt        = raid.ExpiresAt,
-            Difficulty       = raid.Difficulty.ToString(),
-            DifficultyColor  = DifficultyColors[raid.Difficulty],
-            YourCurrentTier  = callerTier,
+            Success         = true,
+            DamageDealt     = damageFinal,
+            CurrentHp       = finalHp,
+            MaxHp           = raid.MaxHp,
+            HpPercent       = raid.MaxHp > 0 ? (double)finalHp / raid.MaxHp * 100.0 : 0,
+            IsDefeated      = finalDefeated,
+            YourTotalDamage = participantFinal!.TotalDamageDealt,
+            YourHitCount    = participantFinal.HitCount,
+            NewStaminaValue = newStaminaValue,
+            NewStaminaMax   = newStaminaMax,
+            Rewards         = rewards,
+            ExpiresAt       = raid.ExpiresAt,
+            Difficulty      = raid.Difficulty.ToString(),
+            DifficultyColor = DifficultyColors[raid.Difficulty],
+            YourCurrentTier = callerTier,
         };
 
-        await _hitCache.SetAsync(idempotencyKey, response, ct);
+        // 11. Store the completed response — replaces the "pending" placeholder.
+        await _hitCache.StoreResultAsync(idempotencyKey, response, ct);
 
         return new RaidHitResult { Success = true, Response = response };
     }
