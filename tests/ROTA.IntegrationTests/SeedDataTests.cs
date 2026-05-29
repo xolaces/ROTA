@@ -85,7 +85,7 @@ public class SeedDataTests
         var playersMock = new Mock<IPlayerRepository>();
         var auditMock   = new Mock<IAuditLogRepository>();
 
-        // Admin already exists.
+        // Password is configured AND admin already exists — pure no-op.
         playersMock
             .Setup(r => r.UsernameExistsAsync("Xolaces", It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
