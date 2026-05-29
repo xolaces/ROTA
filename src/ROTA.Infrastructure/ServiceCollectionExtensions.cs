@@ -45,6 +45,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IClassService, ClassService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IBetaKeyService, BetaKeyService>();
+        services.AddScoped<IAdminService, AdminService>();
         services.AddScoped<IEnergyService, EnergyService>();
         services.AddScoped<IPlayerService, PlayerService>();
         services.AddScoped<IGemService, GemService>();

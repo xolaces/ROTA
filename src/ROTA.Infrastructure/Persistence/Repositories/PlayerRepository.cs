@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ROTA.Application.Interfaces;
 using ROTA.Domain.Entities;
+using ROTA.Domain.Enums;
 using ROTA.Infrastructure.Persistence;
 
 namespace ROTA.Infrastructure.Persistence.Repositories;
@@ -62,4 +63,13 @@ public sealed class PlayerRepository : IPlayerRepository
         _db.PlayerStats.Update(stats);
         await _db.SaveChangesAsync(ct);
     }
+
+    public async Task<Player?> FindByUsernameAsync(string username, CancellationToken ct = default)
+        => await _db.Players
+            .Where(p => p.Username == username && !p.IsDeleted)
+            .FirstOrDefaultAsync(ct);
+
+    public async Task<int> CountByRoleAsync(PlayerRoles role, CancellationToken ct = default)
+        => await _db.Players
+            .CountAsync(p => !p.IsDeleted && (p.Roles & role) == role, ct);
 }
