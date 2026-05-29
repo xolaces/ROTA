@@ -13,4 +13,7 @@ public interface IRefreshTokenRepository
     Task<RefreshToken> CreateAsync(RefreshToken token, CancellationToken ct = default);
 
     Task RevokeAsync(RefreshToken token, CancellationToken ct = default);
+
+    /// <summary>Revokes all active sessions for the specified player in a single batch.</summary>
+    Task RevokeAllActiveAsync(Guid playerId, CancellationToken ct = default);
 }

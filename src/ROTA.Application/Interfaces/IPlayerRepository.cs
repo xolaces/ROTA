@@ -21,4 +21,13 @@ public interface IPlayerRepository
     Task UpdateAsync(Player player, CancellationToken ct = default);
 
     Task UpdateStatsAsync(Domain.Entities.PlayerStats stats, CancellationToken ct = default);
+
+    /// <summary>Looks up a player by username. Returns null if not found or soft-deleted.</summary>
+    Task<Player?> FindByUsernameAsync(string username, CancellationToken ct = default);
+
+    /// <summary>
+    /// Counts non-deleted players who have the specified role flag set.
+    /// Uses bitwise: <c>WHERE (roles &amp; @r) = @r AND NOT is_deleted</c>.
+    /// </summary>
+    Task<int> CountByRoleAsync(ROTA.Domain.Enums.PlayerRoles role, CancellationToken ct = default);
 }
