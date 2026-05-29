@@ -148,6 +148,47 @@ public class AuthServiceTests
     }
 
     // -----------------------------------------------------------------------
+    // REGISTER — beta gate: a failed registration must NOT burn the single-use key
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task RegisterAsync_BetaGate_DuplicateUsername_DoesNotConsumeKey()
+    {
+        var players  = new Mock<IPlayerRepository>();
+        var tokens   = new Mock<IRefreshTokenRepository>();
+        var lockout  = new Mock<IAuthLockoutService>();
+        var auditLog = new Mock<IAuditLogRepository>();
+        var betaKeys = new Mock<IBetaKeyRepository>();
+
+        players.Setup(r => r.EmailExistsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+               .ReturnsAsync(false);
+        players.Setup(r => r.UsernameExistsAsync("takenname", It.IsAny<CancellationToken>()))
+               .ReturnsAsync(true);
+
+        var service = new AuthService(
+            players.Object, tokens.Object,
+            BuildConfig(betaGateEnabled: true),
+            lockout.Object, auditLog.Object, betaKeys.Object);
+
+        var result = await service.RegisterAsync(
+            new RegisterRequest
+            {
+                Username = "takenname",
+                Email    = "new@rota.test",
+                Password = "Correct1",
+                BetaKey  = "ROTA-AAAA-BBBB-CCCC",
+            },
+            "127.0.0.1");
+
+        result.Should().BeNull("registration must fail on a duplicate username");
+        betaKeys.Verify(
+            k => k.TryRedeemAsync(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never,
+            "a single-use beta key must NOT be consumed when registration fails on a duplicate");
+        players.Verify(r => r.CreateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    // -----------------------------------------------------------------------
     // LOGIN — success
     // -----------------------------------------------------------------------
 
