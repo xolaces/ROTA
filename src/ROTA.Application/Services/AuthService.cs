@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using ROTA.Application.Interfaces;
 using ROTA.Domain.Entities;
+using ROTA.Domain.Enums;
 using ROTA.Shared.DTOs;
 
 namespace ROTA.Application.Services;
@@ -214,13 +215,22 @@ public sealed class AuthService : IAuthService
             new RsaSecurityKey(rsa),
             SecurityAlgorithms.RsaSha256);
 
-        var claims = new[]
+        // Build base claims
+        var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub,   player.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Name,  player.Username),
             new Claim(JwtRegisteredClaimNames.Email, player.Email),
             new Claim(JwtRegisteredClaimNames.Jti,   Guid.NewGuid().ToString()),
+            new Claim("display_name",                player.DisplayName),
         };
+
+        // Emit one role claim per set flag (skip None)
+        foreach (PlayerRoles flag in Enum.GetValues<PlayerRoles>())
+        {
+            if (flag != PlayerRoles.None && player.HasRole(flag))
+                claims.Add(new Claim(ClaimTypes.Role, flag.ToString()));
+        }
 
         var token = new JwtSecurityToken(
             issuer: _config["Jwt:Issuer"],

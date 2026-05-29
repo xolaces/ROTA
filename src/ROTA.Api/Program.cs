@@ -8,6 +8,7 @@ using ROTA.Api.Middleware;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Services;
 using ROTA.Application.Configuration;
+using ROTA.Domain.Enums;
 using ROTA.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -105,7 +106,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Admin allowlist — no Player.IsAdmin column yet (Phase 2 full role system).
+// Admin allowlist — kept as a break-glass fallback when the DB role cannot be used.
+// Primary check is the "Admin" role claim in the JWT (from Player.Roles flags).
 // Populate via user secrets or environment: Admin:PlayerIds:0 = "<guid>"
 var adminPlayerIds = builder.Configuration
     .GetSection("Admin:PlayerIds")
@@ -113,16 +115,21 @@ var adminPlayerIds = builder.Configuration
 
 builder.Services.AddAuthorization(options =>
 {
-    // "AdminOnly" policy: JWT must belong to a player whose ID is in the Admin:PlayerIds config list.
-    // Apply [Authorize(Policy="AdminOnly")] to any endpoint that should be staff-only.
+    // "AdminOnly": role claim primary; config allowlist is a break-glass fallback.
     options.AddPolicy("AdminOnly", policy =>
         policy.RequireAuthenticatedUser()
               .RequireAssertion(ctx =>
-              {
-                  var sub = ctx.User.FindFirst("sub")?.Value;
-                  return sub is not null
-                      && adminPlayerIds.Contains(sub, StringComparer.OrdinalIgnoreCase);
-              }));
+                  ctx.User.IsInRole(nameof(PlayerRoles.Admin))
+                  || adminPlayerIds.Contains(
+                      ctx.User.FindFirst("sub")?.Value ?? "",
+                      StringComparer.OrdinalIgnoreCase)));
+
+    // "ModeratorOrAdmin": moderators and admins both satisfy this policy.
+    options.AddPolicy("ModeratorOrAdmin", policy =>
+        policy.RequireAuthenticatedUser()
+              .RequireAssertion(ctx =>
+                  ctx.User.IsInRole(nameof(PlayerRoles.Admin))
+                  || ctx.User.IsInRole(nameof(PlayerRoles.Moderator))));
 });
 
 builder.Services.AddSignalR();

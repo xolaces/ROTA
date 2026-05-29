@@ -1,13 +1,17 @@
 // Core player identity, progression, and economy state.
-// Effective stats are never stored here � computed server-side on demand.
+// Effective stats are never stored here - computed server-side on demand.
 namespace ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
 
 public class Player
 {
-
     // Required by EF Core
     private Player() { }
+
+    /// <summary>
+    /// Creates a new player with default <see cref="PlayerRoles.Player"/> role.
+    /// Seeds Stats and the three resource pools (Energy, Stamina, GuildStamina).
+    /// </summary>
     public static Player Create(string username, string email, string passwordHash)
     {
         var player = new Player
@@ -19,6 +23,8 @@ public class Player
             Level = 1,
             Experience = 0,
             Gold = 0,
+            Roles = PlayerRoles.Player,
+            DisplayName = username,
             IsBanned = false,
             IsDeleted = false,
             CreatedAt = DateTimeOffset.UtcNow,
@@ -27,13 +33,12 @@ public class Player
 
         player.Stats = PlayerStats.Create(player.Id);
 
-
         player.Resources = new List<PlayerResource>
-    {
-        PlayerResource.Create(player.Id, ResourceType.Energy,       maxValue: 25, regenPerMinute: 2),
-        PlayerResource.Create(player.Id, ResourceType.Stamina,      maxValue: 5,  regenPerMinute: 1),
-        PlayerResource.Create(player.Id, ResourceType.GuildStamina, maxValue: 1,  regenPerMinute: 0),
-    };
+        {
+            PlayerResource.Create(player.Id, ResourceType.Energy,       maxValue: 25, regenPerMinute: 2),
+            PlayerResource.Create(player.Id, ResourceType.Stamina,      maxValue: 5,  regenPerMinute: 1),
+            PlayerResource.Create(player.Id, ResourceType.GuildStamina, maxValue: 1,  regenPerMinute: 0),
+        };
 
         return player;
     }
@@ -45,9 +50,16 @@ public class Player
         PasswordHash = passwordHash;
     }
 
+    /// <summary>Unique player identifier.</summary>
     public Guid Id { get; private set; } = Guid.NewGuid();
+
+    /// <summary>Unique login name (max 32 chars).</summary>
     public string Username { get; private set; } = string.Empty;
+
+    /// <summary>Unique email address (lowercase-normalised).</summary>
     public string Email { get; private set; } = string.Empty;
+
+    /// <summary>BCrypt(12) password hash.</summary>
     public string PasswordHash { get; private set; } = string.Empty;
 
     // Progression
@@ -57,7 +69,14 @@ public class Player
 
     // Economy
     public long Gold { get; private set; } = 0;
-    // Gem balance is never stored � computed from gem_transactions ledger
+    // Gem balance is never stored - computed from gem_transactions ledger
+
+    // Roles & identity
+    /// <summary>Bitwise role flags. Defaults to <see cref="PlayerRoles.Player"/>.</summary>
+    public PlayerRoles Roles { get; private set; } = PlayerRoles.Player;
+
+    /// <summary>Display name shown in the game UI (max 48 chars).</summary>
+    public string DisplayName { get; private set; } = string.Empty;
 
     // Guild
     public Guid? GuildId { get; private set; }
@@ -77,6 +96,35 @@ public class Player
     public ICollection<PlayerResource> Resources { get; private set; } = new List<PlayerResource>();
 
     // Domain methods
+
+    /// <summary>Grants the specified role flag. Bumps UpdatedAt.</summary>
+    public void GrantRole(PlayerRoles role)
+    {
+        Roles |= role;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
+    /// Revokes the specified role flag. Bumps UpdatedAt.
+    /// <see cref="PlayerRoles.Player"/> is NEVER removed — it is the base authenticated role.
+    /// </summary>
+    public void RevokeRole(PlayerRoles role)
+    {
+        Roles &= ~role;
+        Roles |= PlayerRoles.Player; // Player flag is permanent
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>Returns true if the player has ALL of the specified role flags.</summary>
+    public bool HasRole(PlayerRoles role) => (Roles & role) == role;
+
+    /// <summary>Updates the display name (max 48 chars). Bumps UpdatedAt.</summary>
+    public void UpdateDisplayName(string displayName)
+    {
+        DisplayName = displayName;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
     public void Ban(string reason)
     {
         IsBanned = true;
