@@ -28,14 +28,9 @@ public static class SeedData
         var players = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
         var audit   = scope.ServiceProvider.GetRequiredService<IAuditLogRepository>();
 
-        // Idempotency guard: skip if the admin account already exists.
-        if (await players.UsernameExistsAsync("Xolaces"))
-        {
-            logger.LogInformation("Seed: admin account 'Xolaces' already exists — skipping.");
-            return;
-        }
-
         // SECURITY: password is REQUIRED from config — never hardcode a default.
+        // Check this FIRST (before any DB query) so the seed is entirely passive
+        // when not configured (e.g., in CI / integration test environments).
         var adminPassword = config["Seed:AdminPassword"];
         if (string.IsNullOrWhiteSpace(adminPassword))
         {
@@ -43,6 +38,13 @@ public static class SeedData
                 "Seed: Seed:AdminPassword is not configured. " +
                 "Admin account 'Xolaces' was NOT created. " +
                 "Set the value via user-secrets or environment variable to enable seeding.");
+            return;
+        }
+
+        // Idempotency guard: skip if the admin account already exists.
+        if (await players.UsernameExistsAsync("Xolaces"))
+        {
+            logger.LogInformation("Seed: admin account 'Xolaces' already exists — skipping.");
             return;
         }
 
