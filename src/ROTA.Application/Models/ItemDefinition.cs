@@ -13,5 +13,6 @@ public class ItemDefinition
     public int StatPointsOnUse { get; set; }
     public bool IsCraftingIngredient { get; set; }
     public string? SummonRaidId { get; set; }
-    public string? SummonDifficulty { get; set; }  // stored as string, parsed to QuestDifficulty at use time
+    public string? SummonDifficulty { get; set; }  // stored as string, parsed to RaidDifficulty at use time
+    public string? SummonSize { get; set; }         // stored as string, parsed to RaidSize at use time; null → Personal
 }

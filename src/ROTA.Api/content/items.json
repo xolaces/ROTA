@@ -9,7 +9,8 @@
     "statPointsOnUse": 0,
     "isCraftingIngredient": true,
     "summonRaidId": null,
-    "summonDifficulty": null
+    "summonDifficulty": null,
+    "summonSize": null
   },
   {
     "id": "mat_arcane_dust",
@@ -21,7 +22,8 @@
     "statPointsOnUse": 0,
     "isCraftingIngredient": true,
     "summonRaidId": null,
-    "summonDifficulty": null
+    "summonDifficulty": null,
+    "summonSize": null
   },
   {
     "id": "statbag_minor",
@@ -33,7 +35,8 @@
     "statPointsOnUse": 5,
     "isCraftingIngredient": false,
     "summonRaidId": null,
-    "summonDifficulty": null
+    "summonDifficulty": null,
+    "summonSize": null
   },
   {
     "id": "statbag_major",
@@ -45,7 +48,8 @@
     "statPointsOnUse": 15,
     "isCraftingIngredient": false,
     "summonRaidId": null,
-    "summonDifficulty": null
+    "summonDifficulty": null,
+    "summonSize": null
   },
   {
     "id": "sigil_ironcolossus_normal",
@@ -57,7 +61,8 @@
     "statPointsOnUse": 0,
     "isCraftingIngredient": false,
     "summonRaidId": "raid_ironcolossus",
-    "summonDifficulty": "Normal"
+    "summonDifficulty": "Normal",
+    "summonSize": "Personal"
   },
   {
     "id": "sigil_ironcolossus_hard",
@@ -69,7 +74,8 @@
     "statPointsOnUse": 0,
     "isCraftingIngredient": false,
     "summonRaidId": "raid_ironcolossus",
-    "summonDifficulty": "Hard"
+    "summonDifficulty": "Hard",
+    "summonSize": "Personal"
   },
   {
     "id": "sigil_ironcolossus_legendary",
@@ -81,7 +87,8 @@
     "statPointsOnUse": 0,
     "isCraftingIngredient": false,
     "summonRaidId": "raid_ironcolossus",
-    "summonDifficulty": "Legendary"
+    "summonDifficulty": "Legendary",
+    "summonSize": "Personal"
   },
   {
     "id": "sigil_ironcolossus_nightmare",
@@ -93,7 +100,8 @@
     "statPointsOnUse": 0,
     "isCraftingIngredient": false,
     "summonRaidId": "raid_ironcolossus",
-    "summonDifficulty": "Nightmare"
+    "summonDifficulty": "Nightmare",
+    "summonSize": "Personal"
   },
   {
     "id": "sigil_malachar_normal",
@@ -105,7 +113,8 @@
     "statPointsOnUse": 0,
     "isCraftingIngredient": false,
     "summonRaidId": "raid_malachar",
-    "summonDifficulty": "Normal"
+    "summonDifficulty": "Normal",
+    "summonSize": "Personal"
   },
   {
     "id": "sigil_malachar_hard",
@@ -117,7 +126,8 @@
     "statPointsOnUse": 0,
     "isCraftingIngredient": false,
     "summonRaidId": "raid_malachar",
-    "summonDifficulty": "Hard"
+    "summonDifficulty": "Hard",
+    "summonSize": "Personal"
   },
   {
     "id": "sigil_malachar_legendary",
@@ -129,7 +139,8 @@
     "statPointsOnUse": 0,
     "isCraftingIngredient": false,
     "summonRaidId": "raid_malachar",
-    "summonDifficulty": "Legendary"
+    "summonDifficulty": "Legendary",
+    "summonSize": "Personal"
   },
   {
     "id": "sigil_malachar_nightmare",
@@ -141,6 +152,7 @@
     "statPointsOnUse": 0,
     "isCraftingIngredient": false,
     "summonRaidId": "raid_malachar",
-    "summonDifficulty": "Nightmare"
+    "summonDifficulty": "Nightmare",
+    "summonSize": "Personal"
   }
 ]

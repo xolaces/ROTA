@@ -83,6 +83,7 @@ public class RaidServiceTests
         Name                 = "The Iron Colossus",
         Tier                 = "World",
         BaseHp               = 100000,
+        PersonalBaseHp       = 500,
         TimerHours           = 48,
         StaminaCostPerHit    = 1,
         LootTableId          = "lt_raid_ironcolossus",
@@ -547,5 +548,136 @@ public class RaidServiceTests
         result.Should().HaveCount(1);
         result[0].YourTotalDamage.Should().Be(12400);
         result[0].YourHitCount.Should().Be(1);
+    }
+
+    // -----------------------------------------------------------------------
+    // RaidSize — Personal raid summon uses PersonalBaseHp
+    // -----------------------------------------------------------------------
+
+    [Theory]
+    [InlineData(RaidDifficulty.Normal,    500)]
+    [InlineData(RaidDifficulty.Hard,      700)]
+    [InlineData(RaidDifficulty.Legendary, 1000)]
+    [InlineData(RaidDifficulty.Nightmare, 1800)]
+    public async Task Summon_PersonalRaid_UsesPersonalBaseHp(RaidDifficulty difficulty, long expectedHp)
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus()); // PersonalBaseHp = 500
+        b.Players.Setup(p => p.FindByIdAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+        b.Raids.Setup(r => r.CreateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ActiveRaid r, CancellationToken _) => r);
+
+        var result = await b.Service.SummonRaidAsync(player.Id, "raid_ironcolossus", difficulty, RaidSize.Personal);
+
+        result.Success.Should().BeTrue();
+        result.Response!.MaxHp.Should().Be(expectedHp,
+            $"Personal raid HP = PersonalBaseHp({500}) × difficultyMultiplier");
+        result.Response.Size.Should().Be("Personal");
+        b.Raids.Verify(r => r.CreateAsync(
+            It.Is<ActiveRaid>(a => a.MaxHp == expectedHp && a.Size == RaidSize.Personal),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Summon_LargeRaid_StillUsesBaseHp()
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+        b.Players.Setup(p => p.FindByIdAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+        b.Raids.Setup(r => r.CreateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ActiveRaid r, CancellationToken _) => r);
+
+        var result = await b.Service.SummonRaidAsync(player.Id, "raid_ironcolossus", RaidDifficulty.Normal, RaidSize.Large);
+
+        result.Success.Should().BeTrue();
+        result.Response!.MaxHp.Should().Be(100000, "Large raid ignores PersonalBaseHp and uses BaseHp");
+        result.Response.Size.Should().Be("Large");
+    }
+
+    // -----------------------------------------------------------------------
+    // RaidSize — Personal raid hit access gate
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task Hit_PersonalRaid_BySummoner_Succeeds()
+    {
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid = ActiveRaid.Create(
+            "raid_ironcolossus", player.Id, 100000,
+            DateTimeOffset.UtcNow.AddHours(48), RaidDifficulty.Normal, RaidSize.Personal);
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+        b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipant>());
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue("the summoner is always allowed to hit their own personal raid");
+    }
+
+    [Fact]
+    public async Task Hit_PersonalRaid_ByNonSummoner_ReturnsAccessDenied()
+    {
+        var b = BuildService(new Random(0));
+        var summonerId = Guid.NewGuid();
+        var attacker   = MakePlayer();   // different player
+
+        var raid = ActiveRaid.Create(
+            "raid_ironcolossus", summonerId, 100000,
+            DateTimeOffset.UtcNow.AddHours(48), RaidDifficulty.Normal, RaidSize.Personal);
+
+        b.Raids.Setup(r => r.FindByIdAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
+
+        var result = await b.Service.HitRaidAsync(attacker.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(RaidHitFailureCode.AccessDenied,
+            "a non-summoner is blocked before any stamina is spent");
+        b.Energy.Verify(
+            e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never, "access gate fires before the stamina-spend step");
+    }
+
+    // -----------------------------------------------------------------------
+    // RaidSize — Personal raid visibility in GetActiveRaidsAsync
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task GetActiveRaids_PersonalRaid_VisibleOnlyToSummoner()
+    {
+        var b = BuildService();
+        var summonerId  = Guid.NewGuid();
+        var otherPlayer = Guid.NewGuid();
+
+        var personalRaid = ActiveRaid.Create(
+            "raid_ironcolossus", summonerId, 100000,
+            DateTimeOffset.UtcNow.AddHours(48), RaidDifficulty.Normal, RaidSize.Personal);
+        var largeRaid = MakeRaid(); // RaidSize.Large — visible to all
+
+        b.Raids.Setup(r => r.GetAllActiveAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ActiveRaid> { personalRaid, largeRaid });
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        // Non-summoner: only sees the Large world raid
+        var otherResult = await b.Service.GetActiveRaidsAsync(otherPlayer);
+        otherResult.Should().HaveCount(1, "Personal raid is hidden from non-summoner");
+        otherResult[0].Size.Should().Be("Large");
+
+        // Summoner: sees both their Personal raid and the Large raid
+        var summonerResult = await b.Service.GetActiveRaidsAsync(summonerId);
+        summonerResult.Should().HaveCount(2, "Summoner can see their own Personal raid alongside Large raids");
+        summonerResult.Should().ContainSingle(r => r.Size == "Personal");
+        summonerResult.Should().ContainSingle(r => r.Size == "Large");
     }
 }

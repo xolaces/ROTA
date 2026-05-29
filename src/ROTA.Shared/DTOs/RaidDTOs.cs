@@ -18,6 +18,7 @@ public class ActiveRaidResponse
     public string Tier { get; set; } = string.Empty;
     public string Difficulty { get; set; } = string.Empty;
     public string DifficultyColor { get; set; } = string.Empty;
+    public string Size { get; set; } = string.Empty;
     public string YourCurrentTier { get; set; } = string.Empty;
 }
 
@@ -73,6 +74,7 @@ public class SummonRaidResponse
     public long TimerRemainingSeconds { get; set; }
     public string Difficulty { get; set; } = string.Empty;
     public string DifficultyColor { get; set; } = string.Empty;
+    public string Size { get; set; } = string.Empty;
 }
 
 public class SummonRaidRequest
@@ -119,4 +121,5 @@ public enum RaidHitFailureCode
     RaidAlreadyDefeated = 3,
     InvalidHitSize      = 4,
     InsufficientStamina = 5,
+    AccessDenied        = 6,  // Personal raid — only the summoner may strike
 }

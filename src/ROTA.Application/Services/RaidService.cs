@@ -90,7 +90,11 @@ public sealed class RaidService : IRaidService
     public async Task<IReadOnlyList<ActiveRaidResponse>> GetActiveRaidsAsync(
         Guid playerId, CancellationToken ct = default)
     {
-        var activeRaids = await _raids.GetAllActiveAsync(ct);
+        var allRaids = await _raids.GetAllActiveAsync(ct);
+        // Personal raids are private — only visible to their summoner.
+        var activeRaids = allRaids
+            .Where(r => r.Size != RaidSize.Personal || r.SummonedByPlayerId == playerId)
+            .ToList();
         var result = new List<ActiveRaidResponse>(activeRaids.Count);
         var now = DateTimeOffset.UtcNow;
 
@@ -117,6 +121,7 @@ public sealed class RaidService : IRaidService
                 Tier                  = definition?.Tier ?? "Standard",
                 Difficulty            = raid.Difficulty.ToString(),
                 DifficultyColor       = DifficultyColors[raid.Difficulty],
+                Size                  = raid.Size.ToString(),
                 YourCurrentTier       = ComputeTier(participant?.TotalDamageDealt ?? 0, activeRaids.Count, participant, null),
             });
         }
@@ -125,7 +130,8 @@ public sealed class RaidService : IRaidService
     }
 
     public async Task<SummonRaidResult> SummonRaidAsync(
-        Guid playerId, string raidDefinitionId, RaidDifficulty difficulty, CancellationToken ct = default)
+        Guid playerId, string raidDefinitionId, RaidDifficulty difficulty,
+        RaidSize size = RaidSize.Large, CancellationToken ct = default)
     {
         var definition = _raidDefinitions.GetById(raidDefinitionId);
         if (definition is null)
@@ -143,14 +149,18 @@ public sealed class RaidService : IRaidService
                 FailureReason = "Player not found.",
             };
 
-        long finalHp = (long)(definition.BaseHp * HpMultipliers[difficulty]);
+        // Personal raids use a solo-balanced HP pool; fall back to BaseHp when PersonalBaseHp is unset.
+        long baseHp = size == RaidSize.Personal && definition.PersonalBaseHp > 0
+            ? definition.PersonalBaseHp
+            : definition.BaseHp;
+        long finalHp = (long)(baseHp * HpMultipliers[difficulty]);
         var expiresAt = DateTimeOffset.UtcNow.AddHours(definition.TimerHours);
-        var raid = ActiveRaid.Create(raidDefinitionId, playerId, finalHp, expiresAt, difficulty);
+        var raid = ActiveRaid.Create(raidDefinitionId, playerId, finalHp, expiresAt, difficulty, size);
         await _raids.CreateAsync(raid, ct);
 
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, "RaidSummon", null,
-            $"Summoned '{definition.Name}' [{difficulty}] (id={raid.Id}). HP={raid.MaxHp}, expires={expiresAt:O}",
+            $"Summoned '{definition.Name}' [{difficulty}] [{size}] (id={raid.Id}). HP={raid.MaxHp}, expires={expiresAt:O}",
             null), ct);
 
         return new SummonRaidResult
@@ -165,6 +175,7 @@ public sealed class RaidService : IRaidService
                 TimerRemainingSeconds = (long)(expiresAt - DateTimeOffset.UtcNow).TotalSeconds,
                 Difficulty            = difficulty.ToString(),
                 DifficultyColor       = DifficultyColors[difficulty],
+                Size                  = size.ToString(),
             },
         };
     }
@@ -187,6 +198,11 @@ public sealed class RaidService : IRaidService
         if (raid.IsDefeated)
             return HitFail(RaidHitFailureCode.RaidAlreadyDefeated,
                 "The creature has already fallen. Your blade finds only silence — no stamina spent.");
+
+        // 3a. Personal raid access gate — only the summoner may strike their own sigil raid.
+        if (raid.Size == RaidSize.Personal && raid.SummonedByPlayerId != playerId)
+            return HitFail(RaidHitFailureCode.AccessDenied,
+                "This is a private raid. Only the summoner may strike it.");
 
         // 4. Atomic idempotency: reserve the slot (SET NX) or return cached response.
         //    Closes the check-then-set race from the previous GetAsync/SetAsync pattern.

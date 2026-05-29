@@ -78,6 +78,12 @@ namespace ROTA.Infrastructure.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("raid_definition_id");
 
+                    b.Property<int>("Size")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(2)
+                        .HasColumnName("size");
+
                     b.Property<Guid>("SummonedByPlayerId")
                         .HasColumnType("uuid")
                         .HasColumnName("summoned_by_player_id");

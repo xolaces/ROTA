@@ -41,7 +41,8 @@ public sealed class RaidController : ControllerBase
         if (!Enum.TryParse<RaidDifficulty>(diffStr, ignoreCase: true, out var difficulty))
             return BadRequest(new { message = $"Invalid difficulty '{diffStr}'. Valid values: Normal, Hard, Legendary, Nightmare." });
 
-        var result = await _raids.SummonRaidAsync(GetPlayerId(), raidDefinitionId, difficulty);
+        // Admin direct-summon always creates a Large (world) raid.  Players summon Personal raids via sigils.
+        var result = await _raids.SummonRaidAsync(GetPlayerId(), raidDefinitionId, difficulty, RaidSize.Large);
 
         if (result.Success)
             return StatusCode(StatusCodes.Status201Created, result.Response);
@@ -74,6 +75,7 @@ public sealed class RaidController : ControllerBase
             RaidHitFailureCode.RaidExpired         => StatusCode(StatusCodes.Status410Gone, new { message = result.FailureReason }),
             RaidHitFailureCode.RaidAlreadyDefeated => Conflict(new { message = result.FailureReason }),
             RaidHitFailureCode.InvalidHitSize      => BadRequest(new { message = result.FailureReason }),
+            RaidHitFailureCode.AccessDenied        => StatusCode(StatusCodes.Status403Forbidden, new { message = result.FailureReason }),
             _                                      => UnprocessableEntity(new { message = result.FailureReason }),
         };
     }
