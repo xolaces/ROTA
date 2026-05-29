@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 using System.Security.Cryptography;
+using ROTA.Api;
 using ROTA.Infrastructure.Persistence;
 using ROTA.Api.Middleware;
 using ROTA.Application.Interfaces;
@@ -147,6 +148,12 @@ builder.Services.Configure<ClassConfig>(
 
 builder.Services.AddRotaServices(builder.Environment.ContentRootPath);
 
+// ---------------------------------------------------------------
+// ADMIN CLI — runs instead of Kestrel when a command is given
+// ---------------------------------------------------------------
+if (args.Length > 0 && AdminCli.IsCommand(args[0]))
+    return await AdminCli.RunAsync(args, builder);
+
 // Redis — factory-based so the connection string is resolved from the fully-built
 // IConfiguration (after all sources, including test overrides, have been applied)
 // rather than from builder.Configuration at service-registration time.
@@ -232,6 +239,8 @@ app.MapHealthChecks("/health");
 // app.MapHub<GuildHub>("/hubs/guild");
 
 app.Run();
+
+return 0;
 
 // Expose for integration tests (Testcontainers + WebApplicationFactory)
 public partial class Program { }

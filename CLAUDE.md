@@ -314,3 +314,9 @@ dotnet test                             ← run all tests
 dotnet run --project src/ROTA.Api       ← run server
 dotnet ef migrations add <Name> --project src/ROTA.Infrastructure --startup-project src/ROTA.Api
 dotnet ef database update --project src/ROTA.Infrastructure --startup-project src/ROTA.Api
+
+## Admin CLI commands (replace Kestrel, no HTTP server started)
+dotnet run --project src/ROTA.Api -- seed-admin                    ← create Xolaces admin (reads Seed:AdminPassword)
+dotnet run --project src/ROTA.Api -- gen-beta-key [count]          ← generate 1..100 ROTA-XXXX-XXXX-XXXX keys
+dotnet run --project src/ROTA.Api -- promote <user|guid> <Role>    ← grant Admin or Moderator role
+dotnet run --project src/ROTA.Api -- demote  <user|guid> <Role>    ← revoke Admin or Moderator role
