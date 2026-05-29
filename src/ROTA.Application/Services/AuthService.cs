@@ -63,8 +63,20 @@ public sealed class AuthService : IAuthService
 
     private async Task<AuthResponse?> RegisterWithBetaGateAsync(RegisterRequest request, string ipAddress)
     {
+        // SECURITY/CORRECTNESS: reject duplicates BEFORE consuming the single-use key, so a
+        // taken username/email never burns a valid key. Zero side effects on this path.
+        if (await _players.EmailExistsAsync(request.Email) ||
+            await _players.UsernameExistsAsync(request.Username))
+        {
+            await _auditLog.AppendAsync(AuditLog.Create(
+                null, "RegisterFailed", null,
+                "Duplicate username or email", ipAddress));
+            return null;
+        }
+
         // Pre-allocate the player ID so TryRedeemAsync can link the key to the player
-        // before the player row exists. The DB transaction rolls back both if creation fails.
+        // before the player row exists. If player creation throws (e.g. a unique-constraint
+        // race), the DB transaction rolls back the key claim, freeing the key.
         var newPlayerId = Guid.NewGuid();
 
         return await _betaKeys.WithTransactionAsync(async ct =>
