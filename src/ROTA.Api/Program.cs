@@ -10,6 +10,7 @@ using ROTA.Application.Services;
 using ROTA.Application.Configuration;
 using ROTA.Domain.Enums;
 using ROTA.Infrastructure;
+using ROTA.Infrastructure.Seeding;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -172,6 +173,10 @@ builder.Services.AddHealthChecks();
 // ---------------------------------------------------------------
 
 var app = builder.Build();
+
+// Startup seed — runs once before accepting requests.
+// Idempotent: skipped if the admin account already exists.
+await SeedData.EnsureAdminAsync(app.Services);
 
 // [1] Global exception handler
 // SECURITY: raw exceptions must never reach the client - stack traces leak architecture
