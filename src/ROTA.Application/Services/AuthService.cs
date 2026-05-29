@@ -29,19 +29,22 @@ public sealed class AuthService : IAuthService
     private readonly IConfiguration _config;
     private readonly IAuthLockoutService _lockout;
     private readonly IAuditLogRepository _auditLog;
+    private readonly IBetaKeyRepository _betaKeys;
 
     public AuthService(
         IPlayerRepository players,
         IRefreshTokenRepository refreshTokens,
         IConfiguration config,
         IAuthLockoutService lockout,
-        IAuditLogRepository auditLog)
+        IAuditLogRepository auditLog,
+        IBetaKeyRepository betaKeys)
     {
         _players = players;
         _refreshTokens = refreshTokens;
         _config = config;
         _lockout = lockout;
         _auditLog = auditLog;
+        _betaKeys = betaKeys;
     }
 
     // -------------------------------------------------------------------
@@ -50,8 +53,43 @@ public sealed class AuthService : IAuthService
 
     public async Task<AuthResponse?> RegisterAsync(RegisterRequest request, string ipAddress)
     {
-        if (await _players.EmailExistsAsync(request.Email) ||
-            await _players.UsernameExistsAsync(request.Username))
+        var betaGateEnabled = _config.GetValue("BetaGate:Enabled", true);
+
+        if (betaGateEnabled)
+            return await RegisterWithBetaGateAsync(request, ipAddress);
+
+        return await RegisterCoreAsync(request, ipAddress, newPlayerId: null);
+    }
+
+    private async Task<AuthResponse?> RegisterWithBetaGateAsync(RegisterRequest request, string ipAddress)
+    {
+        // Pre-allocate the player ID so TryRedeemAsync can link the key to the player
+        // before the player row exists. The DB transaction rolls back both if creation fails.
+        var newPlayerId = Guid.NewGuid();
+
+        return await _betaKeys.WithTransactionAsync(async ct =>
+        {
+            // Step 1: atomically claim the key. This is the single-use race guard.
+            var claimed = await _betaKeys.TryRedeemAsync(request.BetaKey, newPlayerId, ct);
+            if (!claimed)
+            {
+                await _auditLog.AppendAsync(AuditLog.Create(
+                    null, "RegisterFailed", null,
+                    "Invalid or already-redeemed beta key", ipAddress));
+                return null;
+            }
+
+            // Step 2: create the player only after the key is secured.
+            return await RegisterCoreAsync(request, ipAddress, newPlayerId, ct);
+        });
+    }
+
+    private async Task<AuthResponse?> RegisterCoreAsync(
+        RegisterRequest request, string ipAddress, Guid? newPlayerId,
+        CancellationToken ct = default)
+    {
+        if (await _players.EmailExistsAsync(request.Email, ct) ||
+            await _players.UsernameExistsAsync(request.Username, ct))
         {
             await _auditLog.AppendAsync(AuditLog.Create(
                 null, "RegisterFailed", null,
@@ -60,8 +98,10 @@ public sealed class AuthService : IAuthService
         }
 
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password, BcryptWorkFactor);
-        var player = Player.Create(request.Username, request.Email, passwordHash);
-        await _players.CreateAsync(player);
+        var player = newPlayerId.HasValue
+            ? Player.CreateWithId(newPlayerId.Value, request.Username, request.Email, passwordHash)
+            : Player.Create(request.Username, request.Email, passwordHash);
+        await _players.CreateAsync(player, ct);
 
         await _auditLog.AppendAsync(AuditLog.Create(
             player.Id, "Register", null,
