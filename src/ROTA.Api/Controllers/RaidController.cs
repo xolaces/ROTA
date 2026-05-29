@@ -27,7 +27,10 @@ public sealed class RaidController : ControllerBase
         return Ok(result);
     }
 
+    // Direct summon is an admin/dev tool — players summon only via sigils (POST /api/items/{id}/use).
+    // Config key: Admin:PlayerIds (see Program.cs and appsettings notes).
     [HttpPost("{raidDefinitionId}/summon")]
+    [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(typeof(SummonRaidResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Summon(

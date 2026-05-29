@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Models;
 
@@ -18,8 +19,12 @@ public sealed class ItemDefinitionProvider : IItemDefinitionProvider
         }
 
         var json = File.ReadAllText(path);
-        var list = JsonSerializer.Deserialize<List<ItemDefinition>>(json,
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            Converters = { new JsonStringEnumConverter() }, // ItemRarity and ItemType are stored as strings
+        };
+        var list = JsonSerializer.Deserialize<List<ItemDefinition>>(json, options)
             ?? throw new InvalidOperationException("items.json deserialized to null.");
         _items = list.ToDictionary(i => i.Id, i => i);
     }

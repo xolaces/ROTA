@@ -31,7 +31,7 @@ public class RaidHitResponse
     public bool IsDefeated { get; set; }
     public long YourTotalDamage { get; set; }
     public int YourHitCount { get; set; }
-    public int ParticipantCount { get; set; }
+    // ParticipantCount is on ActiveRaidResponse (list screen) — not exposed per-hit.
     public int NewStaminaValue { get; set; }
     public int NewStaminaMax { get; set; }
     public RaidRewards? Rewards { get; set; }

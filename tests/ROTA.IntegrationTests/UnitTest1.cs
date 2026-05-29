@@ -1,10 +1,1 @@
-﻿namespace ROTA.IntegrationTests;
-
-public class UnitTest1
-{
-    [Fact]
-    public void Test1()
-    {
-
-    }
-}
+// Deleted — replaced by RaidConcurrencyTests.cs.
