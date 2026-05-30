@@ -9,8 +9,8 @@ Server-authoritative .NET 10 backend for a Dawn-of-the-Dragons-style async RPG. 
 Infrastructure,Shared}`. PostgreSQL 16 (EF Core 9), Redis, RS256 JWT.
 
 ## Build status (High — run this session)
-- **207 tests pass: 200 unit + 7 integration. 0 warnings, 0 errors.**
-- `main` @ tag **v0.2.2**. (Pushing to origin this session — see CURRENT_TASK if backup status matters.)
+- **215 tests pass: 208 unit + 7 integration. 0 warnings, 0 errors.**
+- `main` @ tag **v0.2.3**, synced with origin (pushed).
 
 ## Inventory (High)
 7 controllers · 11 services · 12 entities · 10 enums · 11 repositories · 3 middleware ·
@@ -26,6 +26,9 @@ RBAC + beta keys + admin (REST+CLI).
   enforced pre-spend on hit. Personal = summoner-only.
 - **Raid on-hit rewards (v0.2.2):** XP = single 1–4 roll × stamina; gold = stamina × per-raid
   `goldPerStamina`; hit response now returns per-hit `XpGained`/`GoldGained`/`DamageDealt` (raid log).
+- **Discernment crit (v0.2.3):** raid hits crit via `DiscernmentInvestment` — chance 5%→15% (+10%
+  hard cap @1000 disc), damage 1.5×→2.5× (@5000 disc), tunable `CombatConfig`; response has
+  `IsCrit`/`CritMultiplier`. Raids only (quests have no damage roll).
 
 ## Content state (High)
 Minimal playable slice: 2 chapters, 5 quest nodes (3 battle + 2 boss), 2 raids, 12 items, 2 loot
