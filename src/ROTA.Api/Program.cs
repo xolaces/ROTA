@@ -182,6 +182,17 @@ if (args.Length > 0 && AdminCli.IsCommand(args[0]))
 
 var app = builder.Build();
 
+// Dev-only auto-migrate: keeps a fresh local DB in sync without a manual
+// `dotnet ef database update`. Idempotent — safe to run even when the schema
+// is already current. Production deployments must run migrations explicitly
+// before starting the app (operators run `dotnet ef database update` first).
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<RotaDbContext>();
+    await db.Database.MigrateAsync();
+}
+
 // Startup seed — runs once before accepting requests.
 // Idempotent: skipped if the admin account already exists.
 await SeedData.EnsureAdminAsync(app.Services);

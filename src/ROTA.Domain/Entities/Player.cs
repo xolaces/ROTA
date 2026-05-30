@@ -13,35 +13,7 @@ public class Player
     /// Seeds Stats and the three resource pools (Energy, Stamina, GuildStamina).
     /// </summary>
     public static Player Create(string username, string email, string passwordHash)
-    {
-        var player = new Player
-        {
-            Id = Guid.NewGuid(),
-            Username = username,
-            Email = email.ToLowerInvariant(),
-            PasswordHash = passwordHash,
-            Level = 1,
-            Experience = 0,
-            Gold = 0,
-            Roles = PlayerRoles.Player,
-            DisplayName = username,
-            IsBanned = false,
-            IsDeleted = false,
-            CreatedAt = DateTimeOffset.UtcNow,
-            UpdatedAt = DateTimeOffset.UtcNow,
-        };
-
-        player.Stats = PlayerStats.Create(player.Id);
-
-        player.Resources = new List<PlayerResource>
-        {
-            PlayerResource.Create(player.Id, ResourceType.Energy,       maxValue: 25, regenPerMinute: 2),
-            PlayerResource.Create(player.Id, ResourceType.Stamina,      maxValue: 5,  regenPerMinute: 1),
-            PlayerResource.Create(player.Id, ResourceType.GuildStamina, maxValue: 1,  regenPerMinute: 0),
-        };
-
-        return player;
-    }
+        => CreateWithId(Guid.NewGuid(), username, email, passwordHash);
 
     /// <summary>
     /// Creates a new player with a pre-allocated <paramref name="id"/>.
