@@ -39,3 +39,6 @@ public class PlayerStatsResponse
     public int BaseMaxHealth { get; set; }
     public int CurrentHealth { get; set; }
 }
+
+/// <summary>Crit chance and multiplier computed from a player's Discernment investment.</summary>
+public readonly record struct CritProfile(double Chance, double Multiplier);

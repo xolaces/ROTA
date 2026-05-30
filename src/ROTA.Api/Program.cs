@@ -146,6 +146,9 @@ builder.Services.Configure<LevelingConfig>(
 builder.Services.Configure<ClassConfig>(
     builder.Configuration.GetSection("ClassConfig"));
 
+builder.Services.Configure<CombatConfig>(
+    builder.Configuration.GetSection("CombatConfig"));
+
 builder.Services.AddRotaServices(builder.Environment.ContentRootPath);
 
 // Redis — factory-based so the connection string is resolved from the fully-built
