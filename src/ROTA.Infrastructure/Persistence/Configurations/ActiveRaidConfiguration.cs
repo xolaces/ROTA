@@ -44,7 +44,11 @@ public class ActiveRaidConfiguration : IEntityTypeConfiguration<ActiveRaid>
 
         builder.Property(r => r.Size)
             .HasColumnName("size")
-            .HasDefaultValue(RaidSize.Large);
+            .HasDefaultValue(RaidSize.Large)
+            // CRITICAL: sentinel = Large so a Personal raid (CLR default 0) is written as
+            // Personal, not silently replaced by the store default. Without this every
+            // Personal/sigil raid was persisted as Large. (EF model-validation 20601)
+            .HasSentinel(RaidSize.Large);
 
         builder.Property(r => r.ParticipantCount)
             .HasColumnName("participant_count")
