@@ -77,7 +77,7 @@ public class RaidServiceTests
         return p;
     }
 
-    private static RaidDefinition IronColossus() => new()
+    private static RaidDefinition IronColossus(long goldPerStamina = 1) => new()
     {
         Id                   = "raid_ironcolossus",
         Name                 = "The Iron Colossus",
@@ -86,6 +86,7 @@ public class RaidServiceTests
         PersonalBaseHp       = 500,
         TimerHours           = 48,
         StaminaCostPerHit    = 1,
+        GoldPerStamina       = goldPerStamina,
         LootTableId          = "lt_raid_ironcolossus",
         BaseGoldReward       = 500,
         BaseExperienceReward = 300,
@@ -645,6 +646,125 @@ public class RaidServiceTests
         b.Energy.Verify(
             e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
             Times.Never, "access gate fires before the stamina-spend step");
+    }
+
+    // -----------------------------------------------------------------------
+    // Component D — On-hit XP and gold
+    // -----------------------------------------------------------------------
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(5)]
+    [InlineData(20)]
+    public async Task Hit_GrantsXpInExpectedRange_PerHitSize(int hitSize)
+    {
+        // XP = round(staminaCost × roll), roll ∈ [1.0, 4.0], staminaCost = hitSize × 1
+        // So XP ∈ [staminaCost, staminaCost * 4]
+        var b = BuildService(new Random(42)); // seeded for determinism
+        var player = MakePlayer();
+        var raid = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, hitSize, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        int staminaCost = hitSize; // StaminaCostPerHit=1
+        result.Response!.XpGained.Should().BeGreaterOrEqualTo(staminaCost,
+            "XP floor is staminaCost × 1.0 (roll minimum)");
+        result.Response.XpGained.Should().BeLessOrEqualTo(staminaCost * 4,
+            "XP ceiling is staminaCost × 4.0 (roll maximum)");
+        result.Response.XpGained.Should().BeGreaterOrEqualTo(1, "XP is always at least 1");
+    }
+
+    [Theory]
+    [InlineData(1, 1, 1)]   // hitSize=1, goldPerStamina=1 → gold=1
+    [InlineData(5, 1, 5)]   // hitSize=5, goldPerStamina=1 → gold=5
+    [InlineData(20, 2, 40)] // hitSize=20, goldPerStamina=2 → gold=40
+    public async Task Hit_GrantsCorrectGold_PerStaminaCost(int hitSize, long goldPerStamina, long expectedGold)
+    {
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid = MakeRaid();
+
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus(goldPerStamina));
+        b.Raids.Setup(r => r.FindByIdAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
+        b.Raids.Setup(r => r.AtomicApplyHitAsync(
+                raid.Id,
+                It.IsAny<Func<ActiveRaid, Task<bool>>>(),
+                It.IsAny<CancellationToken>()))
+            .Returns<Guid, Func<ActiveRaid, Task<bool>>, CancellationToken>((_, mutate, _) => mutate(raid));
+        b.Energy.Setup(e => e.SpendEnergyAsync(player.Id, ResourceType.Stamina, It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        b.Players.Setup(p => p.FindByIdWithStatsAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+        b.Players.Setup(p => p.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        b.Resources.Setup(r => r.GetAsync(player.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeStaminaResource());
+        b.Energy.Setup(e => e.GetCurrentEnergyAsync(player.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(4);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, hitSize, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.GoldGained.Should().Be(expectedGold,
+            $"gold = staminaCost({hitSize}) × goldPerStamina({goldPerStamina})");
+    }
+
+    [Fact]
+    public async Task Hit_XpThatCrossesLevelThreshold_FiresGrantLevelUpPoints()
+    {
+        // Player at 999 XP with XpToNextLevel=1000. A hit granting ≥1 XP will level up.
+        // Use a seeded Random that produces a high roll to guarantee level-up.
+        var b = BuildService(new Random(0)); // Random(0) first NextDouble ~0.726 → roll ~3.18
+        var player = MakePlayer(xp: 999); // 999 XP, needs 1 more to level
+        var raid = MakeRaid();
+
+        // XpToNextLevel = 1000 for level 1, so player needs 1 more XP.
+        // staminaCost=1, roll≥1.0 → xpGained≥1 → definitely levels up.
+        b.Stats.Setup(s => s.XpToNextLevel(1)).Returns(1000);
+        b.Stats.Setup(s => s.XpToNextLevel(2)).Returns(2000);
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        // The player had 999 XP and needed 1000. Any hit XP ≥ 1 should trigger level up.
+        b.Stats.Verify(s => s.GrantLevelUpPointsAsync(player.Id, 2, It.IsAny<CancellationToken>()),
+            Times.Once, "XP crossing the level threshold must fire GrantLevelUpPointsAsync for the new level");
+    }
+
+    [Fact]
+    public async Task Hit_XpAndGold_PopulatedInResponse()
+    {
+        // Verify XpGained and GoldGained fields are populated in the response.
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.XpGained.Should().BeGreaterOrEqualTo(1, "XpGained must be populated in the response");
+        result.Response.GoldGained.Should().BeGreaterOrEqualTo(1, "GoldGained must be populated (goldPerStamina=1, hitSize=1)");
     }
 
     // -----------------------------------------------------------------------
