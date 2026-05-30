@@ -898,4 +898,95 @@ public class RaidServiceTests
         summonerResult.Should().ContainSingle(r => r.Size == "Personal");
         summonerResult.Should().ContainSingle(r => r.Size == "Large");
     }
+
+    // -----------------------------------------------------------------------
+    // Component C — Discernment crit applied to raid hit damage
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task Hit_WithForcedCrit_DamageIsMultiplied_AndIsCritTrue()
+    {
+        // Force crit by returning Chance=1.0 — always crits regardless of RNG roll.
+        // Multiplier=1.5 → damageFinal at least = baseDamage * 1.5.
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        // Override the default no-crit setup: force crit with multiplier 1.5
+        b.Stats.Setup(s => s.GetCritProfile(It.IsAny<int>()))
+            .Returns(new CritProfile(Chance: 1.0, Multiplier: 1.5));
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.IsCrit.Should().BeTrue("chance=1.0 guarantees a crit on every hit");
+        result.Response.CritMultiplier.Should().BeApproximately(1.5, 1e-9);
+        // base (ATK*4+DEF)*hitSize*RNG = ~50*1*[0.85,1.15] ∈ [42,58]; crit ×1.5 → ∈ [63,87]
+        result.Response.DamageDealt.Should().BeGreaterOrEqualTo(63,
+            "crit multiplier 1.5 must increase damage above the non-crit ceiling");
+    }
+
+    [Fact]
+    public async Task Hit_WithForcedNoCrit_DamageIsUnchanged_AndIsCritFalse()
+    {
+        // The default BuildService mock already has Chance=0.0 (never crits).
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        // Ensure no-crit profile (matches the BuildService default — explicit for clarity)
+        b.Stats.Setup(s => s.GetCritProfile(It.IsAny<int>()))
+            .Returns(new CritProfile(Chance: 0.0, Multiplier: 1.5));
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.IsCrit.Should().BeFalse("chance=0.0 means never crit");
+        result.Response.CritMultiplier.Should().BeApproximately(1.0, 1e-9,
+            "CritMultiplier must be 1.0 when there is no crit");
+        // base damage without crit: ~50*1*[0.85,1.15] ∈ [42,58]
+        result.Response.DamageDealt.Should().BeInRange(42, 58);
+    }
+
+    [Fact]
+    public async Task Hit_HighDiscernment_CritUsesMaxCappedMultiplier()
+    {
+        // Simulate a player with enough discernment to hit the 2.5× cap.
+        // GetCritProfile returns (Chance=1.0, Multiplier=2.5) — always crits at max.
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        // Cap multiplier = BaseCritMultiplier(1.5) + MaxCritDamageBonus(1.0) = 2.5
+        b.Stats.Setup(s => s.GetCritProfile(It.IsAny<int>()))
+            .Returns(new CritProfile(Chance: 1.0, Multiplier: 2.5));
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.IsCrit.Should().BeTrue();
+        result.Response.CritMultiplier.Should().BeApproximately(2.5, 1e-9,
+            "high-discernment player uses the capped 2.5× multiplier");
+        // base ~50*1*[0.85,1.15] ∈ [42,58]; ×2.5 ∈ [105,145]
+        result.Response.DamageDealt.Should().BeGreaterOrEqualTo(105,
+            "max crit multiplier 2.5 must produce at least 2.5× the non-crit floor damage");
+    }
 }
