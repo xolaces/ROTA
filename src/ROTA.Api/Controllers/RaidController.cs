@@ -74,6 +74,7 @@ public sealed class RaidController : ControllerBase
             RaidHitFailureCode.RaidNotFound        => NotFound(new { message = result.FailureReason }),
             RaidHitFailureCode.RaidExpired         => StatusCode(StatusCodes.Status410Gone, new { message = result.FailureReason }),
             RaidHitFailureCode.RaidAlreadyDefeated => Conflict(new { message = result.FailureReason }),
+            RaidHitFailureCode.RaidFull            => Conflict(new { message = result.FailureReason }),
             RaidHitFailureCode.InvalidHitSize      => BadRequest(new { message = result.FailureReason }),
             RaidHitFailureCode.AccessDenied        => StatusCode(StatusCodes.Status403Forbidden, new { message = result.FailureReason }),
             _                                      => UnprocessableEntity(new { message = result.FailureReason }),

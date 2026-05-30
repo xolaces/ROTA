@@ -43,7 +43,8 @@ public class RaidSizePersistenceTests : IAsyncLifetime
     [Fact]
     public async Task ActiveRaid_Size_RoundTripsExactly_ForEverySize()
     {
-        foreach (var size in new[] { RaidSize.Personal, RaidSize.Small, RaidSize.Large })
+        // Guards the ExpandRaidSizeSet migration + sentinel for all five sizes.
+        foreach (var size in new[] { RaidSize.Personal, RaidSize.Small, RaidSize.Medium, RaidSize.Large, RaidSize.Titanic })
         {
             Guid raidId;
             await using (var db = NewDbContext())
