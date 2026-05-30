@@ -1,0 +1,98 @@
+[
+  {
+    "id": "gear_conscript_helm",
+    "name": "Conscript Helm",
+    "description": "A battered iron helm worn by new recruits.",
+    "rarity": "Grey",
+    "slot": "Head",
+    "bonusAttack": 0,
+    "bonusDefense": 1,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/conscript_helm.png"
+  },
+  {
+    "id": "gear_conscript_collar",
+    "name": "Conscript Collar",
+    "description": "A crude neck guard offering minimal protection.",
+    "rarity": "Grey",
+    "slot": "Neck",
+    "bonusAttack": 0,
+    "bonusDefense": 1,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/conscript_collar.png"
+  },
+  {
+    "id": "gear_conscript_chest",
+    "name": "Conscript Chest",
+    "description": "Padded leather chest armour. Stops the smallest of blows.",
+    "rarity": "Grey",
+    "slot": "Torso",
+    "bonusAttack": 0,
+    "bonusDefense": 1,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/conscript_chest.png"
+  },
+  {
+    "id": "gear_iron_ring",
+    "name": "Iron Ring",
+    "description": "A plain iron ring. Somehow sharpens the wearer's strikes.",
+    "rarity": "Grey",
+    "slot": "Ring1",
+    "bonusAttack": 1,
+    "bonusDefense": 0,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/iron_ring.png"
+  },
+  {
+    "id": "gear_worn_band",
+    "name": "Worn Band",
+    "description": "A scratched metal band. No discernible power remains.",
+    "rarity": "Grey",
+    "slot": "Ring2",
+    "bonusAttack": 0,
+    "bonusDefense": 0,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/worn_band.png"
+  },
+  {
+    "id": "gear_draft_horse",
+    "name": "Draft Horse",
+    "description": "A sturdy workhorse. Occasionally charges into the fray with surprising force.",
+    "rarity": "Grey",
+    "slot": "Mount",
+    "bonusAttack": 0,
+    "bonusDefense": 0,
+    "procChance": 0.05,
+    "procPercent": 2.0,
+    "iconPath": "icons/gear/draft_horse.png"
+  },
+  {
+    "id": "gear_conscript_boots",
+    "name": "Conscript Boots",
+    "description": "Worn leather boots. Better than bare feet.",
+    "rarity": "Grey",
+    "slot": "Boots",
+    "bonusAttack": 0,
+    "bonusDefense": 0,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/conscript_boots.png"
+  },
+  {
+    "id": "gear_conscript_gloves",
+    "name": "Conscript Gloves",
+    "description": "Rough cloth gloves. Barely break-in.",
+    "rarity": "Grey",
+    "slot": "Gloves",
+    "bonusAttack": 0,
+    "bonusDefense": 0,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/conscript_gloves.png"
+  }
+]

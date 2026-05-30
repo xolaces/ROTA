@@ -13,6 +13,8 @@ public class PlayerProfileResponse
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
     public IReadOnlyList<ResourceValueResponse> Resources { get; set; } = [];
+    public int EffectiveAttack  { get; set; }
+    public int EffectiveDefense { get; set; }
 }
 
 public class ResourceValueResponse
