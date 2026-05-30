@@ -153,6 +153,33 @@ System 11 — Stat Allocation (BETA)
 - Migrations: AddStatInvestmentFields
 - Tests: 7 unit tests (allocate Attack/Defense/Health/Discernment, LSI cap enforce/allow, insufficient SP, level-up gems at 5/10/15 and not at 3, AddUnassigned no LSI check)
 
+## System 12 — Beta Access Control (BETA) — COMPLETE (2026-05-29)
+Build: 0 errors, 0 warnings. Tests: 185 unit + 3 integration = 188 total, all passing.
+Migrations applied: AddPlayerRolesAndDisplayName (Component A), AddBetaKeys (Component B)
+- Component A: PlayerRoles [Flags] enum (None/Player/Moderator/Admin), Player.Roles column,
+  GrantRole/RevokeRole/HasRole/UpdateDisplayName methods, JWT role + display_name claims,
+  AdminOnly (role claim + config allowlist break-glass) + ModeratorOrAdmin policies
+- Component B: BetaKey entity, IBetaKeyRepository (TryRedeemAsync atomic conditional UPDATE),
+  IBetaKeyService (Crockford base32 keygen), RegisterRequest.BetaKey + validator,
+  AuthService transactional beta-gate (claim key, create player, rollback on failure),
+  Player.CreateWithId factory, 18 unit tests + 1 concurrency integration test
+- Component C: SeedData.EnsureAdminAsync (idempotent, reads Seed:AdminPassword — REQUIRED,
+  never hardcoded; default email xolaces@rota.dev), wired in Program.cs pre-Run,
+  4 unit-style tests; Seed:AdminEmail optional config
+- Component D: IPlayerRepository.FindByUsernameAsync + CountByRoleAsync,
+  IRefreshTokenRepository.RevokeAllActiveAsync, IAdminService + AdminService
+  (GrantRoleAsync/RevokeRoleAsync with DB actor re-verify, last-admin guard, session revocation),
+  AdminDTOs, RoleChangeRequestValidator + GenerateBetaKeysRequestValidator,
+  AdminController [AdminOnly]: /api/admin/players/{id}/roles/grant|revoke,
+  /api/admin/beta-keys (POST gen + GET list), 11 unit tests
+- Component E: AdminCli.cs (seed-admin / gen-beta-key / promote / demote),
+  Program.cs early-return before Kestrel; CLI commands in CLAUDE.md
+- Component F: XML docs, changelog entry, CLAUDE.md updated, function reference updated
+Configuration keys (set via user-secrets or env vars):
+  BetaGate:Enabled          default true — set to false to open registration
+  Seed:AdminPassword        REQUIRED for seed-admin (never has a default)
+  Seed:AdminEmail           default xolaces@rota.dev
+
 ## Phase 1 BACKEND COMPLETE
 ## Phase 1 Extensions COMPLETE (2026-05-28)
 Build: 0 errors, 0 warnings. Tests: 148/148 unit + 1/1 integration = 149 total, all passing.
@@ -299,6 +326,9 @@ Orange is the permanent ceiling. Never add above it.
 
 ## Documentation Index
 - [Game Design & Unity UI Reference](docs/ui/ROTA_GameDesign_UI_Reference.md) — DotD mechanics analysis, screen-by-screen UI blueprints, Unity implementation prompt, content pipeline guide
+- [Operations & Tooling Runbook](docs/OPERATIONS.md) — every dotnet command, the admin CLI, admin REST API, config flags, secrets, migrations, deployment order, beta onboarding
+- [Design North Star](docs/DESIGN_NORTHSTAR.md) — durable design vision; research-paper divergences recorded as amendments (no resets, capped scaling, Gauntlet as core spine)
+- [System specs](docs/specs/) — per-system build specs (System 12 done, System 13 moderation queued)
 
 ## Function Reference
 Full method signatures, entity fields, endpoint map:
@@ -314,3 +344,9 @@ dotnet test                             ← run all tests
 dotnet run --project src/ROTA.Api       ← run server
 dotnet ef migrations add <Name> --project src/ROTA.Infrastructure --startup-project src/ROTA.Api
 dotnet ef database update --project src/ROTA.Infrastructure --startup-project src/ROTA.Api
+
+## Admin CLI commands (replace Kestrel, no HTTP server started)
+dotnet run --project src/ROTA.Api -- seed-admin                    ← create Xolaces admin (reads Seed:AdminPassword)
+dotnet run --project src/ROTA.Api -- gen-beta-key [count]          ← generate 1..100 ROTA-XXXX-XXXX-XXXX keys
+dotnet run --project src/ROTA.Api -- promote <user|guid> <Role>    ← grant Admin or Moderator role
+dotnet run --project src/ROTA.Api -- demote  <user|guid> <Role>    ← revoke Admin or Moderator role

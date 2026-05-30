@@ -3,12 +3,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 using System.Security.Cryptography;
+using ROTA.Api;
 using ROTA.Infrastructure.Persistence;
 using ROTA.Api.Middleware;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Services;
 using ROTA.Application.Configuration;
+using ROTA.Domain.Enums;
 using ROTA.Infrastructure;
+using ROTA.Infrastructure.Seeding;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -105,7 +108,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Admin allowlist — no Player.IsAdmin column yet (Phase 2 full role system).
+// Admin allowlist — kept as a break-glass fallback when the DB role cannot be used.
+// Primary check is the "Admin" role claim in the JWT (from Player.Roles flags).
 // Populate via user secrets or environment: Admin:PlayerIds:0 = "<guid>"
 var adminPlayerIds = builder.Configuration
     .GetSection("Admin:PlayerIds")
@@ -113,16 +117,21 @@ var adminPlayerIds = builder.Configuration
 
 builder.Services.AddAuthorization(options =>
 {
-    // "AdminOnly" policy: JWT must belong to a player whose ID is in the Admin:PlayerIds config list.
-    // Apply [Authorize(Policy="AdminOnly")] to any endpoint that should be staff-only.
+    // "AdminOnly": role claim primary; config allowlist is a break-glass fallback.
     options.AddPolicy("AdminOnly", policy =>
         policy.RequireAuthenticatedUser()
               .RequireAssertion(ctx =>
-              {
-                  var sub = ctx.User.FindFirst("sub")?.Value;
-                  return sub is not null
-                      && adminPlayerIds.Contains(sub, StringComparer.OrdinalIgnoreCase);
-              }));
+                  ctx.User.IsInRole(nameof(PlayerRoles.Admin))
+                  || adminPlayerIds.Contains(
+                      ctx.User.FindFirst("sub")?.Value ?? "",
+                      StringComparer.OrdinalIgnoreCase)));
+
+    // "ModeratorOrAdmin": moderators and admins both satisfy this policy.
+    options.AddPolicy("ModeratorOrAdmin", policy =>
+        policy.RequireAuthenticatedUser()
+              .RequireAssertion(ctx =>
+                  ctx.User.IsInRole(nameof(PlayerRoles.Admin))
+                  || ctx.User.IsInRole(nameof(PlayerRoles.Moderator))));
 });
 
 builder.Services.AddSignalR();
@@ -164,7 +173,18 @@ builder.Services.AddHealthChecks();
 // 10. Endpoints          - controllers and hubs
 // ---------------------------------------------------------------
 
+// ADMIN CLI — runs the requested command instead of starting Kestrel.
+// MUST be placed after ALL service registration (incl. the Redis factory) so the CLI's
+// container is complete and ValidateOnBuild passes. The Redis factory is lazy, so no
+// connection is opened unless a command actually resolves a Redis-backed service.
+if (args.Length > 0 && AdminCli.IsCommand(args[0]))
+    return await AdminCli.RunAsync(args, builder);
+
 var app = builder.Build();
+
+// Startup seed — runs once before accepting requests.
+// Idempotent: skipped if the admin account already exists.
+await SeedData.EnsureAdminAsync(app.Services);
 
 // [1] Global exception handler
 // SECURITY: raw exceptions must never reach the client - stack traces leak architecture
@@ -220,6 +240,8 @@ app.MapHealthChecks("/health");
 // app.MapHub<GuildHub>("/hubs/guild");
 
 app.Run();
+
+return 0;
 
 // Expose for integration tests (Testcontainers + WebApplicationFactory)
 public partial class Program { }

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using ROTA.Application.Interfaces;
 using ROTA.Domain.Entities;
+using ROTA.Domain.Enums;
 using ROTA.Shared.DTOs;
 
 namespace ROTA.Application.Services;
@@ -28,19 +29,22 @@ public sealed class AuthService : IAuthService
     private readonly IConfiguration _config;
     private readonly IAuthLockoutService _lockout;
     private readonly IAuditLogRepository _auditLog;
+    private readonly IBetaKeyRepository _betaKeys;
 
     public AuthService(
         IPlayerRepository players,
         IRefreshTokenRepository refreshTokens,
         IConfiguration config,
         IAuthLockoutService lockout,
-        IAuditLogRepository auditLog)
+        IAuditLogRepository auditLog,
+        IBetaKeyRepository betaKeys)
     {
         _players = players;
         _refreshTokens = refreshTokens;
         _config = config;
         _lockout = lockout;
         _auditLog = auditLog;
+        _betaKeys = betaKeys;
     }
 
     // -------------------------------------------------------------------
@@ -49,6 +53,18 @@ public sealed class AuthService : IAuthService
 
     public async Task<AuthResponse?> RegisterAsync(RegisterRequest request, string ipAddress)
     {
+        var betaGateEnabled = _config.GetValue("BetaGate:Enabled", true);
+
+        if (betaGateEnabled)
+            return await RegisterWithBetaGateAsync(request, ipAddress);
+
+        return await RegisterCoreAsync(request, ipAddress, newPlayerId: null);
+    }
+
+    private async Task<AuthResponse?> RegisterWithBetaGateAsync(RegisterRequest request, string ipAddress)
+    {
+        // SECURITY/CORRECTNESS: reject duplicates BEFORE consuming the single-use key, so a
+        // taken username/email never burns a valid key. Zero side effects on this path.
         if (await _players.EmailExistsAsync(request.Email) ||
             await _players.UsernameExistsAsync(request.Username))
         {
@@ -58,9 +74,46 @@ public sealed class AuthService : IAuthService
             return null;
         }
 
+        // Pre-allocate the player ID so TryRedeemAsync can link the key to the player
+        // before the player row exists. If player creation throws (e.g. a unique-constraint
+        // race), the DB transaction rolls back the key claim, freeing the key.
+        var newPlayerId = Guid.NewGuid();
+
+        return await _betaKeys.WithTransactionAsync(async ct =>
+        {
+            // Step 1: atomically claim the key. This is the single-use race guard.
+            var claimed = await _betaKeys.TryRedeemAsync(request.BetaKey, newPlayerId, ct);
+            if (!claimed)
+            {
+                await _auditLog.AppendAsync(AuditLog.Create(
+                    null, "RegisterFailed", null,
+                    "Invalid or already-redeemed beta key", ipAddress));
+                return null;
+            }
+
+            // Step 2: create the player only after the key is secured.
+            return await RegisterCoreAsync(request, ipAddress, newPlayerId, ct);
+        });
+    }
+
+    private async Task<AuthResponse?> RegisterCoreAsync(
+        RegisterRequest request, string ipAddress, Guid? newPlayerId,
+        CancellationToken ct = default)
+    {
+        if (await _players.EmailExistsAsync(request.Email, ct) ||
+            await _players.UsernameExistsAsync(request.Username, ct))
+        {
+            await _auditLog.AppendAsync(AuditLog.Create(
+                null, "RegisterFailed", null,
+                "Duplicate username or email", ipAddress));
+            return null;
+        }
+
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password, BcryptWorkFactor);
-        var player = Player.Create(request.Username, request.Email, passwordHash);
-        await _players.CreateAsync(player);
+        var player = newPlayerId.HasValue
+            ? Player.CreateWithId(newPlayerId.Value, request.Username, request.Email, passwordHash)
+            : Player.Create(request.Username, request.Email, passwordHash);
+        await _players.CreateAsync(player, ct);
 
         await _auditLog.AppendAsync(AuditLog.Create(
             player.Id, "Register", null,
@@ -214,13 +267,22 @@ public sealed class AuthService : IAuthService
             new RsaSecurityKey(rsa),
             SecurityAlgorithms.RsaSha256);
 
-        var claims = new[]
+        // Build base claims
+        var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub,   player.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Name,  player.Username),
             new Claim(JwtRegisteredClaimNames.Email, player.Email),
             new Claim(JwtRegisteredClaimNames.Jti,   Guid.NewGuid().ToString()),
+            new Claim("display_name",                player.DisplayName),
         };
+
+        // Emit one role claim per set flag (skip None)
+        foreach (PlayerRoles flag in Enum.GetValues<PlayerRoles>())
+        {
+            if (flag != PlayerRoles.None && player.HasRole(flag))
+                claims.Add(new Claim(ClaimTypes.Role, flag.ToString()));
+        }
 
         var token = new JwtSecurityToken(
             issuer: _config["Jwt:Issuer"],

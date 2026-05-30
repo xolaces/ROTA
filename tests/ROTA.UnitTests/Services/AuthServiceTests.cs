@@ -25,14 +25,17 @@ public class AuthServiceTests
         return rsa.ExportRSAPrivateKeyPem();
     }
 
-    private static IConfiguration BuildConfig(string? privateKey = null)
+    private static IConfiguration BuildConfig(string? privateKey = null, bool betaGateEnabled = false)
     {
         return new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Jwt:Issuer"]     = "rota-test",
-                ["Jwt:Audience"]   = "rota-client",
-                ["Jwt:PrivateKey"] = privateKey ?? "PLACEHOLDER",
+                ["Jwt:Issuer"]        = "rota-test",
+                ["Jwt:Audience"]      = "rota-client",
+                ["Jwt:PrivateKey"]    = privateKey ?? "PLACEHOLDER",
+                // Disable the beta gate in existing tests — beta gate behaviour
+                // is tested separately in BetaKeyServiceTests.
+                ["BetaGate:Enabled"]  = betaGateEnabled.ToString().ToLowerInvariant(),
             })
             .Build();
     }
@@ -56,12 +59,13 @@ public class AuthServiceTests
                     Mock<IRefreshTokenRepository> tokens,
                     Mock<IAuthLockoutService> lockout,
                     Mock<IAuditLogRepository> auditLog)
-        BuildService(string? privateKey = null)
+        BuildService(string? privateKey = null, bool betaGateEnabled = false)
     {
         var players  = new Mock<IPlayerRepository>();
         var tokens   = new Mock<IRefreshTokenRepository>();
         var lockout  = new Mock<IAuthLockoutService>();
         var auditLog = new Mock<IAuditLogRepository>();
+        var betaKeys = new Mock<IBetaKeyRepository>();
 
         // Default: not locked out
         lockout.Setup(l => l.IsLockedOutAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -70,9 +74,10 @@ public class AuthServiceTests
         var service = new AuthService(
             players.Object,
             tokens.Object,
-            BuildConfig(privateKey),
+            BuildConfig(privateKey, betaGateEnabled),
             lockout.Object,
-            auditLog.Object);
+            auditLog.Object,
+            betaKeys.Object);
 
         return (service, players, tokens, lockout, auditLog);
     }
@@ -140,6 +145,47 @@ public class AuthServiceTests
             "127.0.0.1");
 
         result.Should().BeNull();
+    }
+
+    // -----------------------------------------------------------------------
+    // REGISTER — beta gate: a failed registration must NOT burn the single-use key
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task RegisterAsync_BetaGate_DuplicateUsername_DoesNotConsumeKey()
+    {
+        var players  = new Mock<IPlayerRepository>();
+        var tokens   = new Mock<IRefreshTokenRepository>();
+        var lockout  = new Mock<IAuthLockoutService>();
+        var auditLog = new Mock<IAuditLogRepository>();
+        var betaKeys = new Mock<IBetaKeyRepository>();
+
+        players.Setup(r => r.EmailExistsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+               .ReturnsAsync(false);
+        players.Setup(r => r.UsernameExistsAsync("takenname", It.IsAny<CancellationToken>()))
+               .ReturnsAsync(true);
+
+        var service = new AuthService(
+            players.Object, tokens.Object,
+            BuildConfig(betaGateEnabled: true),
+            lockout.Object, auditLog.Object, betaKeys.Object);
+
+        var result = await service.RegisterAsync(
+            new RegisterRequest
+            {
+                Username = "takenname",
+                Email    = "new@rota.test",
+                Password = "Correct1",
+                BetaKey  = "ROTA-AAAA-BBBB-CCCC",
+            },
+            "127.0.0.1");
+
+        result.Should().BeNull("registration must fail on a duplicate username");
+        betaKeys.Verify(
+            k => k.TryRedeemAsync(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never,
+            "a single-use beta key must NOT be consumed when registration fails on a duplicate");
+        players.Verify(r => r.CreateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     // -----------------------------------------------------------------------

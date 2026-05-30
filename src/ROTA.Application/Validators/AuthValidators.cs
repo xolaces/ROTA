@@ -1,4 +1,5 @@
 using FluentValidation;
+using Microsoft.Extensions.Configuration;
 using ROTA.Shared.DTOs;
 
 namespace ROTA.Application.Validators;
@@ -8,7 +9,7 @@ namespace ROTA.Application.Validators;
 
 public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 {
-    public RegisterRequestValidator()
+    public RegisterRequestValidator(IConfiguration config)
     {
         RuleFor(x => x.Username)
             .NotEmpty()
@@ -31,6 +32,17 @@ public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest
             .Matches(@"[A-Z]").WithMessage("Password must contain at least one uppercase letter.")
             .Matches(@"[a-z]").WithMessage("Password must contain at least one lowercase letter.")
             .Matches(@"\d").WithMessage("Password must contain at least one digit.");
+
+        // BetaKey is required when the beta gate is enabled (default: true).
+        var betaGateEnabled = config.GetValue("BetaGate:Enabled", true);
+        if (betaGateEnabled)
+        {
+            RuleFor(x => x.BetaKey)
+                .NotEmpty()
+                .WithMessage("A beta access key is required for registration.")
+                .MaximumLength(20)
+                .WithMessage("Beta key must be in ROTA-XXXX-XXXX-XXXX format.");
+        }
     }
 }
 
