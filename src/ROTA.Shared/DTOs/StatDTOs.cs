@@ -38,6 +38,8 @@ public class PlayerStatsResponse
     public int BaseDefense { get; set; }
     public int BaseMaxHealth { get; set; }
     public int CurrentHealth { get; set; }
+    public int EffectiveAttack  { get; set; }
+    public int EffectiveDefense { get; set; }
 }
 
 /// <summary>Crit chance and multiplier computed from a player's Discernment investment.</summary>

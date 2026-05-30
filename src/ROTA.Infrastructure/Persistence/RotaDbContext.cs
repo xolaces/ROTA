@@ -28,6 +28,9 @@ public class RotaDbContext : DbContext
     // ----- System 12 — Beta Access Control -----
     public DbSet<BetaKey> BetaKeys => Set<BetaKey>();
 
+    // ----- System 13 — Character Gear -----
+    public DbSet<PlayerEquipment> PlayerEquipment => Set<PlayerEquipment>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

@@ -26,6 +26,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRaidParticipantRepository, RaidParticipantRepository>();
         services.AddScoped<IPlayerInventoryRepository, PlayerInventoryRepository>();
         services.AddScoped<IBetaKeyRepository, BetaKeyRepository>();
+        services.AddScoped<IPlayerEquipmentRepository, PlayerEquipmentRepository>();
 
         // Infrastructure services
         services.AddScoped<IAuthLockoutService, AuthLockoutService>();
@@ -40,6 +41,8 @@ public static class ServiceCollectionExtensions
             _ => new ItemDefinitionProvider(contentRootPath));
         services.AddSingleton<ILootTableProvider>(sp =>
             new LootTableProvider(contentRootPath, sp.GetRequiredService<IRaidDefinitionProvider>()));
+        services.AddSingleton<IGearDefinitionProvider>(
+            _ => new GearDefinitionProvider(contentRootPath));
 
         // Application services
         services.AddScoped<IClassService, ClassService>();
@@ -53,6 +56,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IQuestService, QuestService>();
         services.AddScoped<IRaidService, RaidService>();
         services.AddScoped<IItemService, ItemService>();
+        services.AddScoped<IEquipmentService, EquipmentService>();
 
         // FluentValidation — scan Application assembly for all IValidator<T> implementations
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
