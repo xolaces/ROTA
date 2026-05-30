@@ -25,5 +25,9 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      - name: Test
-        run: dotnet test --configuration Release --no-build
+      # CI gates on the hermetic unit tests only. The integration tests use
+      # Testcontainers (Docker Postgres/Redis) and are flaky on GitHub-hosted
+      # runners (Docker Hub pull limits, Ryuk reaper) — run them locally
+      # (`dotnet test tests/ROTA.IntegrationTests`, Docker required).
+      - name: Unit tests
+        run: dotnet test tests/ROTA.UnitTests --configuration Release --no-build
