@@ -271,6 +271,8 @@ public sealed class RaidService : IRaidService
         bool finalDefeated   = false;
         RaidParticipant? participantFinal = null;
         RaidRewards? rewards = null;
+        int xpGained         = 0;
+        long goldGained      = 0;
 
         var applied = await _raids.AtomicApplyHitAsync(activeRaidId, async lockedRaid =>
         {
@@ -308,7 +310,22 @@ public sealed class RaidService : IRaidService
             else
                 await _participants.UpdateAsync(participantFinal, ct);
 
+            // On-hit XP and gold — granted every hit, inside the advisory lock.
+            // XP: single uniform roll [1.0, 4.0] × stamina spent (not per-stamina roll).
+            double xpRoll = 1.0 + _random.NextDouble() * 3.0; // uniform [1, 4]
+            xpGained  = Math.Max(1, (int)Math.Round(staminaCost * xpRoll));
+            goldGained = (long)staminaCost * definition.GoldPerStamina;
+
+            var hitLevelUps = player.AddExperience(xpGained, lvl => _stats.XpToNextLevel(lvl));
+            player.AddGold(goldGained);
+            await _players.UpdateAsync(player, ct);
+
+            // Fire level-up side effects for each level gained (mirrors DistributeKillRewardsAsync)
+            foreach (var newLevel in hitLevelUps)
+                await _stats.GrantLevelUpPointsAsync(playerId, newLevel, ct);
+
             // Kill detection and reward distribution — fully inside the advisory lock.
+            // On a killing hit, these kill rewards stack on top of the on-hit grant above.
             bool isKill = lockedRaid.CurrentHp == 0;
             if (isKill)
             {
@@ -371,6 +388,8 @@ public sealed class RaidService : IRaidService
             Difficulty      = raid.Difficulty.ToString(),
             DifficultyColor = DifficultyColors[raid.Difficulty],
             YourCurrentTier = callerTier,
+            XpGained        = xpGained,
+            GoldGained      = goldGained,
         };
 
         // 11. Store the completed response — replaces the "pending" placeholder.

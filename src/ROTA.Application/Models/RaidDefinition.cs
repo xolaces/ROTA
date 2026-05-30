@@ -16,4 +16,6 @@ public class RaidDefinition
     public int BaseGemReward { get; set; }
     public bool HasOnHitDrops { get; set; }
     public string ArtKey { get; set; } = string.Empty;
+    // Gold granted per stamina spent on every hit (on-hit reward, not kill reward)
+    public long GoldPerStamina { get; set; } = 1;
 }
