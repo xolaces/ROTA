@@ -25,6 +25,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IActiveRaidRepository, ActiveRaidRepository>();
         services.AddScoped<IRaidParticipantRepository, RaidParticipantRepository>();
         services.AddScoped<IPlayerInventoryRepository, PlayerInventoryRepository>();
+        services.AddScoped<IBetaKeyRepository, BetaKeyRepository>();
 
         // Infrastructure services
         services.AddScoped<IAuthLockoutService, AuthLockoutService>();
@@ -43,6 +44,8 @@ public static class ServiceCollectionExtensions
         // Application services
         services.AddScoped<IClassService, ClassService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IBetaKeyService, BetaKeyService>();
+        services.AddScoped<IAdminService, AdminService>();
         services.AddScoped<IEnergyService, EnergyService>();
         services.AddScoped<IPlayerService, PlayerService>();
         services.AddScoped<IGemService, GemService>();

@@ -47,6 +47,22 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
             .HasColumnName("gold")
             .HasDefaultValue(0L);
 
+        // Role system — stored as a single int using bitwise flags
+        builder.Property(p => p.Roles)
+            .HasColumnName("roles")
+            .HasConversion<int>()
+            .HasDefaultValue(PlayerRoles.Player)
+            // Sentinel = the DB default so non-default role sets (e.g. Player|Admin) are sent
+            // explicitly and the column is omitted only when Roles == Player. Without this a
+            // CLR-default value would be wrongly replaced by the store default. (EF 20601)
+            .HasSentinel(PlayerRoles.Player);
+
+        // Display name — shown in UI, populated from username at registration
+        builder.Property(p => p.DisplayName)
+            .HasColumnName("display_name")
+            .HasMaxLength(48)
+            .IsRequired();
+
         builder.Property(p => p.GuildId)
             .HasColumnName("guild_id");
 

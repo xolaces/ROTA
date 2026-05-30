@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ROTA.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using ROTA.Infrastructure.Persistence;
 namespace ROTA.Infrastructure.Migrations
 {
     [DbContext(typeof(RotaDbContext))]
-    partial class RotaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260529134945_AddPlayerRolesAndDisplayName")]
+    partial class AddPlayerRolesAndDisplayName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -164,68 +167,6 @@ namespace ROTA.Infrastructure.Migrations
                     b.HasIndex("PlayerId");
 
                     b.ToTable("audit_log", (string)null);
-                });
-
-            modelBuilder.Entity("ROTA.Domain.Entities.BetaKey", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<Guid?>("CreatedByPlayerId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("created_by_player_id");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("is_deleted");
-
-                    b.Property<bool>("IsRedeemed")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("is_redeemed");
-
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("key");
-
-                    b.Property<DateTimeOffset?>("RedeemedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("redeemed_at");
-
-                    b.Property<Guid?>("RedeemedByPlayerId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("redeemed_by_player_id");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Key")
-                        .IsUnique()
-                        .HasDatabaseName("ix_beta_keys_key");
-
-                    b.HasIndex("RedeemedByPlayerId")
-                        .HasDatabaseName("ix_beta_keys_redeemed_by_player_id");
-
-                    b.ToTable("beta_keys", (string)null);
                 });
 
             modelBuilder.Entity("ROTA.Domain.Entities.GemTransaction", b =>

@@ -48,4 +48,17 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
         _db.RefreshTokens.Update(token);
         await _db.SaveChangesAsync(ct);
     }
+
+    public async Task RevokeAllActiveAsync(Guid playerId, CancellationToken ct = default)
+    {
+        var active = await _db.RefreshTokens
+            .Where(t => t.PlayerId == playerId && !t.IsRevoked && t.ExpiresAt > DateTimeOffset.UtcNow)
+            .ToListAsync(ct);
+
+        foreach (var t in active)
+            t.Revoke();
+
+        if (active.Count > 0)
+            await _db.SaveChangesAsync(ct);
+    }
 }

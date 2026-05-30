@@ -25,6 +25,9 @@ public class RotaDbContext : DbContext
     public DbSet<PlayerQuestDifficultyProgress> PlayerQuestDifficultyProgress => Set<PlayerQuestDifficultyProgress>();
     public DbSet<PlayerInventoryItem> PlayerInventoryItems => Set<PlayerInventoryItem>();
 
+    // ----- System 12 — Beta Access Control -----
+    public DbSet<BetaKey> BetaKeys => Set<BetaKey>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

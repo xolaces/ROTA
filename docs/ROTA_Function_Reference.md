@@ -1,5 +1,5 @@
 # ROTA Function Reference
-Last updated: 2026-05-28
+Last updated: 2026-05-29
 Update when adding public methods or entities.
 
 ---
@@ -109,6 +109,26 @@ Update when adding public methods or entities.
 
 ---
 
+### IAdminService
+`src/ROTA.Application/Interfaces/IAdminService.cs`
+
+| Method | Description |
+|--------|-------------|
+| `Task<AdminActionResult> GrantRoleAsync(Guid actorId, string targetUsernameOrId, PlayerRoles role, CancellationToken)` | Grant role — DB actor re-verify, Guid.Empty skips for CLI |
+| `Task<AdminActionResult> RevokeRoleAsync(Guid actorId, string targetUsernameOrId, PlayerRoles role, CancellationToken)` | Revoke role — last-admin guard, revokes sessions |
+
+---
+
+### IBetaKeyService
+`src/ROTA.Application/Interfaces/IBetaKeyService.cs`
+
+| Method | Description |
+|--------|-------------|
+| `Task<IReadOnlyList<BetaKey>> GenerateAsync(Guid? actorPlayerId, int count, CancellationToken)` | Generate 1–100 ROTA-XXXX-XXXX-XXXX keys; audits BetaKeyGenerated |
+| `Task<bool> ValidateAndRedeemAsync(string key, Guid newPlayerId, CancellationToken)` | Atomically redeem key via TryRedeemAsync |
+
+---
+
 ### Repository Interfaces
 `src/ROTA.Application/Interfaces/`
 
@@ -125,12 +145,24 @@ Update when adding public methods or entities.
 | `Task<Player?> FindByIdWithStatsAsync(Guid, CancellationToken)` | With Stats eager |
 | `Task UpdateAsync(Player, CancellationToken)` | Persist player changes |
 | `Task UpdateStatsAsync(PlayerStats, CancellationToken)` | Persist stats changes |
+| `Task<Player?> FindByUsernameAsync(string, CancellationToken)` | Find by username (System 12) |
+| `Task<int> CountByRoleAsync(PlayerRoles, CancellationToken)` | Count by bitwise role flag (System 12) |
 
 **IPlayerResourceRepository** — `AtomicUpdateAsync` (row-level FOR UPDATE lock)
 
 **IAuditLogRepository** — `AppendAsync(AuditLog, CancellationToken)` (append-only)
 
-**IRefreshTokenRepository** — find/create/revoke refresh tokens
+**IRefreshTokenRepository** — find/create/revoke refresh tokens; `RevokeAllActiveAsync(Guid, CancellationToken)` (batch session revocation — System 12)
+
+**IBetaKeyRepository**
+
+| Method | Description |
+|--------|-------------|
+| `Task<BetaKey> CreateAsync(BetaKey, CancellationToken)` | Persist new key |
+| `Task<BetaKey?> GetByKeyAsync(string, CancellationToken)` | Find by key string |
+| `Task<IReadOnlyList<BetaKey>> ListAsync(int take, CancellationToken)` | List recently created |
+| `Task<bool> TryRedeemAsync(string key, Guid playerId, CancellationToken)` | Atomic conditional UPDATE — race guard |
+| `Task<T> WithTransactionAsync<T>(Func<CancellationToken, Task<T>>, CancellationToken)` | Wrap work in a DB transaction |
 
 **IGemTransactionRepository** — append gem ledger entries, sum balance
 
@@ -184,6 +216,20 @@ StatBag: unassigned SkillPoints. Sigil: summon raid + consume item.
 ### ClassService → IClassService *(to be added — Section B)*
 `src/ROTA.Application/Services/ClassService.cs`
 Path tiers L5-1000. Convergence L2000+. Strip Legendary/Ascendant prefix for regen lookup.
+
+### AdminService → IAdminService
+`src/ROTA.Application/Services/AdminService.cs`
+GrantRoleAsync: DB actor re-verify (skip Guid.Empty CLI), resolve target by GUID or username, guard base Player role, audit RoleGranted.
+RevokeRoleAsync: same actor verify, cannot revoke Player, last-admin guard (CountByRoleAsync <= 1 → fail), RevokeAllActiveAsync on Admin/Moderator removal, audit RoleRevoked.
+
+### BetaKeyService → IBetaKeyService
+`src/ROTA.Application/Services/BetaKeyService.cs`
+ROTA-XXXX-XXXX-XXXX Crockford base32 keygen via RandomNumberGenerator. GenerateAsync: creates + persists N keys, audits BetaKeyGenerated (Guid.Empty actor → null CreatedByPlayerId).
+ValidateAndRedeemAsync: delegates to TryRedeemAsync.
+
+### SeedData (static)
+`src/ROTA.Infrastructure/Seeding/SeedData.cs`
+EnsureAdminAsync: idempotent bootstrap. Reads Seed:AdminPassword (required, no default) and Seed:AdminEmail (default xolaces@rota.dev). Creates "Xolaces" with Player|Admin roles and DisplayName="DEV_Xolaces". BCrypt(12). Logs warning and returns if password not configured.
 
 ---
 
@@ -242,6 +288,16 @@ Path tiers L5-1000. Convergence L2000+. Strip Legendary/Ascendant prefix for reg
 | `GET /api/stats/class` *(Section B)* | `GetClassInfoAsync` | 200, 404 |
 | `POST /api/stats/class/choose` *(Section B)* | `AssignClassAsync` | 200, 400, 403 |
 
+### AdminController — `api/admin` [AdminOnly]
+`src/ROTA.Api/Controllers/AdminController.cs`
+
+| Endpoint | Service Method | Responses |
+|----------|---------------|-----------|
+| `POST /api/admin/players/{idOrUsername}/roles/grant` | `GrantRoleAsync` | 200, 400, 403, 404 |
+| `POST /api/admin/players/{idOrUsername}/roles/revoke` | `RevokeRoleAsync` | 200, 400, 403, 404 |
+| `POST /api/admin/beta-keys` | `GenerateAsync` | 200 `{ keys: [...] }` |
+| `GET /api/admin/beta-keys` | `ListAsync` | 200 list with redeemed status |
+
 ---
 
 ## Entities
@@ -258,6 +314,8 @@ Path tiers L5-1000. Convergence L2000+. Strip Legendary/Ascendant prefix for reg
 | `Level` | `int` |
 | `Experience` | `long` (XP toward next level, not cumulative) |
 | `Gold` | `long` |
+| `Roles` | `PlayerRoles` (bitwise flags, default Player) |
+| `DisplayName` | `string` (max 48) |
 | `Class` | `PlayerClass` *(Section B)* |
 | `GuildId` | `Guid?` |
 | `GuildRank` | `string?` |
@@ -274,9 +332,14 @@ Domain methods:
 | Method | Description |
 |--------|-------------|
 | `Create(username, email, passwordHash)` | Factory, seeds Stats+Resources |
+| `CreateWithId(Guid id, username, email, passwordHash)` | Factory with pre-allocated ID (beta gate) |
 | `IReadOnlyList<int> AddExperience(long, Func<int,int> xpToNextLevel)` | XP carry-over, returns new levels |
 | `void AddGold(long)` | Increase gold balance |
 | `void UpdateUsername(string)` | Change username |
+| `void UpdateDisplayName(string)` | Change display name (max 48) |
+| `void GrantRole(PlayerRoles)` | Add role flag, bumps UpdatedAt |
+| `void RevokeRole(PlayerRoles)` | Remove role flag; Player flag is permanent |
+| `bool HasRole(PlayerRoles)` | Bitwise check |
 | `void Ban(string reason)` | Set banned flag |
 | `void SoftDelete()` | Mark deleted |
 | `void SetClass(PlayerClass)` *(Section B)* | Assign class tier |
@@ -358,6 +421,23 @@ Domain methods: `Create(...)`, `TakeDamage(long)`, `MarkDefeated()`, `IncrementP
 
 ---
 
+### BetaKey
+`src/ROTA.Domain/Entities/BetaKey.cs`
+
+| Property | Type |
+|----------|------|
+| `Id` | `Guid` |
+| `Key` | `string` (ROTA-XXXX-XXXX-XXXX) |
+| `CreatedByPlayerId` | `Guid?` (null for CLI/system) |
+| `IsRedeemed` | `bool` |
+| `RedeemedByPlayerId` | `Guid?` |
+| `RedeemedAt` | `DateTimeOffset?` |
+| `CreatedAt` | `DateTimeOffset` |
+| `UpdatedAt` | `DateTimeOffset` |
+| `IsDeleted` | `bool` |
+
+Domain methods: `Create(string key, Guid? createdBy)` factory; `Redeem(Guid playerId)` — throws if already redeemed (use TryRedeemAsync in production)
+
 ### Other Entities (summary)
 
 **RefreshToken** — `Id, PlayerId, TokenHash, ExpiresAt, RevokedAt, IpAddress, IsDeleted`
@@ -394,6 +474,16 @@ Domain methods: `Create(...)`, `TakeDamage(long)`, `MarkDefeated()`, `IncrementP
 | `Ancient=600` | 9 | Auto at L10000 |
 | `ElderAncient=700` | 10 | Auto at L15000 |
 | `Eternal=800` | 11 | Auto at L25000 |
+
+### PlayerRoles (`src/ROTA.Domain/Enums/PlayerRoles.cs`)
+`[Flags]` — stored as a single int column; bitwise OR for multiple roles
+
+| Value | Int | Notes |
+|-------|-----|-------|
+| `None = 0` | 0 | Never assigned in practice |
+| `Player = 1` | 1 | All registered accounts — permanent, cannot be revoked |
+| `Moderator = 2` | 2 | Mod tooling access |
+| `Admin = 4` | 4 | Full access; last-admin protection enforced |
 
 ### Other Enums
 - **ResourceType** — `Energy, Stamina, GuildStamina`
