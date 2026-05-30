@@ -4,26 +4,17 @@
 
 ## Just completed
 - **v0.2.0** Beta Access Control · **v0.2.1** hardening · **v0.2.2** class regen + raid size set +
-  raid on-hit XP/gold · **v0.2.3** discernment crit (raids). All merged, tagged, pushed to origin.
-- Current: 215 tests green (208 unit + 7 integration), 0 warnings. `main` synced with origin.
+  raid on-hit XP/gold · **v0.2.3** discernment crit (raids) · **v0.2.4** character gear.
+  All merged, tagged, pushed to origin.
+- Current: 219 unit + 7 integration = 226 tests green, 0 warnings. `main` @ v0.2.4 synced with origin.
 
-## NEXT: v0.2.4 — Character gear (decisions LOCKED with the owner)
-Build the 8-slot character equipment system. Locked design:
-- **Slots (8):** head, neck, torso, ring1, ring2, mount, boots, gloves.
-- **Effective stats:** equipped gear adds flat ATK/DEF on top of base stat investment. The raid
-  damage formula `(ATK×4 + DEF) × hitSize` switches from `BaseAttack/BaseDefense` to **effective**
-  (base + gear). Player profile shows effective stats.
-- **Mount = a proc** in the raid-hit pipeline (alongside crit): **once per hit/attack**, roll a
-  `chance%` → add `proc% × base damage`. Bounded, Dawn-style (e.g. ~5–40% chance, ~200–400% proc).
-- **Set bonuses: DEFERRED** — first gear system is slots + flat ATK/DEF + mount proc only.
-- **JSON-driven** like `items.json`: one gear entry = slot + stats + optional proc + an `iconPath`
-  for future images. Adding gear = adding a JSON object (no code change). Add an `Equipment` item
-  type / gear definition + a `player_equipment` table (player_id, slot, gear_definition_id, unique
-  per slot). Equip/unequip endpoints.
-- **Starter set:** ~1 ATK / 3 DEF, tutorial-tier (lowest rung of the Grey→Orange rarity ladder).
-- Sequenced AFTER v0.2.3 (now merged) because both touch the raid damage pipeline.
+## v0.2.4 summary (just shipped)
+8-slot equipment system. `player_equipment` table, unique per slot per player. JSON-driven `gear.json`.
+Raid damage uses effective stats (base + gear ATK/DEF). Mount proc: once per hit, roll chance% →
+add procPercent × base damage (before crit). GET/PUT/DELETE `/api/equipment/{slot}`.
+Starter set: 8 Grey pieces, full-set +1 ATK/+3 DEF, Draft Horse mount (5% proc ×200%).
 
-## Then (in order)
+## NEXT (in order)
 - **Legion system** (the bigger Dawn system): legions hold N Generals (by type) + N Troops; one
   Commander slot (on commander, only equipment PROCS apply — not stats/sets); legion power ≈
   `(100% + bonuses) × (Generals + Troops)`; generals carry their own legion gear. Big, multi-batch.
