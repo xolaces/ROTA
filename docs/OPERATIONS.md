@@ -65,11 +65,13 @@ dotnet ef migrations list --project src/ROTA.Infrastructure --startup-project sr
 ```
 Applied to date: `InitialCreate → … → AddRaidSize → AddPlayerRolesAndDisplayName → AddBetaKeys`.
 
-> ⚠️ **DEPLOYMENT ORDER (important):** the API runs the admin seeder at startup, which queries
-> the `players` table. **Migrations must be applied before the app starts** on a fresh database,
-> or startup will fail with `42P01 relation "players" does not exist`. In deployment, run
-> `dotnet ef database update` (or the CLI, which auto-migrates — see §5) **before** `dotnet run`.
-> (Auto-migrate-on-startup for the web host is a deliberate open decision — see §8.)
+> **DEPLOYMENT ORDER:**
+> - **Development:** `dotnet run` auto-migrates on startup (`db.Database.MigrateAsync()` runs before
+>   seeding). A fresh local DB bootstraps itself — no manual migration step required.
+> - **Production:** migrations are **not** applied automatically. Run
+>   `dotnet ef database update --project src/ROTA.Infrastructure --startup-project src/ROTA.Api`
+>   (or the CLI `-- seed-admin`, which also auto-migrates) **before** starting the app.
+>   If migrations are missing, startup fails with `42P01 relation "players" does not exist`.
 
 ---
 
@@ -80,6 +82,9 @@ dotnet run --project src/ROTA.Api          # starts Kestrel (HTTP API + Swagger 
 ```
 - Swagger UI (Development only): `https://localhost:<port>/swagger`
 - Health check: `GET /health`
+- **Development:** pending EF Core migrations are applied automatically at startup before the
+  seeder runs. A fresh local DB is fully self-bootstrapping — no manual migration step needed.
+- **Production:** migrations must be applied manually before starting (see §3).
 - On startup the app seeds the admin account (§6) if `Seed:AdminPassword` is set and the account
   doesn't already exist (idempotent).
 
@@ -150,9 +155,10 @@ or re-login; demotion of Admin/Moderator revokes the target's refresh tokens imm
 | `Seed:AdminEmail` | `xolaces@rota.dev` | Email used for the seeded admin. |
 | `Admin:PlayerIds` | _(empty)_ | Break-glass admin allowlist (GUIDs); grants `AdminOnly` even without the role claim. |
 
-> **Open decision (§3):** the web host does **not** auto-migrate on startup (only the CLI does).
-> For single-instance beta we may add `db.Database.Migrate()` before seeding to make the app
-> self-bootstrapping; deferred pending a multi-instance deployment decision.
+> **Migration policy (resolved):** the web host auto-migrates in Development only. Production
+> keeps explicit operator-run migrations so multi-instance deployments can gate the schema update
+> before rolling out new app instances. The CLI (`-- seed-admin`, `-- gen-beta-key`, etc.) also
+> auto-migrates regardless of environment, as it is always a single-instance operator tool.
 
 ---
 
