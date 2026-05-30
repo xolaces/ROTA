@@ -326,6 +326,9 @@ Orange is the permanent ceiling. Never add above it.
 
 ## Documentation Index
 - [Game Design & Unity UI Reference](docs/ui/ROTA_GameDesign_UI_Reference.md) — DotD mechanics analysis, screen-by-screen UI blueprints, Unity implementation prompt, content pipeline guide
+- [Operations & Tooling Runbook](docs/OPERATIONS.md) — every dotnet command, the admin CLI, admin REST API, config flags, secrets, migrations, deployment order, beta onboarding
+- [Design North Star](docs/DESIGN_NORTHSTAR.md) — durable design vision; research-paper divergences recorded as amendments (no resets, capped scaling, Gauntlet as core spine)
+- [System specs](docs/specs/) — per-system build specs (System 12 done, System 13 moderation queued)
 
 ## Function Reference
 Full method signatures, entity fields, endpoint map:
