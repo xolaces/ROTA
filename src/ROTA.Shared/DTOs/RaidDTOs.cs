@@ -41,6 +41,9 @@ public class RaidHitResponse
     public string DifficultyColor { get; set; } = string.Empty;
     public List<ItemGrantDTO>? OnHitDrops { get; set; }
     public string YourCurrentTier { get; set; } = string.Empty;
+    // On-hit progression — granted every hit regardless of kill outcome
+    public int XpGained { get; set; }
+    public long GoldGained { get; set; }
 }
 
 public class RaidRewards
@@ -122,4 +125,5 @@ public enum RaidHitFailureCode
     InvalidHitSize      = 4,
     InsufficientStamina = 5,
     AccessDenied        = 6,  // Personal raid — only the summoner may strike
+    RaidFull            = 7,  // Participant cap reached for this raid size
 }

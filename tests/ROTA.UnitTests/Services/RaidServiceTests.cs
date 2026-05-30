@@ -77,7 +77,7 @@ public class RaidServiceTests
         return p;
     }
 
-    private static RaidDefinition IronColossus() => new()
+    private static RaidDefinition IronColossus(long goldPerStamina = 1) => new()
     {
         Id                   = "raid_ironcolossus",
         Name                 = "The Iron Colossus",
@@ -86,6 +86,7 @@ public class RaidServiceTests
         PersonalBaseHp       = 500,
         TimerHours           = 48,
         StaminaCostPerHit    = 1,
+        GoldPerStamina       = goldPerStamina,
         LootTableId          = "lt_raid_ironcolossus",
         BaseGoldReward       = 500,
         BaseExperienceReward = 300,
@@ -645,6 +646,220 @@ public class RaidServiceTests
         b.Energy.Verify(
             e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
             Times.Never, "access gate fires before the stamina-spend step");
+    }
+
+    // -----------------------------------------------------------------------
+    // Component D — On-hit XP and gold
+    // -----------------------------------------------------------------------
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(5)]
+    [InlineData(20)]
+    public async Task Hit_GrantsXpInExpectedRange_PerHitSize(int hitSize)
+    {
+        // XP = round(staminaCost × roll), roll ∈ [1.0, 4.0], staminaCost = hitSize × 1
+        // So XP ∈ [staminaCost, staminaCost * 4]
+        var b = BuildService(new Random(42)); // seeded for determinism
+        var player = MakePlayer();
+        var raid = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, hitSize, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        int staminaCost = hitSize; // StaminaCostPerHit=1
+        result.Response!.XpGained.Should().BeGreaterOrEqualTo(staminaCost,
+            "XP floor is staminaCost × 1.0 (roll minimum)");
+        result.Response.XpGained.Should().BeLessOrEqualTo(staminaCost * 4,
+            "XP ceiling is staminaCost × 4.0 (roll maximum)");
+        result.Response.XpGained.Should().BeGreaterOrEqualTo(1, "XP is always at least 1");
+    }
+
+    [Theory]
+    [InlineData(1, 1, 1)]   // hitSize=1, goldPerStamina=1 → gold=1
+    [InlineData(5, 1, 5)]   // hitSize=5, goldPerStamina=1 → gold=5
+    [InlineData(20, 2, 40)] // hitSize=20, goldPerStamina=2 → gold=40
+    public async Task Hit_GrantsCorrectGold_PerStaminaCost(int hitSize, long goldPerStamina, long expectedGold)
+    {
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid = MakeRaid();
+
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus(goldPerStamina));
+        b.Raids.Setup(r => r.FindByIdAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
+        b.Raids.Setup(r => r.AtomicApplyHitAsync(
+                raid.Id,
+                It.IsAny<Func<ActiveRaid, Task<bool>>>(),
+                It.IsAny<CancellationToken>()))
+            .Returns<Guid, Func<ActiveRaid, Task<bool>>, CancellationToken>((_, mutate, _) => mutate(raid));
+        b.Energy.Setup(e => e.SpendEnergyAsync(player.Id, ResourceType.Stamina, It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        b.Players.Setup(p => p.FindByIdWithStatsAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+        b.Players.Setup(p => p.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        b.Resources.Setup(r => r.GetAsync(player.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeStaminaResource());
+        b.Energy.Setup(e => e.GetCurrentEnergyAsync(player.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(4);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, hitSize, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.GoldGained.Should().Be(expectedGold,
+            $"gold = staminaCost({hitSize}) × goldPerStamina({goldPerStamina})");
+    }
+
+    [Fact]
+    public async Task Hit_XpThatCrossesLevelThreshold_FiresGrantLevelUpPoints()
+    {
+        // Player at 999 XP with XpToNextLevel=1000. A hit granting ≥1 XP will level up.
+        // Use a seeded Random that produces a high roll to guarantee level-up.
+        var b = BuildService(new Random(0)); // Random(0) first NextDouble ~0.726 → roll ~3.18
+        var player = MakePlayer(xp: 999); // 999 XP, needs 1 more to level
+        var raid = MakeRaid();
+
+        // XpToNextLevel = 1000 for level 1, so player needs 1 more XP.
+        // staminaCost=1, roll≥1.0 → xpGained≥1 → definitely levels up.
+        b.Stats.Setup(s => s.XpToNextLevel(1)).Returns(1000);
+        b.Stats.Setup(s => s.XpToNextLevel(2)).Returns(2000);
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        // The player had 999 XP and needed 1000. Any hit XP ≥ 1 should trigger level up.
+        b.Stats.Verify(s => s.GrantLevelUpPointsAsync(player.Id, 2, It.IsAny<CancellationToken>()),
+            Times.Once, "XP crossing the level threshold must fire GrantLevelUpPointsAsync for the new level");
+    }
+
+    [Fact]
+    public async Task Hit_XpAndGold_PopulatedInResponse()
+    {
+        // Verify XpGained and GoldGained fields are populated in the response.
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.XpGained.Should().BeGreaterOrEqualTo(1, "XpGained must be populated in the response");
+        result.Response.GoldGained.Should().BeGreaterOrEqualTo(1, "GoldGained must be populated (goldPerStamina=1, hitSize=1)");
+    }
+
+    // -----------------------------------------------------------------------
+    // Participant caps — RaidFull enforcement
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task Hit_NonParticipant_AtCap_ReturnsRaidFull_NoStaminaSpent()
+    {
+        // A Small raid has cap=10. A new player hitting a fully-occupied Small raid is rejected
+        // before stamina is spent.
+        var b = BuildService(new Random(0));
+        var newPlayer = MakePlayer();
+
+        // Small raid already at capacity (ParticipantCount = 10)
+        var summonerId = Guid.NewGuid();
+        var raid = ActiveRaid.Create(
+            "raid_ironcolossus", summonerId, 100000,
+            DateTimeOffset.UtcNow.AddHours(48), RaidDifficulty.Normal, RaidSize.Small);
+        // Simulate 10 existing participants by incrementing count
+        for (int i = 0; i < 10; i++) raid.IncrementParticipantCount();
+
+        b.Raids.Setup(r => r.FindByIdAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
+        // New player is not a participant
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, newPlayer.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.HitRaidAsync(newPlayer.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(RaidHitFailureCode.RaidFull,
+            "a new player hitting a Small raid at its 10-player cap must be rejected");
+        b.Energy.Verify(
+            e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never, "cap check fires before stamina spend — no cost to the player");
+    }
+
+    [Fact]
+    public async Task Hit_ExistingParticipant_AtCap_IsNotBlocked()
+    {
+        // An existing participant hitting a raid already at cap must NOT be blocked.
+        // The cap check only applies to NEW participants.
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+
+        var raid = ActiveRaid.Create(
+            "raid_ironcolossus", Guid.NewGuid(), 100000,
+            DateTimeOffset.UtcNow.AddHours(48), RaidDifficulty.Normal, RaidSize.Small);
+        for (int i = 0; i < 10; i++) raid.IncrementParticipantCount();
+
+        // Player is already a participant in this raid
+        var existingPart = RaidParticipant.Create(raid.Id, player.Id);
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingPart);
+        b.Participants.Setup(p => p.UpdateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue("existing participant is never blocked by the cap check");
+        b.Energy.Verify(
+            e => e.SpendEnergyAsync(player.Id, ResourceType.Stamina, It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Once, "stamina is spent for existing participants as normal");
+    }
+
+    // -----------------------------------------------------------------------
+    // Resource split lock — energy=quest / stamina=raid (regression guard)
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task RaidHit_SpendsSamina_NotEnergy_ResourceTypeLocked()
+    {
+        // Guard: a raid hit must call SpendEnergyAsync with ResourceType.Stamina only.
+        // Energy (quest resource) must never be touched by the raid path.
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        b.Energy.Verify(e => e.SpendEnergyAsync(
+            player.Id, ResourceType.Stamina, It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Once, "raid path must spend Stamina");
+        b.Energy.Verify(e => e.SpendEnergyAsync(
+            player.Id, ResourceType.Energy, It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never, "raid path must never touch Energy (quest resource)");
     }
 
     // -----------------------------------------------------------------------
