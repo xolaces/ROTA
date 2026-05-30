@@ -19,6 +19,17 @@ public sealed class RaidService : IRaidService
             [RaidDifficulty.Nightmare] = 3.6,
         };
 
+    // Participant caps per raid size (Personal cap=1 enforced by the access gate, not this map)
+    private static readonly IReadOnlyDictionary<RaidSize, int> ParticipantCaps =
+        new Dictionary<RaidSize, int>
+        {
+            [RaidSize.Personal] = 1,
+            [RaidSize.Small]    = 10,
+            [RaidSize.Medium]   = 25,
+            [RaidSize.Large]    = 50,
+            [RaidSize.Titanic]  = 250,
+        };
+
     // Contribution tier multipliers — applied to ALL rewards
     private static readonly IReadOnlyDictionary<string, decimal> TierMultipliers =
         new Dictionary<string, decimal>
@@ -203,6 +214,16 @@ public sealed class RaidService : IRaidService
         if (raid.Size == RaidSize.Personal && raid.SummonedByPlayerId != playerId)
             return HitFail(RaidHitFailureCode.AccessDenied,
                 "This is a private raid. Only the summoner may strike it.");
+
+        // 3b. Participant cap enforcement (pre-spend — no stamina cost on rejection).
+        //     Personal raids are already gated above (access gate = effective cap of 1).
+        //     A small over-cap race is acceptable — not security-critical.
+        if (raid.Size != RaidSize.Personal)
+        {
+            var existingEntry = await _participants.FindByRaidAndPlayerAsync(activeRaidId, playerId, ct);
+            if (existingEntry is null && raid.ParticipantCount >= ParticipantCaps[raid.Size])
+                return HitFail(RaidHitFailureCode.RaidFull, "This raid is at its participant cap.");
+        }
 
         // 4. Atomic idempotency: reserve the slot (SET NX) or return cached response.
         //    Closes the check-then-set race from the previous GetAsync/SetAsync pattern.

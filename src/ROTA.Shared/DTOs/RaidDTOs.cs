@@ -122,4 +122,5 @@ public enum RaidHitFailureCode
     InvalidHitSize      = 4,
     InsufficientStamina = 5,
     AccessDenied        = 6,  // Personal raid — only the summoner may strike
+    RaidFull            = 7,  // Participant cap reached for this raid size
 }
