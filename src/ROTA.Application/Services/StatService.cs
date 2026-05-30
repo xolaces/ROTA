@@ -18,6 +18,7 @@ public sealed class StatService : IStatService
     private readonly IOptions<LevelingConfig> _levelingConfig;
     private readonly IOptions<CombatConfig> _combatConfig;
     private readonly IClassService _classService;
+    private readonly IEquipmentService _equipment;
 
     public StatService(
         IPlayerRepository players,
@@ -26,7 +27,8 @@ public sealed class StatService : IStatService
         IAuditLogRepository auditLog,
         IOptions<LevelingConfig> levelingConfig,
         IOptions<CombatConfig> combatConfig,
-        IClassService classService)
+        IClassService classService,
+        IEquipmentService equipment)
     {
         _players        = players;
         _energy         = energy;
@@ -35,6 +37,7 @@ public sealed class StatService : IStatService
         _levelingConfig = levelingConfig;
         _combatConfig   = combatConfig;
         _classService   = classService;
+        _equipment      = equipment;
     }
 
     public async Task<AllocateStatResponse> AllocateStatPointAsync(
@@ -151,23 +154,29 @@ public sealed class StatService : IStatService
     public async Task<PlayerStatsResponse?> GetStatsAsync(Guid playerId, CancellationToken ct = default)
     {
         var player = await _players.FindByIdWithStatsAsync(playerId, ct);
-        if (player?.Stats is null) return null;
+        if (player is null || player.IsDeleted) return null;
+        var stats = player.Stats!;
 
-        var stats = player.Stats;
+        // Effective stats include gear bonuses.
+        var combat = await _equipment.GetEffectiveCombatDataAsync(
+            playerId, stats.BaseAttack, stats.BaseDefense, ct);
+
         return new PlayerStatsResponse
         {
-            SkillPoints           = stats.SkillPoints,
-            EnergyInvestment      = stats.EnergyInvestment,
-            StaminaInvestment     = stats.StaminaInvestment,
-            DiscernmentInvestment = stats.DiscernmentInvestment,
-            CurrentLsi            = (decimal)stats.ComputeLSI(player.Level),
-            MaxEnergy             = stats.ComputeMaxEnergy(),
-            MaxStamina            = stats.ComputeMaxStamina(),
-            MaxGuildStamina       = player.Level,
-            BaseAttack            = stats.BaseAttack,
-            BaseDefense           = stats.BaseDefense,
-            BaseMaxHealth         = stats.BaseMaxHealth,
-            CurrentHealth         = stats.CurrentHealth,
+            SkillPoints            = stats.SkillPoints,
+            EnergyInvestment       = stats.EnergyInvestment,
+            StaminaInvestment      = stats.StaminaInvestment,
+            DiscernmentInvestment  = stats.DiscernmentInvestment,
+            CurrentLsi             = (decimal)stats.ComputeLSI(player.Level),
+            MaxEnergy              = stats.ComputeMaxEnergy(),
+            MaxStamina             = stats.ComputeMaxStamina(),
+            MaxGuildStamina        = player.Level,
+            BaseAttack             = stats.BaseAttack,
+            BaseDefense            = stats.BaseDefense,
+            BaseMaxHealth          = stats.BaseMaxHealth,
+            CurrentHealth          = stats.CurrentHealth,
+            EffectiveAttack        = combat.EffectiveAttack,
+            EffectiveDefense       = combat.EffectiveDefense,
         };
     }
 

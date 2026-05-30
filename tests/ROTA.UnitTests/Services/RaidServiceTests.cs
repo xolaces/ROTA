@@ -29,7 +29,8 @@ public class RaidServiceTests
         Mock<ILootTableProvider> LootTables,
         Mock<IAuditLogRepository> AuditLog,
         Mock<IRaidDefinitionProvider> Definitions,
-        Mock<IRaidHitCache> HitCache);
+        Mock<IRaidHitCache> HitCache,
+        Mock<IEquipmentService> Equipment);
 
     private static ServiceBundle BuildService(Random? random = null)
     {
@@ -46,6 +47,7 @@ public class RaidServiceTests
         var auditLog     = new Mock<IAuditLogRepository>();
         var definitions  = new Mock<IRaidDefinitionProvider>();
         var hitCache     = new Mock<IRaidHitCache>();
+        var equipment    = new Mock<IEquipmentService>();
 
         hitCache.Setup(c => c.TryAcquireSlotAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((true, (RaidHitResponse?)null));
@@ -62,15 +64,20 @@ public class RaidServiceTests
         // Default: no crit (chance=0 → never crits) — preserves existing damage-range assertions
         stats.Setup(s => s.GetCritProfile(It.IsAny<int>()))
             .Returns(new CritProfile(Chance: 0.0, Multiplier: 1.5));
+        // Default: pass-through — no gear bonus, no proc
+        equipment.Setup(e => e.GetEffectiveCombatDataAsync(
+                It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid _, int atk, int def, CancellationToken _) =>
+                new EffectiveCombatData(atk, def, null));
 
         var service = new RaidService(
             raids.Object, participants.Object, players.Object, resources.Object,
             energy.Object, gems.Object, stats.Object, inventory.Object,
             itemDefs.Object, lootTables.Object, auditLog.Object,
-            definitions.Object, hitCache.Object, random);
+            definitions.Object, hitCache.Object, equipment.Object, random);
 
         return new ServiceBundle(service, raids, participants, players, resources, energy, gems,
-            stats, inventory, itemDefs, lootTables, auditLog, definitions, hitCache);
+            stats, inventory, itemDefs, lootTables, auditLog, definitions, hitCache, equipment);
     }
 
     private static Player MakePlayer(long xp = 0)
@@ -988,5 +995,61 @@ public class RaidServiceTests
         // base ~50*1*[0.85,1.15] ∈ [42,58]; ×2.5 ∈ [105,145]
         result.Response.DamageDealt.Should().BeGreaterOrEqualTo(105,
             "max crit multiplier 2.5 must produce at least 2.5× the non-crit floor damage");
+    }
+
+    // -----------------------------------------------------------------------
+    // Mount proc — fires when 2nd NextDouble < procChance
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task HitRaid_MountProcFires_DamageIncludesBonus()
+    {
+        // Seed 11: call1=0.4729 (multiplier), call2=0.0449 (<0.05 → proc fires), call3=0.4569 (crit check)
+        // Equipment mock returns mount with procChance=0.05, procPercent=2.0.
+        // No crit (default chance=0.0), so crit roll does nothing.
+        var b = BuildService(new Random(11));
+        var player = MakePlayer();
+        var raid = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        b.Equipment.Setup(e => e.GetEffectiveCombatDataAsync(
+                player.Id, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new EffectiveCombatData(10, 10, new GearProcData(0.05, 2.0)));
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.ProcFired.Should().BeTrue("seed 11 causes call2=0.0449 < 0.05 — proc fires");
+        result.Response.ProcBonus.Should().BeGreaterThan(0, "proc adds procPercent × base damage");
+    }
+
+    [Fact]
+    public async Task HitRaid_MountProcDoesNotFire_NoBonusDamage()
+    {
+        // Seed 0: call1=0.7262 (multiplier), call2=0.8173 (>=0.05 → proc does NOT fire)
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        b.Equipment.Setup(e => e.GetEffectiveCombatDataAsync(
+                player.Id, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new EffectiveCombatData(10, 10, new GearProcData(0.05, 2.0)));
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.ProcFired.Should().BeFalse("seed 0 causes call2=0.8173 >= 0.05 — proc does not fire");
+        result.Response.ProcBonus.Should().Be(0, "no proc means zero bonus damage");
     }
 }
