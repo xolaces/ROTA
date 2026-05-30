@@ -148,12 +148,6 @@ builder.Services.Configure<ClassConfig>(
 
 builder.Services.AddRotaServices(builder.Environment.ContentRootPath);
 
-// ---------------------------------------------------------------
-// ADMIN CLI — runs instead of Kestrel when a command is given
-// ---------------------------------------------------------------
-if (args.Length > 0 && AdminCli.IsCommand(args[0]))
-    return await AdminCli.RunAsync(args, builder);
-
 // Redis — factory-based so the connection string is resolved from the fully-built
 // IConfiguration (after all sources, including test overrides, have been applied)
 // rather than from builder.Configuration at service-registration time.
@@ -178,6 +172,13 @@ builder.Services.AddHealthChecks();
 // 9. Audit logging       - records state-changing requests with verified PlayerId
 // 10. Endpoints          - controllers and hubs
 // ---------------------------------------------------------------
+
+// ADMIN CLI — runs the requested command instead of starting Kestrel.
+// MUST be placed after ALL service registration (incl. the Redis factory) so the CLI's
+// container is complete and ValidateOnBuild passes. The Redis factory is lazy, so no
+// connection is opened unless a command actually resolves a Redis-backed service.
+if (args.Length > 0 && AdminCli.IsCommand(args[0]))
+    return await AdminCli.RunAsync(args, builder);
 
 var app = builder.Build();
 
