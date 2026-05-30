@@ -40,6 +40,17 @@ public class StatServiceTests
             }
         });
 
+    private static IOptions<CombatConfig> DefaultCombatConfig() =>
+        Options.Create(new CombatConfig
+        {
+            BaseCritChance            = 0.05,
+            MaxCritChanceBonus        = 0.10,
+            CritChancePerDiscernment  = 0.0001,
+            BaseCritMultiplier        = 1.5,
+            MaxCritDamageBonus        = 1.0,
+            CritDamagePerDiscernment  = 0.0002,
+        });
+
     private static ServiceBundle BuildService()
     {
         var players  = new Mock<IPlayerRepository>();
@@ -62,7 +73,7 @@ public class StatServiceTests
 
         return new ServiceBundle(
             new StatService(players.Object, energy.Object, gems.Object, auditLog.Object,
-                DefaultLevelingConfig(), classes.Object),
+                DefaultLevelingConfig(), DefaultCombatConfig(), classes.Object),
             players, energy, gems, auditLog, classes);
     }
 
@@ -299,5 +310,65 @@ public class StatServiceTests
         result.Should().NotBe(15000);
         result.Should().BeGreaterThan(3000); // formula exceeds the milestone-500 floor
         result.Should().BeInRange(3770, 3780);
+    }
+
+    // -----------------------------------------------------------------------
+    // GetCritProfile — discernment crit chance and multiplier
+    // Formulas:
+    //   Chance     = 0.05 + min(0.10, discernment × 0.0001)   cap at 0.15
+    //   Multiplier = 1.50 + min(1.00, discernment × 0.0002)   cap at 2.50
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public void GetCritProfile_ZeroDiscernment_ReturnsBaseValues()
+    {
+        // Chance = 0.05 + min(0.10, 0) = 0.05; Multiplier = 1.5 + min(1.0, 0) = 1.5
+        var b = BuildService();
+        var profile = b.Service.GetCritProfile(0);
+        profile.Chance.Should().BeApproximately(0.05, 1e-9);
+        profile.Multiplier.Should().BeApproximately(1.5, 1e-9);
+    }
+
+    [Fact]
+    public void GetCritProfile_1000Discernment_HitsCritChanceCap()
+    {
+        // At 1000 discernment: chance bonus = 1000 × 0.0001 = 0.10 = MaxCritChanceBonus → cap reached
+        // Chance = 0.05 + 0.10 = 0.15 (max); Multiplier = 1.5 + min(1.0, 0.2) = 1.7
+        var b = BuildService();
+        var profile = b.Service.GetCritProfile(1000);
+        profile.Chance.Should().BeApproximately(0.15, 1e-9, "1000 discernment hits the 0.10 crit chance bonus cap");
+        profile.Multiplier.Should().BeApproximately(1.7, 1e-9);
+    }
+
+    [Fact]
+    public void GetCritProfile_5000Discernment_HitsCritDamageCap()
+    {
+        // At 5000 discernment: damage bonus = 5000 × 0.0002 = 1.0 = MaxCritDamageBonus → cap reached
+        // Chance = 0.15 (capped); Multiplier = 1.5 + 1.0 = 2.5 (max)
+        var b = BuildService();
+        var profile = b.Service.GetCritProfile(5000);
+        profile.Chance.Should().BeApproximately(0.15, 1e-9);
+        profile.Multiplier.Should().BeApproximately(2.5, 1e-9, "5000 discernment hits the 1.0 crit damage bonus cap");
+    }
+
+    [Fact]
+    public void GetCritProfile_100000Discernment_StillCappedAtBothMaxima()
+    {
+        // Far beyond any cap — both should remain at their hard ceilings
+        var b = BuildService();
+        var profile = b.Service.GetCritProfile(100000);
+        profile.Chance.Should().BeApproximately(0.15, 1e-9, "chance must never exceed BaseCritChance + MaxCritChanceBonus");
+        profile.Multiplier.Should().BeApproximately(2.5, 1e-9, "multiplier must never exceed BaseCritMultiplier + MaxCritDamageBonus");
+    }
+
+    [Fact]
+    public void GetCritProfile_MidDiscernment_InterpolatesCorrectly()
+    {
+        // At 500 discernment: chance bonus = 500 × 0.0001 = 0.05
+        // Chance = 0.05 + 0.05 = 0.10; Multiplier = 1.5 + min(1.0, 0.10) = 1.60
+        var b = BuildService();
+        var profile = b.Service.GetCritProfile(500);
+        profile.Chance.Should().BeApproximately(0.10, 1e-9);
+        profile.Multiplier.Should().BeApproximately(1.60, 1e-9);
     }
 }
