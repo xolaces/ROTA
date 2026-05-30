@@ -59,6 +59,9 @@ public class RaidServiceTests
             .Returns(Task.CompletedTask);
         // Default: 1000 XP per level — keeps existing kill-reward tests from triggering extra level-ups
         stats.Setup(s => s.XpToNextLevel(It.IsAny<int>())).Returns(1000);
+        // Default: no crit (chance=0 → never crits) — preserves existing damage-range assertions
+        stats.Setup(s => s.GetCritProfile(It.IsAny<int>()))
+            .Returns(new CritProfile(Chance: 0.0, Multiplier: 1.5));
 
         var service = new RaidService(
             raids.Object, participants.Object, players.Object, resources.Object,
