@@ -19,6 +19,17 @@ public sealed class RaidService : IRaidService
             [RaidDifficulty.Nightmare] = 3.6,
         };
 
+    // Participant caps per raid size (Personal cap=1 enforced by the access gate, not this map)
+    private static readonly IReadOnlyDictionary<RaidSize, int> ParticipantCaps =
+        new Dictionary<RaidSize, int>
+        {
+            [RaidSize.Personal] = 1,
+            [RaidSize.Small]    = 10,
+            [RaidSize.Medium]   = 25,
+            [RaidSize.Large]    = 50,
+            [RaidSize.Titanic]  = 250,
+        };
+
     // Contribution tier multipliers — applied to ALL rewards
     private static readonly IReadOnlyDictionary<string, decimal> TierMultipliers =
         new Dictionary<string, decimal>
@@ -204,6 +215,16 @@ public sealed class RaidService : IRaidService
             return HitFail(RaidHitFailureCode.AccessDenied,
                 "This is a private raid. Only the summoner may strike it.");
 
+        // 3b. Participant cap enforcement (pre-spend — no stamina cost on rejection).
+        //     Personal raids are already gated above (access gate = effective cap of 1).
+        //     A small over-cap race is acceptable — not security-critical.
+        if (raid.Size != RaidSize.Personal)
+        {
+            var existingEntry = await _participants.FindByRaidAndPlayerAsync(activeRaidId, playerId, ct);
+            if (existingEntry is null && raid.ParticipantCount >= ParticipantCaps[raid.Size])
+                return HitFail(RaidHitFailureCode.RaidFull, "This raid is at its participant cap.");
+        }
+
         // 4. Atomic idempotency: reserve the slot (SET NX) or return cached response.
         //    Closes the check-then-set race from the previous GetAsync/SetAsync pattern.
         var (slotAcquired, existingResponse) = await _hitCache.TryAcquireSlotAsync(idempotencyKey, ct);
@@ -250,6 +271,8 @@ public sealed class RaidService : IRaidService
         bool finalDefeated   = false;
         RaidParticipant? participantFinal = null;
         RaidRewards? rewards = null;
+        int xpGained         = 0;
+        long goldGained      = 0;
 
         var applied = await _raids.AtomicApplyHitAsync(activeRaidId, async lockedRaid =>
         {
@@ -287,7 +310,22 @@ public sealed class RaidService : IRaidService
             else
                 await _participants.UpdateAsync(participantFinal, ct);
 
+            // On-hit XP and gold — granted every hit, inside the advisory lock.
+            // XP: single uniform roll [1.0, 4.0] × stamina spent (not per-stamina roll).
+            double xpRoll = 1.0 + _random.NextDouble() * 3.0; // uniform [1, 4]
+            xpGained  = Math.Max(1, (int)Math.Round(staminaCost * xpRoll));
+            goldGained = (long)staminaCost * definition.GoldPerStamina;
+
+            var hitLevelUps = player.AddExperience(xpGained, lvl => _stats.XpToNextLevel(lvl));
+            player.AddGold(goldGained);
+            await _players.UpdateAsync(player, ct);
+
+            // Fire level-up side effects for each level gained (mirrors DistributeKillRewardsAsync)
+            foreach (var newLevel in hitLevelUps)
+                await _stats.GrantLevelUpPointsAsync(playerId, newLevel, ct);
+
             // Kill detection and reward distribution — fully inside the advisory lock.
+            // On a killing hit, these kill rewards stack on top of the on-hit grant above.
             bool isKill = lockedRaid.CurrentHp == 0;
             if (isKill)
             {
@@ -350,6 +388,8 @@ public sealed class RaidService : IRaidService
             Difficulty      = raid.Difficulty.ToString(),
             DifficultyColor = DifficultyColors[raid.Difficulty],
             YourCurrentTier = callerTier,
+            XpGained        = xpGained,
+            GoldGained      = goldGained,
         };
 
         // 11. Store the completed response — replaces the "pending" placeholder.
