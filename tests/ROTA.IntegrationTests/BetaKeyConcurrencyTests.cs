@@ -61,6 +61,10 @@ public class BetaKeyConcurrencyTests : IAsyncLifetime
                         ["Admin:PlayerIds:0"]                   = Guid.Empty.ToString(),
                         // Enable the beta gate for this test.
                         ["BetaGate:Enabled"]                    = "true",
+                        // Neutralize the startup admin seeder so this fixture stays hermetic against a
+                        // developer's Seed:AdminPassword user-secret (the seeder would otherwise query
+                        // players during host startup, before migrations are applied).
+                        ["Seed:AdminPassword"]                  = "",
                     });
                 });
             });
