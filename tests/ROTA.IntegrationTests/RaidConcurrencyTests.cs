@@ -65,6 +65,10 @@ public class RaidConcurrencyTests : IAsyncLifetime
                         ["Jwt:Audience"]                        = "rota-test",
                         // Seed one admin so the AdminOnly policy is parseable (not used in this test).
                         ["Admin:PlayerIds:0"]                   = Guid.Empty.ToString(),
+                        // Neutralize the startup admin seeder: keeps this fixture hermetic against a
+                        // developer's Seed:AdminPassword user-secret. With it set, the seeder would
+                        // query players during host startup — before this fixture applies migrations.
+                        ["Seed:AdminPassword"]                  = "",
                     });
                 });
             });
