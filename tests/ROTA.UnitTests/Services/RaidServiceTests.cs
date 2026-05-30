@@ -648,6 +648,35 @@ public class RaidServiceTests
     }
 
     // -----------------------------------------------------------------------
+    // Resource split lock — energy=quest / stamina=raid (regression guard)
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task RaidHit_SpendsSamina_NotEnergy_ResourceTypeLocked()
+    {
+        // Guard: a raid hit must call SpendEnergyAsync with ResourceType.Stamina only.
+        // Energy (quest resource) must never be touched by the raid path.
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        b.Energy.Verify(e => e.SpendEnergyAsync(
+            player.Id, ResourceType.Stamina, It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Once, "raid path must spend Stamina");
+        b.Energy.Verify(e => e.SpendEnergyAsync(
+            player.Id, ResourceType.Energy, It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never, "raid path must never touch Energy (quest resource)");
+    }
+
+    // -----------------------------------------------------------------------
     // RaidSize — Personal raid visibility in GetActiveRaidsAsync
     // -----------------------------------------------------------------------
 
