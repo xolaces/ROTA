@@ -9,17 +9,17 @@ Server-authoritative .NET 10 backend for a Dawn-of-the-Dragons-style async RPG. 
 Infrastructure,Shared}`. PostgreSQL 16 (EF Core 9), Redis, RS256 JWT.
 
 ## Build status (High — run this session)
-- **215 tests pass: 208 unit + 7 integration. 0 warnings, 0 errors.**
-- `main` @ tag **v0.2.3**, synced with origin (pushed).
+- **219 unit + 7 integration = 226 tests pass. 0 warnings, 0 errors.**
+- `main` @ tag **v0.2.4**, synced with origin (pushed).
 
 ## Inventory (High)
-7 controllers · 11 services · 12 entities · 10 enums · 11 repositories · 3 middleware ·
-13 EF migrations (InitialCreate→FixRaidSizeSentinel) · 4 content JSON files · GitHub Actions CI.
+8 controllers · 12 services · 13 entities · 11 enums · 12 repositories · 3 middleware ·
+14 EF migrations (InitialCreate→AddEquipmentSystem) · 5 content JSON files · GitHub Actions CI.
 
 ## Implemented & tested (High)
 Auth · Rate limiting · Audit · Energy/resources · Player profile · Gem ledger · Quests+difficulty ·
 Raid engine (pg advisory-lock, Redis idempotency) · Items/sigils · Stats · Class system ·
-RBAC + beta keys + admin (REST+CLI).
+RBAC + beta keys + admin (REST+CLI) · **Character gear (v0.2.4)**.
 - **Resource regen is class-based (v0.2.2):** energy/stamina/guild regen derive from `ClassConfig`
   (minutes-per-point). **GuildStamina now regenerates** (was 0). Stored `RegenPerMinute` is vestigial.
 - **RaidSize set (v0.2.2):** Personal/Small/Medium/Large/Titanic, participant caps 1/10/25/50/250,
@@ -29,6 +29,12 @@ RBAC + beta keys + admin (REST+CLI).
 - **Discernment crit (v0.2.3):** raid hits crit via `DiscernmentInvestment` — chance 5%→15% (+10%
   hard cap @1000 disc), damage 1.5×→2.5× (@5000 disc), tunable `CombatConfig`; response has
   `IsCrit`/`CritMultiplier`. Raids only (quests have no damage roll).
+- **Character gear (v0.2.4):** 8 slots (Head/Neck/Torso/Ring1/Ring2/Mount/Boots/Gloves).
+  `player_equipment` table (unique per slot per player). JSON-driven `gear.json`. Raid damage formula
+  uses effective stats (base + gear ATK/DEF). Mount = proc: 5–40% chance → +procPercent×base damage,
+  once per hit before crit. `PlayerStatsResponse`/`PlayerProfileResponse` expose effective stats.
+  `RaidHitResponse` has `ProcFired`/`ProcBonus`. Starter set: 8 Grey pieces, full-set +1 ATK/+3 DEF,
+  Draft Horse mount (5% proc ×200%). GET/PUT/DELETE `/api/equipment/{slot}`.
 
 ## Content state (High)
 Minimal playable slice: 2 chapters, 5 quest nodes (3 battle + 2 boss), 2 raids, 12 items, 2 loot
@@ -39,8 +45,9 @@ tables. Loop works; thin.
 - Admin "panel" is API-only (no UI).
 
 ## Not implemented (High)
-Game client (C# SDK = v0.3.0) · discernment crit (v0.2.3) · discernment quest-drop-quality (later) ·
-moderation (back-burnered) · world chat · guild · gauntlet · gacha/pity · equipment/crafting ·
+Game client (C# SDK = v0.3.0) · discernment quest-drop-quality (later) ·
+moderation (back-burnered) · world chat · guild · gauntlet · gacha/pity ·
+equipment crafting / consumables · gear set bonuses (Phase 2) ·
 structured log sink / monitoring · background jobs.
 
 ## Known issues / debt (High)
