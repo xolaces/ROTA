@@ -22,7 +22,8 @@ public class StatServiceTests
         Mock<IEnergyService> Energy,
         Mock<IGemService> Gems,
         Mock<IAuditLogRepository> AuditLog,
-        Mock<IClassService> Classes);
+        Mock<IClassService> Classes,
+        Mock<IEquipmentService> Equipment);
 
     private static IOptions<LevelingConfig> DefaultLevelingConfig() =>
         Options.Create(new LevelingConfig
@@ -53,11 +54,12 @@ public class StatServiceTests
 
     private static ServiceBundle BuildService()
     {
-        var players  = new Mock<IPlayerRepository>();
-        var energy   = new Mock<IEnergyService>();
-        var gems     = new Mock<IGemService>();
-        var auditLog = new Mock<IAuditLogRepository>();
-        var classes  = new Mock<IClassService>();
+        var players   = new Mock<IPlayerRepository>();
+        var energy    = new Mock<IEnergyService>();
+        var gems      = new Mock<IGemService>();
+        var auditLog  = new Mock<IAuditLogRepository>();
+        var classes   = new Mock<IClassService>();
+        var equipment = new Mock<IEquipmentService>();
 
         auditLog.Setup(a => a.AppendAsync(It.IsAny<AuditLog>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -70,11 +72,16 @@ public class StatServiceTests
         // Default: no auto-advance (returns current class unchanged)
         classes.Setup(c => c.ComputeAutoAdvance(It.IsAny<int>(), It.IsAny<PlayerClass>()))
             .Returns((int _, PlayerClass current) => current);
+        // Default: pass-through — no gear bonus
+        equipment.Setup(e => e.GetEffectiveCombatDataAsync(
+                It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid _, int atk, int def, CancellationToken _) =>
+                new EffectiveCombatData(atk, def, null));
 
         return new ServiceBundle(
             new StatService(players.Object, energy.Object, gems.Object, auditLog.Object,
-                DefaultLevelingConfig(), DefaultCombatConfig(), classes.Object),
-            players, energy, gems, auditLog, classes);
+                DefaultLevelingConfig(), DefaultCombatConfig(), classes.Object, equipment.Object),
+            players, energy, gems, auditLog, classes, equipment);
     }
 
     // Creates a player that has FindByIdWithStatsAsync returning it with fully initialised stats

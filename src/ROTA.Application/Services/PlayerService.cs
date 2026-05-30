@@ -10,15 +10,18 @@ public sealed class PlayerService : IPlayerService
     private readonly IPlayerRepository _players;
     private readonly IEnergyService _energy;
     private readonly IAuditLogRepository _auditLog;
+    private readonly IEquipmentService _equipment;
 
     public PlayerService(
         IPlayerRepository players,
         IEnergyService energy,
-        IAuditLogRepository auditLog)
+        IAuditLogRepository auditLog,
+        IEquipmentService equipment)
     {
-        _players = players;
-        _energy = energy;
-        _auditLog = auditLog;
+        _players   = players;
+        _energy    = energy;
+        _auditLog  = auditLog;
+        _equipment = equipment;
     }
 
     public async Task<PlayerProfileResponse?> GetProfileAsync(Guid playerId, CancellationToken ct = default)
@@ -39,19 +42,32 @@ public sealed class PlayerService : IPlayerService
             });
         }
 
+        // Compute effective stats for profile display.
+        int effAtk = player.Stats?.BaseAttack ?? 0;
+        int effDef = player.Stats?.BaseDefense ?? 0;
+        if (player.Stats is not null)
+        {
+            var combat = await _equipment.GetEffectiveCombatDataAsync(
+                playerId, player.Stats.BaseAttack, player.Stats.BaseDefense, ct);
+            effAtk = combat.EffectiveAttack;
+            effDef = combat.EffectiveDefense;
+        }
+
         return new PlayerProfileResponse
         {
-            Id = player.Id,
-            Username = player.Username,
-            Email = player.Email,
-            Level = player.Level,
-            Experience = player.Experience,
-            Gold = player.Gold,
-            GuildId = player.GuildId,
-            GuildRank = player.GuildRank,
-            CreatedAt = player.CreatedAt,
-            UpdatedAt = player.UpdatedAt,
-            Resources = resources
+            Id               = player.Id,
+            Username         = player.Username,
+            Email            = player.Email,
+            Level            = player.Level,
+            Experience       = player.Experience,
+            Gold             = player.Gold,
+            GuildId          = player.GuildId,
+            GuildRank        = player.GuildRank,
+            CreatedAt        = player.CreatedAt,
+            UpdatedAt        = player.UpdatedAt,
+            Resources        = resources,
+            EffectiveAttack  = effAtk,
+            EffectiveDefense = effDef,
         };
     }
 

@@ -22,10 +22,18 @@ public class PlayerServiceTests
                     Mock<IAuditLogRepository> auditLog)
         BuildService()
     {
-        var players  = new Mock<IPlayerRepository>();
-        var energy   = new Mock<IEnergyService>();
-        var auditLog = new Mock<IAuditLogRepository>();
-        var service  = new PlayerService(players.Object, energy.Object, auditLog.Object);
+        var players   = new Mock<IPlayerRepository>();
+        var energy    = new Mock<IEnergyService>();
+        var auditLog  = new Mock<IAuditLogRepository>();
+        var equipment = new Mock<IEquipmentService>();
+
+        // Default: pass-through — no gear bonus
+        equipment.Setup(e => e.GetEffectiveCombatDataAsync(
+                It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid _, int atk, int def, CancellationToken _) =>
+                new EffectiveCombatData(atk, def, null));
+
+        var service = new PlayerService(players.Object, energy.Object, auditLog.Object, equipment.Object);
         return (service, players, energy, auditLog);
     }
 

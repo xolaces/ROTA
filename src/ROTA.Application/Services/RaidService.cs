@@ -64,6 +64,7 @@ public sealed class RaidService : IRaidService
     private readonly IAuditLogRepository _auditLog;
     private readonly IRaidDefinitionProvider _raidDefinitions;
     private readonly IRaidHitCache _hitCache;
+    private readonly IEquipmentService _equipment;
     private readonly Random _random;
 
     public RaidService(
@@ -80,6 +81,7 @@ public sealed class RaidService : IRaidService
         IAuditLogRepository auditLog,
         IRaidDefinitionProvider raidDefinitions,
         IRaidHitCache hitCache,
+        IEquipmentService equipment,
         Random? random = null)
     {
         _raids           = raids;
@@ -95,6 +97,7 @@ public sealed class RaidService : IRaidService
         _auditLog        = auditLog;
         _raidDefinitions = raidDefinitions;
         _hitCache        = hitCache;
+        _equipment       = equipment;
         _random          = random ?? Random.Shared;
     }
 
@@ -271,6 +274,8 @@ public sealed class RaidService : IRaidService
         bool finalDefeated       = false;
         bool isCrit              = false;
         double appliedCritMult   = 1.0;
+        bool procFired           = false;
+        long procBonus           = 0;
         RaidParticipant? participantFinal = null;
         RaidRewards? rewards = null;
         int xpGained         = 0;
@@ -285,10 +290,21 @@ public sealed class RaidService : IRaidService
                 return false;
             }
 
-            // Compute damage — server RNG, never client.
+            // Compute effective stats — base + gear bonuses.
+            var combat = await _equipment.GetEffectiveCombatDataAsync(
+                playerId, player.Stats!.BaseAttack, player.Stats.BaseDefense, ct);
+
             var multiplier = 0.85 + _random.NextDouble() * 0.30; // uniform [0.85, 1.15]
-            long baseValue = (player.Stats!.BaseAttack * 4L) + player.Stats.BaseDefense;
+            long baseValue = (combat.EffectiveAttack * 4L) + combat.EffectiveDefense;
             damageFinal = Math.Max(1, (long)(baseValue * hitSize * multiplier));
+
+            // Mount proc — once per hit, adds procPercent × base damage as a bonus.
+            if (combat.MountProc is not null && _random.NextDouble() < combat.MountProc.ProcChance)
+            {
+                procBonus   = Math.Max(0, (long)(damageFinal * combat.MountProc.ProcPercent));
+                damageFinal += procBonus;
+                procFired   = true;
+            }
 
             // Apply discernment crit — rolls after base damage, before damage is applied.
             var crit = _stats.GetCritProfile(player.Stats.DiscernmentInvestment);
@@ -376,9 +392,10 @@ public sealed class RaidService : IRaidService
 
         // 10. Audit the successful hit.
         string critSuffix = isCrit ? $" CRIT x{appliedCritMult:F2}" : string.Empty;
+        string procSuffix = procFired ? $" PROC +{procBonus}" : string.Empty;
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, "RaidHit", null,
-            $"Hit raid {activeRaidId} ({definition.Name}) [{raid.Difficulty}] for {damageFinal} dmg (x{hitSize}){critSuffix}. " +
+            $"Hit raid {activeRaidId} ({definition.Name}) [{raid.Difficulty}] for {damageFinal} dmg (x{hitSize}){critSuffix}{procSuffix}. " +
             $"HP: {finalHp}/{raid.MaxHp}. Kill: {finalDefeated}",
             null), ct);
 
@@ -408,6 +425,8 @@ public sealed class RaidService : IRaidService
             GoldGained      = goldGained,
             IsCrit          = isCrit,
             CritMultiplier  = appliedCritMult,
+            ProcFired       = procFired,
+            ProcBonus       = procBonus,
         };
 
         // 11. Store the completed response — replaces the "pending" placeholder.
