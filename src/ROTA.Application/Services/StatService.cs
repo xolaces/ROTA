@@ -16,6 +16,7 @@ public sealed class StatService : IStatService
     private readonly IGemService _gems;
     private readonly IAuditLogRepository _auditLog;
     private readonly IOptions<LevelingConfig> _levelingConfig;
+    private readonly IOptions<CombatConfig> _combatConfig;
     private readonly IClassService _classService;
 
     public StatService(
@@ -24,6 +25,7 @@ public sealed class StatService : IStatService
         IGemService gems,
         IAuditLogRepository auditLog,
         IOptions<LevelingConfig> levelingConfig,
+        IOptions<CombatConfig> combatConfig,
         IClassService classService)
     {
         _players        = players;
@@ -31,6 +33,7 @@ public sealed class StatService : IStatService
         _gems           = gems;
         _auditLog       = auditLog;
         _levelingConfig = levelingConfig;
+        _combatConfig   = combatConfig;
         _classService   = classService;
     }
 
@@ -174,6 +177,18 @@ public sealed class StatService : IStatService
         double baseXp = cfg.XpBaseMultiplier * Math.Pow(level, cfg.XpExponent);
         int floor = cfg.GetFloor(level);
         return Math.Max(floor, (int)Math.Round(baseXp));
+    }
+
+    public CritProfile GetCritProfile(int discernment)
+    {
+        var cfg = _combatConfig.Value;
+        double chance = cfg.BaseCritChance
+            + Math.Min(cfg.MaxCritChanceBonus, discernment * cfg.CritChancePerDiscernment);
+        double multiplier = cfg.BaseCritMultiplier
+            + Math.Min(cfg.MaxCritDamageBonus, discernment * cfg.CritDamagePerDiscernment);
+        return new CritProfile(
+            Math.Clamp(chance, 0.0, cfg.BaseCritChance + cfg.MaxCritChanceBonus),
+            Math.Clamp(multiplier, cfg.BaseCritMultiplier, cfg.BaseCritMultiplier + cfg.MaxCritDamageBonus));
     }
 
     private static AllocateStatResponse Fail(string reason)

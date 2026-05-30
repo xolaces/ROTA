@@ -265,10 +265,12 @@ public sealed class RaidService : IRaidService
         //    (IsDefeated=true) and returns false, triggering the refund below.
         //    All repositories sharing this DbContext participate in the same transaction,
         //    so kill rewards are committed exactly once.
-        bool raceCondition   = false;
-        long damageFinal     = 0;
-        long finalHp         = 0;
-        bool finalDefeated   = false;
+        bool raceCondition       = false;
+        long damageFinal         = 0;
+        long finalHp             = 0;
+        bool finalDefeated       = false;
+        bool isCrit              = false;
+        double appliedCritMult   = 1.0;
         RaidParticipant? participantFinal = null;
         RaidRewards? rewards = null;
         int xpGained         = 0;
@@ -287,6 +289,19 @@ public sealed class RaidService : IRaidService
             var multiplier = 0.85 + _random.NextDouble() * 0.30; // uniform [0.85, 1.15]
             long baseValue = (player.Stats!.BaseAttack * 4L) + player.Stats.BaseDefense;
             damageFinal = Math.Max(1, (long)(baseValue * hitSize * multiplier));
+
+            // Apply discernment crit — rolls after base damage, before damage is applied.
+            var crit = _stats.GetCritProfile(player.Stats.DiscernmentInvestment);
+            isCrit = _random.NextDouble() < crit.Chance;
+            if (isCrit)
+            {
+                damageFinal      = Math.Max(1, (long)(damageFinal * crit.Multiplier));
+                appliedCritMult  = crit.Multiplier;
+            }
+            else
+            {
+                appliedCritMult = 1.0;
+            }
 
             lockedRaid.TakeDamage(damageFinal);
 
@@ -360,9 +375,10 @@ public sealed class RaidService : IRaidService
         }
 
         // 10. Audit the successful hit.
+        string critSuffix = isCrit ? $" CRIT x{appliedCritMult:F2}" : string.Empty;
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, "RaidHit", null,
-            $"Hit raid {activeRaidId} ({definition.Name}) [{raid.Difficulty}] for {damageFinal} dmg (x{hitSize}). " +
+            $"Hit raid {activeRaidId} ({definition.Name}) [{raid.Difficulty}] for {damageFinal} dmg (x{hitSize}){critSuffix}. " +
             $"HP: {finalHp}/{raid.MaxHp}. Kill: {finalDefeated}",
             null), ct);
 
@@ -390,6 +406,8 @@ public sealed class RaidService : IRaidService
             YourCurrentTier = callerTier,
             XpGained        = xpGained,
             GoldGained      = goldGained,
+            IsCrit          = isCrit,
+            CritMultiplier  = appliedCritMult,
         };
 
         // 11. Store the completed response — replaces the "pending" placeholder.

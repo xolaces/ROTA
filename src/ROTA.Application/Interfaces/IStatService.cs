@@ -18,4 +18,6 @@ public interface IStatService
         Guid playerId, CancellationToken ct = default);
 
     int XpToNextLevel(int level);
+
+    CritProfile GetCritProfile(int discernment);
 }
