@@ -27,6 +27,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPlayerInventoryRepository, PlayerInventoryRepository>();
         services.AddScoped<IBetaKeyRepository, BetaKeyRepository>();
         services.AddScoped<IPlayerEquipmentRepository, PlayerEquipmentRepository>();
+        services.AddScoped<IPlayerMagicRepository, PlayerMagicRepository>();
 
         // Infrastructure services
         services.AddScoped<IAuthLockoutService, AuthLockoutService>();
@@ -59,6 +60,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRaidService, RaidService>();
         services.AddScoped<IItemService, ItemService>();
         services.AddScoped<IEquipmentService, EquipmentService>();
+        services.AddScoped<IMagicService, MagicService>();
 
         // FluentValidation — scan Application assembly for all IValidator<T> implementations
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
