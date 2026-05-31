@@ -9,32 +9,29 @@ Server-authoritative .NET 10 backend for a Dawn-of-the-Dragons-style async RPG. 
 Infrastructure,Shared}`. PostgreSQL 16 (EF Core 9), Redis, RS256 JWT.
 
 ## Build status (High — run this session)
-- **219 unit + 7 integration = 226 tests pass. 0 warnings, 0 errors.**
-- `main` @ tag **v0.2.4**, synced with origin (pushed).
+- **232 unit + 7 integration = 239 tests pass. 0 warnings, 0 errors.**
+- `main` @ tag **v0.2.5**, synced with origin (pushed).
 
 ## Inventory (High)
-8 controllers · 12 services · 13 entities · 11 enums · 12 repositories · 3 middleware ·
+8 controllers · 13 services · 14 entities · 13 enums · 12 repositories · 3 middleware ·
 14 EF migrations (InitialCreate→AddEquipmentSystem) · 5 content JSON files · GitHub Actions CI.
 
 ## Implemented & tested (High)
 Auth · Rate limiting · Audit · Energy/resources · Player profile · Gem ledger · Quests+difficulty ·
 Raid engine (pg advisory-lock, Redis idempotency) · Items/sigils · Stats · Class system ·
-RBAC + beta keys + admin (REST+CLI) · **Character gear (v0.2.4)**.
+RBAC + beta keys + admin (REST+CLI) · Character gear (v0.2.4) · **Conditional/stacking bonuses (v0.2.5)**.
 - **Resource regen is class-based (v0.2.2):** energy/stamina/guild regen derive from `ClassConfig`
   (minutes-per-point). **GuildStamina now regenerates** (was 0). Stored `RegenPerMinute` is vestigial.
 - **RaidSize set (v0.2.2):** Personal/Small/Medium/Large/Titanic, participant caps 1/10/25/50/250,
   enforced pre-spend on hit. Personal = summoner-only.
 - **Raid on-hit rewards (v0.2.2):** XP = single 1–4 roll × stamina; gold = stamina × per-raid
-  `goldPerStamina`; hit response now returns per-hit `XpGained`/`GoldGained`/`DamageDealt` (raid log).
+  `goldPerStamina`; hit response now returns per-hit `XpGained`/`GoldGained`/`DamageDealt`.
 - **Discernment crit (v0.2.3):** raid hits crit via `DiscernmentInvestment` — chance 5%→15% (+10%
-  hard cap @1000 disc), damage 1.5×→2.5× (@5000 disc), tunable `CombatConfig`; response has
-  `IsCrit`/`CritMultiplier`. Raids only (quests have no damage roll).
-- **Character gear (v0.2.4):** 8 slots (Head/Neck/Torso/Ring1/Ring2/Mount/Boots/Gloves).
-  `player_equipment` table (unique per slot per player). JSON-driven `gear.json`. Raid damage formula
-  uses effective stats (base + gear ATK/DEF). Mount = proc: 5–40% chance → +procPercent×base damage,
-  once per hit before crit. `PlayerStatsResponse`/`PlayerProfileResponse` expose effective stats.
-  `RaidHitResponse` has `ProcFired`/`ProcBonus`. Starter set: 8 Grey pieces, full-set +1 ATK/+3 DEF,
-  Draft Horse mount (5% proc ×200%). GET/PUT/DELETE `/api/equipment/{slot}`.
+  hard cap @1000 disc), damage 1.5×→2.5× (@5000 disc), tunable `CombatConfig`.
+- **Character gear (v0.2.4):** 8 slots. Raid damage uses effective stats. Mount proc once per hit.
+- **Conditional bonuses (v0.2.5):** JSON-only bonus framework. `ConditionalBonusEvaluator` shared
+  by gear/future legions. 5 bonus types, 3 condition types. `FlatDamagePercent` applied after crit.
+  Reward atomicity fixed: stamina spend inside advisory-lock tx (atomic rollback). `ProcBonus` is `long`.
 
 ## Content state (High)
 Minimal playable slice: 2 chapters, 5 quest nodes (3 battle + 2 boss), 2 raids, 12 items, 2 loot
@@ -48,13 +45,11 @@ tables. Loop works; thin.
 Game client (C# SDK = v0.3.0) · discernment quest-drop-quality (later) ·
 moderation (back-burnered) · world chat · guild · gauntlet · gacha/pity ·
 equipment crafting / consumables · gear set bonuses (Phase 2) ·
-structured log sink / monitoring · background jobs.
+structured log sink / monitoring · background jobs · legion system (next).
 
 ## Known issues / debt (High)
-- **Reward atomicity:** the raid **stamina spend** still runs in its own tx, outside the advisory-lock
-  block; on-hit XP/gold and kill rewards ARE inside it. Crash between stamina-spend and the lock block
-  loses stamina. Documented `// Phase 2`.
-- (Resolved this session: class regen wiring, raid size set, raid on-hit rewards, CI, dev auto-migrate.)
+- (Resolved v0.2.5: reward atomicity — stamina spend now inside advisory-lock tx.)
+- (Resolved v0.2.5: ProcBonus type — now `long`.)
 
 ## Needs owner sign-off (balance values, tunable in appsettings)
 - **Regen pacing:** Conscript = 5.0 min/point for BOTH energy and stamina (≈10× slower than the old

@@ -31,7 +31,7 @@ public class PlayerServiceTests
         equipment.Setup(e => e.GetEffectiveCombatDataAsync(
                 It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Guid _, int atk, int def, CancellationToken _) =>
-                new EffectiveCombatData(atk, def, null));
+                new EffectiveCombatData(atk, def, null, 0.0));
 
         var service = new PlayerService(players.Object, energy.Object, auditLog.Object, equipment.Object);
         return (service, players, energy, auditLog);

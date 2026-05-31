@@ -201,7 +201,7 @@ public class RaidConcurrencyTests : IAsyncLifetime
         staminaDeltas.Should().Contain(1,
             "the winner spent 1 stamina and was not refunded");
         staminaDeltas.Should().Contain(0,
-            "the loser spent 1 stamina then received a full refund — net zero");
+            "the loser's stamina deduction is inside the advisory-lock transaction and rolls back atomically — net zero");
     }
 
     // -----------------------------------------------------------------------
