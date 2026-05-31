@@ -117,6 +117,20 @@ Evaluation steps (all per-hit, inside the method):
 
 ---
 
+## Known behavior — proc-without-mount (intentional)
+
+`ProcChanceFlat` and `ProcAmountFlat` conditional bonuses from gear are only meaningful when
+the player has a **mount equipped** (i.e. `mountProc is not null`). If no mount occupies the
+Mount slot, the evaluated `ProcChanceFlat`/`ProcAmountFlat` values are computed but not applied —
+there is no base `GearProcData` to fold them into. This is intentional:
+
+- Proc bonuses amplify an existing mount proc; they are not standalone proc sources.
+- Magic DamageProcs (System 14) are the standalone raid-scoped proc layer.
+- If a future item type warrants a proc-without-mount path, add a synthetic `GearProcData(0, 0)`
+  baseline in `GetEffectiveCombatDataAsync` at that time.
+
+---
+
 ## Pipeline seam — `RaidService.HitRaidAsync`
 
 After crit, before applying damage to raid HP:
