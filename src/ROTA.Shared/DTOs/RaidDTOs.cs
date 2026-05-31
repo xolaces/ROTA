@@ -48,7 +48,16 @@ public class RaidHitResponse
     public bool IsCrit { get; set; }
     public double CritMultiplier { get; set; }
     public bool   ProcFired  { get; set; }
-    public long   ProcBonus  { get; set; } // raw bonus damage from proc (0 if no proc)
+    public long   ProcBonus  { get; set; } // raw bonus damage from mount proc (0 if no proc)
+    // Magic DamageProc totals for this hit (Slice 4)
+    public long              MagicProcBonus { get; set; } // capped total magic bonus
+    public List<MagicProcDTO> MagicProcs   { get; set; } = new();
+}
+
+public class MagicProcDTO
+{
+    public string Name  { get; set; } = string.Empty;
+    public long   Bonus { get; set; }
 }
 
 public class RaidRewards

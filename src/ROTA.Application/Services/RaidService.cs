@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Models;
 using ROTA.Domain.Entities;
@@ -65,6 +66,9 @@ public sealed class RaidService : IRaidService
     private readonly IRaidDefinitionProvider _raidDefinitions;
     private readonly IRaidHitCache _hitCache;
     private readonly IEquipmentService _equipment;
+    private readonly IRaidMagicRepository _raidMagics;
+    private readonly IMagicDefinitionProvider _magicDefs;
+    private readonly MagicConfig _magicConfig;
     private readonly Random _random;
 
     public RaidService(
@@ -82,6 +86,9 @@ public sealed class RaidService : IRaidService
         IRaidDefinitionProvider raidDefinitions,
         IRaidHitCache hitCache,
         IEquipmentService equipment,
+        IRaidMagicRepository raidMagics,
+        IMagicDefinitionProvider magicDefs,
+        IOptions<MagicConfig> magicConfig,
         Random? random = null)
     {
         _raids           = raids;
@@ -98,6 +105,9 @@ public sealed class RaidService : IRaidService
         _raidDefinitions = raidDefinitions;
         _hitCache        = hitCache;
         _equipment       = equipment;
+        _raidMagics      = raidMagics;
+        _magicDefs       = magicDefs;
+        _magicConfig     = magicConfig.Value;
         _random          = random ?? Random.Shared;
     }
 
@@ -269,6 +279,8 @@ public sealed class RaidService : IRaidService
         double appliedCritMult   = 1.0;
         bool procFired           = false;
         long procBonus           = 0;
+        long magicProcBonus      = 0;
+        var  magicProcs          = new List<MagicProcDTO>();
         RaidParticipant? participantFinal = null;
         RaidRewards? rewards = null;
         int xpGained         = 0;
@@ -306,13 +318,67 @@ public sealed class RaidService : IRaidService
             long baseValue = (combat.EffectiveAttack * 4L) + combat.EffectiveDefense;
             damageFinal = Math.Max(1, (long)(baseValue * hitSize * multiplier));
 
-            // Mount proc — once per hit, adds procPercent × base damage as a bonus.
+            // Pre-proc baseline — both mount proc and magic DamageProcs use this value
+            // so that independent proc sources don't compound off each other.
+            long preProc = damageFinal;
+
+            // Mount proc — once per hit, adds procPercent × pre-proc base damage as a bonus.
             if (combat.MountProc is not null && _random.NextDouble() < combat.MountProc.ProcChance)
             {
-                procBonus   = Math.Max(0, (long)(damageFinal * combat.MountProc.ProcPercent));
+                procBonus   = Math.Max(0, (long)(preProc * combat.MountProc.ProcPercent));
                 damageFinal += procBonus;
                 procFired   = true;
             }
+
+            // Magic DamageProcs — each applied magic with effectType=DamageProc rolls
+            // independently; all bonuses accumulate against preProc then are capped.
+            // Loaded inside the advisory lock so we see the current applied-magic list.
+            var appliedMagics = await _raidMagics.GetForRaidAsync(activeRaidId, ct);
+            long magicBonusRaw = 0;
+            foreach (var raidMagic in appliedMagics)
+            {
+                var magicDef = _magicDefs.GetById(raidMagic.MagicDefinitionId);
+                if (magicDef is null || magicDef.EffectType != MagicEffectType.DamageProc) continue;
+
+                double chance = magicDef.ProcChance;
+                double amount = magicDef.ProcAmount;
+
+                // Ownership-scaling conditions: evaluate only when declared.
+                // Starter magics all have empty conditions — this branch defers inventory load.
+                if (magicDef.Conditions.Count > 0)
+                {
+                    var inventoryItems = await _inventory.GetAllForPlayerAsync(playerId, ct);
+                    var ownedById = inventoryItems.ToDictionary(
+                        i => i.ItemDefinitionId, i => i.Quantity);
+                    var ownedByTag = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var inv in inventoryItems)
+                    {
+                        var itemDef = _itemDefs.GetById(inv.ItemDefinitionId);
+                        if (itemDef is null) continue;
+                        foreach (var tag in itemDef.Tags)
+                        {
+                            ownedByTag.TryGetValue(tag, out int c);
+                            ownedByTag[tag] = c + inv.Quantity;
+                        }
+                    }
+                    var evaluated = ConditionalBonusEvaluator.Evaluate(
+                        magicDef.Conditions, ownedById, ownedByTag, new HashSet<string>());
+                    chance = Math.Min(1.0, chance + evaluated.ProcChanceFlat);
+                    amount += evaluated.ProcAmountFlat;
+                }
+
+                if (_random.NextDouble() < chance)
+                {
+                    long bonus = Math.Max(0, (long)(amount * preProc));
+                    magicBonusRaw += bonus;
+                    magicProcs.Add(new MagicProcDTO { Name = magicDef.Name, Bonus = bonus });
+                }
+            }
+
+            // Cap aggregate magic proc bonus at MaxAggregateProcBonus × preProc.
+            long magicBonusCap = (long)(_magicConfig.MaxAggregateProcBonus * preProc);
+            magicProcBonus  = Math.Min(magicBonusRaw, magicBonusCap);
+            damageFinal    += magicProcBonus;
 
             // Apply discernment crit — rolls after proc, before conditional flat bonus.
             var crit = _stats.GetCritProfile(player.Stats.DiscernmentInvestment);
@@ -400,11 +466,12 @@ public sealed class RaidService : IRaidService
         }
 
         // 9. Audit the successful hit.
-        string critSuffix = isCrit ? $" CRIT x{appliedCritMult:F2}" : string.Empty;
-        string procSuffix = procFired ? $" PROC +{procBonus}" : string.Empty;
+        string critSuffix  = isCrit ? $" CRIT x{appliedCritMult:F2}" : string.Empty;
+        string procSuffix  = procFired ? $" PROC +{procBonus}" : string.Empty;
+        string magicSuffix = magicProcBonus > 0 ? $" MAGIC +{magicProcBonus}({magicProcs.Count})" : string.Empty;
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, "RaidHit", null,
-            $"Hit raid {activeRaidId} ({definition.Name}) [{raid.Difficulty}] for {damageFinal} dmg (x{hitSize}){critSuffix}{procSuffix}. " +
+            $"Hit raid {activeRaidId} ({definition.Name}) [{raid.Difficulty}] for {damageFinal} dmg (x{hitSize}){critSuffix}{procSuffix}{magicSuffix}. " +
             $"HP: {finalHp}/{raid.MaxHp}. Kill: {finalDefeated}",
             null), ct);
 
@@ -436,6 +503,8 @@ public sealed class RaidService : IRaidService
             CritMultiplier  = appliedCritMult,
             ProcFired       = procFired,
             ProcBonus       = procBonus,
+            MagicProcBonus  = magicProcBonus,
+            MagicProcs      = magicProcs,
         };
 
         // 10. Store the completed response — replaces the "pending" placeholder.

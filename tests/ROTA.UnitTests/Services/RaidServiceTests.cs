@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.Extensions.Options;
 using Moq;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Models;
@@ -30,9 +31,11 @@ public class RaidServiceTests
         Mock<IAuditLogRepository> AuditLog,
         Mock<IRaidDefinitionProvider> Definitions,
         Mock<IRaidHitCache> HitCache,
-        Mock<IEquipmentService> Equipment);
+        Mock<IEquipmentService> Equipment,
+        Mock<IRaidMagicRepository> RaidMagics,
+        Mock<IMagicDefinitionProvider> MagicDefs);
 
-    private static ServiceBundle BuildService(Random? random = null)
+    private static ServiceBundle BuildService(Random? random = null, MagicConfig? magicConfig = null)
     {
         var raids        = new Mock<IActiveRaidRepository>();
         var participants = new Mock<IRaidParticipantRepository>();
@@ -48,6 +51,8 @@ public class RaidServiceTests
         var definitions  = new Mock<IRaidDefinitionProvider>();
         var hitCache     = new Mock<IRaidHitCache>();
         var equipment    = new Mock<IEquipmentService>();
+        var raidMagics   = new Mock<IRaidMagicRepository>();
+        var magicDefs    = new Mock<IMagicDefinitionProvider>();
 
         hitCache.Setup(c => c.TryAcquireSlotAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((true, (RaidHitResponse?)null));
@@ -69,15 +74,22 @@ public class RaidServiceTests
                 It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Guid _, int atk, int def, CancellationToken _) =>
                 new EffectiveCombatData(atk, def, null, 0.0));
+        // Default: no applied magics — existing tests see zero magic proc bonus
+        raidMagics.Setup(r => r.GetForRaidAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidMagic>());
+
+        var cfg = Options.Create(magicConfig ?? new MagicConfig());
 
         var service = new RaidService(
             raids.Object, participants.Object, players.Object, resources.Object,
             energy.Object, gems.Object, stats.Object, inventory.Object,
             itemDefs.Object, lootTables.Object, auditLog.Object,
-            definitions.Object, hitCache.Object, equipment.Object, random);
+            definitions.Object, hitCache.Object, equipment.Object,
+            raidMagics.Object, magicDefs.Object, cfg, random);
 
         return new ServiceBundle(service, raids, participants, players, resources, energy, gems,
-            stats, inventory, itemDefs, lootTables, auditLog, definitions, hitCache, equipment);
+            stats, inventory, itemDefs, lootTables, auditLog, definitions, hitCache, equipment,
+            raidMagics, magicDefs);
     }
 
     private static Player MakePlayer(long xp = 0)
@@ -1093,5 +1105,179 @@ public class RaidServiceTests
         result.Success.Should().BeTrue();
         result.Response!.ProcFired.Should().BeFalse("seed 0 causes call2=0.8173 >= 0.05 — proc does not fire");
         result.Response.ProcBonus.Should().Be(0, "no proc means zero bonus damage");
+    }
+
+    // -----------------------------------------------------------------------
+    // Slice 4 — Magic DamageProc effects in combat
+    // -----------------------------------------------------------------------
+
+    private static MagicDefinition MakeDamageProc(
+        string id         = "magic_whetstone",
+        double procChance = 1.0,
+        double procAmount = 0.5)
+        => new()
+        {
+            Id         = id,
+            Name       = id,
+            EffectType = MagicEffectType.DamageProc,
+            ProcChance = procChance,
+            ProcAmount = procAmount,
+            Stacks     = true,
+            Conditions = new(),
+        };
+
+    private static RaidMagic MakeRaidMagic(Guid raidId, string magicId)
+        => RaidMagic.Create(raidId, magicId, Guid.NewGuid());
+
+    private static void SetupMagic(ServiceBundle b, ActiveRaid raid, params (string id, double chance, double amount)[] magics)
+    {
+        var rows = magics.Select(m => MakeRaidMagic(raid.Id, m.id)).ToList();
+        b.RaidMagics.Setup(r => r.GetForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(rows);
+        foreach (var (id, chance, amount) in magics)
+            b.MagicDefs.Setup(d => d.GetById(id)).Returns(MakeDamageProc(id, chance, amount));
+    }
+
+    [Fact]
+    public async Task Hit_SingleMagicProc_Fires_WhenChanceIsOne()
+    {
+        // procChance=1.0 always fires; MagicProcBonus must be > 0 and damageFinal > base.
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        SetupMagic(b, raid, ("magic_whetstone", 1.0, 0.5));
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.MagicProcBonus.Should().BeGreaterThan(0,
+            "magic with procChance=1.0 always fires; preProc≈50 → magicBonus=0.5×50=25");
+        result.Response.MagicProcs.Should().HaveCount(1);
+        result.Response.MagicProcs[0].Name.Should().Be("magic_whetstone");
+        result.Response.MagicProcs[0].Bonus.Should().BeGreaterThan(0);
+        result.Response.DamageDealt.Should().BeGreaterThan(result.Response.MagicProcBonus,
+            "DamageDealt includes the magic bonus on top of the base hit");
+    }
+
+    [Fact]
+    public async Task Hit_SingleMagicProc_DoesNotFire_WhenChanceIsZero()
+    {
+        // procChance=0.0 — roll is always >= 0.0 → proc never fires.
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        SetupMagic(b, raid, ("magic_whetstone", 0.0, 0.5));
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.MagicProcBonus.Should().Be(0, "procChance=0.0 never fires");
+        result.Response.MagicProcs.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Hit_MultipleMagicProcs_Stack_BelowCap()
+    {
+        // Two magics each with procChance=1.0, procAmount=0.3.
+        // Total raw = 0.3*preProc + 0.3*preProc = 0.6*preProc < MaxAggregateProcBonus(5.0)*preProc.
+        // Both should appear in MagicProcs; total is uncapped.
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        SetupMagic(b, raid,
+            ("magic_whetstone", 1.0, 0.3),
+            ("magic_poison",    1.0, 0.3));
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.MagicProcs.Should().HaveCount(2, "both magics fired");
+        result.Response.MagicProcBonus.Should().BeGreaterThan(0);
+        // Both procs add to total — bonus should equal sum of individual bonuses (no cap applied).
+        long expectedTotal = result.Response.MagicProcs.Sum(m => m.Bonus);
+        result.Response.MagicProcBonus.Should().Be(expectedTotal,
+            "no cap applies when total < MaxAggregateProcBonus × preProc");
+    }
+
+    [Fact]
+    public async Task Hit_MagicProcs_AggregateCap_Clamps()
+    {
+        // Two magics each with procAmount=3.0 → raw total = 6.0 × preProc.
+        // Custom config MaxAggregateProcBonus=1.0 → cap = 1.0 × preProc.
+        // MagicProcBonus must equal the cap, not the raw sum.
+        var cfg = new MagicConfig { MaxAggregateProcBonus = 1.0 };
+        var b   = BuildService(new Random(0), cfg);
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        SetupMagic(b, raid,
+            ("magic_smite", 1.0, 3.0),
+            ("magic_doom",  1.0, 3.0));
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        // Raw sum = 6 × preProc. Cap = 1 × preProc.
+        // MagicProcBonus must be < raw sum of individual procs.
+        long rawSum = result.Response!.MagicProcs.Sum(m => m.Bonus);
+        result.Response.MagicProcBonus.Should().BeLessThan(rawSum,
+            "cap of 1.0 × preProc must clamp the 6.0 × preProc raw sum");
+        result.Response.MagicProcBonus.Should().BeGreaterThan(0,
+            "capped bonus is still > 0 when at least one proc fires");
+    }
+
+    [Fact]
+    public async Task Hit_MagicProcBonus_IncludedInDamageDealt_AndParticipantTotal()
+    {
+        // Magic bonus is added to damageFinal BEFORE RecordHit, so participant total
+        // and DamageDealt both reflect the magic contribution.
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        SetupMagic(b, raid, ("magic_whetstone", 1.0, 0.5));
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        RaidParticipant? capturedParticipant = null;
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .Callback<RaidParticipant, CancellationToken>((p, _) => capturedParticipant = p)
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        long damage    = result.Response!.DamageDealt;
+        long magicBonus = result.Response.MagicProcBonus;
+
+        magicBonus.Should().BeGreaterThan(0);
+        result.Response.YourTotalDamage.Should().Be(damage,
+            "participant total equals DamageDealt on first hit (no prior damage)");
+        capturedParticipant.Should().NotBeNull();
+        capturedParticipant!.TotalDamageDealt.Should().Be(damage,
+            "participant RecordHit is called with damageFinal which includes the magic bonus");
     }
 }
