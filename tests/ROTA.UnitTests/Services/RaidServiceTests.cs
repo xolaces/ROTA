@@ -1249,6 +1249,126 @@ public class RaidServiceTests
             "capped bonus is still > 0 when at least one proc fires");
     }
 
+    // -----------------------------------------------------------------------
+    // Slice 5 — Utility magic effects (crit / gold / xp)
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task Hit_CritChanceFlatMagic_RaisesEffectiveCritChance()
+    {
+        // Default crit chance = 0.0 (never crits). CritChanceFlat magic procAmount=1.0
+        // pushes adjusted chance to 1.0 → always crits.
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+
+        // CritChanceFlat: procChance ignored (always-on); procAmount added to crit chance.
+        var critMagicRow = MakeRaidMagic(raid.Id, "magic_expose_weakness");
+        b.RaidMagics.Setup(r => r.GetForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidMagic> { critMagicRow });
+        b.MagicDefs.Setup(d => d.GetById("magic_expose_weakness")).Returns(new MagicDefinition
+        {
+            Id         = "magic_expose_weakness",
+            Name       = "Expose Weakness",
+            EffectType = MagicEffectType.CritChanceFlat,
+            ProcChance = 0.00,  // ignored — CritChanceFlat is always-on
+            ProcAmount = 1.00,  // +100% crit chance → adjustedChance = min(1.0, 0.0+1.0) = 1.0
+            Conditions = new(),
+        });
+
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.IsCrit.Should().BeTrue(
+            "adjusted crit chance = 1.0 from magic; every roll < 1.0 fires a crit");
+        result.Response.MagicCritBonus.Should().BeApproximately(1.0, 0.001,
+            "magic contributes exactly procAmount=1.0 to the crit chance");
+    }
+
+    [Fact]
+    public async Task Hit_GoldProcMagic_AddsGoldOnProc()
+    {
+        // GoldProc with procChance=1.0, procAmount=1.0 doubles goldGained.
+        // Default definition: goldPerStamina=1, staminaCost=1 → base=1; proc adds 1*1=1 → total 2.
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+
+        var goldRow = MakeRaidMagic(raid.Id, "magic_midas_touch");
+        b.RaidMagics.Setup(r => r.GetForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidMagic> { goldRow });
+        b.MagicDefs.Setup(d => d.GetById("magic_midas_touch")).Returns(new MagicDefinition
+        {
+            Id         = "magic_midas_touch",
+            Name       = "Midas Touch",
+            EffectType = MagicEffectType.GoldProc,
+            ProcChance = 1.00,  // always fires
+            ProcAmount = 1.00,  // add 100% of base goldGained → doubles gold
+            Stacks     = true,
+            Conditions = new(),
+        });
+
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        // staminaCost=1, goldPerStamina=1 → base gold=1; proc adds procAmount(1.0)*base(1)=1 → total 2.
+        result.Response!.GoldGained.Should().Be(2,
+            "GoldProc procAmount=1.0 adds base gold once: 1 base + 1 bonus = 2");
+    }
+
+    [Fact]
+    public async Task Hit_XpProcMagic_MultipliesXpOnProc()
+    {
+        // XpProc procChance=1.0, procAmount=2.0 → xpGained × 2.
+        // staminaCost=1, xpRoll∈[1.0,4.0] → base xpGained∈[1,4] → after ×2 ∈ [2,8].
+        // Asserting XpGained ≥ 2 is always true and verifies the multiplier applied.
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+
+        var xpRow = MakeRaidMagic(raid.Id, "magic_kindling");
+        b.RaidMagics.Setup(r => r.GetForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidMagic> { xpRow });
+        b.MagicDefs.Setup(d => d.GetById("magic_kindling")).Returns(new MagicDefinition
+        {
+            Id         = "magic_kindling",
+            Name       = "Kindling",
+            EffectType = MagicEffectType.XpProc,
+            ProcChance = 1.00,  // always fires
+            ProcAmount = 2.00,  // multiply xpGained by 2
+            Stacks     = true,
+            Conditions = new(),
+        });
+
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        // staminaCost=1, xpRoll∈[1.0,4.0] → base∈[1,4]; × 2.0 → [2,8].
+        result.Response!.XpGained.Should().BeInRange(2, 8,
+            "XpProc procAmount=2.0 doubles xpGained: min base 1 × 2 = 2, max base 4 × 2 = 8");
+    }
+
     [Fact]
     public async Task Hit_MagicProcBonus_IncludedInDamageDealt_AndParticipantTotal()
     {

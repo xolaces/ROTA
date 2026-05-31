@@ -52,6 +52,8 @@ public class RaidHitResponse
     // Magic DamageProc totals for this hit (Slice 4)
     public long              MagicProcBonus { get; set; } // capped total magic bonus
     public List<MagicProcDTO> MagicProcs   { get; set; } = new();
+    // Magic CritChanceFlat total for this hit (Slice 5); 0.0 when no CritChanceFlat magic applied
+    public double MagicCritBonus { get; set; }
 }
 
 public class MagicProcDTO
