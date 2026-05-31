@@ -1,5 +1,5 @@
 # ROTA Function Reference
-Last updated: 2026-05-31 (v0.2.6-s1 — System 14 Slice 1)
+Last updated: 2026-05-31 (v0.2.6-s2 — System 14 Slice 2)
 Update when adding public methods or entities.
 
 ---
@@ -244,6 +244,30 @@ Path tiers L5-1000. Convergence L2000+. Strip Legendary/Ascendant prefix for reg
 Equip/unequip/list gear. `GetEffectiveCombatDataAsync`: sums base gear stats, evaluates all `ConditionalBonuses` from equipped gear against player inventory (per-hit, indexed), folds results into effective ATK/DEF/proc/FlatDamagePercent. ProcChanceFlat clamped to 1.0 after accumulation.
 Constructor: `(IPlayerEquipmentRepository, IGearDefinitionProvider, IAuditLogRepository, IPlayerInventoryRepository, IItemDefinitionProvider)`
 
+### IMagicService
+`src/ROTA.Application/Interfaces/IMagicService.cs`
+
+| Method | Description |
+|--------|-------------|
+| `Task<IReadOnlyList<OwnedMagicResponse>> GetOwnedMagicsAsync(Guid playerId, ct)` | Owned magics hydrated with definitions |
+
+Implementation: `MagicService` (`src/ROTA.Application/Services/MagicService.cs`)
+
+---
+
+### IPlayerMagicRepository
+`src/ROTA.Application/Interfaces/IPlayerMagicRepository.cs`
+
+| Method | Description |
+|--------|-------------|
+| `Task<IReadOnlyList<PlayerMagic>> GetOwnedAsync(Guid playerId, ct)` | Non-deleted ownership rows |
+| `Task<PlayerMagic?> FindAsync(Guid playerId, string defId, ct)` | Any row regardless of IsDeleted (for upsert check) |
+| `Task UpsertAsync(Guid playerId, string defId, ct)` | Idempotent grant: creates or restores |
+
+Implementation: `PlayerMagicRepository` (`src/ROTA.Infrastructure/Persistence/Repositories/PlayerMagicRepository.cs`)
+
+---
+
 ### IMagicDefinitionProvider
 `src/ROTA.Application/Interfaces/IMagicDefinitionProvider.cs`
 Singleton; reads `content/magics.json` at startup. Throws on duplicate id, procChance outside [0,1], or negative procAmount.
@@ -330,6 +354,15 @@ EnsureAdminAsync: idempotent bootstrap. Reads Seed:AdminPassword (required, no d
 | `POST /api/stats/allocate` | `AllocateStatPointAsync` | 200, 400, 422 |
 | `GET /api/stats/class` | `GetClassInfoAsync` | 200, 404 |
 | `POST /api/stats/class/choose` | `AssignClassAsync` | 200, 400, 403 |
+
+### MagicController — `api/magics` [Authorize]
+`src/ROTA.Api/Controllers/MagicController.cs`
+
+| Endpoint | Service Method | Responses |
+|----------|---------------|-----------|
+| `GET /api/magics` | `GetOwnedMagicsAsync` | 200 |
+
+---
 
 ### EquipmentController — `api/equipment` [Authorize]
 `src/ROTA.Api/Controllers/EquipmentController.cs`
@@ -505,6 +538,24 @@ Domain methods: `Create(...)`, `TakeDamage(long)`, `MarkDefeated()`, `IncrementP
 | `IsDeleted` | `bool` |
 
 Domain methods: `Create(string key, Guid? createdBy)` factory; `Redeem(Guid playerId)`
+
+### PlayerMagic
+`src/ROTA.Domain/Entities/PlayerMagic.cs`
+
+| Property | Type |
+|----------|------|
+| `Id` | `Guid` |
+| `PlayerId` | `Guid` |
+| `MagicDefinitionId` | `string` |
+| `Quantity` | `int` (= 1; reserved for future consumable model) |
+| `CreatedAt` | `DateTimeOffset` |
+| `UpdatedAt` | `DateTimeOffset` |
+| `IsDeleted` | `bool` |
+
+Domain methods: `Create(Guid playerId, string defId)` factory; `Restore()` un-deletes for re-grant.
+Unique index on `(player_id, magic_definition_id)`.
+
+---
 
 ### Other Entities (summary)
 
