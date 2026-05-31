@@ -1,5 +1,5 @@
 # ROTA Function Reference
-Last updated: 2026-05-31 (v0.2.6-s2 — System 14 Slice 2)
+Last updated: 2026-05-31 (v0.2.6-s3 — System 14 Slice 3)
 Update when adding public methods or entities.
 
 ---
@@ -250,8 +250,28 @@ Constructor: `(IPlayerEquipmentRepository, IGearDefinitionProvider, IAuditLogRep
 | Method | Description |
 |--------|-------------|
 | `Task<IReadOnlyList<OwnedMagicResponse>> GetOwnedMagicsAsync(Guid playerId, ct)` | Owned magics hydrated with definitions |
+| `Task<MagicApplyResult> ApplyMagicAsync(Guid playerId, Guid raidId, string defId, bool isAdmin, ct)` | Apply magic to raid; enforces slot cap inside advisory lock, world gate, one-per-player |
+| `Task<MagicApplyResult> RemoveMagicAsync(Guid playerId, Guid raidId, string defId, bool isAdmin, ct)` | Soft-delete; world=admin only, non-world=summoner only |
+
+Validation order (Apply): raid active → world gate → owns magic → participant (non-world) → one-per-player (non-world) → [advisory lock] → duplicate check → slot cap → insert.
 
 Implementation: `MagicService` (`src/ROTA.Application/Services/MagicService.cs`)
+
+---
+
+### IRaidMagicRepository
+`src/ROTA.Application/Interfaces/IRaidMagicRepository.cs`
+
+| Method | Description |
+|--------|-------------|
+| `Task<IReadOnlyList<RaidMagic>> GetForRaidAsync(Guid activeRaidId, ct)` | Non-deleted magics on a raid (≤5 rows in combat) |
+| `Task<int> CountForRaidAsync(Guid activeRaidId, ct)` | Count for slot-cap check (called inside advisory lock) |
+| `Task<RaidMagic?> FindAsync(Guid activeRaidId, string defId, ct)` | Non-deleted row; duplicate-check inside advisory lock |
+| `Task<RaidMagic?> FindByPlayerAsync(Guid activeRaidId, Guid playerId, ct)` | One-per-player pre-check |
+| `Task<RaidMagic> CreateAsync(RaidMagic, ct)` | Insert inside advisory-lock tx |
+| `Task SoftDeleteAsync(RaidMagic, ct)` | Soft-delete on remove |
+
+Implementation: `RaidMagicRepository` (`src/ROTA.Infrastructure/Persistence/Repositories/RaidMagicRepository.cs`)
 
 ---
 
@@ -355,12 +375,14 @@ EnsureAdminAsync: idempotent bootstrap. Reads Seed:AdminPassword (required, no d
 | `GET /api/stats/class` | `GetClassInfoAsync` | 200, 404 |
 | `POST /api/stats/class/choose` | `AssignClassAsync` | 200, 400, 403 |
 
-### MagicController — `api/magics` [Authorize]
+### MagicController — `api/magics` + `api/raids/{id}/magics` [Authorize]
 `src/ROTA.Api/Controllers/MagicController.cs`
 
 | Endpoint | Service Method | Responses |
 |----------|---------------|-----------|
 | `GET /api/magics` | `GetOwnedMagicsAsync` | 200 |
+| `POST /api/raids/{raidId}/magics` | `ApplyMagicAsync` | 200, 400, 403, 404, 409, 422 |
+| `DELETE /api/raids/{raidId}/magics/{magicDefinitionId}` | `RemoveMagicAsync` | 200, 403, 404 |
 
 ---
 
@@ -538,6 +560,25 @@ Domain methods: `Create(...)`, `TakeDamage(long)`, `MarkDefeated()`, `IncrementP
 | `IsDeleted` | `bool` |
 
 Domain methods: `Create(string key, Guid? createdBy)` factory; `Redeem(Guid playerId)`
+
+### RaidMagic
+`src/ROTA.Domain/Entities/RaidMagic.cs`
+
+| Property | Type |
+|----------|------|
+| `Id` | `Guid` |
+| `ActiveRaidId` | `Guid` |
+| `MagicDefinitionId` | `string` |
+| `AppliedByPlayerId` | `Guid` |
+| `CreatedAt` | `DateTimeOffset` |
+| `UpdatedAt` | `DateTimeOffset` |
+| `IsDeleted` | `bool` |
+
+Domain methods: `Create(Guid activeRaidId, string defId, Guid appliedByPlayerId)` factory; `SoftDelete()`.
+Unique index on `(active_raid_id, magic_definition_id)` — no duplicate magic per raid.
+Advisory lock on `active_raid_id` guards count→insert atomicity.
+
+---
 
 ### PlayerMagic
 `src/ROTA.Domain/Entities/PlayerMagic.cs`

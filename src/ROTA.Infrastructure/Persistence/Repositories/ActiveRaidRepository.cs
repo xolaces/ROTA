@@ -104,4 +104,34 @@ public sealed class ActiveRaidRepository : IActiveRaidRepository
         await tx.CommitAsync(ct);
         return true;
     }
+
+    // Generic advisory-lock wrapper reused by magic slot allocation (count → insert must be atomic).
+    // Does NOT reload the raid entity — callers are responsible for their own queries inside action.
+    public async Task<bool> AtomicWithAdvisoryLockAsync(
+        Guid raidId,
+        Func<Task<bool>> action,
+        CancellationToken ct = default)
+    {
+        await using var tx = await _db.Database.BeginTransactionAsync(ct);
+
+        var lockId     = BitConverter.ToInt64(raidId.ToByteArray(), 0);
+        var npgsqlConn = (NpgsqlConnection)_db.Database.GetDbConnection();
+        var npgsqlTx   = (NpgsqlTransaction)tx.GetDbTransaction();
+        await using var lockCmd = new NpgsqlCommand(
+            "SELECT pg_advisory_xact_lock(@lockId)", npgsqlConn, npgsqlTx);
+        lockCmd.Parameters.AddWithValue("lockId", NpgsqlDbType.Bigint, lockId);
+        await lockCmd.ExecuteNonQueryAsync(ct);
+
+        _db.ChangeTracker.Clear();
+
+        if (!await action())
+        {
+            await tx.RollbackAsync(ct);
+            return false;
+        }
+
+        await _db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+        return true;
+    }
 }

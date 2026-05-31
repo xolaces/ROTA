@@ -9,6 +9,7 @@ using ROTA.Api.Middleware;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Services;
 using ROTA.Application.Configuration;
+using ROTA.Application.Models;
 using ROTA.Domain.Enums;
 using ROTA.Infrastructure;
 using ROTA.Infrastructure.Seeding;
@@ -148,6 +149,9 @@ builder.Services.Configure<ClassConfig>(
 
 builder.Services.Configure<CombatConfig>(
     builder.Configuration.GetSection("CombatConfig"));
+
+builder.Services.Configure<MagicConfig>(
+    builder.Configuration.GetSection("MagicConfig"));
 
 builder.Services.AddRotaServices(builder.Environment.ContentRootPath);
 

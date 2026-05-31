@@ -18,4 +18,12 @@ public interface IActiveRaidRepository
         Guid raidId,
         Func<ActiveRaid, Task<bool>> mutate,
         CancellationToken ct = default);
+
+    // Acquires the same pg_advisory_xact_lock for raidId, then runs the delegate within a
+    // single transaction.  Used by magic application to serialise slot count→insert.
+    // Returns true and commits if action returns true; rolls back and returns false otherwise.
+    Task<bool> AtomicWithAdvisoryLockAsync(
+        Guid raidId,
+        Func<Task<bool>> action,
+        CancellationToken ct = default);
 }

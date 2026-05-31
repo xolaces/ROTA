@@ -9,19 +9,20 @@ Server-authoritative .NET 10 backend for a Dawn-of-the-Dragons-style async RPG. 
 Infrastructure,Shared}`. PostgreSQL 16 (EF Core 9), Redis, RS256 JWT.
 
 ## Build status (High — run this session)
-- **242 unit + 7 integration = 249 tests pass. 0 warnings, 0 errors.**
-- `main` @ tag **v0.2.6-s2** (System 14 Slice 2 — magic ownership). v0.2.5.1 + v0.2.6-s1 also tagged.
+- **252 unit + 8 integration = 260 tests pass. 0 warnings, 0 errors.**
+- `main` @ tag **v0.2.6-s3** (System 14 Slice 3 — magic application/slots/world-gate). Prior slices tagged.
 
 ## Inventory (High)
-9 controllers · 14 services · 15 entities · 15 enums · 13 repositories · 3 middleware ·
-15 EF migrations (InitialCreate→AddPlayerMagics) · 6 content JSON files · GitHub Actions CI.
+9 controllers · 14 services · 16 entities · 15 enums · 14 repositories · 3 middleware ·
+16 EF migrations (InitialCreate→AddRaidMagics) · 6 content JSON files · GitHub Actions CI.
 
 ## Implemented & tested (High)
 Auth · Rate limiting · Audit · Energy/resources · Player profile · Gem ledger · Quests+difficulty ·
 Raid engine (pg advisory-lock, Redis idempotency) · Items/sigils · Stats · Class system ·
 RBAC + beta keys + admin (REST+CLI) · Character gear (v0.2.4) · Conditional/stacking bonuses (v0.2.5) ·
 Raid magic content layer (System 14 Slice 1 — MagicDefinition + IMagicDefinitionProvider + magics.json) ·
-**Raid magic ownership (System 14 Slice 2 — PlayerMagic entity + GET /api/magics)**.
+**Raid magic ownership (System 14 Slice 2 — PlayerMagic entity + GET /api/magics) ·
+**Raid magic application (System 14 Slice 3 — RaidMagic + slot-cap advisory lock + world gate; DEEP review)**.
 - **Resource regen is class-based (v0.2.2):** energy/stamina/guild regen derive from `ClassConfig`
   (minutes-per-point). **GuildStamina now regenerates** (was 0). Stored `RegenPerMinute` is vestigial.
 - **RaidSize set (v0.2.2):** Personal/Small/Medium/Large/Titanic, participant caps 1/10/25/50/250,
