@@ -28,6 +28,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBetaKeyRepository, BetaKeyRepository>();
         services.AddScoped<IPlayerEquipmentRepository, PlayerEquipmentRepository>();
         services.AddScoped<IPlayerMagicRepository, PlayerMagicRepository>();
+        services.AddScoped<IRaidMagicRepository, RaidMagicRepository>();
 
         // Infrastructure services
         services.AddScoped<IAuthLockoutService, AuthLockoutService>();

@@ -33,6 +33,7 @@ public class RotaDbContext : DbContext
 
     // ----- System 14 — Raid Magic -----
     public DbSet<PlayerMagic> PlayerMagics => Set<PlayerMagic>();
+    public DbSet<RaidMagic>   RaidMagics   => Set<RaidMagic>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
