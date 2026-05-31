@@ -27,7 +27,8 @@ public class QuestServiceTests
         Mock<ILootTableProvider> LootTables,
         Mock<IItemDefinitionProvider> ItemDefs,
         Mock<IPlayerInventoryRepository> Inventory,
-        Mock<IAuditLogRepository> AuditLog);
+        Mock<IAuditLogRepository> AuditLog,
+        Mock<IMagicService> MagicService);
 
     private static ServiceBundle BuildService(Random? random = null)
     {
@@ -42,6 +43,7 @@ public class QuestServiceTests
         var itemDefs          = new Mock<IItemDefinitionProvider>();
         var inventory         = new Mock<IPlayerInventoryRepository>();
         var auditLog          = new Mock<IAuditLogRepository>();
+        var magicService      = new Mock<IMagicService>();
 
         // Sane defaults to avoid null-ref in happy-path tests
         difficultyProgress.Setup(r => r.GetAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<QuestDifficulty>(), It.IsAny<CancellationToken>()))
@@ -63,15 +65,17 @@ public class QuestServiceTests
 
         auditLog.Setup(a => a.AppendAsync(It.IsAny<AuditLog>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        magicService.Setup(m => m.GrantMagicAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
 
         var service = new QuestService(
             definitions.Object, questProgress.Object, difficultyProgress.Object,
             players.Object, energy.Object, gems.Object,
             stats.Object, lootTables.Object, itemDefs.Object, inventory.Object,
-            auditLog.Object, random);
+            auditLog.Object, magicService.Object, random);
 
         return new ServiceBundle(service, definitions, questProgress, difficultyProgress,
-            players, energy, gems, stats, lootTables, itemDefs, inventory, auditLog);
+            players, energy, gems, stats, lootTables, itemDefs, inventory, auditLog, magicService);
     }
 
     private static IReadOnlyList<QuestDefinition> TwoQuestChain() => new List<QuestDefinition>

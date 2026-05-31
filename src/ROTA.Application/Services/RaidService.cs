@@ -68,6 +68,7 @@ public sealed class RaidService : IRaidService
     private readonly IEquipmentService _equipment;
     private readonly IRaidMagicRepository _raidMagics;
     private readonly IMagicDefinitionProvider _magicDefs;
+    private readonly IMagicService _magicService;
     private readonly MagicConfig _magicConfig;
     private readonly Random _random;
 
@@ -88,6 +89,7 @@ public sealed class RaidService : IRaidService
         IEquipmentService equipment,
         IRaidMagicRepository raidMagics,
         IMagicDefinitionProvider magicDefs,
+        IMagicService magicService,
         IOptions<MagicConfig> magicConfig,
         Random? random = null)
     {
@@ -107,6 +109,7 @@ public sealed class RaidService : IRaidService
         _equipment       = equipment;
         _raidMagics      = raidMagics;
         _magicDefs       = magicDefs;
+        _magicService    = magicService;
         _magicConfig     = magicConfig.Value;
         _random          = random ?? Random.Shared;
     }
@@ -664,6 +667,13 @@ public sealed class RaidService : IRaidService
                                 int qty = (int)Math.Max(1, Math.Round(drop.Quantity * (double)multiplier));
                                 await GrantInventoryItemAsync(p.PlayerId, drop.ItemId, qty, items, ct);
                             }
+                        }
+
+                        // Magic drops per threshold — idempotent grant (duplicate = no-op).
+                        foreach (var drop in threshold.MagicDrops)
+                        {
+                            if (_random.NextDouble() < drop.Chance)
+                                await _magicService.GrantMagicAsync(p.PlayerId, drop.MagicId, ct);
                         }
                     }
                 }

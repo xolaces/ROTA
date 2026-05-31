@@ -56,6 +56,7 @@ public sealed class QuestService : IQuestService
     private readonly IItemDefinitionProvider _itemDefs;
     private readonly IPlayerInventoryRepository _inventory;
     private readonly IAuditLogRepository _auditLog;
+    private readonly IMagicService _magicService;
     private readonly Random _random;
 
     public QuestService(
@@ -70,6 +71,7 @@ public sealed class QuestService : IQuestService
         IItemDefinitionProvider itemDefs,
         IPlayerInventoryRepository inventory,
         IAuditLogRepository auditLog,
+        IMagicService magicService,
         Random? random = null)
     {
         _definitions       = definitions;
@@ -83,6 +85,7 @@ public sealed class QuestService : IQuestService
         _itemDefs          = itemDefs;
         _inventory         = inventory;
         _auditLog          = auditLog;
+        _magicService      = magicService;
         _random            = random ?? Random.Shared;
     }
 
@@ -296,6 +299,16 @@ public sealed class QuestService : IQuestService
             {
                 if (_random.NextDouble() < drop.Chance)
                     await GrantItemAsync(playerId, drop.ItemId, drop.Quantity, itemsGranted, ct);
+            }
+        }
+
+        // Magic drops — idempotent grant (duplicate = no-op).
+        if (loot.MagicDrops is not null)
+        {
+            foreach (var drop in loot.MagicDrops)
+            {
+                if (_random.NextDouble() < drop.Chance)
+                    await _magicService.GrantMagicAsync(playerId, drop.MagicId, ct);
             }
         }
     }
