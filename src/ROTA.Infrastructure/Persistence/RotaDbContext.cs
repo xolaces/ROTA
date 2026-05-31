@@ -31,6 +31,9 @@ public class RotaDbContext : DbContext
     // ----- System 13 — Character Gear -----
     public DbSet<PlayerEquipment> PlayerEquipment => Set<PlayerEquipment>();
 
+    // ----- System 14 — Raid Magic -----
+    public DbSet<PlayerMagic> PlayerMagics => Set<PlayerMagic>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
