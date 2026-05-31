@@ -9,8 +9,8 @@ Server-authoritative .NET 10 backend for a Dawn-of-the-Dragons-style async RPG. 
 Infrastructure,Shared}`. PostgreSQL 16 (EF Core 9), Redis, RS256 JWT.
 
 ## Build status (High — run this session)
-- **258 unit + 8 integration = 266 tests pass. 0 warnings, 0 errors.**
-- `main` @ tag **v0.2.6-s4** (System 14 Slice 4 — magic DamageProc effects in combat). Prior slices tagged.
+- **261 unit + 8 integration = 269 tests pass. 0 warnings, 0 errors.**
+- `main` @ tag **v0.2.6-s5** (System 14 Slice 5 — utility magic effects crit/gold/xp). Prior slices tagged.
 - Step 0 (v0.2.6-s3-fix): moved one-per-player advisory-lock check inside the lock; BETA doc comments added.
 
 ## Inventory (High)
@@ -25,7 +25,8 @@ RBAC + beta keys + admin (REST+CLI) · Character gear (v0.2.4) · Conditional/st
 Raid magic content layer (System 14 Slice 1 — MagicDefinition + IMagicDefinitionProvider + magics.json) ·
 **Raid magic ownership (System 14 Slice 2 — PlayerMagic entity + GET /api/magics) ·
 **Raid magic application (System 14 Slice 3 — RaidMagic + slot-cap advisory lock + world gate; DEEP review)** ·
-**Raid magic damage procs (System 14 Slice 4 — DamageProc magic fires in HitRaidAsync; MagicProcBonus+MagicProcs in RaidHitResponse)**.
+**Raid magic damage procs (System 14 Slice 4 — DamageProc magic fires in HitRaidAsync; MagicProcBonus+MagicProcs in RaidHitResponse)** ·
+**Raid magic utility effects (System 14 Slice 5 — CritChanceFlat/GoldProc/XpProc wired into HitRaidAsync; MagicCritBonus in RaidHitResponse)**.
 - **Resource regen is class-based (v0.2.2):** energy/stamina/guild regen derive from `ClassConfig`
   (minutes-per-point). **GuildStamina now regenerates** (was 0). Stored `RegenPerMinute` is vestigial.
 - **RaidSize set (v0.2.2):** Personal/Small/Medium/Large/Titanic, participant caps 1/10/25/50/250,

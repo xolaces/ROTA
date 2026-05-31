@@ -1,5 +1,5 @@
 # ROTA Function Reference
-Last updated: 2026-05-31 (v0.2.6-s4 — System 14 Slice 4 damage procs)
+Last updated: 2026-05-31 (v0.2.6-s5 — System 14 Slice 5 utility effects)
 Update when adding public methods or entities.
 
 ---
@@ -230,9 +230,9 @@ Static definitions from content/quests.json. Energy spent first. Level-ups via `
 ### RaidService → IRaidService
 `src/ROTA.Application/Services/RaidService.cs`
 Server-seeded RNG damage. Redis idempotency (24h TTL). Contribution tiers → reward multipliers. Level-ups same pattern as QuestService. Stamina spend inside advisory-lock tx (atomic with hit).
-Damage pipeline (Slice 4 final): `base=(ATK×4+DEF)×hitSize×RNG[0.85,1.15]` → `preProc=base` → mount proc (`preProc×ProcPercent`) → magic DamageProcs (each: roll `procChance`, accumulate `procAmount×preProc`, cap total at `MaxAggregateProcBonus×preProc`) → crit → FlatDamagePercent → `TakeDamage`. Magic bonus lands in `damageFinal` before `RecordHit` so it counts toward contribution.
-New injected deps (Slice 4): `IRaidMagicRepository`, `IMagicDefinitionProvider`, `IOptions<MagicConfig>`.
-`RaidHitResponse` gains: `long MagicProcBonus`, `List<MagicProcDTO> MagicProcs` ({Name, Bonus}).
+Damage pipeline (Slice 5 final): `base=(ATK×4+DEF)×hitSize×RNG[0.85,1.15]` → `preProc=base` → mount proc (`preProc×ProcPercent`) → magic DamageProcs (each: roll `procChance`, accumulate `procAmount×preProc`, cap total at `MaxAggregateProcBonus×preProc`) → magic CritChanceFlat (always-on sum added to disc crit chance, clamped at 1.0) → crit → FlatDamagePercent → `TakeDamage`. GoldProc/XpProc applied after base xp/gold computed, before `AddExperience`/`AddGold`. Stacks=false respected per effectType.
+New injected deps (Slices 4–5): `IRaidMagicRepository`, `IMagicDefinitionProvider`, `IOptions<MagicConfig>`.
+`RaidHitResponse` gains: `long MagicProcBonus`, `List<MagicProcDTO> MagicProcs` ({Name,Bonus}), `double MagicCritBonus`.
 
 ### ItemService → IItemService
 `src/ROTA.Application/Services/ItemService.cs`

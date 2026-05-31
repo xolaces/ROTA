@@ -281,6 +281,7 @@ public sealed class RaidService : IRaidService
         long procBonus           = 0;
         long magicProcBonus      = 0;
         var  magicProcs          = new List<MagicProcDTO>();
+        double magicCritBonus    = 0.0; // flat crit-chance addition from CritChanceFlat magics
         RaidParticipant? participantFinal = null;
         RaidRewards? rewards = null;
         int xpGained         = 0;
@@ -380,9 +381,18 @@ public sealed class RaidService : IRaidService
             magicProcBonus  = Math.Min(magicBonusRaw, magicBonusCap);
             damageFinal    += magicProcBonus;
 
-            // Apply discernment crit — rolls after proc, before conditional flat bonus.
+            // CritChanceFlat magics — always-on (ProcChance is ignored); sum all applied.
+            foreach (var rm in appliedMagics)
+            {
+                var mDef = _magicDefs.GetById(rm.MagicDefinitionId);
+                if (mDef?.EffectType == MagicEffectType.CritChanceFlat)
+                    magicCritBonus += mDef.ProcAmount;
+            }
+
+            // Apply discernment crit — adjusted by magic CritChanceFlat, capped at 1.0.
             var crit = _stats.GetCritProfile(player.Stats.DiscernmentInvestment);
-            isCrit = _random.NextDouble() < crit.Chance;
+            double adjustedCritChance = Math.Min(1.0, crit.Chance + magicCritBonus);
+            isCrit = _random.NextDouble() < adjustedCritChance;
             if (isCrit)
             {
                 damageFinal      = Math.Max(1, (long)(damageFinal * crit.Multiplier));
@@ -424,6 +434,35 @@ public sealed class RaidService : IRaidService
             double xpRoll = 1.0 + _random.NextDouble() * 3.0; // uniform [1, 4]
             xpGained  = Math.Max(1, (int)Math.Round(staminaCost * xpRoll));
             goldGained = (long)staminaCost * definition.GoldPerStamina;
+
+            // GoldProc and XpProc magics — modify grants before they're applied.
+            // Stacks=false: only the first proc of that effectType is applied per hit.
+            bool goldProcFired = false;
+            bool xpProcFired   = false;
+            foreach (var rm in appliedMagics)
+            {
+                var mDef = _magicDefs.GetById(rm.MagicDefinitionId);
+                if (mDef is null) continue;
+
+                if (mDef.EffectType == MagicEffectType.GoldProc)
+                {
+                    if (!mDef.Stacks && goldProcFired) continue;
+                    if (_random.NextDouble() < mDef.ProcChance)
+                    {
+                        goldGained    += (long)(mDef.ProcAmount * goldGained);
+                        goldProcFired  = true;
+                    }
+                }
+                else if (mDef.EffectType == MagicEffectType.XpProc)
+                {
+                    if (!mDef.Stacks && xpProcFired) continue;
+                    if (_random.NextDouble() < mDef.ProcChance)
+                    {
+                        xpGained    = Math.Max(1, (int)Math.Round(xpGained * mDef.ProcAmount));
+                        xpProcFired = true;
+                    }
+                }
+            }
 
             var hitLevelUps = player.AddExperience(xpGained, lvl => _stats.XpToNextLevel(lvl));
             player.AddGold(goldGained);
@@ -505,6 +544,7 @@ public sealed class RaidService : IRaidService
             ProcBonus       = procBonus,
             MagicProcBonus  = magicProcBonus,
             MagicProcs      = magicProcs,
+            MagicCritBonus  = magicCritBonus,
         };
 
         // 10. Store the completed response — replaces the "pending" placeholder.
