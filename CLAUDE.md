@@ -209,10 +209,23 @@ Pre-build tasks:
 - Verbose comment labels stripped from all 101 src/ .cs files (excl. migrations)
 - MilestoneFloors updated with convergence gates: 2000, 7500, 15000, 25000
 
+## v0.2.5 — Conditional / Stacking Bonuses (2026-05-30)
+Build: 0 errors, 0 warnings. Tests: 232 unit + 7 integration = 239 total, all passing.
+- ConditionalBonus model + ConditionType/BonusType enums (JSON-only, no C# to add bonuses)
+- ConditionalBonusEvaluator static evaluator (shared by gear + future legions)
+- 5 bonus types: FlatAttack, FlatDefense, ProcChanceFlat (≤1.0), ProcAmountFlat, FlatDamagePercent
+- 3 condition types: OwnedUnitCount, OwnedTypeCount, EquippedSlot
+- GearDefinition.ConditionalBonuses; ItemDefinition.Tags
+- EffectiveCombatData gains FlatDamagePercent field (applied after crit)
+- EquipmentService: loads inventory per-hit, evaluates all equipped gear's conditional bonuses
+- Reward atomicity: stamina spend moved inside advisory-lock tx (atomic with hit; no refund path)
+- ProcBonus type: double → long in RaidHitResponse
+- Function Reference fully refreshed; spec in docs/specs/system-13-stacking-bonuses.md
+
 ## PHASE-2 Deferred Items
 - DiscernmentInvestment effects: quest drop quality, raid critical damage bonus
 - Wire IClassService into EnergyService: regen should read from ClassConfig not stored RegenPerMinute
-- Explicit DB transaction scope for quest/raid reward steps (energy committed but rewards not atomic)
+- Explicit DB transaction scope for quest reward steps (energy committed but rewards not atomic)
 - Equipment item type: wearable gear with stat bonuses (can push LSI above cap)
 - Consumable item type: potions and buffs
 - Crafting system: Material → Equipment recipes
@@ -328,7 +341,7 @@ Orange is the permanent ceiling. Never add above it.
 - [Game Design & Unity UI Reference](docs/ui/ROTA_GameDesign_UI_Reference.md) — DotD mechanics analysis, screen-by-screen UI blueprints, Unity implementation prompt, content pipeline guide
 - [Operations & Tooling Runbook](docs/OPERATIONS.md) — every dotnet command, the admin CLI, admin REST API, config flags, secrets, migrations, deployment order, beta onboarding
 - [Design North Star](docs/DESIGN_NORTHSTAR.md) — durable design vision; research-paper divergences recorded as amendments (no resets, capped scaling, Gauntlet as core spine)
-- [System specs](docs/specs/) — per-system build specs (System 12 done, System 13 moderation queued)
+- [System specs](docs/specs/) — per-system build specs (System 12 + 13 done)
 
 ## Function Reference
 Full method signatures, entity fields, endpoint map:

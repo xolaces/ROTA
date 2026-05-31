@@ -48,7 +48,7 @@ public class RaidHitResponse
     public bool IsCrit { get; set; }
     public double CritMultiplier { get; set; }
     public bool   ProcFired  { get; set; }
-    public double ProcBonus  { get; set; } // raw bonus damage from proc (0 if no proc)
+    public long   ProcBonus  { get; set; } // raw bonus damage from proc (0 if no proc)
 }
 
 public class RaidRewards
