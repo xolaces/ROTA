@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using ROTA.Application.Interfaces;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
@@ -19,34 +20,47 @@ public sealed class PlayerResourceRepository : IPlayerResourceRepository
         => await _db.PlayerResources
             .FirstOrDefaultAsync(r => r.PlayerId == playerId && r.ResourceType == type, ct);
 
+    // AtomicUpdateAsync participates in an ambient transaction when one is already open
+    // (e.g. the advisory-lock transaction in ActiveRaidRepository.AtomicApplyHitAsync).
+    // When no ambient transaction exists, it begins and commits its own — same behaviour as before.
+    // This makes stamina spend atomic with the raid hit: a rolled-back hit also rolls back the spend.
     public async Task<bool> AtomicUpdateAsync(
         Guid playerId,
         ResourceType type,
         Func<PlayerResource, bool> updateFn,
         CancellationToken ct = default)
     {
-        await using var tx = await _db.Database.BeginTransactionAsync(ct);
+        bool ownTx = _db.Database.CurrentTransaction is null;
+        IDbContextTransaction? tx = ownTx ? await _db.Database.BeginTransactionAsync(ct) : null;
 
-        // FOR UPDATE acquires a row-level lock for the duration of the transaction.
-        var resource = await _db.PlayerResources
-            .FromSqlInterpolated(
-                $"SELECT * FROM player_resources WHERE player_id = {playerId} AND resource_type = {type.ToString()} FOR UPDATE")
-            .FirstOrDefaultAsync(ct);
-
-        if (resource is null)
+        try
         {
-            await tx.RollbackAsync(ct);
-            return false;
-        }
+            var resource = await _db.PlayerResources
+                .FromSqlInterpolated(
+                    $"SELECT * FROM player_resources WHERE player_id = {playerId} AND resource_type = {type.ToString()} FOR UPDATE")
+                .FirstOrDefaultAsync(ct);
 
-        if (!updateFn(resource))
+            if (resource is null || !updateFn(resource))
+            {
+                if (ownTx && tx is not null) await tx.RollbackAsync(ct);
+                return false;
+            }
+
+            await _db.SaveChangesAsync(ct);
+            if (ownTx && tx is not null) await tx.CommitAsync(ct);
+            return true;
+        }
+        catch
         {
-            await tx.RollbackAsync(ct);
-            return false;
+            if (ownTx && tx is not null)
+            {
+                try { await tx.RollbackAsync(ct); } catch { /* swallow secondary failure */ }
+            }
+            throw;
         }
-
-        await _db.SaveChangesAsync(ct);
-        await tx.CommitAsync(ct);
-        return true;
+        finally
+        {
+            if (ownTx) tx?.Dispose();
+        }
     }
 }

@@ -76,7 +76,7 @@ public class StatServiceTests
         equipment.Setup(e => e.GetEffectiveCombatDataAsync(
                 It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Guid _, int atk, int def, CancellationToken _) =>
-                new EffectiveCombatData(atk, def, null));
+                new EffectiveCombatData(atk, def, null, 0.0));
 
         return new ServiceBundle(
             new StatService(players.Object, energy.Object, gems.Object, auditLog.Object,

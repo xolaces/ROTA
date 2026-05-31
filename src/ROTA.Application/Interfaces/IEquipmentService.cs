@@ -16,6 +16,7 @@ public interface IEquipmentService
 public sealed record EffectiveCombatData(
     int           EffectiveAttack,
     int           EffectiveDefense,
-    GearProcData? MountProc);      // null when no mount is equipped
+    GearProcData? MountProc,           // null when no mount is equipped
+    double        FlatDamagePercent);  // accumulated from conditional bonuses; 0.0 when none
 
 public sealed record GearProcData(double ProcChance, double ProcPercent);
