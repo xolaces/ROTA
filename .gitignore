@@ -116,3 +116,7 @@ $RECYCLE.BIN/
 
 # ----- MIGRATION SNAPSHOTS (keep these — they are source-controlled) -----
 # Do NOT add **/Migrations/ here
+# ----- DotD wiki research dump (raw saved HTML + Fandom asset/ad garbage, multi-MB) -----
+# Keep only the cleaned text under _clean/ if desired; never commit raw .htm or asset folders.
+docs/research/dotd-wiki/*.htm
+docs/research/dotd-wiki/*_files/
