@@ -166,7 +166,9 @@ public sealed class EquipmentService : IEquipmentService
             bonusDef  += evaluated.FlatDefense;
             flatDmgPct = evaluated.FlatDamagePercent;
 
-            // Fold conditional proc adjustments into mount proc data
+            // ProcChanceFlat/ProcAmountFlat only apply when a mount is equipped.
+            // Without a mount there is no GearProcData baseline to fold them into.
+            // Magic DamageProcs (System 14) are the standalone proc layer for raids.
             if (mountProc is not null && (evaluated.ProcChanceFlat != 0 || evaluated.ProcAmountFlat != 0))
             {
                 var adjustedChance = Math.Min(1.0, mountProc.ProcChance + evaluated.ProcChanceFlat);
