@@ -9,17 +9,18 @@ Server-authoritative .NET 10 backend for a Dawn-of-the-Dragons-style async RPG. 
 Infrastructure,Shared}`. PostgreSQL 16 (EF Core 9), Redis, RS256 JWT.
 
 ## Build status (High — run this session)
-- **232 unit + 7 integration = 239 tests pass. 0 warnings, 0 errors.**
-- `main` @ tag **v0.2.5**, synced with origin (pushed).
+- **239 unit + 7 integration = 246 tests pass. 0 warnings, 0 errors.**
+- `main` @ tag **v0.2.6-s1** (System 14 Slice 1 — magic content/definitions). v0.2.5.1 also tagged.
 
 ## Inventory (High)
-8 controllers · 13 services · 14 entities · 13 enums · 12 repositories · 3 middleware ·
-14 EF migrations (InitialCreate→AddEquipmentSystem) · 5 content JSON files · GitHub Actions CI.
+8 controllers · 13 services · 14 entities · 15 enums · 12 repositories · 3 middleware ·
+14 EF migrations (InitialCreate→AddEquipmentSystem) · 6 content JSON files · GitHub Actions CI.
 
 ## Implemented & tested (High)
 Auth · Rate limiting · Audit · Energy/resources · Player profile · Gem ledger · Quests+difficulty ·
 Raid engine (pg advisory-lock, Redis idempotency) · Items/sigils · Stats · Class system ·
-RBAC + beta keys + admin (REST+CLI) · Character gear (v0.2.4) · **Conditional/stacking bonuses (v0.2.5)**.
+RBAC + beta keys + admin (REST+CLI) · Character gear (v0.2.4) · Conditional/stacking bonuses (v0.2.5) ·
+**Raid magic content layer (System 14 Slice 1 — MagicDefinition + IMagicDefinitionProvider + magics.json)**.
 - **Resource regen is class-based (v0.2.2):** energy/stamina/guild regen derive from `ClassConfig`
   (minutes-per-point). **GuildStamina now regenerates** (was 0). Stored `RegenPerMinute` is vestigial.
 - **RaidSize set (v0.2.2):** Personal/Small/Medium/Large/Titanic, participant caps 1/10/25/50/250,
