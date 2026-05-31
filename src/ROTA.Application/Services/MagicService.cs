@@ -101,21 +101,29 @@ public sealed class MagicService : IMagicService
                     "You must be the summoner or a participant to apply magic.");
         }
 
-        // 5. Non-world one-per-player: player may not already have a magic on this raid.
-        if (!isWorld)
-        {
-            var existing = await _raidMagics.FindByPlayerAsync(raidId, playerId, ct);
-            if (existing is not null)
-                return Fail(MagicApplyFailureCode.AlreadyAppliedByPlayer,
-                    "You already have a magic applied to this raid.");
-        }
-
-        // 6–7. Advisory-lock: duplicate check + slot cap must be atomic.
-        bool duplicateMagic = false;
-        bool slotsFull      = false;
+        // 5–7. Advisory-lock: one-per-player + duplicate check + slot cap must all be atomic.
+        //      The one-per-player check is inside the lock (not before it) so two concurrent
+        //      applies by the same player with two different magics cannot both pass the check
+        //      and both insert. Ordering: player-check → dup-check → slot-cap → insert.
+        bool alreadyByPlayer = false;
+        bool duplicateMagic  = false;
+        bool slotsFull       = false;
 
         var applied = await _raids.AtomicWithAdvisoryLockAsync(raidId, async () =>
         {
+            // One-per-player (non-world): inside lock to close the same-player concurrency race.
+            // FindByPlayerAsync filters IsDeleted=false, so a previously removed magic lets the
+            // player reapply.
+            if (!isWorld)
+            {
+                var byPlayer = await _raidMagics.FindByPlayerAsync(raidId, playerId, ct);
+                if (byPlayer is not null)
+                {
+                    alreadyByPlayer = true;
+                    return false;
+                }
+            }
+
             // Duplicate magic check (inside lock so no TOCTOU).
             var dup = await _raidMagics.FindAsync(raidId, magicDefinitionId, ct);
             if (dup is not null)
@@ -141,6 +149,9 @@ public sealed class MagicService : IMagicService
 
         if (!applied)
         {
+            if (alreadyByPlayer)
+                return Fail(MagicApplyFailureCode.AlreadyAppliedByPlayer,
+                    "You already have a magic applied to this raid.");
             if (duplicateMagic)
                 return Fail(MagicApplyFailureCode.DuplicateMagic,
                     "This magic is already applied to the raid.");
