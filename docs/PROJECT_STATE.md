@@ -51,11 +51,11 @@ structured log sink / monitoring · background jobs · legion system (next).
 - (Resolved v0.2.5: reward atomicity — stamina spend now inside advisory-lock tx.)
 - (Resolved v0.2.5: ProcBonus type — now `long`.)
 
-## Needs owner sign-off (balance values, tunable in appsettings)
-- **Regen pacing:** Conscript = 5.0 min/point for BOTH energy and stamina (≈10× slower than the old
-  dev placeholder; ~2 h for full energy). Higher classes regen faster (Eternal = 1.0). Confirm these
-  `ClassConfig.RegenMinutesPerPoint` values are the intended pacing.
-- GuildStamina now regenerates at 2.0 min/point.
+## Balance values (accepted per CURRENT_TASK; tunable in appsettings)
+- **Regen pacing — accepted:** Conscript = 5.0 min/point for BOTH energy and stamina (~2 h for full
+  energy); higher classes regen faster (Eternal = 1.0). `ClassConfig.RegenMinutesPerPoint`. Offset by
+  level-up RefillResource + future consumables. Revisit only if beta feedback shows it's too slow.
+- GuildStamina regenerates at 2.0 min/point.
 
 ## To verify (below High)
 Test coverage % · exact lockout thresholds · production deployment topology.

@@ -1,6 +1,13 @@
 # ROTA — Game Design Reference & Unity UI Blueprint
 **Rise of the Ancients | Inspired by Dawn of the Dragons**
 *Authored for developer handoff and Unity UI implementation*
+
+> **⚠ Status: ASPIRATIONAL / UNVERIFIED — not current truth.** A vision + UI blueprint, not a record of
+> behavior. It describes screens that do not exist yet (there is no client) and Dawn of the Dragons
+> mechanics from the designer's recollection; some claims about both DotD and ROTA are inaccurate. For
+> what the backend actually does, see `docs/PROJECT_STATE.md` and `docs/ROTA_Function_Reference.md`.
+> Treat everything below as direction to pursue, not behavior to rely on.
+
 ---
 ## PART 1 — DAWN OF THE DRAGONS: MECHANICS ANALYSIS
 *What made it work, what broke it, and what ROTA does differently*

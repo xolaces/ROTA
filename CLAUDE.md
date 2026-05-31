@@ -223,13 +223,12 @@ Build: 0 errors, 0 warnings. Tests: 232 unit + 7 integration = 239 total, all pa
 - Function Reference fully refreshed; spec in docs/specs/system-13-stacking-bonuses.md
 
 ## PHASE-2 Deferred Items
-- DiscernmentInvestment effects: quest drop quality, raid critical damage bonus
-- Wire IClassService into EnergyService: regen should read from ClassConfig not stored RegenPerMinute
-- Explicit DB transaction scope for quest reward steps (energy committed but rewards not atomic)
-- Equipment item type: wearable gear with stat bonuses (can push LSI above cap)
+- DiscernmentInvestment effect: quest drop quality (raid crit shipped v0.2.3)
+- Explicit DB transaction scope for QUEST reward steps (energy committed but rewards not atomic; raids fixed v0.2.5)
 - Consumable item type: potions and buffs
 - Crafting system: Material → Equipment recipes
 - Guild system: GuildStamina, guild raids
+- Gear set bonuses (deferred from v0.2.4 gear)
 - Phase 2 migration: split loot table format for quest/raid clarity
 - Content pipeline refactor: IContentLoader, folder structure, sigil templates, formula-based loot tables
 
