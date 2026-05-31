@@ -12,15 +12,21 @@ public sealed class EquipmentService : IEquipmentService
     private readonly IPlayerEquipmentRepository _repo;
     private readonly IGearDefinitionProvider    _gearDefs;
     private readonly IAuditLogRepository        _auditLog;
+    private readonly IPlayerInventoryRepository _inventory;
+    private readonly IItemDefinitionProvider    _itemDefs;
 
     public EquipmentService(
         IPlayerEquipmentRepository repo,
         IGearDefinitionProvider    gearDefs,
-        IAuditLogRepository        auditLog)
+        IAuditLogRepository        auditLog,
+        IPlayerInventoryRepository inventory,
+        IItemDefinitionProvider    itemDefs)
     {
-        _repo     = repo;
-        _gearDefs = gearDefs;
-        _auditLog = auditLog;
+        _repo      = repo;
+        _gearDefs  = gearDefs;
+        _auditLog  = auditLog;
+        _inventory = inventory;
+        _itemDefs  = itemDefs;
     }
 
     public async Task<EquipResult> EquipAsync(
@@ -101,25 +107,75 @@ public sealed class EquipmentService : IEquipmentService
         Guid playerId, int baseAtk, int baseDef, CancellationToken ct = default)
     {
         var rows = await _repo.GetEquippedAsync(playerId, ct);
+
+        // Base gear stats
         int bonusAtk = 0;
         int bonusDef = 0;
         GearProcData? mountProc = null;
+
+        // Collect all conditional bonuses declared across equipped gear
+        var allConditionalBonuses = new List<ConditionalBonus>();
+        var equippedSlots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var row in rows)
         {
             var def = _gearDefs.GetById(row.GearDefinitionId);
             if (def is null) continue;
+
             bonusAtk += def.BonusAttack;
             bonusDef += def.BonusDefense;
+
             if (row.Slot == EquipmentSlot.Mount
                 && def.ProcChance is not null
                 && def.ProcPercent is not null)
             {
                 mountProc = new GearProcData(def.ProcChance.Value, def.ProcPercent.Value);
             }
+
+            allConditionalBonuses.AddRange(def.ConditionalBonuses);
+            equippedSlots.Add(row.Slot.ToString());
         }
 
-        return new EffectiveCombatData(baseAtk + bonusAtk, baseDef + bonusDef, mountProc);
+        // Evaluate conditional bonuses if any gear declares them
+        var flatDmgPct = 0.0;
+        if (allConditionalBonuses.Count > 0)
+        {
+            var inventoryItems = await _inventory.GetAllForPlayerAsync(playerId, ct);
+
+            var ownedById = inventoryItems.ToDictionary(
+                i => i.ItemDefinitionId, i => i.Quantity);
+
+            // Accumulate owned quantities by tag
+            var ownedByTag = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            foreach (var inv in inventoryItems)
+            {
+                var itemDef = _itemDefs.GetById(inv.ItemDefinitionId);
+                if (itemDef is null) continue;
+                foreach (var tag in itemDef.Tags)
+                {
+                    ownedByTag.TryGetValue(tag, out int existing);
+                    ownedByTag[tag] = existing + inv.Quantity;
+                }
+            }
+
+            var evaluated = ConditionalBonusEvaluator.Evaluate(
+                allConditionalBonuses, ownedById, ownedByTag,
+                new HashSet<string>(equippedSlots.Select(s => s.ToLowerInvariant())));
+
+            bonusAtk  += evaluated.FlatAttack;
+            bonusDef  += evaluated.FlatDefense;
+            flatDmgPct = evaluated.FlatDamagePercent;
+
+            // Fold conditional proc adjustments into mount proc data
+            if (mountProc is not null && (evaluated.ProcChanceFlat != 0 || evaluated.ProcAmountFlat != 0))
+            {
+                var adjustedChance = Math.Min(1.0, mountProc.ProcChance + evaluated.ProcChanceFlat);
+                var adjustedAmount = mountProc.ProcPercent + evaluated.ProcAmountFlat;
+                mountProc = new GearProcData(adjustedChance, adjustedAmount);
+            }
+        }
+
+        return new EffectiveCombatData(baseAtk + bonusAtk, baseDef + bonusDef, mountProc, flatDmgPct);
     }
 
     private static EquippedItemResponse MapResponse(

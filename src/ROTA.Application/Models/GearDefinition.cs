@@ -14,4 +14,5 @@ public class GearDefinition
     public double?     ProcChance   { get; set; } // null = no proc
     public double?     ProcPercent  { get; set; } // bonus added = baseDamage × ProcPercent
     public string      IconPath     { get; set; } = string.Empty;
+    public List<ConditionalBonus> ConditionalBonuses { get; set; } = new();
 }

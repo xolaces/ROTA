@@ -246,29 +246,22 @@ public sealed class RaidService : IRaidService
         var definition = _raidDefinitions.GetById(raid.RaidDefinitionId)
             ?? throw new InvalidOperationException($"Raid definition '{raid.RaidDefinitionId}' not found.");
 
-        // 6. Spend stamina — EnergyService opens its OWN transaction (AtomicUpdateAsync).
-        //    It is NOT enrolled in the AtomicApplyHitAsync transaction that follows.
-        //    The refund-on-race path (step 8) closes the fairness gap.
-        //    STAMINA-TRANSACTION CAVEAT (BETA): a process crash between spend and refund
-        //    could lose stamina — acceptable for beta, Phase 2.
+        // 6. Stamina cost — computed here so it's available for audit log and on-hit calcs
+        //    even though the actual deduction happens inside the advisory-lock transaction.
         int staminaCost = hitSize * definition.StaminaCostPerHit;
-        var staminaSpent = await _energy.SpendEnergyAsync(playerId, ResourceType.Stamina, staminaCost, ct);
-        if (!staminaSpent)
-            return HitFail(RaidHitFailureCode.InsufficientStamina, "Insufficient stamina.");
 
-        // 7. Load player stats for the damage formula.
-        var player = await _players.FindByIdWithStatsAsync(playerId, ct)
-            ?? throw new InvalidOperationException($"Player {playerId} not found after stamina spend.");
-
-        // 8. Apply hit atomically.
+        // 7. Apply hit atomically.
         //    AtomicApplyHitAsync begins a PostgreSQL transaction then acquires an advisory
         //    lock on raidId (pg_advisory_xact_lock), which blocks any concurrent call for
         //    the same raid until the transaction ends.  After the lock is held the entity
         //    is reloaded from the DB so the loser always sees the winner's committed state
-        //    (IsDefeated=true) and returns false, triggering the refund below.
-        //    All repositories sharing this DbContext participate in the same transaction,
-        //    so kill rewards are committed exactly once.
+        //    (IsDefeated=true) and returns false before touching stamina.
+        //
+        //    Stamina spend is now INSIDE this transaction.  PlayerResourceRepository.AtomicUpdateAsync
+        //    detects the ambient transaction and reuses it, so the stamina deduction and the
+        //    raid damage commit or roll back together — no phantom stamina loss on crash.
         bool raceCondition       = false;
+        bool staminaInsufficient = false;
         long damageFinal         = 0;
         long finalHp             = 0;
         bool finalDefeated       = false;
@@ -290,7 +283,22 @@ public sealed class RaidService : IRaidService
                 return false;
             }
 
-            // Compute effective stats — base + gear bonuses.
+            // Spend stamina inside the advisory-lock transaction.
+            // AtomicUpdateAsync detects the ambient transaction and participates in it,
+            // so a failed or rolled-back hit also rolls back the spend.
+            var staminaSpent = await _energy.SpendEnergyAsync(
+                playerId, ResourceType.Stamina, staminaCost, ct);
+            if (!staminaSpent)
+            {
+                staminaInsufficient = true;
+                return false;
+            }
+
+            // Load player stats for the damage formula (after successful spend — skipped on failure).
+            var player = await _players.FindByIdWithStatsAsync(playerId, ct)
+                ?? throw new InvalidOperationException($"Player {playerId} not found after stamina spend.");
+
+            // Compute effective stats — base + gear bonuses + conditional bonuses.
             var combat = await _equipment.GetEffectiveCombatDataAsync(
                 playerId, player.Stats!.BaseAttack, player.Stats.BaseDefense, ct);
 
@@ -306,7 +314,7 @@ public sealed class RaidService : IRaidService
                 procFired   = true;
             }
 
-            // Apply discernment crit — rolls after base damage, before damage is applied.
+            // Apply discernment crit — rolls after proc, before conditional flat bonus.
             var crit = _stats.GetCritProfile(player.Stats.DiscernmentInvestment);
             isCrit = _random.NextDouble() < crit.Chance;
             if (isCrit)
@@ -318,6 +326,10 @@ public sealed class RaidService : IRaidService
             {
                 appliedCritMult = 1.0;
             }
+
+            // Conditional flat damage percent — applied last, after crit.
+            if (combat.FlatDamagePercent > 0)
+                damageFinal = Math.Max(1, (long)(damageFinal * (1.0 + combat.FlatDamagePercent)));
 
             lockedRaid.TakeDamage(damageFinal);
 
@@ -372,25 +384,22 @@ public sealed class RaidService : IRaidService
             return true;
         }, ct);
 
-        // 9. Handle race: the loser was blocked by the advisory lock, then loaded the fresh
-        //    entity (IsDefeated=true), and mutate returned false.
-        //    Refund stamina so the loser loses nothing.
+        // 8. Handle failure outcomes.
+        //    Stamina is deducted inside the advisory-lock transaction, so rollback (race or error)
+        //    also rolls back the spend — no refund is needed.
         if (!applied)
         {
-            await _energy.RefillEnergyAsync(playerId, ResourceType.Stamina, staminaCost, ct);
-            await _auditLog.AppendAsync(AuditLog.Create(
-                playerId, "RaidHitRefund", null,
-                $"Refunded {staminaCost} stamina — raid {activeRaidId} ended in race window.",
-                null), ct);
+            if (staminaInsufficient)
+                return HitFail(RaidHitFailureCode.InsufficientStamina, "Insufficient stamina.");
 
             return raceCondition
                 ? HitFail(RaidHitFailureCode.RaidAlreadyDefeated,
-                    "The creature fell just before your strike landed. Your stamina has been returned — the battle is over.")
+                    "The creature fell just before your strike landed. The battle is over.")
                 : HitFail(RaidHitFailureCode.RaidNotFound,
-                    "Raid no longer available — your stamina has been refunded.");
+                    "Raid no longer available.");
         }
 
-        // 10. Audit the successful hit.
+        // 9. Audit the successful hit.
         string critSuffix = isCrit ? $" CRIT x{appliedCritMult:F2}" : string.Empty;
         string procSuffix = procFired ? $" PROC +{procBonus}" : string.Empty;
         await _auditLog.AppendAsync(AuditLog.Create(
@@ -429,7 +438,7 @@ public sealed class RaidService : IRaidService
             ProcBonus       = procBonus,
         };
 
-        // 11. Store the completed response — replaces the "pending" placeholder.
+        // 10. Store the completed response — replaces the "pending" placeholder.
         await _hitCache.StoreResultAsync(idempotencyKey, response, ct);
 
         return new RaidHitResult { Success = true, Response = response };
@@ -556,11 +565,11 @@ public sealed class RaidService : IRaidService
 
             if (p.PlayerId == callerPlayerId)
             {
-                callerTier     = displayTier;
-                callerMultiplier = multiplier;
+                callerTier         = displayTier;
+                callerMultiplier   = multiplier;
                 callerUnassignedSP = unassignedSP;
-                callerItems    = items;
-                callerLevelUps = levelUps;
+                callerItems        = items;
+                callerLevelUps     = levelUps;
             }
         }
 

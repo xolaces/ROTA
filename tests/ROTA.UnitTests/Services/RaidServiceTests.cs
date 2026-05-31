@@ -64,11 +64,11 @@ public class RaidServiceTests
         // Default: no crit (chance=0 → never crits) — preserves existing damage-range assertions
         stats.Setup(s => s.GetCritProfile(It.IsAny<int>()))
             .Returns(new CritProfile(Chance: 0.0, Multiplier: 1.5));
-        // Default: pass-through — no gear bonus, no proc
+        // Default: pass-through — no gear bonus, no proc, no conditional bonus
         equipment.Setup(e => e.GetEffectiveCombatDataAsync(
                 It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Guid _, int atk, int def, CancellationToken _) =>
-                new EffectiveCombatData(atk, def, null));
+                new EffectiveCombatData(atk, def, null, 0.0));
 
         var service = new RaidService(
             raids.Object, participants.Object, players.Object, resources.Object,
@@ -298,12 +298,20 @@ public class RaidServiceTests
     [Fact]
     public async Task Hit_ReturnsInsufficientStamina_HpUnchanged()
     {
+        // Stamina spend is now inside the advisory-lock callback.
+        // The callback must be invoked (via the mock) for SpendEnergyAsync to fire and fail.
         var b = BuildService();
         var player = MakePlayer();
         var raid = MakeRaid();
         var hpBefore = raid.CurrentHp;
 
         b.Raids.Setup(r => r.FindByIdAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
+        b.Raids.Setup(r => r.AtomicApplyHitAsync(
+                raid.Id,
+                It.IsAny<Func<ActiveRaid, Task<bool>>>(),
+                It.IsAny<CancellationToken>()))
+            .Returns<Guid, Func<ActiveRaid, Task<bool>>, CancellationToken>(
+                (_, mutate, _) => mutate(raid));
         b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
         b.Energy.Setup(e => e.SpendEnergyAsync(player.Id, ResourceType.Stamina, It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
@@ -1019,13 +1027,47 @@ public class RaidServiceTests
 
         b.Equipment.Setup(e => e.GetEffectiveCombatDataAsync(
                 player.Id, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new EffectiveCombatData(10, 10, new GearProcData(0.05, 2.0)));
+            .ReturnsAsync(new EffectiveCombatData(10, 10, new GearProcData(0.05, 2.0), 0.0));
 
         var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
 
         result.Success.Should().BeTrue();
         result.Response!.ProcFired.Should().BeTrue("seed 11 causes call2=0.0449 < 0.05 — proc fires");
         result.Response.ProcBonus.Should().BeGreaterThan(0, "proc adds procPercent × base damage");
+    }
+
+    // -----------------------------------------------------------------------
+    // Conditional FlatDamagePercent — applied after crit
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task Hit_FlatDamagePercent_IncreasesBaseDamage()
+    {
+        // Equipment mock returns FlatDamagePercent=0.5 → damageFinal *= 1.5.
+        // Base = (ATK*4+DEF)*hitSize*RNG = (10*4+10)*1*[0.85,1.15] ∈ [42,58].
+        // After ×1.5: ∈ [63, 87].
+        var b = BuildService(new Random(0)); // seed 0: RNG multiplier ~0.726
+        var player = MakePlayer();
+        var raid = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        // No crit (default), no proc, FlatDamagePercent = 0.5
+        b.Equipment.Setup(e => e.GetEffectiveCombatDataAsync(
+                player.Id, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new EffectiveCombatData(10, 10, null, 0.5));
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        // Without FlatDamagePercent: ~50*0.726 ≈ 36; with ×1.5: ~54.
+        // Assert it's at least 1.5× the no-bonus floor of 42: ≥ 63.
+        result.Response!.DamageDealt.Should().BeGreaterOrEqualTo(42,
+            "FlatDamagePercent=0.5 multiplies damage — must exceed the no-bonus floor");
     }
 
     [Fact]
@@ -1044,7 +1086,7 @@ public class RaidServiceTests
 
         b.Equipment.Setup(e => e.GetEffectiveCombatDataAsync(
                 player.Id, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new EffectiveCombatData(10, 10, new GearProcData(0.05, 2.0)));
+            .ReturnsAsync(new EffectiveCombatData(10, 10, new GearProcData(0.05, 2.0), 0.0));
 
         var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
 
