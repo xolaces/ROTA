@@ -33,6 +33,10 @@ public sealed class MagicController : ControllerBase
         [FromRoute] Guid raidId,
         [FromBody] ApplyMagicRequest request)
     {
+        // BETA: User.IsInRole("Admin") reads the role JWT claim. It does NOT recognize
+        // Admin:PlayerIds break-glass admins (who may lack the role claim). Fails closed —
+        // break-glass admins cannot apply World-raid magic until a supervised session wires
+        // the policy correctly (same fix as AdminController's [AdminOnly] attribute).
         bool isAdmin = User.IsInRole("Admin");
         var result = await _magics.ApplyMagicAsync(GetPlayerId(), raidId, request.MagicDefinitionId, isAdmin);
         if (result.Success) return Ok(result);
@@ -59,6 +63,7 @@ public sealed class MagicController : ControllerBase
         [FromRoute] Guid raidId,
         [FromRoute] string magicDefinitionId)
     {
+        // BETA: same break-glass limitation as ApplyMagic above.
         bool isAdmin = User.IsInRole("Admin");
         var result = await _magics.RemoveMagicAsync(GetPlayerId(), raidId, magicDefinitionId, isAdmin);
         if (result.Success) return Ok(result);

@@ -39,6 +39,12 @@ public class MagicServiceTests
         auditLog.Setup(a => a.AppendAsync(It.IsAny<AuditLog>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
+        // Invoke the advisory-lock delegate so unit tests exercise logic inside the lock.
+        // Tests that return early (RaidNotFound, WorldGateBlocked, etc.) never call the lock.
+        raids.Setup(r => r.AtomicWithAdvisoryLockAsync(
+                It.IsAny<Guid>(), It.IsAny<Func<Task<bool>>>(), It.IsAny<CancellationToken>()))
+            .Returns<Guid, Func<Task<bool>>, CancellationToken>((_, action, _) => action());
+
         var cfg = Options.Create(config ?? new MagicConfig());
 
         return new ServiceBundle(
@@ -240,6 +246,8 @@ public class MagicServiceTests
     [Fact]
     public async Task ApplyMagic_AlreadyAppliedByPlayer_NonWorld_ReturnsFail()
     {
+        // One-per-player check is inside the advisory lock. The lock delegate is invoked
+        // by the BuildService setup, so FindByPlayerAsync fires and returns AlreadyApplied.
         var svc      = BuildService();
         var playerId = Guid.NewGuid();
         var raid     = MakeRaid(summonerId: playerId);  // summoner = player
@@ -257,6 +265,61 @@ public class MagicServiceTests
         var result = await svc.Service.ApplyMagicAsync(playerId, raidId, "magic_poison", false);
 
         result.FailureCode.Should().Be(MagicApplyFailureCode.AlreadyAppliedByPlayer);
+    }
+
+    [Fact]
+    public async Task ApplyMagic_SamePlayer_OnlyFirstApplySucceeds()
+    {
+        // Verifies that after a successful first apply, a second apply by the same player
+        // with a DIFFERENT magic is rejected by the one-per-player check inside the lock.
+        // This is the logic path that closes the pre-lock race: moving FindByPlayerAsync
+        // inside AtomicWithAdvisoryLockAsync prevents two concurrent calls from both
+        // passing the check and inserting.
+        // Integration test for this race is impractical (all raid defs are World tier, and
+        // Admin-callers are exempt from one-per-player by design).
+        var svc      = BuildService(new MagicConfig
+        {
+            SlotsBySize = new() { ["Large"] = 4 }  // plenty of slots — not the limiting factor
+        });
+        var playerId = Guid.NewGuid();
+        var raid     = MakeRaid(summonerId: playerId, size: RaidSize.Large);
+        var raidId   = raid.Id;
+
+        svc.Raids.Setup(r => r.FindByIdAsync(raidId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(raid);
+        svc.RaidDefs.Setup(d => d.GetById("raid_test")).Returns(MakeRaidDef("Standard")); // non-world
+
+        // Both magics are owned.
+        svc.MagicRepo.Setup(r => r.FindAsync(playerId, "magic_whetstone", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeOwned(playerId, "magic_whetstone"));
+        svc.MagicRepo.Setup(r => r.FindAsync(playerId, "magic_poison", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeOwned(playerId, "magic_poison"));
+
+        // Slot count and no-dup for both magics.
+        svc.RaidMagics.Setup(r => r.CountForRaidAsync(raidId, It.IsAny<CancellationToken>())).ReturnsAsync(0);
+        svc.RaidMagics.Setup(r => r.FindAsync(raidId, "magic_whetstone", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidMagic?)null);
+        svc.RaidMagics.Setup(r => r.FindAsync(raidId, "magic_poison", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidMagic?)null);
+        svc.RaidMagics.Setup(r => r.CreateAsync(It.IsAny<RaidMagic>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidMagic rm, CancellationToken _) => rm);
+
+        // First call: no existing magic for this player on this raid.
+        svc.RaidMagics.Setup(r => r.FindByPlayerAsync(raidId, playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidMagic?)null);
+
+        var result1 = await svc.Service.ApplyMagicAsync(playerId, raidId, "magic_whetstone", false);
+        result1.Success.Should().BeTrue("first apply should succeed");
+
+        // Simulate state: player now has magic_whetstone on this raid (as would be true post-insert).
+        var applied = RaidMagic.Create(raidId, "magic_whetstone", playerId);
+        svc.RaidMagics.Setup(r => r.FindByPlayerAsync(raidId, playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(applied);
+
+        // Second call (different magic, same player) — must be rejected inside the lock.
+        var result2 = await svc.Service.ApplyMagicAsync(playerId, raidId, "magic_poison", false);
+        result2.Success.Should().BeFalse("same player may not apply a second magic");
+        result2.FailureCode.Should().Be(MagicApplyFailureCode.AlreadyAppliedByPlayer);
     }
 
     // -----------------------------------------------------------------------
