@@ -141,10 +141,9 @@ public class MagicSlotConcurrencyTests : IAsyncLifetime
 
         // ---- Assertions -------------------------------------------------
 
-        // 1. Exactly one apply succeeded; the other was blocked by the slot cap
-        //    or by the one-per-player pre-check (which fires before the advisory lock).
-        //    In either case, the slot-cap advisory lock is what prevents double-insert
-        //    in the race where both pass the pre-check and enter the lock concurrently.
+        // 1. Exactly one apply succeeded. Both callers share the same player ID, so the
+        //    one-per-player check inside the advisory lock catches the second caller
+        //    (which also closes the slot-cap race since this is a 1-slot Personal raid).
         var successCount = results.Count(r => r.Success);
         successCount.Should().Be(1,
             "advisory lock must allow exactly one apply when only one slot is available");
@@ -159,6 +158,13 @@ public class MagicSlotConcurrencyTests : IAsyncLifetime
                 "advisory lock must ensure at most one magic is inserted on a 1-slot raid");
         }
     }
+
+    // NOTE: A same-player one-per-player race integration test is impractical here because
+    // all current raid definitions are Tier=World, and Admin-callers (isAdmin:true, required
+    // to bypass the world gate) are exempt from the one-per-player rule by design.
+    // That race is covered by the unit test ApplyMagic_SamePlayer_OnlyFirstApplySucceeds
+    // in MagicServiceTests.cs, which invokes the advisory-lock delegate and verifies that
+    // FindByPlayerAsync inside the lock returns AlreadyAppliedByPlayer on the second call.
 
     // -----------------------------------------------------------------------
     // Helper
