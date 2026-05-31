@@ -37,6 +37,26 @@ public class AppliedMagicResponse
     public DateTimeOffset  AppliedAt         { get; set; }
 }
 
+public class BuyMagicRequest
+{
+    public string MagicDefinitionId { get; set; } = string.Empty;
+}
+
+public enum BuyMagicFailureCode
+{
+    MagicNotFound,
+    NotForSale,          // GemPrice == 0 (magic not in gem shop)
+    InsufficientBalance,
+}
+
+public class BuyMagicResult
+{
+    public bool               Success       { get; set; }
+    public BuyMagicFailureCode FailureCode  { get; set; }
+    public string?            FailureReason { get; set; }
+    public int                GemPrice      { get; set; }
+}
+
 public class OwnedMagicResponse
 {
     public string MagicDefinitionId { get; set; } = string.Empty;

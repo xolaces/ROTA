@@ -2,6 +2,7 @@ using Microsoft.Extensions.Options;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Models;
 using ROTA.Domain.Entities;
+using ROTA.Domain.Enums;
 using ROTA.Shared.DTOs;
 
 namespace ROTA.Application.Services;
@@ -16,6 +17,7 @@ public sealed class MagicService : IMagicService
     private readonly IRaidParticipantRepository _participants;
     private readonly IMagicDefinitionProvider _defs;
     private readonly IAuditLogRepository      _auditLog;
+    private readonly IGemService              _gems;
     private readonly MagicConfig              _config;
 
     public MagicService(
@@ -26,6 +28,7 @@ public sealed class MagicService : IMagicService
         IRaidParticipantRepository participants,
         IMagicDefinitionProvider  defs,
         IAuditLogRepository       auditLog,
+        IGemService               gems,
         IOptions<MagicConfig>     config)
     {
         _magicRepo    = magicRepo;
@@ -35,6 +38,7 @@ public sealed class MagicService : IMagicService
         _participants = participants;
         _defs         = defs;
         _auditLog     = auditLog;
+        _gems         = gems;
         _config       = config.Value;
     }
 
@@ -204,6 +208,41 @@ public sealed class MagicService : IMagicService
         return new MagicApplyResult { Success = true };
     }
 
+    public async Task GrantMagicAsync(
+        Guid playerId, string magicDefinitionId, CancellationToken ct = default)
+    {
+        await _magicRepo.UpsertAsync(playerId, magicDefinitionId, ct);
+    }
+
+    public async Task<BuyMagicResult> BuyMagicAsync(
+        Guid playerId, string magicDefinitionId, CancellationToken ct = default)
+    {
+        var def = _defs.GetById(magicDefinitionId);
+        if (def is null)
+            return BuyFail(BuyMagicFailureCode.MagicNotFound, "Magic not found.", 0);
+
+        if (def.GemPrice <= 0)
+            return BuyFail(BuyMagicFailureCode.NotForSale,
+                "This magic is not available in the gem shop.", 0);
+
+        var spent = await _gems.SpendGemsAsync(
+            playerId, def.GemPrice, GemTransactionType.MagicPurchase, null, ct);
+        if (!spent)
+            return BuyFail(BuyMagicFailureCode.InsufficientBalance,
+                $"Insufficient gems. Required: {def.GemPrice}.", def.GemPrice);
+
+        await GrantMagicAsync(playerId, magicDefinitionId, ct);
+
+        await _auditLog.AppendAsync(AuditLog.Create(
+            playerId, "MagicBuy", null,
+            $"Purchased magic '{magicDefinitionId}' for {def.GemPrice} gems.", null), ct);
+
+        return new BuyMagicResult { Success = true, GemPrice = def.GemPrice };
+    }
+
     private static MagicApplyResult Fail(MagicApplyFailureCode code, string reason)
         => new() { FailureCode = code, FailureReason = reason };
+
+    private static BuyMagicResult BuyFail(BuyMagicFailureCode code, string reason, int price)
+        => new() { FailureCode = code, FailureReason = reason, GemPrice = price };
 }
