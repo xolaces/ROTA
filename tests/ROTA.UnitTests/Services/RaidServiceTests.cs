@@ -33,7 +33,8 @@ public class RaidServiceTests
         Mock<IRaidHitCache> HitCache,
         Mock<IEquipmentService> Equipment,
         Mock<IRaidMagicRepository> RaidMagics,
-        Mock<IMagicDefinitionProvider> MagicDefs);
+        Mock<IMagicDefinitionProvider> MagicDefs,
+        Mock<IMagicService> MagicService);
 
     private static ServiceBundle BuildService(Random? random = null, MagicConfig? magicConfig = null)
     {
@@ -53,6 +54,7 @@ public class RaidServiceTests
         var equipment    = new Mock<IEquipmentService>();
         var raidMagics   = new Mock<IRaidMagicRepository>();
         var magicDefs    = new Mock<IMagicDefinitionProvider>();
+        var magicSvc     = new Mock<IMagicService>();
 
         hitCache.Setup(c => c.TryAcquireSlotAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((true, (RaidHitResponse?)null));
@@ -77,6 +79,9 @@ public class RaidServiceTests
         // Default: no applied magics — existing tests see zero magic proc bonus
         raidMagics.Setup(r => r.GetForRaidAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<RaidMagic>());
+        // Default: GrantMagicAsync is a no-op (magic drops don't need a real repo in unit tests)
+        magicSvc.Setup(m => m.GrantMagicAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
 
         var cfg = Options.Create(magicConfig ?? new MagicConfig());
 
@@ -85,11 +90,11 @@ public class RaidServiceTests
             energy.Object, gems.Object, stats.Object, inventory.Object,
             itemDefs.Object, lootTables.Object, auditLog.Object,
             definitions.Object, hitCache.Object, equipment.Object,
-            raidMagics.Object, magicDefs.Object, cfg, random);
+            raidMagics.Object, magicDefs.Object, magicSvc.Object, cfg, random);
 
         return new ServiceBundle(service, raids, participants, players, resources, energy, gems,
             stats, inventory, itemDefs, lootTables, auditLog, definitions, hitCache, equipment,
-            raidMagics, magicDefs);
+            raidMagics, magicDefs, magicSvc);
     }
 
     private static Player MakePlayer(long xp = 0)
@@ -1399,5 +1404,66 @@ public class RaidServiceTests
         capturedParticipant.Should().NotBeNull();
         capturedParticipant!.TotalDamageDealt.Should().Be(damage,
             "participant RecordHit is called with damageFinal which includes the magic bonus");
+    }
+
+    // -----------------------------------------------------------------------
+    // Slice 6 — Magic drops from raid kill loot table
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task KillRewards_WithMagicDrop_CallsGrantMagicAsync()
+    {
+        // When a loot table threshold includes magicDrops with chance=1.0,
+        // GrantMagicAsync must be called for the eligible participant.
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeRaid(currentHp: 1); // killing blow
+
+        SetupHitScaffolding(b, player, raid);
+
+        // Loot table with magic drop at 0.1% contribution (all players qualify).
+        var lootTable = new LootTableDefinition
+        {
+            Id   = "lt_raid_ironcolossus",
+            Type = "Raid",
+            Difficulties = new Dictionary<string, LootTableDifficulty>
+            {
+                ["Normal"] = new LootTableDifficulty
+                {
+                    MinContributionPercent = 0.0,
+                    ThresholdRewards = new List<ThresholdReward>
+                    {
+                        new ThresholdReward
+                        {
+                            ContributionPercent = 0.0,  // everyone qualifies
+                            MagicDrops = new List<MagicDropChance>
+                            {
+                                new MagicDropChance { MagicId = "magic_whetstone", Chance = 1.0 }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        b.LootTables.Setup(lt => lt.GetById("lt_raid_ironcolossus")).Returns(lootTable);
+
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+        b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipant>
+            {
+                RaidParticipant.Create(raid.Id, player.Id),
+            });
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.IsDefeated.Should().BeTrue("the killing blow depletes the last HP");
+        b.MagicService.Verify(m => m.GrantMagicAsync(player.Id, "magic_whetstone", It.IsAny<CancellationToken>()),
+            Times.Once, "magic drop with chance=1.0 must call GrantMagicAsync for the eligible participant");
     }
 }

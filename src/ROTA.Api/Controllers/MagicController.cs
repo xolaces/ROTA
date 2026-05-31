@@ -78,6 +78,24 @@ public sealed class MagicController : ControllerBase
         };
     }
 
+    [HttpPost("api/magics/buy")]
+    [ProducesResponseType(typeof(BuyMagicResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(BuyMagicResult), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(BuyMagicResult), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> Buy([FromBody] BuyMagicRequest request)
+    {
+        var result = await _magics.BuyMagicAsync(GetPlayerId(), request.MagicDefinitionId);
+        if (result.Success) return Ok(result);
+
+        return result.FailureCode switch
+        {
+            BuyMagicFailureCode.MagicNotFound        => NotFound(result),
+            BuyMagicFailureCode.NotForSale           => UnprocessableEntity(result),
+            BuyMagicFailureCode.InsufficientBalance  => UnprocessableEntity(result),
+            _                                        => BadRequest(result),
+        };
+    }
+
     private Guid GetPlayerId()
         => Guid.Parse(User.FindFirst(JwtRegisteredClaimNames.Sub)!.Value);
 }

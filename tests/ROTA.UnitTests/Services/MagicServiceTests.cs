@@ -24,7 +24,8 @@ public class MagicServiceTests
         Mock<IRaidDefinitionProvider>   RaidDefs,
         Mock<IRaidParticipantRepository> Participants,
         Mock<IMagicDefinitionProvider>  Defs,
-        Mock<IAuditLogRepository>       AuditLog);
+        Mock<IAuditLogRepository>       AuditLog,
+        Mock<IGemService>               Gems);
 
     private static ServiceBundle BuildService(MagicConfig? config = null)
     {
@@ -35,6 +36,7 @@ public class MagicServiceTests
         var participants = new Mock<IRaidParticipantRepository>();
         var defs         = new Mock<IMagicDefinitionProvider>();
         var auditLog     = new Mock<IAuditLogRepository>();
+        var gems         = new Mock<IGemService>();
 
         auditLog.Setup(a => a.AppendAsync(It.IsAny<AuditLog>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -50,8 +52,8 @@ public class MagicServiceTests
         return new ServiceBundle(
             new MagicService(magicRepo.Object, raidMagics.Object, raids.Object,
                              raidDefs.Object, participants.Object, defs.Object,
-                             auditLog.Object, cfg),
-            magicRepo, raidMagics, raids, raidDefs, participants, defs, auditLog);
+                             auditLog.Object, gems.Object, cfg),
+            magicRepo, raidMagics, raids, raidDefs, participants, defs, auditLog, gems);
     }
 
     private static PlayerMagic MakeOwned(Guid playerId, string defId)
@@ -320,6 +322,92 @@ public class MagicServiceTests
         var result2 = await svc.Service.ApplyMagicAsync(playerId, raidId, "magic_poison", false);
         result2.Success.Should().BeFalse("same player may not apply a second magic");
         result2.FailureCode.Should().Be(MagicApplyFailureCode.AlreadyAppliedByPlayer);
+    }
+
+    // -----------------------------------------------------------------------
+    // Slice 6 — GrantMagicAsync and BuyMagicAsync
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task GrantMagicAsync_CallsUpsert_IdempotentOnRepeat()
+    {
+        var svc = BuildService();
+        var playerId = Guid.NewGuid();
+
+        svc.MagicRepo.Setup(r => r.UpsertAsync(playerId, "magic_whetstone", It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        await svc.Service.GrantMagicAsync(playerId, "magic_whetstone");
+        await svc.Service.GrantMagicAsync(playerId, "magic_whetstone");
+
+        svc.MagicRepo.Verify(r => r.UpsertAsync(playerId, "magic_whetstone", It.IsAny<CancellationToken>()),
+            Times.Exactly(2), "UpsertAsync is always called; the idempotency lives in the repo (second call is a no-op)");
+    }
+
+    [Fact]
+    public async Task BuyMagicAsync_Success_SpendsGemsAndGrantsMagic()
+    {
+        var svc      = BuildService();
+        var playerId = Guid.NewGuid();
+
+        svc.Defs.Setup(d => d.GetById("magic_smite")).Returns(new MagicDefinition
+        {
+            Id         = "magic_smite",
+            Name       = "Smite",
+            EffectType = MagicEffectType.DamageProc,
+            GemPrice   = 25,
+        });
+        svc.Gems.Setup(g => g.SpendGemsAsync(playerId, 25, GemTransactionType.MagicPurchase, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        svc.MagicRepo.Setup(r => r.UpsertAsync(playerId, "magic_smite", It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var result = await svc.Service.BuyMagicAsync(playerId, "magic_smite");
+
+        result.Success.Should().BeTrue();
+        result.GemPrice.Should().Be(25);
+        svc.Gems.Verify(g => g.SpendGemsAsync(playerId, 25, GemTransactionType.MagicPurchase, null, It.IsAny<CancellationToken>()), Times.Once);
+        svc.MagicRepo.Verify(r => r.UpsertAsync(playerId, "magic_smite", It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task BuyMagicAsync_InsufficientBalance_ReturnsFail()
+    {
+        var svc      = BuildService();
+        var playerId = Guid.NewGuid();
+
+        svc.Defs.Setup(d => d.GetById("magic_smite")).Returns(new MagicDefinition
+        {
+            Id       = "magic_smite",
+            GemPrice = 50,
+        });
+        svc.Gems.Setup(g => g.SpendGemsAsync(playerId, 50, GemTransactionType.MagicPurchase, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var result = await svc.Service.BuyMagicAsync(playerId, "magic_smite");
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(BuyMagicFailureCode.InsufficientBalance);
+        svc.MagicRepo.Verify(r => r.UpsertAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never, "magic must not be granted when gem spend fails");
+    }
+
+    [Fact]
+    public async Task BuyMagicAsync_NotForSale_ReturnsFail_WhenGemPriceIsZero()
+    {
+        var svc      = BuildService();
+        var playerId = Guid.NewGuid();
+
+        svc.Defs.Setup(d => d.GetById("magic_impending_doom")).Returns(new MagicDefinition
+        {
+            Id       = "magic_impending_doom",
+            GemPrice = 0,  // not in gem shop
+        });
+
+        var result = await svc.Service.BuyMagicAsync(playerId, "magic_impending_doom");
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(BuyMagicFailureCode.NotForSale);
     }
 
     // -----------------------------------------------------------------------

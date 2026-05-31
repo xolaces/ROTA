@@ -1,5 +1,5 @@
 # ROTA Function Reference
-Last updated: 2026-05-31 (v0.2.6-s5 — System 14 Slice 5 utility effects)
+Last updated: 2026-05-31 (v0.2.6-s6 — System 14 Slice 6 economy)
 Update when adding public methods or entities.
 
 ---
@@ -255,10 +255,14 @@ Constructor: `(IPlayerEquipmentRepository, IGearDefinitionProvider, IAuditLogRep
 | `Task<IReadOnlyList<OwnedMagicResponse>> GetOwnedMagicsAsync(Guid playerId, ct)` | Owned magics hydrated with definitions |
 | `Task<MagicApplyResult> ApplyMagicAsync(Guid playerId, Guid raidId, string defId, bool isAdmin, ct)` | Apply magic to raid; enforces slot cap inside advisory lock, world gate, one-per-player |
 | `Task<MagicApplyResult> RemoveMagicAsync(Guid playerId, Guid raidId, string defId, bool isAdmin, ct)` | Soft-delete; world=admin only, non-world=summoner only |
+| `Task GrantMagicAsync(Guid playerId, string defId, ct)` | Idempotent upsert; safe to call from reward distribution (duplicate = no-op in repo) |
+| `Task<BuyMagicResult> BuyMagicAsync(Guid playerId, string defId, ct)` | Spend GemPrice gems, then GrantMagicAsync; duplicate purchase is allowed (charges again, grant is no-op) |
 
 Validation order (Apply): raid active → world gate → owns magic → participant (non-world) → one-per-player (non-world) → [advisory lock] → duplicate check → slot cap → insert.
+Economy: `MagicDefinition.GemPrice = 0` = not for sale; magics.json sets gemPrice per magic. `GemTransactionType.MagicPurchase = 7` added.
+LootTable: `ThresholdReward.MagicDrops` (raid) + `LootTableDifficulty.MagicDrops` (quest) are `List<MagicDropChance>` ({MagicId, Chance}). `GrantMagicAsync` called per qualifying drop.
 
-Implementation: `MagicService` (`src/ROTA.Application/Services/MagicService.cs`)
+Implementation: `MagicService` (`src/ROTA.Application/Services/MagicService.cs`) — constructor now includes `IGemService`.
 
 ---
 

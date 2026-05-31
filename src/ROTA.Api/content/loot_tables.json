@@ -153,6 +153,9 @@
             "itemDrops": [
               { "itemId": "mat_iron_shard", "quantity": 8, "chance": 1.0 },
               { "itemId": "statbag_major", "quantity": 2, "chance": 0.50 }
+            ],
+            "magicDrops": [
+              { "magicId": "magic_impending_doom", "chance": 0.05 }
             ]
           }
         ],

@@ -16,4 +16,5 @@ public class MagicDefinition
     public bool            Stacks      { get; set; } = true;
     public string          IconPath    { get; set; } = string.Empty;
     public string          Acquisition { get; set; } = string.Empty;
+    public int             GemPrice    { get; set; } = 0;  // 0 = not available in gem shop
 }

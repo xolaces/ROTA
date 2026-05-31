@@ -11,7 +11,8 @@
     "conditions": [],
     "stacks": true,
     "iconPath": "",
-    "acquisition": "Quest drops"
+    "acquisition": "Quest drops",
+    "gemPrice": 5
   },
   {
     "id": "magic_lesser_poison",
@@ -25,7 +26,8 @@
     "conditions": [],
     "stacks": true,
     "iconPath": "",
-    "acquisition": "Quest drops"
+    "acquisition": "Quest drops",
+    "gemPrice": 5
   },
   {
     "id": "magic_poison",
@@ -39,7 +41,8 @@
     "conditions": [],
     "stacks": true,
     "iconPath": "",
-    "acquisition": "Raid drops"
+    "acquisition": "Raid drops",
+    "gemPrice": 15
   },
   {
     "id": "magic_greater_poison",
@@ -53,7 +56,8 @@
     "conditions": [],
     "stacks": true,
     "iconPath": "",
-    "acquisition": "Raid drops"
+    "acquisition": "Raid drops",
+    "gemPrice": 50
   },
   {
     "id": "magic_smite",
@@ -67,7 +71,8 @@
     "conditions": [],
     "stacks": true,
     "iconPath": "",
-    "acquisition": "Raid drops"
+    "acquisition": "Raid drops",
+    "gemPrice": 50
   },
   {
     "id": "magic_blessing_of_might",
@@ -81,7 +86,8 @@
     "conditions": [],
     "stacks": true,
     "iconPath": "",
-    "acquisition": "Raid drops"
+    "acquisition": "Raid drops",
+    "gemPrice": 75
   },
   {
     "id": "magic_impending_doom",
@@ -95,7 +101,8 @@
     "conditions": [],
     "stacks": true,
     "iconPath": "",
-    "acquisition": "Nightmare raid drops"
+    "acquisition": "Nightmare raid drops",
+    "gemPrice": 0
   },
   {
     "id": "magic_expose_weakness",
@@ -109,7 +116,8 @@
     "conditions": [],
     "stacks": true,
     "iconPath": "",
-    "acquisition": "Raid drops"
+    "acquisition": "Raid drops",
+    "gemPrice": 25
   },
   {
     "id": "magic_midas_touch",
@@ -123,7 +131,8 @@
     "conditions": [],
     "stacks": true,
     "iconPath": "",
-    "acquisition": "Raid drops"
+    "acquisition": "Raid drops",
+    "gemPrice": 25
   },
   {
     "id": "magic_kindling",
@@ -137,6 +146,7 @@
     "conditions": [],
     "stacks": true,
     "iconPath": "",
-    "acquisition": "Quest drops"
+    "acquisition": "Quest drops",
+    "gemPrice": 10
   }
 ]
