@@ -9,12 +9,14 @@ Server-authoritative .NET 10 backend for a Dawn-of-the-Dragons-style async RPG. 
 Infrastructure,Shared}`. PostgreSQL 16 (EF Core 9), Redis, RS256 JWT.
 
 ## Build status (High — run this session)
-- **252 unit + 8 integration = 260 tests pass. 0 warnings, 0 errors.**
-- `main` @ tag **v0.2.6-s3** (System 14 Slice 3 — magic application/slots/world-gate). Prior slices tagged.
+- **258 unit + 8 integration = 266 tests pass. 0 warnings, 0 errors.**
+- `main` @ tag **v0.2.6-s4** (System 14 Slice 4 — magic DamageProc effects in combat). Prior slices tagged.
+- Step 0 (v0.2.6-s3-fix): moved one-per-player advisory-lock check inside the lock; BETA doc comments added.
 
 ## Inventory (High)
 9 controllers · 14 services · 16 entities · 15 enums · 14 repositories · 3 middleware ·
 16 EF migrations (InitialCreate→AddRaidMagics) · 6 content JSON files · GitHub Actions CI.
+(Slice 4 adds 3 more RaidService injected deps: IRaidMagicRepository, IMagicDefinitionProvider, IOptions<MagicConfig>; no new migrations)
 
 ## Implemented & tested (High)
 Auth · Rate limiting · Audit · Energy/resources · Player profile · Gem ledger · Quests+difficulty ·
@@ -22,7 +24,8 @@ Raid engine (pg advisory-lock, Redis idempotency) · Items/sigils · Stats · Cl
 RBAC + beta keys + admin (REST+CLI) · Character gear (v0.2.4) · Conditional/stacking bonuses (v0.2.5) ·
 Raid magic content layer (System 14 Slice 1 — MagicDefinition + IMagicDefinitionProvider + magics.json) ·
 **Raid magic ownership (System 14 Slice 2 — PlayerMagic entity + GET /api/magics) ·
-**Raid magic application (System 14 Slice 3 — RaidMagic + slot-cap advisory lock + world gate; DEEP review)**.
+**Raid magic application (System 14 Slice 3 — RaidMagic + slot-cap advisory lock + world gate; DEEP review)** ·
+**Raid magic damage procs (System 14 Slice 4 — DamageProc magic fires in HitRaidAsync; MagicProcBonus+MagicProcs in RaidHitResponse)**.
 - **Resource regen is class-based (v0.2.2):** energy/stamina/guild regen derive from `ClassConfig`
   (minutes-per-point). **GuildStamina now regenerates** (was 0). Stored `RegenPerMinute` is vestigial.
 - **RaidSize set (v0.2.2):** Personal/Small/Medium/Large/Titanic, participant caps 1/10/25/50/250,
