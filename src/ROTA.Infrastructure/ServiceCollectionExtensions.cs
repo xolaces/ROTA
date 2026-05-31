@@ -43,6 +43,8 @@ public static class ServiceCollectionExtensions
             new LootTableProvider(contentRootPath, sp.GetRequiredService<IRaidDefinitionProvider>()));
         services.AddSingleton<IGearDefinitionProvider>(
             _ => new GearDefinitionProvider(contentRootPath));
+        services.AddSingleton<IMagicDefinitionProvider>(
+            _ => new MagicDefinitionProvider(contentRootPath));
 
         // Application services
         services.AddScoped<IClassService, ClassService>();

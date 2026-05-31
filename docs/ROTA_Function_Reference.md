@@ -1,5 +1,5 @@
 # ROTA Function Reference
-Last updated: 2026-05-30 (v0.2.5)
+Last updated: 2026-05-31 (v0.2.6-s1 — System 14 Slice 1)
 Update when adding public methods or entities.
 
 ---
@@ -243,6 +243,19 @@ Path tiers L5-1000. Convergence L2000+. Strip Legendary/Ascendant prefix for reg
 `src/ROTA.Application/Services/EquipmentService.cs`
 Equip/unequip/list gear. `GetEffectiveCombatDataAsync`: sums base gear stats, evaluates all `ConditionalBonuses` from equipped gear against player inventory (per-hit, indexed), folds results into effective ATK/DEF/proc/FlatDamagePercent. ProcChanceFlat clamped to 1.0 after accumulation.
 Constructor: `(IPlayerEquipmentRepository, IGearDefinitionProvider, IAuditLogRepository, IPlayerInventoryRepository, IItemDefinitionProvider)`
+
+### IMagicDefinitionProvider
+`src/ROTA.Application/Interfaces/IMagicDefinitionProvider.cs`
+Singleton; reads `content/magics.json` at startup. Throws on duplicate id, procChance outside [0,1], or negative procAmount.
+
+| Method | Description |
+|--------|-------------|
+| `MagicDefinition? GetById(string id)` | Look up by id; null if not found |
+| `IReadOnlyList<MagicDefinition> GetAll()` | All 10 starter magics |
+
+Implementation: `MagicDefinitionProvider` (`src/ROTA.Infrastructure/Services/MagicDefinitionProvider.cs`)
+
+---
 
 ### ConditionalBonusEvaluator (static)
 `src/ROTA.Application/Services/ConditionalBonusEvaluator.cs`
@@ -543,6 +556,24 @@ Domain methods: `Create(string key, Guid? createdBy)` factory; `Redeem(Guid play
 
 Eval rule: `floor(owned / perCount) × bonusAmount`
 
+### MagicDefinition
+`src/ROTA.Application/Models/MagicDefinition.cs`
+
+| Property | Type | Notes |
+|----------|------|-------|
+| `Id` | `string` | |
+| `Name` | `string` | |
+| `Description` | `string` | |
+| `Rarity` | `ItemRarity` | |
+| `Category` | `MagicCategory` | Damage/Crit/Gold/Leveling/Utility (UI-only) |
+| `EffectType` | `MagicEffectType` | DamageProc/CritChanceFlat/GoldProc/XpProc |
+| `ProcChance` | `double` | 0..1; ignored for CritChanceFlat (always-on) |
+| `ProcAmount` | `double` | fraction/multiplier per EffectType |
+| `Conditions` | `List<ConditionalBonus>` | ownership scaling (empty in starter content) |
+| `Stacks` | `bool` | whether effect stacks with same-EffectType magics |
+| `IconPath` | `string` | |
+| `Acquisition` | `string` | informational |
+
 ### ItemDefinition
 `src/ROTA.Application/Models/ItemDefinition.cs`
 
@@ -610,6 +641,17 @@ Eval rule: `floor(owned / perCount) × bonusAmount`
 
 ### EquipmentSlot (`src/ROTA.Domain/Enums/EquipmentSlot.cs`)
 `Head, Neck, Torso, Ring1, Ring2, Mount, Boots, Gloves`
+
+### MagicCategory (`src/ROTA.Domain/Enums/MagicCategory.cs`)
+`Damage, Crit, Gold, Leveling, Utility` — informational/UI only; no combat logic reads this.
+
+### MagicEffectType (`src/ROTA.Domain/Enums/MagicEffectType.cs`)
+| Value | Behavior |
+|-------|----------|
+| `DamageProc` | Roll `procChance`; on success add `procAmount × base` damage |
+| `CritChanceFlat` | Always-on; add `procAmount` to crit chance before roll |
+| `GoldProc` | Roll `procChance`; on success add `procAmount × goldGained` |
+| `XpProc` | Roll `procChance`; on success multiply `xpGained` by `procAmount` |
 
 ### Other Enums
 - **ResourceType** — `Energy, Stamina, GuildStamina`
