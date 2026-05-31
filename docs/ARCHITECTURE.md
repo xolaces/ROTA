@@ -23,7 +23,7 @@ A Domain→Infrastructure reference will not compile. This is the primary struct
 ## Persistence (High)
 - PostgreSQL 16 + EF Core 9 (Npgsql). **snake_case** for all tables/columns/indexes.
 - Every table: `id` (UUID), `created_at`, `updated_at`, `is_deleted`. FKs are indexed.
-- Migrations are the schema source of truth (`Infrastructure/Migrations`, 11 to date).
+- Migrations are the schema source of truth (`Infrastructure/Migrations`, 14 to date).
 - **EF enum + store-default rule:** if a property has `HasDefaultValue(X)` and the CLR default (0)
   differs from X, you MUST set `HasSentinel(X)` or the CLR-default value is silently replaced by
   the store default. (Learned via the `RaidSize.Size` / `PlayerRoles.Roles` bug.)

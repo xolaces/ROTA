@@ -50,11 +50,12 @@ public sealed class ActiveRaidRepository : IActiveRaidRepository
     // automatically when the transaction ends — no explicit release needed.
     //
     // Atomicity: the EF Core transaction wraps all repositories sharing this DbContext
-    // (participants, players, gems, stats, inventory), so kill rewards are committed exactly
-    // once — and only after the kill is confirmed.
+    // (participants, players, resources, gems, stats, inventory), so kill rewards are committed
+    // exactly once — and only after the kill is confirmed.
     //
-    // EnergyService uses its own connection and is excluded by design; the caller's
-    // stamina-refund-on-race path in HitRaidAsync handles the fairness gap.
+    // Stamina spend runs INSIDE this transaction (v0.2.5): EnergyService → PlayerResourceRepository
+    // .AtomicUpdateAsync detects the ambient transaction and participates in it, so a rolled-back
+    // hit also rolls back the spend. No separate refund path is needed.
     public async Task<bool> AtomicApplyHitAsync(
         Guid raidId,
         Func<ActiveRaid, Task<bool>> mutate,
