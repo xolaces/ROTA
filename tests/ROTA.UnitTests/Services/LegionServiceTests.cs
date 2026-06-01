@@ -17,21 +17,28 @@ public class LegionServiceTests
 
     private record Bundle(
         LegionService               Service,
-        Mock<IPlayerUnitRepository>   Units,
-        Mock<IPlayerLegionRepository> Legions,
-        Mock<IUnitDefinitionProvider> UnitDefs,
-        Mock<ILegionDefinitionProvider> LegionDefs);
+        Mock<IPlayerUnitRepository>       Units,
+        Mock<IPlayerLegionRepository>     Legions,
+        Mock<IPlayerLegionSlotRepository> Slots,
+        Mock<IUnitDefinitionProvider>     UnitDefs,
+        Mock<ILegionDefinitionProvider>   LegionDefs);
 
     private static Bundle Build()
     {
         var units      = new Mock<IPlayerUnitRepository>();
         var legions    = new Mock<IPlayerLegionRepository>();
+        var slots      = new Mock<IPlayerLegionSlotRepository>();
         var unitDefs   = new Mock<IUnitDefinitionProvider>();
         var legionDefs = new Mock<ILegionDefinitionProvider>();
 
-        var svc = new LegionService(units.Object, legions.Object,
+        // Default: empty slots
+        slots.Setup(s => s.GetForLegionAsync(
+                It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerLegionSlot>());
+
+        var svc = new LegionService(units.Object, legions.Object, slots.Object,
                                     unitDefs.Object, legionDefs.Object);
-        return new Bundle(svc, units, legions, unitDefs, legionDefs);
+        return new Bundle(svc, units, legions, slots, unitDefs, legionDefs);
     }
 
     private static PlayerUnit MakeUnit(Guid playerId, string defId)
@@ -155,5 +162,234 @@ public class LegionServiceTests
         var result = await b.Service.GetOwnedLegionsAsync(Guid.NewGuid());
 
         result.Should().BeEmpty();
+    }
+
+    // ----------------------------------------------------------------
+    // Slice 3 — AssignSlotAsync validation
+    // ----------------------------------------------------------------
+
+    [Fact]
+    public async Task AssignSlot_Success_NoneConstraint()
+    {
+        var b        = Build();
+        var playerId = Guid.NewGuid();
+
+        b.LegionDefs.Setup(d => d.GetById("legion_warband")).Returns(MakeLegionDef("legion_warband"));
+        b.Legions.Setup(r => r.FindAsync(playerId, "legion_warband", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeLegion(playerId, "legion_warband"));
+        b.UnitDefs.Setup(d => d.GetById("gen_ironward")).Returns(MakeUnitDef("gen_ironward"));
+        b.Units.Setup(r => r.FindAsync(playerId, "gen_ironward", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeUnit(playerId, "gen_ironward"));
+        b.Slots.Setup(s => s.UpsertAsync(playerId, "legion_warband", LegionSlotFamily.General, 0, "gen_ironward", It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var result = await b.Service.AssignSlotAsync(playerId, "legion_warband", "General", 0, "gen_ironward");
+
+        result.Success.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task AssignSlot_NotOwned_Unit_ReturnsFail()
+    {
+        var b        = Build();
+        var playerId = Guid.NewGuid();
+
+        b.LegionDefs.Setup(d => d.GetById("legion_warband")).Returns(MakeLegionDef("legion_warband"));
+        b.Legions.Setup(r => r.FindAsync(playerId, "legion_warband", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeLegion(playerId, "legion_warband"));
+        b.UnitDefs.Setup(d => d.GetById("gen_ironward")).Returns(MakeUnitDef("gen_ironward"));
+        b.Units.Setup(r => r.FindAsync(playerId, "gen_ironward", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerUnit?)null); // not owned
+
+        var result = await b.Service.AssignSlotAsync(playerId, "legion_warband", "General", 0, "gen_ironward");
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(AssignSlotFailureCode.UnitNotOwned);
+    }
+
+    [Fact]
+    public async Task AssignSlot_WrongUnitTypeForFamily_ReturnsFail()
+    {
+        // Troop unit in a General slot → WrongUnitType
+        var b        = Build();
+        var playerId = Guid.NewGuid();
+        var troopDef = new UnitDefinition
+        {
+            Id          = "troop_militia",
+            Name        = "Militia",
+            UnitType    = UnitType.Troop,  // wrong for General slot
+            Rarity      = ItemRarity.White,
+            Race        = UnitRace.Human,
+            Role        = UnitRole.Melee,
+            Attribute   = UnitAttribute.Strength,
+        };
+
+        b.LegionDefs.Setup(d => d.GetById("legion_warband")).Returns(MakeLegionDef("legion_warband"));
+        b.Legions.Setup(r => r.FindAsync(playerId, "legion_warband", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeLegion(playerId, "legion_warband"));
+        b.UnitDefs.Setup(d => d.GetById("troop_militia")).Returns(troopDef);
+        b.Units.Setup(r => r.FindAsync(playerId, "troop_militia", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeUnit(playerId, "troop_militia"));
+
+        var result = await b.Service.AssignSlotAsync(playerId, "legion_warband", "General", 0, "troop_militia");
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(AssignSlotFailureCode.WrongUnitType);
+    }
+
+    [Fact]
+    public async Task AssignSlot_ConstraintMismatch_ReturnsFail()
+    {
+        // Iron Legion slot 0 requires Role=Tank; assigning a Melee general → ConstraintMismatch
+        var b        = Build();
+        var playerId = Guid.NewGuid();
+
+        var ironLegion = new LegionDefinition
+        {
+            Id           = "legion_ironlegion",
+            Name         = "Iron Legion",
+            Rarity       = ItemRarity.Purple,
+            PowerBonus   = 250,
+            GeneralSlots = new()
+            {
+                new SlotSpec { ConstraintType = SlotConstraintType.Role, ConstraintValue = "Tank" },
+            },
+            TroopSlots = new(),
+        };
+        var meleeDef = new UnitDefinition
+        {
+            Id        = "gen_ashblade",
+            Name      = "Ashblade",
+            UnitType  = UnitType.General,
+            Rarity    = ItemRarity.Blue,
+            Race      = UnitRace.Human,
+            Role      = UnitRole.Melee,       // constraint requires Tank
+            Attribute = UnitAttribute.Agility,
+        };
+
+        b.LegionDefs.Setup(d => d.GetById("legion_ironlegion")).Returns(ironLegion);
+        b.Legions.Setup(r => r.FindAsync(playerId, "legion_ironlegion", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeLegion(playerId, "legion_ironlegion"));
+        b.UnitDefs.Setup(d => d.GetById("gen_ashblade")).Returns(meleeDef);
+        b.Units.Setup(r => r.FindAsync(playerId, "gen_ashblade", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeUnit(playerId, "gen_ashblade"));
+
+        var result = await b.Service.AssignSlotAsync(playerId, "legion_ironlegion", "General", 0, "gen_ashblade");
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(AssignSlotFailureCode.ConstraintMismatch);
+    }
+
+    [Fact]
+    public async Task AssignSlot_SlotIndexOutOfRange_ReturnsFail()
+    {
+        var b        = Build();
+        var playerId = Guid.NewGuid();
+
+        b.LegionDefs.Setup(d => d.GetById("legion_warband")).Returns(MakeLegionDef("legion_warband"));
+        b.Legions.Setup(r => r.FindAsync(playerId, "legion_warband", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeLegion(playerId, "legion_warband"));
+
+        // legion_warband has 1 General slot (index 0); requesting index 5 is out of range
+        var result = await b.Service.AssignSlotAsync(playerId, "legion_warband", "General", 5, "gen_ironward");
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(AssignSlotFailureCode.SlotOutOfRange);
+    }
+
+    [Fact]
+    public async Task AssignSlot_DuplicateUnitInSameLegion_ReturnsFail()
+    {
+        // gen_ironward already assigned to slot 0; trying to assign to slot 1 of same legion.
+        var b        = Build();
+        var playerId = Guid.NewGuid();
+
+        var twoSlotLegion = new LegionDefinition
+        {
+            Id           = "legion_vanguard",
+            Name         = "Vanguard",
+            Rarity       = ItemRarity.Blue,
+            PowerBonus   = 120,
+            GeneralSlots = new() { new SlotSpec(), new SlotSpec() }, // 2 general slots
+            TroopSlots   = new(),
+        };
+
+        b.LegionDefs.Setup(d => d.GetById("legion_vanguard")).Returns(twoSlotLegion);
+        b.Legions.Setup(r => r.FindAsync(playerId, "legion_vanguard", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeLegion(playerId, "legion_vanguard"));
+        b.UnitDefs.Setup(d => d.GetById("gen_ironward")).Returns(MakeUnitDef("gen_ironward"));
+        b.Units.Setup(r => r.FindAsync(playerId, "gen_ironward", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeUnit(playerId, "gen_ironward"));
+
+        // gen_ironward already in slot 0 of this legion
+        var existingSlot = PlayerLegionSlot.Create(playerId, "legion_vanguard", LegionSlotFamily.General, 0, "gen_ironward");
+        b.Slots.Setup(s => s.GetForLegionAsync(playerId, "legion_vanguard", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerLegionSlot> { existingSlot });
+
+        // Try to assign to slot 1 → duplicate unit in same legion
+        var result = await b.Service.AssignSlotAsync(playerId, "legion_vanguard", "General", 1, "gen_ironward");
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(AssignSlotFailureCode.UnitAlreadyAssigned);
+    }
+
+    // ----------------------------------------------------------------
+    // Slice 3 — SetActiveLegionAsync
+    // ----------------------------------------------------------------
+
+    [Fact]
+    public async Task SetActive_FlipsOtherLegionsToInactive()
+    {
+        var b        = Build();
+        var playerId = Guid.NewGuid();
+
+        b.LegionDefs.Setup(d => d.GetById("legion_warband")).Returns(MakeLegionDef("legion_warband"));
+
+        var target  = MakeLegion(playerId, "legion_warband");
+        var other   = MakeLegion(playerId, "legion_vanguard", isActive: true); // currently active
+
+        b.Legions.Setup(r => r.FindAsync(playerId, "legion_warband", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(target);
+        b.Legions.Setup(r => r.GetOwnedAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerLegion> { target, other });
+        b.Legions.Setup(r => r.UpdateAsync(It.IsAny<PlayerLegion>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var result = await b.Service.SetActiveLegionAsync(playerId, "legion_warband");
+
+        result.Success.Should().BeTrue();
+        other.IsActive.Should().BeFalse("previously active legion is cleared");
+        target.IsActive.Should().BeTrue("target legion is now active");
+    }
+
+    // ----------------------------------------------------------------
+    // Slice 3 — ComputeLegionPowerAsync
+    // ----------------------------------------------------------------
+
+    [Fact]
+    public async Task ComputePower_MatchesFormula_ForKnownLoadout()
+    {
+        // gen_ironward (General): ATK=80, DEF=60, LegionBonus=5
+        // legion_warband: PowerBonus=50
+        // Expected unitSum = 2.0*80 + 0.4*60 = 160 + 24 = 184
+        // totalLegionBonus = 50 + 5 = 55 → bonusFraction = 0.55
+        // rawPower = 184 * (1 + 0.55) = 184 * 1.55 = 285.2
+        var b        = Build();
+        var playerId = Guid.NewGuid();
+
+        b.LegionDefs.Setup(d => d.GetById("legion_warband")).Returns(MakeLegionDef("legion_warband"));
+        b.UnitDefs.Setup(d => d.GetById("gen_ironward")).Returns(MakeUnitDef("gen_ironward"));
+
+        var slot = PlayerLegionSlot.Create(playerId, "legion_warband", LegionSlotFamily.General, 0, "gen_ironward");
+        b.Slots.Setup(s => s.GetForLegionAsync(playerId, "legion_warband", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerLegionSlot> { slot });
+
+        var result = await b.Service.ComputeLegionPowerAsync(playerId, "legion_warband");
+
+        result.UnitSum.Should().BeApproximately(184.0, 0.01);
+        result.LegionBonusFraction.Should().BeApproximately(0.55, 0.001,
+            "(50 + 5) / 100 = 0.55");
+        result.RawPower.Should().BeApproximately(285.2, 0.01,
+            "184 * (1 + 0.55) = 285.2");
     }
 }
