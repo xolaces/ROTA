@@ -357,7 +357,11 @@ public class MagicServiceTests
             EffectType = MagicEffectType.DamageProc,
             GemPrice   = 25,
         });
-        svc.Gems.Setup(g => g.SpendGemsAsync(playerId, 25, GemTransactionType.MagicPurchase, null, It.IsAny<CancellationToken>()))
+        // Player does not yet own the magic → ownership pre-check passes.
+        svc.MagicRepo.Setup(r => r.FindAsync(playerId, "magic_smite", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerMagic?)null);
+        var expectedRef = $"magicbuy:{playerId}:magic_smite";
+        svc.Gems.Setup(g => g.SpendGemsAsync(playerId, 25, GemTransactionType.MagicPurchase, expectedRef, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
         svc.MagicRepo.Setup(r => r.UpsertAsync(playerId, "magic_smite", It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -366,7 +370,7 @@ public class MagicServiceTests
 
         result.Success.Should().BeTrue();
         result.GemPrice.Should().Be(25);
-        svc.Gems.Verify(g => g.SpendGemsAsync(playerId, 25, GemTransactionType.MagicPurchase, null, It.IsAny<CancellationToken>()), Times.Once);
+        svc.Gems.Verify(g => g.SpendGemsAsync(playerId, 25, GemTransactionType.MagicPurchase, expectedRef, It.IsAny<CancellationToken>()), Times.Once);
         svc.MagicRepo.Verify(r => r.UpsertAsync(playerId, "magic_smite", It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -381,7 +385,10 @@ public class MagicServiceTests
             Id       = "magic_smite",
             GemPrice = 50,
         });
-        svc.Gems.Setup(g => g.SpendGemsAsync(playerId, 50, GemTransactionType.MagicPurchase, null, It.IsAny<CancellationToken>()))
+        // Player does not yet own the magic → ownership pre-check passes.
+        svc.MagicRepo.Setup(r => r.FindAsync(playerId, "magic_smite", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerMagic?)null);
+        svc.Gems.Setup(g => g.SpendGemsAsync(playerId, 50, GemTransactionType.MagicPurchase, It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
         var result = await svc.Service.BuyMagicAsync(playerId, "magic_smite");
@@ -390,6 +397,98 @@ public class MagicServiceTests
         result.FailureCode.Should().Be(BuyMagicFailureCode.InsufficientBalance);
         svc.MagicRepo.Verify(r => r.UpsertAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never, "magic must not be granted when gem spend fails");
+    }
+
+    [Fact]
+    public async Task BuyMagicAsync_AlreadyOwned_ReturnsConflict_SpendNeverCalled()
+    {
+        var svc      = BuildService();
+        var playerId = Guid.NewGuid();
+
+        svc.Defs.Setup(d => d.GetById("magic_smite")).Returns(new MagicDefinition
+        {
+            Id       = "magic_smite",
+            GemPrice = 25,
+        });
+        // Player already owns the magic (IsDeleted = false).
+        svc.MagicRepo.Setup(r => r.FindAsync(playerId, "magic_smite", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeOwned(playerId, "magic_smite"));
+
+        var result = await svc.Service.BuyMagicAsync(playerId, "magic_smite");
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(BuyMagicFailureCode.AlreadyOwned);
+        result.GemPrice.Should().Be(25, "GemPrice is populated so the client can display the price");
+        svc.Gems.Verify(g => g.SpendGemsAsync(
+            It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(),
+            It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never,
+            "no charge must be made when the player already owns the magic");
+    }
+
+    [Fact]
+    public async Task BuyMagicAsync_BuyTwice_ChargesOnce_SecondCallReturnsAlreadyOwned()
+    {
+        // Simulates the buy-twice scenario: first call succeeds (not owned → spends gems →
+        // grants); second call hits the ownership pre-check (now owned) → no charge.
+        var svc      = BuildService();
+        var playerId = Guid.NewGuid();
+
+        svc.Defs.Setup(d => d.GetById("magic_smite")).Returns(new MagicDefinition
+        {
+            Id = "magic_smite", GemPrice = 25,
+        });
+        var expectedRef = $"magicbuy:{playerId}:magic_smite";
+
+        // First call: not owned yet.
+        svc.MagicRepo.Setup(r => r.FindAsync(playerId, "magic_smite", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerMagic?)null);
+        svc.Gems.Setup(g => g.SpendGemsAsync(playerId, 25, GemTransactionType.MagicPurchase, expectedRef, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        svc.MagicRepo.Setup(r => r.UpsertAsync(playerId, "magic_smite", It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var first = await svc.Service.BuyMagicAsync(playerId, "magic_smite");
+        first.Success.Should().BeTrue("first purchase succeeds");
+
+        // Second call: magic is now owned — ownership pre-check fires, no charge.
+        svc.MagicRepo.Setup(r => r.FindAsync(playerId, "magic_smite", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeOwned(playerId, "magic_smite"));
+
+        var second = await svc.Service.BuyMagicAsync(playerId, "magic_smite");
+        second.Success.Should().BeFalse();
+        second.FailureCode.Should().Be(BuyMagicFailureCode.AlreadyOwned);
+        svc.Gems.Verify(g => g.SpendGemsAsync(
+            playerId, 25, GemTransactionType.MagicPurchase, expectedRef,
+            It.IsAny<CancellationToken>()), Times.Once,
+            "gems charged exactly once across two calls");
+    }
+
+    [Fact]
+    public async Task BuyMagicAsync_SpendCalledWithExpectedReferenceIdFormat()
+    {
+        var svc      = BuildService();
+        var playerId = Guid.NewGuid();
+
+        svc.Defs.Setup(d => d.GetById("magic_smite")).Returns(new MagicDefinition
+        {
+            Id = "magic_smite", GemPrice = 25,
+        });
+        svc.MagicRepo.Setup(r => r.FindAsync(playerId, "magic_smite", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerMagic?)null);
+        svc.Gems.Setup(g => g.SpendGemsAsync(
+                playerId, 25, GemTransactionType.MagicPurchase,
+                It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        svc.MagicRepo.Setup(r => r.UpsertAsync(playerId, "magic_smite", It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        await svc.Service.BuyMagicAsync(playerId, "magic_smite");
+
+        var expectedRef = $"magicbuy:{playerId}:magic_smite";
+        svc.Gems.Verify(g => g.SpendGemsAsync(
+            playerId, 25, GemTransactionType.MagicPurchase, expectedRef,
+            It.IsAny<CancellationToken>()), Times.Once,
+            "referenceId must be 'magicbuy:{playerId}:{magicDefinitionId}'");
     }
 
     [Fact]

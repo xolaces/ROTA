@@ -49,8 +49,10 @@ public class RaidHitResponse
     public double CritMultiplier { get; set; }
     public bool   ProcFired  { get; set; }
     public long   ProcBonus  { get; set; } // raw bonus damage from mount proc (0 if no proc)
-    // Magic DamageProc totals for this hit (Slice 4)
-    public long              MagicProcBonus { get; set; } // capped total magic bonus
+    // Magic DamageProc totals for this hit (Slice 4).
+    // MagicProcBonus = min(Σ raw per-magic bonuses, cap). MagicProcs = raw per-magic
+    // breakdown BEFORE the cap; their sum may exceed MagicProcBonus when capped.
+    public long              MagicProcBonus { get; set; }
     public List<MagicProcDTO> MagicProcs   { get; set; } = new();
     // Magic CritChanceFlat total for this hit (Slice 5); 0.0 when no CritChanceFlat magic applied
     public double MagicCritBonus { get; set; }

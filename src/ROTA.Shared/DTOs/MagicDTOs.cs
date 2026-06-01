@@ -47,6 +47,7 @@ public enum BuyMagicFailureCode
     MagicNotFound,
     NotForSale,          // GemPrice == 0 (magic not in gem shop)
     InsufficientBalance,
+    AlreadyOwned,        // player already owns this magic — no charge made
 }
 
 public class BuyMagicResult
