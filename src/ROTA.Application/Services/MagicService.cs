@@ -225,8 +225,20 @@ public sealed class MagicService : IMagicService
             return BuyFail(BuyMagicFailureCode.NotForSale,
                 "This magic is not available in the gem shop.", 0);
 
+        // Ownership pre-check: reject without charging if already owned.
+        // Mirrors ApplyMagic's "owns magic" guard (MagicService.cs:93).
+        var existing = await _magicRepo.FindAsync(playerId, magicDefinitionId, ct);
+        if (existing is not null && !existing.IsDeleted)
+            return BuyFail(BuyMagicFailureCode.AlreadyOwned,
+                "You already own this magic.", def.GemPrice);
+
+        // Idempotent referenceId: if spend commits but grant throws, a retry lands on
+        // the AlreadyOwned pre-check above (not on this SpendGemsAsync path), so
+        // double-charging is closed by the ownership check. The referenceId is an
+        // additional safety net for concurrent duplicate submissions.
+        var referenceId = $"magicbuy:{playerId}:{magicDefinitionId}";
         var spent = await _gems.SpendGemsAsync(
-            playerId, def.GemPrice, GemTransactionType.MagicPurchase, null, ct);
+            playerId, def.GemPrice, GemTransactionType.MagicPurchase, referenceId, ct);
         if (!spent)
             return BuyFail(BuyMagicFailureCode.InsufficientBalance,
                 $"Insufficient gems. Required: {def.GemPrice}.", def.GemPrice);

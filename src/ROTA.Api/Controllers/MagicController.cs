@@ -81,6 +81,7 @@ public sealed class MagicController : ControllerBase
     [HttpPost("api/magics/buy")]
     [ProducesResponseType(typeof(BuyMagicResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(BuyMagicResult), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(BuyMagicResult), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(BuyMagicResult), StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> Buy([FromBody] BuyMagicRequest request)
     {
@@ -91,6 +92,7 @@ public sealed class MagicController : ControllerBase
         {
             BuyMagicFailureCode.MagicNotFound        => NotFound(result),
             BuyMagicFailureCode.NotForSale           => UnprocessableEntity(result),
+            BuyMagicFailureCode.AlreadyOwned         => Conflict(result),
             BuyMagicFailureCode.InsufficientBalance  => UnprocessableEntity(result),
             _                                        => BadRequest(result),
         };
