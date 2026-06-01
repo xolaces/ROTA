@@ -153,6 +153,9 @@ builder.Services.Configure<CombatConfig>(
 builder.Services.Configure<MagicConfig>(
     builder.Configuration.GetSection("MagicConfig"));
 
+builder.Services.Configure<LegionConfig>(
+    builder.Configuration.GetSection("LegionConfig"));
+
 builder.Services.AddRotaServices(builder.Environment.ContentRootPath);
 
 // Redis — factory-based so the connection string is resolved from the fully-built
