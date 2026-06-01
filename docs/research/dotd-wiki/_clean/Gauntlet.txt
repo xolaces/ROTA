@@ -1,0 +1,694 @@
+﻿mw-parser-output" lang="en" dir="ltr"> Gauntlet is a limited-time event in which players use Gauntlet Strikes to attack Gauntlet Raids, receiving 10 Strikes and 1 Gauntlet Token per raid defeated. Tokens can be spent in the Gauntlet Shop .
+
+There are 3 leagues, separating players by level: Whelpling 
+(20-999), Wyrm (1000-2499) and Dragon (2500+). The top 500 players in 
+each league win special prizes.
+
+| 
+ Name
+ | 
+ Att 
+ | 
+ Def 
+ | 
+ AV 
+ | 
+ Per 
+ | 
+ Ability
+ | 
+ Obtained | 
+ Awarded to top
+ |
+
+| 
+ SMITE 
+ |
+
+|
+
+|
+
+|
+
+| 
+ (Removed each time the West Kruna Gauntlet is summoned)
+Attacks by any raid member have a 24% chance to deal 500% damage; Extra 150% damage if you own SMITE ; Extra 100% damage if Aureate Gauntlet Trophy is owned; Extra 40% damage if Argent Gauntlet Trophy is owned; Extra 10% damage if Bronzed Gauntlet Trophy is owned; Increases the number of items received from all loot rarity tiers by 3 (This effect does not stack with other magics) 
+ | 
+ West Kruna Gauntlet | 
+ 1 (West Kruna)
+ |
+
+| 
+ Blessing of Mathala 
+ |
+
+|
+
+|
+
+|
+
+| 
+ (Removed each time the West Kruna Gauntlet is summoned)
+Attacks by any raid member have a 13% chance to deal 850% damage; Extra 100% damage if you own Blessing of Mathala ; Extra 50% damage if Aureate Gauntlet Trophy is owned; Extra 20% damage if Argent Gauntlet Trophy is owned; Extra 5% damage if Bronzed Gauntlet Trophy is owned; Increases the number of items received from all loot rarity tiers by 3 (This effect does not stack with other Magics) 
+ | 
+ West Kruna Gauntlet | 
+ 2-10 (West Kruna)
+ |
+
+| 
+ Supreme Victor's Gorget 
+ | 
+ 500
+ | 
+ 500
+ | 
+ 625
+ | 
+ 500
+ | 
+ (Removed
+ each time the West Kruna Gauntlet is summoned) Increases Player Attack,
+ Defense and Perception by 20% of base; Increases Player Attack, Defense
+ and Perception by 1,000; (Passive): Increases Legion Power bonus by 50% 
+ | 
+ West Kruna Gauntlet | 
+ 1 (West Kruna)
+ |
+
+| 
+ Valiant Victor's Gorget 
+ | 
+ 400
+ | 
+ 400
+ | 
+ 500
+ | 
+ 400
+ | 
+ (Removed
+ each time the West Kruna Gauntlet is summoned) Increases Player Attack,
+ Defense and Perception by 10% of base; Increases Player Attack, Defense
+ and Perception by 500; (Passive): Increases Legion Power bonus by 20% 
+ | 
+ West Kruna Gauntlet | 
+ 2-10 (West Kruna)
+ |
+
+| 
+ Victor's Gorget 
+ | 
+ 300
+ | 
+ 300
+ | 
+ 375
+ | 
+ 300
+ | 
+ (Removed
+ each time the West Kruna Gauntlet is summoned) Increases Player Attack,
+ Defense and Perception by 5% of base; Increases Player Attack, Defense 
+and Perception by 200; (Passive): Increases Legion Power bonus by 15% 
+ | 
+ West Kruna Gauntlet | 
+ 11-50 (West Kruna)
+ |
+
+| 
+ Dauntless Challenger's Gorget 
+ | 
+ 200
+ | 
+ 200
+ | 
+ 250
+ | 
+ 200
+ | 
+ (Removed
+ each time the West Kruna Gauntlet is summoned) Increases Player Attack,
+ Defense and Perception by 3% of base; Increases Player Attack, Defense 
+and Perception by 200; (Passive): Increases Legion Power bonus by 10% 
+ | 
+ West Kruna Gauntlet | 
+ 51-100 (West Kruna)
+ |
+
+| 
+ Challenger's Gorget 
+ | 
+ 100
+ | 
+ 100
+ | 
+ 125
+ | 
+ 100
+ | 
+ (Removed
+ each time the West Kruna Gauntlet is summoned) Increases Player Attack,
+ Defense and Perception by 2% of base; Increases Player Attack, Defense 
+and Perception by 200; (Passive): Increases Legion Power bonus by 5% 
+ | 
+ West Kruna Gauntlet | 
+ 101-200 (West Kruna)
+ |
+
+| 
+ SMITE 
+ |
+
+|
+
+|
+
+|
+
+| 
+ (Removed each time the Chalua Gauntlet is summoned)
+Attacks by any raid member have a 24% chance to deal 500% damage; Extra 150% damage if you own SMITE ; Extra 100% damage if Aureate Gauntlet Trophy is owned; Extra 40% damage if Argent Gauntlet Trophy is owned; Extra 10% damage if Bronzed Gauntlet Trophy is owned; Increases the number of items received from all loot rarity tiers by 3 (This effect does not stack with other magics) 
+ | 
+ Chalua Gauntlet | 
+ 1 (Chalua)
+ |
+
+| 
+ Blessing of Mathala 
+ |
+
+|
+
+|
+
+|
+
+| 
+ (Removed each time the Chalua Gauntlet is summoned)
+Attacks by any raid member have a 13% chance to deal 850% damage; Extra 100% damage if you own Blessing of Mathala ; Extra 50% damage if Aureate Gauntlet Trophy is owned; Extra 20% damage if Argent Gauntlet Trophy is owned; Extra 5% damage if Bronzed Gauntlet Trophy is owned; Increases the number of items received from all loot rarity tiers by 3 (This effect does not stack with other Magics) 
+ | 
+ Chalua Gauntlet | 
+ 2-10 (Chalua)
+ |
+
+| 
+ Supreme Victor's Gorget 
+ | 
+ 500
+ | 
+ 500
+ | 
+ 625
+ | 
+ 500
+ | 
+ (Removed
+ each time the Chalua Gauntlet is summoned) Increases Player Attack, 
+Defense and Perception by 20% of base; Increases Player Attack, Defense 
+and Perception by 1,000; (Passive): Increases Legion Power bonus by 50% 
+ | 
+ Chalua Gauntlet | 
+ 1 (Chalua)
+ |
+
+| 
+ Valiant Victor's Gorget 
+ | 
+ 400
+ | 
+ 400
+ | 
+ 500
+ | 
+ 400
+ | 
+ (Removed
+ each time the Chalua Gauntlet is summoned) Increases Player Attack, 
+Defense and Perception by 10% of base; Increases Player Attack, Defense 
+and Perception by 500; (Passive): Increases Legion Power bonus by 20% 
+ | 
+ Chalua Gauntlet | 
+ 2-10 (Chalua)
+ |
+
+| 
+ Victor's Gorget 
+ | 
+ 300
+ | 
+ 300
+ | 
+ 375
+ | 
+ 300
+ | 
+ (Removed
+ each time the Chalua Gauntlet is summoned) Increases Player Attack, 
+Defense and Perception by 5% of base; Increases Player Attack, Defense 
+and Perception by 200; (Passive): Increases Legion Power bonus by 15% 
+ | 
+ Chalua Gauntlet | 
+ 11-50 (Chalua)
+ |
+
+| 
+ Dauntless Challenger's Gorget 
+ | 
+ 200
+ | 
+ 200
+ | 
+ 250
+ | 
+ 200
+ | 
+ (Removed
+ each time the Chalua Gauntlet is summoned) Increases Player Attack, 
+Defense and Perception by 3% of base; Increases Player Attack, Defense 
+and Perception by 200; (Passive): Increases Legion Power bonus by 10% 
+ | 
+ Chalua Gauntlet | 
+ 51-100 (Chalua)
+ |
+
+| 
+ Challenger's Gorget 
+ | 
+ 100
+ | 
+ 100
+ | 
+ 125
+ | 
+ 100
+ | 
+ (Removed
+ each time the Chalua Gauntlet is summoned) Increases Player Attack, 
+Defense and Perception by 2% of base; Increases Player Attack, Defense 
+and Perception by 200; (Passive): Increases Legion Power bonus by 5% 
+ | 
+ Chalua Gauntlet | 
+ 101-200 (Chalua)
+ |
+
+| 
+ Tibius Sprightspring 
+ | 
+ 1000
+ | 
+ 1000
+ | 
+ 1250
+ |
+
+| 
+ DUEL!:
+ 10% chance to deal 100,000 damage; Extra 10,000 damage for each Agility
+ troop owned; Gains 10 Attack and Defense for each Agility troop owned; 
+Gains 10 Attack and Defense for each Gnome troop or general owned; 
+Whenever a Troop does damage, Tibius Sprightspring deals 75% more damage
+ (Note: This does not apply to damage mimic abilities) 
+ | 
+ Karaduchi Gauntlet | 
+ 1 (Karaduchi)
+ |
+
+| 
+ Tibius' Family Jewels 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Increases the Attack and Defense of Tibius Sprightspring by 1,000 and proc damage by 50,000 
+ | 
+ Karaduchi Gauntlet | 
+ 10 (Karaduchi), 2x for 1
+ |
+
+| 
+ Supreme Victor's Band 
+ | 
+ 500
+ | 
+ 500
+ | 
+ 625
+ | 
+ 500
+ | 
+ Supreme
+ Victor's Band: (Removed each time Karaduchi Gauntlet is summoned) Ring:
+ Increases Playerâ€™s Attack, Defense and Perception by 1,000 + 20% of 
+their base Attack, Defense and Perception; Increases Legion Power bonus 
+by 50% 
+ | 
+ Karaduchi Gauntlet | 
+ 1 (Karaduchi)
+ |
+
+| 
+ Valiant Victor's Band 
+ | 
+ 400
+ | 
+ 400
+ | 
+ 500
+ | 
+ 400
+ | 
+ (Removed
+ each time Karaduchi Gauntlet is summoned) Ring: Increases Playerâ€™s 
+Attack, Defense and Perception by 500 + 10% of their base Attack, 
+Defense and Perception; Increases Legion Power bonus by 20% 
+ | 
+ Karaduchi Gauntlet | 
+ 2-10 (Karaduchi)
+ |
+
+| 
+ Victor's Band 
+ | 
+ 300
+ | 
+ 300
+ | 
+ 375
+ | 
+ 300
+ | 
+ (Removed
+ each time Karaduchi Gauntlet is summoned) Ring: Increases Playerâ€™s 
+Attack, Defense and Perception by 200 + 5% of their base Attack, Defense
+ and Perception; Increases Legion Power bonus by 15% 
+ | 
+ Karaduchi Gauntlet | 
+ 11-50 (Karaduchi)
+ |
+
+| 
+ Dauntless Challenger's Band 
+ | 
+ 200
+ | 
+ 200
+ | 
+ 250
+ | 
+ 200
+ | 
+ (Removed
+ each time Karaduchi Gauntlet is summoned) Ring: Increases Player's 
+Attack, Defense and Perception by 200 + 3% of their base Attack, Defense
+ and Perception; Increases Legion Power bonus by 10% 
+ | 
+ Karaduchi Gauntlet | 
+ 51-100 (Karaduchi)
+ |
+
+| 
+ Challenger's Band 
+ | 
+ 100
+ | 
+ 100
+ | 
+ 125
+ | 
+ 100
+ | 
+ (Removed
+ each time Karaduchi Gauntlet is summoned) Ring: Increases Player's 
+Attack, Defense and Perception by 200 + 2% of their base Attack, Defense
+ and Perception; Increases Legion Power bonus by 5% 
+ | 
+ Karaduchi Gauntlet | 
+ 101-200 (Karaduchi)
+ |
+
+| 
+ Aureate Gauntlet Trophy 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Owning this item boosts the power of all your legions by 25% (Max: 1) 
+ | 
+ Gauntlet | 
+ 1
+ |
+
+| 
+ Argent Gauntlet Trophy 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Owning this item boosts the power of all your legions by 10% (Max: 1) 
+ | 
+ Gauntlet | 
+ 10
+ |
+
+| 
+ Bronzed Gauntlet Trophy 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Owning this item boosts the power of all your legions by 5% (Max: 1) 
+ | 
+ Gauntlet | 
+ 500
+ |
+
+| 
+ Exalted Hero Chest IV 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Each
+ Exalted Hero Chest IV contains 1 Premium released prior to February 
+2017 OR another Exalted Hero Chest IV which you can exchange for 250 
+Planet Coins if you already own each premium within this chest 
+ | 
+ Karaduchi Gauntlet | 
+ 10 (Karaduchi), 2x for 1
+ |
+
+Placing in the Top 500 also awards extra Pitchfork Token and Gauntlet Tokens .
+
+Pitchfork Tokens | 
+ Gauntlet Tokens | 
+ Awarded to top
+ |
+
+10 | 
+ 50 | 
+ 1
+ |
+
+5 | 
+ 25 | 
+ 10
+ |
+
+4 | 
+ 20 | 
+ 50
+ |
+
+3 | 
+ 15 | 
+ 100
+ |
+
+2 | 
+ 10 | 
+ 200
+ |
+
+1 | 
+ 5 | 
+ 500
+ |
+
+Categories
+
+Categories :
+
+Events
+
+Community content is available under CC-BY-SA unless otherwise noted.
+
+More Fandoms
+
+Fantasy
+
+Comments
+ Start a conversation
+ Sign in to share your thoughts and get the conversation going.
+ SIGN IN Don't have account? Register now
+
+Advertisement
+
+Advertisement
+
+Advertisement
+
+Advertisement
+
+Explore properties
+
+Fandom
+
+Fanatical
+
+GameSpot
+
+Metacritic
+
+TV Guide
+
+Honest Entertainment
+
+Follow Us
+
+Overview
+
+What is Fandom?
+
+Essentials
+
+About
+
+Careers
+
+Press
+
+Contact
+
+Terms of Use
+
+Privacy Policy
+
+Digital Services Act
+
+Global Sitemap
+
+Local Sitemap
+
+Do Not Sell My Personal Information
+
+Community
+
+Community Central
+
+Support
+
+Help
+
+Advertise
+
+Media Kit
+
+Contact
+
+Fandom Apps
+
+Take your favorite fandoms with you and never miss a beat.
+
+Dawn of the Dragons Wiki is a Fandom Games Community.
+
+View Mobile Site
+
+Do Not Sell My Personal Information
+ When
+ you visit our website, we store cookies on your browser to collect 
+information. The information collected might relate to you, your 
+preferences or your device, and is mostly used to make the site work as 
+you expect it to and to provide a more personalized web experience. 
+However, you can choose not to allow certain types of cookies, which may
+ impact your experience of the site and the services we are able to 
+offer. Click on the different category headings to find out more and 
+change our default settings according to your preference. You cannot 
+opt-out of our First Party Strictly Necessary Cookies as they are 
+deployed in order to ensure the proper functioning of our website (such 
+as prompting the cookie banner and remembering your settings, to log 
+into your account, to redirect you when you log out, etc.). For more 
+information about the First and Third Party Cookies used please follow 
+this link.
+
+Privacy Policy Allow All Manage Consent Preferences
+ Strictly Necessary Cookies
+ Always Active These
+ cookies are necessary for the website to function and cannot be 
+switched off in our systems. They are usually only set in response to 
+actions made by you which amount to a request for services, such as 
+setting your privacy preferences, logging in or filling in forms. You 
+can set your browser to block or alert you about these cookies, but some
+ parts of the site will not then work. These cookies do not store any 
+personally identifiable information.
+ Functional Cookies
+ Functional Cookies These
+ cookies enable the website to provide enhanced functionality and 
+personalisation. They may be set by us or by third party providers whose
+ services we have added to our pages. If you do not allow these cookies 
+then some or all of these services may not function properly.
+ Performance Cookies
+ Performance Cookies These
+ cookies allow us to count visits and traffic sources so we can measure 
+and improve the performance of our site. They help us to know which 
+pages are the most and least popular and see how visitors move around 
+the site. All information these cookies collect is aggregated and 
+therefore anonymous. If you do not allow these cookies we will not know 
+when you have visited our site, and will not be able to monitor its 
+performance.
+ Targeting Cookies
+ Targeting Cookies These
+ cookies may be set through our site by our advertising partners. They 
+may be used by those companies to build a profile of your interests and 
+show you relevant adverts on other sites. They do not store directly 
+personal information, but are based on uniquely identifying your browser
+ and internet device. If you do not allow these cookies, you will 
+experience less targeted advertising.
+ Social Media Cookies
+ Social Media Cookies These
+ cookies are set by a range of social media services that we have added 
+to the site to enable you to share our content with your friends and 
+networks. They are capable of tracking your browser across other sites 
+and building up a profile of your interests. This may impact the content
+ and messages you see on other websites you visit. If you do not allow 
+these cookies you may not be able to use or see these sharing tools.
+ Back Button Cookie List
+
+Search Icon Filter Icon Clear checkbox label label 
+ Apply Cancel Consent Leg.Interest checkbox label label checkbox label label checkbox label label Confirm My Choices Search this wiki Search all wikis

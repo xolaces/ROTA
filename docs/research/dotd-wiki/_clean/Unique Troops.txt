@@ -1,0 +1,2368 @@
+﻿mw-parser-output" lang="en" dir="ltr"> 
+ This content is for the web version of Dawn of the Dragons â†’ Go to the mobile version of this page
+
+Mathias the Masterer cannot summon these troops.
+
+Unique means you cannot own more than one of one of these troops
+ at the same time, though you can reaquire them if you sell/upgrade 
+them.
+
+You can sort this table by any column by clicking on the triangle icons beside the column heading.
+ Click twice to sort by last to first, especially useful for the 
+Attack, Defense and Perception columns so that they are sorted from most
+ to least powerful.
+
+To find the best Attack and Defense Troops, say, first sort by Attack, then while holding shift, sort by Defense.
+
+See stats and proc for more information.
+
+There are currently 115 Unique Troops in the web version of DotD.
+
+| 
+ Name
+ | 
+ Att 
+ | 
+ Def 
+ | 
+ AV 
+ | 
+ Per 
+ | 
+ Ability
+ | 
+ Obtained
+ |
+
+| 
+ Aliyah the Bejeweled 
+ | 
+ 450
+ | 
+ 450
+ | 
+ 563
+ |
+
+| 
+ I Dream of Genie, Genie Dreams of Jewels: Chance for bonus damage; Extra damage for each unique Ring and Neck 
+ item owned; Aliyah gains 6 Attack and Defense for every unique Ring and
+ 20 Attack and Defense for every unique Neck item owned; Whenever a Ring
+ or Neck item deals damage Aliyah does a larger amount of damage (Note: 
+This does not apply to damage mimic abilities) 
+ | 
+ Limited Time Item 
+05/09/14 - 05/23/14 
+ |
+
+| 
+ Angry Apprentices 
+ | 
+ 310
+ | 
+ 410
+ | 
+ 413
+ |
+
+| 
+ Miffed and Murdered: Chance for bonus damage; Extra damage for each Poisoned , Melted , or Exploded Alchemist in the active legion; Extra damage against Undead raids; Angry Apprentices gains 100 Attack and Defense while in the Undead Alchemy legion 
+ | 
+ Crafting 
+ |
+
+| 
+ Annelida 
+ | 
+ 180
+ | 
+ 180
+ | 
+ 225
+ |
+
+| 
+ Surf's Up!: Chance for bonus damage; Extra damage versus Guild raids; Annelida gains 100 Attack and Defense if Riftia is owned 
+ | 
+ Monsters and Magma Magma Worm 
+ |
+
+| 
+ Apprentice Engineer 
+ | 
+ 5
+ | 
+ 2
+ | 
+ 6
+ |
+
+|
+
+| 
+ Clockwork Dragon (Raid) 
+ |
+
+| 
+ Bladezz 
+ | 
+ 220
+ | 
+ 220
+ | 
+ 275
+ |
+
+| 
+ Bladezz'
+ Blades: Chance for bonus damage; Extra damage for each Poison Magic; 
+Chance to Vanish, blocking all incoming damage; After Bladezz vanishes, 
+the next attack while he's equipped is a critical hit; Bladezz gains 12 
+Attack and Defense for each different Agility troop owned 
+ | 
+ Limited Time Item 
+10/18/13 - 11/01/13 
+ |
+
+| 
+ Bog Golem 
+ | 
+ 300
+ | 
+ 100
+ | 
+ 325
+ |
+
+| 
+ Save for Later: Chance for bonus damage; Extra damage against Aquatic raids; Extra damage against The Bog Bodies (raid) ; Bog Golem gains 50 Attack and Defense if Enki the Old is in the active legion; Bog Golem gains 50 Attack if Hammura the Strong is in the active legion; Bog Golem gains 50 Defense if Naram the Wise is in the active legion; Increases Player's Attack and Defense against The Bog Bodies (raid) by 150 
+ | 
+ Crafting/Guild 
+ |
+
+| 
+ Clara 
+ | 
+ 300
+ | 
+ 300
+ | 
+ 375
+ |
+
+| 
+ Raider
+ First, Mother Second: Chance for bonus damage; Extra damage for each 
+Magic slot in the raid; Extra damage for each Magic owned; Clara gains 
+15 Attack and Defense for each Magic owned 
+ | 
+ Limited Time Item 
+11/15/13 - 11/27/13 
+ |
+
+| 
+ Claudia Bloodwyn 
+ | 
+ 200
+ | 
+ 200
+ | 
+ 250
+ |
+
+| 
+ Anything
+ You Can Do...: Whenever a General does damage Claudia does a larger 
+amount of damage (Note: This does not apply to damage mimic abilities); 
+Claudia's Attack and Defense increase by 5 for each General owned. 
+ | 
+ Limited Time Item 
+08/05/11 - 08/19/11 
+ |
+
+| 
+ Dak 
+ | 
+ 425
+ | 
+ 425
+ | 
+ 531
+ |
+
+| 
+ Lost
+ in the Fray: Chance for bonus damage; Extra damage for each unique 
+Melee troop owned; Extra damage for each Melee troop in legion; 
+Increases Attack of Melee troops in legion by 50; Dak gains 10 Attack 
+and 7 Defense for each unique Melee troop owned; Dak gains 20 Attack for
+ each Melee troop in legion. 
+ | 
+ Limited Time Item March 20th - April 3rd 2015 for 100 Planet Coins
+ |
+
+| 
+ Drogan Mar 
+ | 
+ 600
+ | 
+ 600
+ | 
+ 750
+ |
+
+| 
+ Rock and a Hard Place: Chance for bonus damage; Extra damage for every unique Rune 
+ owned; Drogan Mar's Attack and Defense increase by 15 for every unique 
+Rune owned; When a Rune does damage Drogan Mar does a larger amount of 
+damage (Note: This does not apply to damage mimic abilities); Chance to 
+create a Rune from a list of possible Runes 
+ | 
+ Deathrune's Chest then
+ Limited Time Item February 6th - February 20th 2015 for 150 Planet Coins
+ |
+
+| 
+ Father Aecasius Bloodwyn 
+ | 
+ 200
+ | 
+ 230
+ | 
+ 258
+ |
+
+| 
+ Sins
+ of the Father: Chance for bonus damage; Extra bonus damage against 
+Campaigns; Increases Player's Energy by 30; Father Aecasius Bloodwyn 
+gains 30 Attack and Defense if Vanessa Bloodwyn , Tarquin Bloodwyn or Claudia Bloodwyn are owned 
+ | 
+ Gigantomachy (Raid) 
+ |
+
+| 
+ High Sister Agnes 
+ | 
+ 85
+ | 
+ 150
+ | 
+ 123
+ |
+
+| 
+ (Passive) Increases Machaon 's Attack and Defense (by +200/+200) 
+ | 
+ Echthros (Raid) 
+ |
+
+| 
+ Infernus 
+ | 
+ 175
+ | 
+ 175
+ | 
+ 219
+ |
+
+| 
+ Inferno
+ Inferni: Chance for bonus damage; Extra damage against Aquatic raids; 
+Infernus gains 3 Attack and Defense for each Magical Being troop in the 
+legion; (Passive) Increases Player's Attack, Defense and Perception by 
+60 
+ | 
+ Current Expeditions 
+ |
+
+| 
+ Iyantos the Mad 
+ | 
+ 375
+ | 
+ 300
+ | 
+ 450
+ |
+
+| 
+ Ancient Whispers: Chance for bonus damage; Iyantos gains 5 Attack and Defense for each unique Neck item owned 
+ | 
+ Current Expeditions 
+ |
+
+| 
+ Magdamar 
+ | 
+ 400
+ | 
+ 200
+ | 
+ 450
+ |
+
+| 
+ Violent Storms: Chance for bonus damage; Extra damage for each Lightning Elemental in the active legion; Magdamar gains 10 Attack for each Lightning Elemental in the active legion; Increases Player's Energy by 40; Additional 1 Energy for each Lightning Elemental in the active legion 
+ | 
+ Current Expeditions 
+ |
+
+| 
+ Lord Tertullian Bloodwyn 
+ | 
+ 550
+ | 
+ 550
+ | 
+ 688
+ |
+
+| 
+ A
+ Pretty Prison: Chance for bonus damage; Extra damage for every unique 
+Construct Troop owned; Extra damage for every unique Construct General 
+owned; Lord Tertullian Bloodwyn's Attack and Defense increase by 4 for 
+every 6 different weapons, clothing items, and jewelry owned; Increases 
+the Player's benefit from equipment and mount Attack, Defense and 
+Perception against raids by 75%; (Passive) Increases the Player's 
+Attack, Defense and Perception by 250; Boosts the power of all your 
+legions by 25% 
+ | 
+ Limited Time Item 12/12/14 - 12/19/14 
+ |
+
+| 
+ Locklare of the Raven's Wing 
+ | 
+ 235
+ | 
+ 335
+ | 
+ 319
+ |
+
+| 
+ Birds of a Feather: Chance for bonus damage; Extra damage if Raven's Wing Shieldbearer is owned; Extra damage if Raven's Wing Mystic is owned; Extra damage if Raven's Wing Druid is owned; Extra damage against Demon raids; Locklare of the Raven's Wing gains 30 Attack and Defense if Raven's Wing Shieldbearer , Raven's Wing Mystic , Raven's Wing Druid , Raven's Wing or Mark of the Raven's Wing are owned; Increases Player's Attack by 150 against Demon raids; PvP Bonus: power +50 
+ | 
+ Raven's Wing Chest 
+ |
+
+| 
+ Krinexa 
+ | 
+ 100
+ | 
+ 100
+ | 
+ 125
+ |
+
+| 
+ Krinexa's
+ Attack increases by 1 for each Intellect troops in the active legion, 
+and her Defense by 2 for each Wisdom troops in the active legion; Her 
+Attack and Defense increase by 20 if Rohesia is in the active legion 
+ | 
+ Z'ralk'thalat (Raid) 
+ |
+
+| 
+ Katrina 
+ | 
+ 300
+ | 
+ 250
+ | 
+ 363
+ |
+
+| 
+ Steadfast:
+ Chance for bonus damage; Additional damage against Construct raids; 
+Katrina gains 2 Attack for each unique Colossal essence owned; Katrina 
+gains 2 Defense for each unique Magic owned 
+ | 
+ Thratu's Abomination (Raid) 
+ |
+
+| 
+ Marian the Necro-Apprentice 
+ | 
+ 190
+ | 
+ 290
+ | 
+ 263
+ |
+
+| 
+ The First Rule: Chance for bonus damage; Extra damage against Magical Creature raids; Extra damage for each Necro-Lord in the active legion; Marian the Necro-Apprentice gains 30 Attack and Defense if Chai the Necro-Lord is in the active legion; Marian the Necro-Apprentice gains 10 Attack and Defense while in the Skulls and Suplexes , Gleaming Eyes, Glittering Blood , or Luck of the Devil legion; Marian the Necro-Apprentice gains 6 Defense for each Necro-Lord in the active legion; Increases Player's Attack and Defense against Magical Creature raids by 100 
+ | 
+ Current Expeditions 
+ |
+
+| 
+ Megan of the Dark Pankration 
+ | 
+ 225
+ | 
+ 150
+ | 
+ 263
+ |
+
+| 
+ Killer Kick: 18% chance to deal 3,000 damage; Extra 3,000 damage against Demon raids; Extra 100 damage for each Dark Pankratiast in the active legion; Gains 30 Attack and Defense if Chargurk of the Dark Pankration is in the active legion; Gains 10 Attack and Defense while in the Skulls and Suplexes , Gleaming Eyes, Glittering Blood , or Luck of the Devil legion; Gains 1 Attack and 2 Defense for each Dark Pankratiast in the active legion; Increases Player's Attack and Defense against Demon raids by 100 
+ | 
+ Current Expeditions 
+ |
+
+| 
+ Mina von Richten 
+ | 
+ 60
+ | 
+ 60
+ | 
+ 75
+ |
+
+| 
+ Bite of the Red Baroness: Chance to increase damage and restore health 
+ | 
+ Crafting 
+ |
+
+| 
+ Mina von Richten 
+ | 
+ 200
+ | 
+ 200
+ | 
+ 250
+ |
+
+| 
+ Bite of the Red Baroness: Chance to increase damage and restore health 
+ | 
+ Crafting 
+ |
+
+| 
+ Mina von Richten 
+ | 
+ 300
+ | 
+ 300
+ | 
+ 375
+ |
+
+| 
+ Bite
+ of the Red Baroness: Chance for bonus damage; Extra damage for each 
+Undead General owned; Mina von Richten gains 5 Attack and Defense for 
+every 2 Generals owned; Chance to restore health 
+ | 
+ Crafting from Crimson Shadows 
+ |
+
+| 
+ Mortharu the Light-Fingered 
+ | 
+ 600
+ | 
+ 600
+ | 
+ 750
+ |
+
+| 
+ Heavy Hand, Light Fingers: Mortharu the Light-Fingered gains 5 Attack and Defense for every unique Gloves 
+ owned; Mortharu the Light-Fingered has a chance to create a Collection 
+item from a small list of possible items; (Passive) When looting a raid 
+Mortharu the Light-Fingered increases the number of items you receive 
+from the Common, Uncommon, Rare and Epic pools by 1 each 
+ | 
+ Limited Time Item 
+07/26/14 - 08/08/14 
+ |
+
+| 
+ Mulcarin 
+ | 
+ 190
+ | 
+ 190
+ | 
+ 238
+ |
+
+| 
+ Commander of the Dead: Chance for bonus damage; Extra damage for each Mulcarin's Skeleton Crossbowman in the active legion; Mulcarin gains 5 Attack for each Mulcarin's Zombie Brute in the active legion; Mulcarin gains 5 Defense for each Mulcarin's Wraith in the active legion 
+ | 
+ Mulcarin's Chest 
+ |
+
+| 
+ Mulew 
+ | 
+ 100
+ | 
+ 100
+ | 
+ 125
+ |
+
+| 
+ God-Gut: Chance for bonus damage; Extra damage for each Healer Recruit in the active legion; Mulew's Defense increases by 1 for each Tank Recruit in the active legion; and his Attack by 1 for each Ranged Recruit in the active legion; He gains 1 Attack and Defense for each Melee Recruit in the active legion 
+ | 
+ Phantoms of Kazarach (World Raid) 
+ |
+
+| 
+ Nikolaus 
+ | 
+ 240
+ | 
+ 205
+ | 
+ 291
+ |
+
+| 
+ "Yes, Milady...": Chance for bonus damage; Extra damage if Karla Mandrake is in the legion; Extra damage against Siege raids; Nikolaus gains 2 Attack for each Osteo Engineer in the legion 
+ | 
+ Castle Mandrake III (Event Raid) 
+ |
+
+| 
+ Kraglo the Beater 
+ | 
+ 150
+ | 
+ 200
+ | 
+ 200
+ |
+
+| 
+ Join the Club: Chance for bonus damage; Extra damage for each of the following troop types owned: Kessovite Halberdier , Kalevra's Shadow , Disciple of the Masterer , Goblin Tunneler , Wizard's Apprentice 
+ | 
+ Enlistment Box 
+ |
+
+| 
+ Abyss 
+ | 
+ 300
+ | 
+ 300
+ | 
+ 375
+ |
+
+| 
+ Pitch
+ Black: Chance for bonus damage; Extra damage for each unique Merfolk or
+ Abyssal Merfolk troop or general owned; Abyss gains 1 Attack and 
+Defense for every 5 Player levels up to Player level 2,500; Abyss gains 1
+ Attack and Defense for every 10 Player levels starting at Player level 
+2,501; (Passive) Each quest click has a chance to trigger a second quest
+ click without additional cost (Note: this cannot spawn a second 
+miniboss) 
+ | 
+ 100 in Bazaar 
+ |
+
+| 
+ Gallagher the Sinner 
+ | 
+ 1050
+ | 
+ 750
+ | 
+ 1238
+ |
+
+| 
+ Good
+ Intentions: Chance for bonus damage; Additional damage against Demon 
+raids; Gallagher the Sinner gains 100 Attack and Defense and extra 
+damage for each Demon essence owned; Gallagher has a chance to find a Demon Wing , Hellemental Chunk or Urn of Ell'Shoaz'Dahaq when attacking non-guild Demon raids 
+ | 
+ Limited Time Item for 50 
+ |
+
+| 
+ Holy Grik 
+ | 
+ 675
+ | 
+ 600
+ | 
+ 825
+ |
+
+| 
+ Goblin
+ of the Gods: Chance for bonus damage; Extra damage against Goblin 
+raids; Extra damage against Orc raids; Extra damage against Ogre raids; 
+Extra damage against Nightmare Queen raids; Provides a 100% Legion 
+Special Power Bonus against Nightmare Queen raids while in the Queenslayers legion 
+ | 
+ Greater Pillager's Offerings 
+ |
+
+| 
+ Jack 
+ | 
+ 500
+ | 
+ 450
+ | 
+ 613
+ |
+
+| 
+ Pumpkin
+ Night: Chance for bonus damage; Extra damage for each unique mount 
+owned; Jack gains 25 Attack and Defense for each unique Magical Being 
+troop or general owned; Whenever a Mount does damage, Jack repeats 25% 
+of that damage if he is in the active legion; Chance to create and 
+consume a Flaming Pumpkin for a guaranteed critical hit; Jack gains 100 
+Attack and Defense for each completed Halloween themed zone on Normal 
+difficulty ( 9.5 , 9.6 , 9.7 , 9.8 , 9.9 , 9.10 , 9.11 , 9.12 ) 
+ | 
+ Limited Time Item Oct 30 - Nov 13 2015 for 100 Planet Coins
+ |
+
+| 
+ Cornerstone 
+ | 
+ 1200
+ | 
+ 900
+ | 
+ 1425
+ |
+
+| 
+ Stone Warrior: Chance for bonus damage; Extra damage if Coax is in the active legion; Extra damage for each Sculpted Crystal Owned; Extra damage for each Harvested Crystal Owned; Cornerstone gains 200 Attack and 300 Defense if Coax is owned; Cornerstone gains 10 Attack and Defense for each Sculpted Crystal owned and 2 Attack and Defense for each Harvested Crystal owned 
+ | 
+ The Nightmare Queen (World Raid) 
+ |
+
+| 
+ Foundling 
+ | 
+ 1000
+ | 
+ 1200
+ | 
+ 1300
+ |
+
+| 
+ Mommy?:
+ Chance for bonus damage; Extra damage against Qwiladrian raids; 
+Foundling gains 100 Attack, 150 Defense and extra damage for each 
+Qwiladrian essence owned; Chance to discover a Vat Fluid (common), 
+Qwiladrian Goo (uncommon), or Qwil-Killer Vault (rare) on hit against non-guild related Qwiladrian raids 
+ | 
+ Limited Time Item 
+ |
+
+| 
+ Betty the Yeti 
+ | 
+ 900
+ | 
+ 1500
+ | 
+ 1275
+ |
+
+| 
+ Stuffing
+ Stomp: Chance for bonus damage; Extra damage against Winter raids; 
+Betty the Yeti gains 60 Attack and 100 defense and extra damage for each
+ Winter essence owned; Betty the Yeti has a chance to find a Antler or 
+Ice Wall against non-guild Winter raids 
+ | 
+ Limited Time Item 
+ |
+
+| 
+ Damjan the Shield 
+ | 
+ 600
+ | 
+ 600
+ | 
+ 750
+ |
+
+| 
+ None Shall Pass: Chance for bonus damage; Extra damage if The People's Shield 
+ is owned; Damjan gains 5 Defense and extra damage for each unique 
+Shield item owned; Damjan gains 2 Attack for each unique non-Shield 
+Offhand item owned; Damjan gains 150 Attack and Defense and extra damage
+ if Tormad the Weapon is owned; Provides a 50% Legion Power Bonus while in the Namesakes legion 
+ | 
+ Hero Hunter (World Raid) 
+ |
+
+| 
+ Kraken 
+ | 
+ 200
+ | 
+ 200
+ | 
+ 250
+ |
+
+| 
+ Paralytic Sting: 10% chance to deal 100,000 damage; Extra 100,000 damage if Abyss 
+ is owned; Extra 5,000 damage for each unique essence owned; Kraken's 
+Attack and Defense increase by 2 for every 10 base Player Defense until 
+10,000 base Player Defense; At 10,001 and above base Player Defense 
+Kraken gains 1 Attack and Defense for every 100 base Player Defense; 
+Whenever a general does damage, Kraken deals 50% of that damage (Note: 
+This does not apply to damage mimic abilities); Passive: Increases 
+Abyss's Attack and Defense by 1000; Passive: Whenever you defeat a quest
+ boss or miniboss, Kraken has a 25% chance to discover 1 extra loot drop 
+ | 
+ Limited Time Item 
+ |
+
+| 
+ Asmund Drakescale 
+ | 
+ 1300
+ | 
+ 1150
+ | 
+ 1588
+ |
+
+| 
+ Built
+ To Scale: 13% chance to deal 30,000 damage; Additional 650,000 damage 
+against Dragon raids; Gains 50 Attack and Defense and 10,000 bonus 
+damage for each Dragon essence owned; 13% chance to find a Chunk of Brimstone Flavored Dragon Flesh on-hit against non-guild related Dragon raids 
+ | 
+ Limited Time Item June 3-10, 2016 for 50 
+ |
+
+| 
+ Epimet 
+ | 
+ 1000
+ | 
+ 1000
+ | 
+ 1250
+ |
+
+| 
+ Think
+ Tank: 10% chance to deal 15,000 damage; Gains 50 Attack, Defense and 
+15,000 damage for each unique legendary item owned; Gains 25 Attack, 
+Defense and 1,000 damage for each unique Relic owned; Increases the 
+Attack and Defense of Relics in the legion by 1,000 
+ | 
+ Limited Time Item August 12 - 26 2016 for 100 Planet Coins
+ |
+
+| 
+ Bayram Barrelchest 
+ | 
+ 1100
+ | 
+ 1000
+ | 
+ 1350
+ |
+
+| 
+ Sound
+ the Alarm: 10% chance to deal 25,000 damage; Extra 250,000 damage 
+against Guild raids, Extra 400,000 damage against Campaign raids 
+ | 
+ Guild Shop 
+ |
+
+| 
+ Ein the Excitable 
+ | 
+ 1000
+ | 
+ 800
+ | 
+ 1200
+ |
+
+| 
+ Party
+ On, Ein: 15% chance to deal 30,000 damage; Extra 700,000 damage aganist
+ Festival raids; Gains 200 Attack, 100 Defense and 20,000 damage for 
+each Festival essence owned; 20% chance to discover a Crushed Candy on-hit against non-guild related Festival raids; Provides a 75% Legion Power Bonus while in the Mob Mentality legion 
+ | 
+ Crafting 
+ |
+
+| 
+ Lady Kessov 
+ | 
+ 800
+ | 
+ 600
+ | 
+ 950
+ |
+
+| 
+ Die
+ Young: 15% chance to deal 10,000 damage; Extra 200,000 damage against 
+Winter, Siege, and Dragon raids; Gains 50 Attack and 5,000 damage for 
+each Siege and Winter essence owned; Gains 50 Defense for each Dragon essence owned 
+ | 
+ Kessov (World Raid) 
+ |
+
+| 
+ Izot Honorbound 
+ | 
+ 1500
+ | 
+ 1000
+ | 
+ 1750
+ |
+
+| 
+ Gains 250 Attack if Izot's Trophies is owned; Gains 250 Attack and 500 Defense if Izot's Charger is owned; Increases Player's Attack by 500 and Defense by 250; PvP Bonus: +200 Power 
+ | 
+ Crafting 
+ |
+
+| 
+ Mirele 
+ | 
+ 500
+ | 
+ 500
+ | 
+ 625
+ |
+
+| 
+ I
+ See You: 10% chance to deal 50,000 damage; Gains 1 Attack and Defense 
+for every 10 base Player Perception until 10,000 base Player Perception;
+ At 10,001 and above base Player Perception, gains 1 Attack and Defense 
+for every 35 base Player Perception; Gains 10 extra damage for every 
+base Player Perception until 10,000 base Player Perception; At 10,001 
+base Player Perception, gains 1 extra damage for every base Player 
+Perception; Increases the Player's benefit from equipment and mount 
+Attack, Defense and Perception against raids by 40%; Passive: Increases 
+Player's Perception by 500 and an additional 5% of base Player's 
+Perception 
+ | 
+ Limited Time Item December 16th - 30th 2016 for 150 
+ |
+
+| 
+ Agathonas the Axe 
+ | 
+ 1425
+ | 
+ 1325
+ | 
+ 1756
+ |
+
+| 
+ Soldier's
+ Ward: 10% chance to deal 50,000 damage; Extra 200,000 damage against 
+Black Hand raids; Extra 500,000 damage against World and Event raids; 
+Gains 7 Attack and Defense for each Construct or Human troop owned; 10% 
+chance to find Broken Chains against non-guild Black Hand raids; 8% chance to find Broken Chains against non-guild Human raids 
+ | 
+ Limited Time Item January 27th - February 3rd 2016 for 50 
+ |
+
+| 
+ Kitania of the Glass 
+ | 
+ 850
+ | 
+ 850
+ | 
+ 1063
+ |
+
+| 
+ Time
+ Is of the Essence: 10% chance to deal 50,000 damage; Extra 5,000 damage
+ for each player in the raid (Max: 9,000); Extra 10% damage if the raid 
+timer is above 65%; Whenever a Troop does damage, Kitania deals 40% more
+ damage; Gains 7 Attack and Defense for each unique Troop owned (Note: 
+This does not apply to damage mimic abilities) 
+ | 
+ Limited Time Item February 24th - March 10th 2017 for 100 
+ |
+
+| 
+ Jorik Trophytaker 
+ | 
+ 900
+ | 
+ 900
+ | 
+ 1125
+ |
+
+| 
+ Trophycase:
+ 10% chance to deal 100,000 damage; Extra 7,000 damage for every Raid 
+Essence owned; Gains 35 Attack and Defense for every Raid Essence owned;
+ 20% chance to find a Hunting Trophy against non-Guild related Beast raids; (Passive) Increases Player's Attack and Defense by 600; Increases Legion Power by 10% 
+ | 
+ Limited Time Item June 16th - 23rd 2017 for 50 
+ |
+
+| 
+ Hakuum the Conduit 
+ | 
+ 2000
+ | 
+ 1000
+ | 
+ 2250
+ |
+
+| 
+ Eye
+ of the Arcane: 15% chance to deal 100,000 damage; Extra 150,000 damage 
+for each Magic slot in the raid; Extra 8,000 damage for each Arcane Elemental owned; Gains 35 Attack and Defense for each Magic owned; Gains 50 Attack and Defense for each Magical Creature essence owned; Gains 10 Attack and Defense for each Arcane Elemental owned 
+ | 
+ Arcane Anomaly Chest 
+ |
+
+| 
+ Empowered Portal Essence 
+ | 
+ 0
+ | 
+ 0
+ | 
+ 0
+ |
+
+| 
+ Increases the Attack and Defense of Troops in the active legion by 500; (Passive) Increases Legion Power Bonus by 15% 
+ | 
+ Legendary Gate of the Underworld quest boss
+ |
+
+| 
+ Huntress Ss'athash 
+ | 
+ 3000
+ | 
+ 1000
+ | 
+ 3250
+ |
+
+| 
+ Quick
+ of Scale: 12% chance to deal 200,000 damage; Extra 3,000 for every 
+unique Mount owned; Extra 3,000 for every unique Familiar owned; Extra 
+15% damage against Beast raids; Increases Player's Attack and Defense 
+against Beast raids by 2,000; 7% chance to discover an Antler 
+ on hit against non-Guild related Beast raids; Gains 25 Attack and 
+Defense for every unique Mount owned; Gains 25 Attack and Defense for 
+every unique Familiar owned; Increases critical strike chance against 
+Beast raids by 2% 
+ | 
+ Limited Time Item November 18th - December 1st 2017 for 50 
+ |
+
+| 
+ Limbledorn Frigidbeard 
+ | 
+ 2500
+ | 
+ 2500
+ | 
+ 3125
+ |
+
+| 
+ Frigid Fury: 10% chance to deal 100,000 damage; Extra 25,000 damage for each Winter essence 
+ owned; Extra 10% damage against Winter raids; Gains 300 Attack and 
+Defense for every unique Gnome troop owned; Gains 400 Attack and Defense
+ for every Gnome general owned; 20% chance to discover a Snowball on hit against non-Guild related Winter raids 
+ | 
+ Limited Time Item December 15th - December 22nd 2017 for 50 
+ |
+
+| 
+ Kasiel 
+ | 
+ 3000
+ | 
+ 3000
+ | 
+ 3750
+ |
+
+| 
+ Heaven's
+ Blade: 3% chance to deal 200,000 damage; Extra 20,000 damage for each 
+Angel General owned; Extra 600,000 damage on a critical hit; Gains 300 
+Attack and Defense for each unique Angel troop owned; Increases critical
+ strike chance by 2% 
+ | 
+ Limited Time Item January 19th - February 2nd 2018 for 50 
+ |
+
+| 
+ Aethilia Duskwhisper 
+ | 
+ 3000
+ | 
+ 3000
+ | 
+ 3750
+ |
+
+| 
+ Shadow
+ Essence: 10% chance to deal 100,000 damage; Extra 2,000 damage for 
+every different weapon, clothing, ring or neck item owned; Whenever a 
+weapon, clothing item, ring or neck item deals damage, Aethilia 
+Duskwhisper deals 60% more damage (Note: This does not apply to damage 
+mimic abilities); Aethilia Duskwhisper gains 8 Attack and Defense for 
+every different weapon, clothing, ring or neck item owned 
+ | 
+ Limited Time Item February 16th - March 2nd 2018 for 130 
+ |
+
+| 
+ Alyss Catseye 
+ | 
+ 2500
+ | 
+ 2500
+ | 
+ 3125
+ |
+
+| 
+ Point
+ of Sale: 10% chance to deal 200,000 damage; Extra 80,000 damage for 
+each unique Neck item owned; Gains 50 Attack and Defense for each unique
+ Ring owned; 20% chance to discover Ancient Jewelry on hit against Underground raids; (Passive) Increases Player's Perception by 2% of your base value 
+ | 
+ Limited Time Item April 20th - 27th 2018 for 50 
+ |
+
+| 
+ Beastlore 
+ | 
+ 2500
+ | 
+ 2500
+ | 
+ 3125
+ |
+
+| 
+ Bestial Essence: 10% chance to deal 150,000 damage; Whenever a Mount deals damage, Beastlore repeats that damage and deals 10% more; Gains 100 Attack and Defense for every 5 mounts owned 
+ | 
+ Warbeast Chest 
+ |
+
+| 
+ K'smalis Shankclaw 
+ | 
+ 2500
+ | 
+ 2500
+ | 
+ 3125
+ |
+
+| 
+ To
+ Ribbons: 11% chance to deal 5% damage; 6% chance to deal 15% damage; 3%
+ chance to deal 25% damage; Gains 400 Attack and Defense for every 
+different Felpuur troop or general owned; Increases critical hit chance 
+by 2% 
+ | 
+ Limited Time Item August 17th - 24th 2018 for 50 
+ |
+
+| 
+ Feldor Brushstalker 
+ | 
+ 2550
+ | 
+ 1875
+ | 
+ 3019
+ |
+
+| 
+ Fur
+ Sure: 30% chance to deal 50,000 damage; Extra 325,000 damage against 
+Beastman raids; Extra 325,000 damage against Beast raids; Gains 50 
+Attack and Defense for each Beast or Beastman essence owned; 5% chance to discover a Beastman Hoof on hit against non-Guild Beastman raids 
+ | 
+ Crafting 
+ |
+
+| 
+ Brajji 
+ | 
+ 2500
+ | 
+ 1500
+ | 
+ 2875
+ |
+
+| 
+ Crystalline
+ Justice: 10% chance to deal 60,000 damage; Extra 3,500 damage for each 
+Oroc troop in the active legion; Extra 500,000 damage against Beastman 
+raids; Gains 30 Attack and Defense for each Crystal Slaughterer in the active legion 
+ | 
+ Crafting 
+ |
+
+| 
+ Arch Absolver Michandel 
+ | 
+ 2500
+ | 
+ 2500
+ | 
+ 3125
+ |
+
+| 
+ Soul Shepherd: 10% chance to deal 200,000 damage; Extra 100,000 damage for every unique Demon essence 
+ owned; Extra 10% damage against Demon raids; 10% chance to restore 20 
+Health; Gains 75 Attack and Defense for every Wisdom or Healer troop and
+ general owned; Whenever a General deals damage, Michandel deals 20% 
+more damage (Note: This does not apply to damage mimic abilities) 
+ | 
+ Limited Time Item September 21st - October 5th 2018 for 100 
+ |
+
+| 
+ Aiden Soulweaver 
+ | 
+ 2500
+ | 
+ 2500
+ | 
+ 3125
+ |
+
+| 
+ Eternal
+ Research: 80% chance to deal 50,000 damage; Extra 11,000 damage for 
+every unique Undead general owned; Extra 10% damage against Undead 
+raids; Gains 300 Attack and Defense for every unique Undead troop owned;
+ Increases the Attack and Defense of Support Armaments in the active 
+legion by 150; Aiden mimics 30% of an active Magic's damage (Note: This 
+does not apply to damage mimic abilities) 
+ | 
+ Limited Time Item October 12th - 19th 2018 for 50 
+ |
+
+| 
+ Jenyth Heartbow 
+ | 
+ 2500
+ | 
+ 2500
+ | 
+ 3125
+ |
+
+| 
+ Swift
+ Legacy: 20% chance to deal 200,000 damage; Extra 20,000 damage for 
+every unique Ranged general owned; Gains 200 Attack and Defense for 
+every unique Ranged troop owned; 10% chance to create Heartseeker Arrows 
+ which guarantees the next 6 attacks while Jenyth is equipped will be 
+critical hits; On crit, increases damage done by 30%; Increases Player's
+ Attack, Defense and Perception by 75 for every Ranged General and 
+different Ranged Troop owned 
+ | 
+ Limited Time Item December 7th - 21st 2018 for 120 
+ |
+
+| 
+ Immortis the Impenetrable 
+ | 
+ 2500
+ | 
+ 2500
+ | 
+ 3125
+ |
+
+| 
+ Immortal
+ Legacy: 20% chance to deal 300,000 damage; Extra 20,000 damage for 
+every different Construct troop or general owned; Gains 300 Attack and 
+Defense for every different Construct troop or general owned; 10% chance
+ to reduce incoming raid damage by 75%; (Passive) Increases Player's 
+Defense by 1,000 and by an additional 5% of your Defense's base value 
+ | 
+ Limited Time Item January 11th - 18th 2019 for 50 
+ |
+
+| 
+ Clementine Goodhealth 
+ | 
+ 3000
+ | 
+ 3000
+ | 
+ 3750
+ |
+
+| 
+ In
+ Good Health: 25% chance to deal 200,000 damage; Extra 30,000 damage for
+ every different Healer troop or general owned; 10% chance to heal for 
+300; Gains 300 Attack and Defense for every different Healer troop or 
+general owned; (Passive) Increases Player's Attack and Defense by 1,000 
+and by an additional 2% of each stat's base value 
+ | 
+ Limited Time Item March 22nd - 29th 2019 for 50 
+ |
+
+| 
+ Jeromy of the Rider's Hand 
+ | 
+ 10250
+ | 
+ 8500
+ | 
+ 12375
+ |
+
+| 
+ Dragon Warrior: 10% chance to deal 880,000 damage; Extra 6% damage against Dragon raids; Gains 50 Attack and Defense for each Seasoned Warrior of the Rider's Hand 
+ owned (MAX: 100); Increases Player's Attack and Defense against Dragon 
+raids by 1200; Provides a 60% Legion Special Power Bonus while in the Rider's Hand III legion 
+ | 
+ Crafting 
+ |
+
+| 
+ Alenia D'Amour 
+ | 
+ 10000
+ | 
+ 10000
+ | 
+ 12500
+ |
+
+| 
+ Immortal
+ Kiss: 5% chance to deal 30% damage; Extra 30% damage when you score a 
+critical hit; Whenever a General, Troop or Legion deals damage, Alenia 
+deals 50% more damage (Note: This does not apply to damage mimic 
+abilities); Gains 50 Attack for every General owned; Gains 50 Defense 
+for every different Troop owned; (Passive) Increases Legion Power Bonus 
+by 40% 
+ | 
+ Limited Time Item May 24th - June 7th 2019 for 150 
+ |
+
+| 
+ Norr'ian Shadowlash 
+ | 
+ 3000
+ | 
+ 3000
+ | 
+ 3750
+ |
+
+| 
+ Encroaching
+ Darkness: 10% chance to deal 300,000 damage; Extra 10,000 damage for 
+each Essence owned; Extra 20,000 damage for each participant in the raid
+ up to 100; Extra 5% damage for each Magic slot in the raid; Gains 100 
+Attack and Defense for each Essence owned; 20% chance to discover a Shadow Fragment on hit against non-Guild related Underground raids 
+ | 
+ Limited Time Item June 24th - 21st 2019 for 50 
+ |
+
+| 
+ Kodiak II 
+ | 
+ 800
+ | 
+ 800
+ | 
+ 1000
+ |
+
+| 
+ Bear Down II: 15% chance to deal 650,000 damage; Extra 26,000 damage against Dragon raids; Extra 26,000 against Dragon raids if Guster's Fault is owned; Gains 15 Attack and Defense for each Valiant Knight owned (MAX: 200); Gains 40 Attack and Defense and additional 1,750 damage against Dragon raids for each if Orphan Egg , Orphan Whelp or Orphan Drake owned 
+ | 
+ Crafting 
+ |
+
+| 
+ Hagos the Scholar 
+ | 
+ 1500
+ | 
+ 2000
+ | 
+ 2000
+ |
+
+| 
+ More Brains, More Smarts: 10% chance to deal 4% damage; Extra 4% damage if Pestilent Steed 
+ is owned; Increases the Attack and Defense of Undead troops in the 
+active legion by 80; Increases the Attack and Defense of Intellect 
+troops in the active legion by 80; Increases Player's Attack and Defense
+ by 2,500; Gains 1,400 Attack and Defense if Barkif Plaguerage is in the active legion; Provides a 30% Legion Special Power Bonus while in the Fever Fighters legion 
+ | 
+ Bartuk Plaguebearer (World Raid) 
+ |
+
+| 
+ Krauloch 
+ | 
+ 950
+ | 
+ 950
+ | 
+ 1188
+ |
+
+| 
+ Aquatic Mayhem: 4% chance to deal 1% damage against Aquatic raids; Extra 1% damage against Aquatic raids for each Aquatic , Abyssal or Terror 
+ Raid Essence owned; Gains 195 Attack and Defense for each Merfolk troop
+ in the active legion; Increases Legion Power Bonus by 10% 
+ | 
+ Crafting 
+ |
+
+| 
+ Lord Barrington 
+ | 
+ 3000
+ | 
+ 3000
+ | 
+ 3750
+ |
+
+| 
+ Royal
+ Arms: 10% chance to deal 10% damage; Extra 4% damage for every 
+different Special (Role) Troop owned; Gains 100 Attack and Defense for 
+each different Neck or Ring owned; Whenever a Main Hand, Off Hand, 
+Shield, Ring or Neck item deals damage, Lord Barrington deals 70% more damage (Note: This does not apply to damage mimic abilities) 
+ | 
+ Limited Time Item August 23rd - September 6th 2019 for 100 
+ |
+
+| 
+ Zumara 
+ | 
+ 225
+ | 
+ 225
+ | 
+ 281
+ |
+
+| 
+ Woman
+ in War Paint: Whenever a weapon, clothing item, or ring does damage, 
+Zumara repeats that damage; Zumara's Attack and Defense increase by 3 
+for every 5 different weapons, clothing items, and rings owned 
+ | 
+ Limited Time Item 02/22/13 - 03/08/13 
+ |
+
+| 
+ Zaboo 
+ | 
+ 220
+ | 
+ 220
+ | 
+ 275
+ |
+
+| 
+ Warlock'd!: Chance for bonus damage; Extra damage for each Zaboo's Flaming Love owned (Max: 50); Chance to summon a Zaboo's Flaming Love ; Chance to consume a Zaboo's Flaming Love and inflict additional damage; Zaboo gains 15 Attack and Defense for every unique Familiar owned. 
+ | 
+ Limited Time Item 
+08/23/13 - 09/06/13 
+ |
+
+| 
+ Xalis 
+ | 
+ 55
+ | 
+ 80
+ | 
+ 75
+ |
+
+| 
+ Haunting Melody: Chance to inflict bonus damage and restore Health; Additional damage if Sonata of Eclectic Dreams is owned 
+ | 
+ Raid: Sisters of the Song (Raid) 
+ |
+
+| 
+ Sargaash the Conqueror 
+ | 
+ 90
+ | 
+ 60
+ | 
+ 105
+ |
+
+| 
+ Oroc Hero: Chance for bonus raid damage 
+ | 
+ Crafting 
+ |
+
+| 
+ Vigbjorn the Crazed 
+ | 
+ 200
+ | 
+ 200
+ | 
+ 250
+ |
+
+| 
+ Crazy
+ Convictions: Chance for bonus damage; Extra damage for each different 
+Mount owned; Chance for a Lore yell; After a Lore yell, Vigbjorn is 
+guaranteed to produce additional bonus raid damage for the next three 
+hits; Vigbjorn's Attack increases by 10 and Defense increases by 5 for 
+each different mount owned. 
+ | 
+ Limited Time Item 
+09/21/12 - 10/05/12 
+ |
+
+| 
+ Utym 
+ | 
+ 200
+ | 
+ 200
+ | 
+ 250
+ |
+
+| 
+ Eternal
+ Competitor: Chance for bonus damage; Whenever a Troop does damage Utym 
+does a larger amount of damage (Note: This does not apply to damage 
+mimic abilities); Utym's Attack and Defense increase by 1 for every 10 
+base Player Attack and Defense until 10,000 base Player Attack and 
+Defense; At 10,001 and above base Player Attack and Defense Utym gains 1
+ Attack and Defense for every 35 base Player Attack and Defense; Utym 
+gains 4 proc damage for every base Player Perception until 10,000 base 
+Player Perception; At 10,001 Player Perception Utym gains 2 proc damage 
+for every base Player Perception; Increases Attack and Defense of Unique
+ troops in legion by 150 
+ | 
+ Limited Time Item 
+ |
+
+| 
+ Tziss 
+ | 
+ 190
+ | 
+ 190
+ | 
+ 238
+ |
+
+| 
+ Beast Stalker: Chance for bonus damage; Extra damage against Beastman raids; Tziss gains 30 Attack in the Beasts and Men legion; Tziss gains 1 Attack for each Felpuur Furrier in the active legion 
+ | 
+ Trekex's Amphibious Assault (Raid) 
+ |
+
+| 
+ Theno of the Curse 
+ | 
+ 200
+ | 
+ 200
+ | 
+ 250
+ |
+
+| 
+ Bring Death: Chance for bonus damage; Extra damage if Rage of the Twilight , Hell's Knell , Begone, Fiends! , Exorcism , Possession , Shadowstep or Mark of the Raven's Wing are owned; Extra damage against Demon raids; Theno of the Curse gains 30 Attack and 20 Defense if Rage of the Twilight , Hell's Knell , Begone, Fiends! , Exorcism , Possession , Shadowstep or Mark of the Raven's Wing are owned 
+ | 
+ Current Expeditions 
+ |
+
+| 
+ Teucer Tullian 
+ | 
+ 85
+ | 
+ 65
+ | 
+ 101
+ |
+
+| 
+ Volley of Arrows: Chance for bonus raid damage 
+ | 
+ Crafting 
+ |
+
+| 
+ Teucer Tullian 
+ | 
+ 50
+ | 
+ 25
+ | 
+ 56
+ |
+
+| 
+ Volley of Arrows: Chance for bonus raid damage 
+ | 
+ Raids: Hard + Bloodmane , Kerberos , Hydra 
+ |
+
+| 
+ Princess Lysicaa 
+ | 
+ 130
+ | 
+ 160
+ | 
+ 170
+ |
+
+| 
+ Feeding the Fish: Chance for bonus damage; Extra damage for each Merfolk troop in the active legion; Princess Lysicaa's Attack and Defense increase by 50 if Ressmarna is owned 
+ | 
+ 1b+ damage on Vhaliribdis the Third Terror (World Raid) 
+ |
+
+| 
+ Raelle the Blood-Scryer 
+ | 
+ 235
+ | 
+ 220
+ | 
+ 290
+ |
+
+| 
+ Beheld in Blood: Chance for bonus damage; Extra damage if Pumpkin Clasp is owned; Extra damage against Campaigns; Raelle the Blood-Scryer gains 50 Attack and Defense if Cleaver of Porcine Vengeance is owned; Raelle the Blood-Scryer gains 50 Attack and Defense if Spine of Porcine Vengeance is owned 
+ | 
+ NM Shadow quest boss
+ |
+
+| 
+ Sargaash the Mighty 
+ | 
+ 40
+ | 
+ 20
+ | 
+ 45
+ |
+
+| 
+ Flurry: Chance for bonus raid damage 
+ | 
+ Raids: Erebus the Black , Tainted Erebus 
+ |
+
+| 
+ Peraca the Impenetrable 
+ | 
+ 500
+ | 
+ 650
+ | 
+ 663
+ |
+
+| 
+ Pressurized: Chance for bonus damage; Extra damage for each Abyssal Stinger or Abyssal Shaman 
+ in the active legion; Extra damage against Aquatic raids; Extra damage 
+against Terror raids; Peraca the Impenetrable gains 100 Attack and 
+Defense while in the Trench Dwellers legion; Peraca the Impenetrable gains 50 Attack if Initzi is in the active legion; Peraca the Impenetrable gains 50 Defense if Sloani is in the active legion; Provides a 30% Legion Special Power Increase while in the Trench Dwellers legion 
+ | 
+ Deep Sea Chest 
+ |
+
+| 
+ Urtrok the Bard 
+ | 
+ 600
+ | 
+ 200
+ | 
+ 650
+ |
+
+| 
+ Killing
+ Me Softly: Chance for bonus damage; Urtrok the Bard gains 4 Attack and 
+deals additional damage for each Orc troop in the active legion; Urtrok 
+the Bard gains 3 Attack and Defense and deals additional damage for each
+ Melee troop in the active legion; Urtrok the Bard gains 5 Defense and 
+deals additional damage for each Strength troop in the active legion 
+ | 
+ Current Expeditions 
+ |
+
+| 
+ Quentin 
+ | 
+ 500
+ | 
+ 400
+ | 
+ 600
+ |
+
+| 
+ Spelling
+ Bee: Chance for bonus damage; Extra damage against Plant raids; Quentin
+ gains 20 Attack and Defense for each General slot in the active legion;
+ Provides a 50% legion special Power increase while in the Cuirassiers legion; PvP Bonus: +100 Power 
+ | 
+ AP Shop 
+ |
+
+| 
+ Quinna the Absolver 
+ | 
+ 600
+ | 
+ 400
+ | 
+ 700
+ |
+
+| 
+ I
+ Forgive You: Chance for bonus damage; Additional damage against Demon 
+raids; Quinna the Absolver gains 20 Attack and Defense and extra damage 
+for each unique Angel General owned; Quinna has a chance to find Broken 
+Chains against non-guild Demon raids 
+ | 
+ Lyrpan (World Raid) 
+ |
+
+| 
+ Tuora the Philosopher 
+ | 
+ 550
+ | 
+ 600
+ | 
+ 700
+ |
+
+| 
+ Memento
+ Mori: Chance for bonus damage; Additional damage against Undead raids; 
+Tuora the Philosopher gains 20 Attack and Defense and extra damage for 
+each unique Half-Elf General owned; Tuora the Philosopher has a chance 
+to find a Necromantic Cult Notice when attacking non-guild Undead raids 
+ | 
+ Crafting 
+ |
+
+| 
+ The Corpse 
+ | 
+ 800
+ | 
+ 1000
+ | 
+ 1050
+ |
+
+| 
+ Unmarked
+ Grave: Chance for bonus damage; Extra damage against Undead raids; 
+Extra damage against Nightmare Queen raids; The Corpse gains 100 Attack 
+and Defense and extra damage for each Nightmare Queen essence owned; 
+Chance to discover a Jack o' Lantern or Orange Emblem of Caracalla on 
+hit against non-guild related Undead raids; Chance to discover a 
+Nightmare Queen's Mark on hit against non-guild related Nightmare Queen 
+raids 
+ | 
+ Limited Time Item for 50 
+ |
+
+| 
+ Spectral Construct 
+ | 
+ 350
+ | 
+ 450
+ | 
+ 463
+ |
+
+| 
+ Thing One: Chance for bonus damage; Extra damage against Undead raids; Extra damage against Nightmare Queen raids 
+ | 
+ Crafting 
+ |
+
+| 
+ Phantasmal Construct 
+ | 
+ 500
+ | 
+ 450
+ | 
+ 613
+ |
+
+| 
+ Thing Two: Chance for bonus damage; Extra damage against Undead raids; Extra damage against Nightmare Queen raids 
+ | 
+ Crafting 
+ |
+
+| 
+ Sir Lenus 
+ | 
+ 430
+ | 
+ 500
+ | 
+ 555
+ |
+
+| 
+ Of the People: Chance for bonus damage; Extra damage for each unique Human troop owned; Extra damage against Demon raids ;
+ Reduces all incoming damage by 25%; Chance to negate all incoming 
+damage and deal damage instead; Increases Attack and Defense of Human troops in the legion by 40; Increases Player Attack and Defense against Demon raids by 1,000; Sir Lenus gains 18 Attack and 20 Defense for each unique Human troop owned 
+ | 
+ Limited Time Item Feb. 19-Mar. 4, 2016 for 125 
+ |
+
+| 
+ Skull Cracker 
+ | 
+ 0
+ | 
+ 0
+ | 
+ 0
+ |
+
+| 
+ Provides a 25% Legion Power Boost while in the Skull Crackers legion 
+ | 
+ Dasuthaad's Rising (World Raid) 
+ |
+
+| 
+ Veteran Skull Cracker 
+ | 
+ 0
+ | 
+ 0
+ | 
+ 0
+ |
+
+| 
+ Provides a 35% Legion Power Boost while in the Skull Crackers legion 
+ | 
+ Dasuthaad's Rising (World Raid) 
+ |
+
+| 
+ Tannek Steelheart 
+ | 
+ 1000
+ | 
+ 1500
+ | 
+ 1375
+ |
+
+| 
+ Strongarm: Chance for bonus damage; Extra damage against Human raids ; Tannek Steelheart gains 20 Attack and extra damage for each unique Dwarf Troop owned and 10 Defense for each unique Tank Troop owned; Chance to discover a Scabbard on-hit against non-guild related Human raids 
+ | 
+ Limited Time Item February 12-19, 2016 for 50 
+ |
+
+| 
+ Silvia the Singer 
+ | 
+ 2695
+ | 
+ 2230
+ | 
+ 3253
+ |
+
+| 
+ Gains 500 Attack and Defense for each Battalion Commander Expansion Slot item owned; Gains 140 Attack and Defense for each Battalion General Expansion Slot item owned; Gains 75 Attack and Defense for each Battalion Troop Expansion Slot item owned; Gains 150 Attack and Defense for each Battalion Relic , Siege , or Support Expansion Slot item owned 
+ | 
+ Gauntlet Shop 
+ |
+
+| 
+ The Little Fury 
+ | 
+ 750
+ | 
+ 750
+ | 
+ 938
+ |
+
+| 
+ Feathered
+ Ferocity: 20% chance to deal 100,000 damage; Extra 600,000 damage 
+against Beast raids; Extra 600,000 damage against Beastman raids; Gains 
+50 Attack and 35 Defense for each Beast or Beastman essence owned 
+ | 
+ Limited Time Item September 9-16, 2016 for 50 
+ |
+
+| 
+ Spring-Heeled Jaque 
+ | 
+ 1400
+ | 
+ 1300
+ | 
+ 1725
+ |
+
+| 
+ Uncanny
+ Leap: 15% chance to deal 30,000 damage; Extra 700,000 damage against 
+Siege raids; Gains 250 Attack and Defense and 30,000 damage for each 
+Siege essence owned; 26% chance to discover a Hilted Spear on-hit against non-guild related Siege raids 
+ | 
+ Limited Time Item November 11-18, 2016 for 50 
+ |
+
+| 
+ Sergeant Kasimira 
+ | 
+ 350
+ | 
+ 1000
+ | 
+ 600
+ |
+
+| 
+ At
+ the Forefront: 10% chance to deal 25,000 damage; Gains 2 Attack, 3 
+Defense and 1,000 proc damage for every different Troop owned; Increases
+ the Attack and Defense of all Troops in the active Legion by 25; 
+Increases the Attack and Defense of all Generals in the active Legion by
+ 100; Gives a Legion bonus of +10% while in the active Legion 
+ | 
+ Limited Time Item December 23rd - 30th 2016 for 50 
+ |
+
+| 
+ Tibius Sprightspring 
+ | 
+ 1000
+ | 
+ 1000
+ | 
+ 1250
+ |
+
+| 
+ DUEL!:
+ 10% chance to deal 100,000 damage; Extra 10,000 damage for each Agility
+ troop owned; Gains 10 Attack and Defense for each Agility troop owned; 
+Gains 10 Attack and Defense for each Gnome troop or general owned; 
+Whenever a Troop does damage, Tibius Sprightspring deals 75% more damage
+ (Note: This does not apply to damage mimic abilities) 
+ | 
+ Karaduchi Gauntlet 
+ |
+
+| 
+ Sar Gwenyth 
+ | 
+ 1500
+ | 
+ 1000
+ | 
+ 1750
+ |
+
+| 
+ Luck of the Veil: 10% chance to deal 100,000 damage; Extra 100,000 damage if Rainbow Cannon 
+ is owned; Extra 20,000 damage for each unique Magical Being troop or 
+general owned; Gains 50 Attack and Defense for each unique Magical Being
+ troop or general owned; Increases the Attack and Defense of all Magical
+ Being troops and generals in the active legion by 150; Increases 
+critical strike chance against Magical Creature raids by 2%; 18% chance 
+to find Fey Blood against non-guild Magical Creature raids 
+ | 
+ Limited Time Item March 17th - 24th 2017 for 50 
+ |
+
+| 
+ Olivia, The Whimsical Harbinger 
+ | 
+ 3250
+ | 
+ 1000
+ | 
+ 3500
+ |
+
+| 
+ Punch
+ Line: 60% chance to deal 40,000 damage; 15% chance to deal 250,000 
+damage; 5% chance to deal 15% damage; 50% chance that when a General or 
+Troop procs, Olivia will deal 100% extra damage (does not stack with 
+other mimic abilities); Gains 35 Attack and Defense for every Essence 
+owned 
+ | 
+ Limited Time Item April 7th - April 21st 2017 for 75 
+ |
+
+| 
+ Warlock 
+ | 
+ 2000
+ | 
+ 2000
+ | 
+ 2500
+ |
+
+| 
+ Hate
+ For Hecate: 10% chance to deal 40,000 damage; Extra 40,000 damage for 
+each Magic owned; Gains 15 Attack and Defense for every Magic owned; 
+Warlock mimics 100% of an active Magic's damage; (Passive): Provides a 
+1% Legion Bonus for every 2 Magics owned 
+ | 
+ Limited Time Item May 19th - June 2nd 2017 for 150 
+ |
+
+| 
+ The Houndmaster 
+ | 
+ 2500
+ | 
+ 2500
+ | 
+ 3125
+ |
+
+| 
+ On
+ The Scent: 10% chance to deal 250,000 damage; Extra 4,000 damage for 
+each different Mount owned; Whenever a mount does damage, The 
+Houndmaster deals 25% of that damage; Gains 500 Attack and Defense for 
+each Beast essence owned 
+ | 
+ Limited Time Item August 11th - 18th 2017 for 50 
+ |
+
+| 
+ Worm-Lord 
+ | 
+ 5000
+ | 
+ 5000
+ | 
+ 6250
+ |
+
+| 
+ Riding
+ Dirty: 12% chance to deal 200,000 damage; Extra 10,000 damage for each 
+unique Mount owned; Gains 30 Attack and Defense for each unique Mount 
+owned; Whenever a mount Procs, Worm-Lord mimics 30% of that damage plus 
+1% for every 5 unique Mounts owned 
+ | 
+ Limited Time Item September 15th -29th 2017 for 130 
+ |
+
+| 
+ Sir Heinrich von Malhaven 
+ | 
+ 2500
+ | 
+ 3000
+ | 
+ 3250
+ |
+
+| 
+ Crimson
+ Honor: 10% chance to deal 200,000 damage; Extra 25,000 damage for each 
+Undead troop owned; Extra 200,000 damage against Undead raids; Gains 300
+ Attack and Defense for each Undead essence owned; Chance to discover a Tombstone on hit against non-Guild Undead raids 
+ | 
+ Limited Time Item October 13th - 20th 2017 for 50 
+ |
+
+| 
+ Riycaz of the Raven's Blade 
+ | 
+ 2500
+ | 
+ 2500
+ | 
+ 3125
+ |
+
+| 
+ Blade
+ Hustlin': 10% chance to deal 30,000 damage; Extra 5,000 damage for each
+ unique Goblin Troop or General owned; Gains 15 Attack and Defense for 
+each unique Agility Troop owned; (Passive) Increases Legion Power Bonus 
+by 5% 
+ | 
+ Cosmictis (World Raid) 
+ |
+
+| 
+ Waveshaper Alari 
+ | 
+ 3000
+ | 
+ 3000
+ | 
+ 3750
+ |
+
+| 
+ One
+ with the Deep: 13% chance to deal 200,000 damage; Extra 10,000 damage 
+for every unique Merfolk troop and General owned; Extra 10% damage 
+against Aquatic raids; Extra 10% damage against Terror raids; Gains 
+1,000 Attack and Defense for every Aquatic essence owned; 20% chance to discover an Ancient Relic on hit against non-Guild related Aquatic raids 
+ | 
+ Limited Time Item June 8th - 15th 2018 for 50 
+ |
+
+| 
+ Una 
+ | 
+ 3200
+ | 
+ 1150
+ | 
+ 3488
+ |
+
+| 
+ Una in Perpetuum: 40% chance to deal 77,000 damage; Extra 116,000 damage if Gadrian is owned; Gains 1,150 Attack and Defense if Gadrian is in the active legion; Increases the Attack and Defense of all generals in the active legion by 60 
+ | 
+ Lonely Hearts 
+ |
+
+| 
+ Ventrala Emberfury 
+ | 
+ 3000
+ | 
+ 3000
+ | 
+ 3750
+ |
+
+| 
+ Charred
+ and Scarred: 10% chance to deal 10% damage; Extra 1% damage for every 
+Intellect troop owned; 2% chance to deal 95% damage; Gains 320 Attack 
+and Defense for every Intellect general owned; Ventrala mimics 150% of 
+an active Magic's damage (Note: This does not apply to damage mimic 
+abilities); Increases the Attack of Unique Troops in the active legion 
+by 300 
+ | 
+ Limited Time Item May 10th - 24th 2019 for 100 
+ |
+
+| 
+ Sergeant Larrion 
+ | 
+ 13000
+ | 
+ 5400
+ | 
+ 14350
+ |
+
+| 
+ Old
+ Wounds: 20% chance to deal 5% damage; Extra 25% damage against Orc, 
+Goblin or Ogre raids; Gains 100 Attack and Defense for each Savage Breaker Squire in the active legion; Increases Player's Attack and Defense by 500; Provides a 30% Legion Special Power Bonus while in the Savage Breakers legion 
+ | 
+ Limited Time Item July 2019 
+ |
+
+| 
+ Seshemetka the Cursed 
+ | 
+ 3000
+ | 
+ 3000
+ | 
+ 3750
+ |
+
+| 
+ Entombed:
+ 15% chance to deal 10% damage; Extra 5% damage for every Undead General
+ owned; Gains 600 Attack and Defense for each different Undead Troop 
+owned; Increases the Player's benefit from equipment and mount Attack, 
+Defense and Perception against raids by 75%; 5% chance to trigger Curse 
+of the Mummy to reduce incoming raid damage by 50% and for one of the 
+following effects: Drop a Cursed Bandage or deal 50% damage 
+ | 
+ Limited Time Item October 18th - November 1st 2019 for 100 
+ |
+
+| 
+ Spirit of the People 
+ | 
+ 1600
+ | 
+ 2500
+ | 
+ 2225
+ |
+
+| 
+ Barbaric
+ Adoration: 10% chance to deal 5% damage; Increases the Attack and 
+Defense of all Generals, Troops and Support items in the active legion 
+by 100; Gains 1,000 Attack and Defense for the following owned: Spirit of the Mountain , Spirit of Courage , Spirit of Harmony ; (Passive): Increases Legion Power Bonus by 25% 
+ | 
+ Cryptic Tales 
+ |
+
+| 
+ Spirit of Harmony 
+ | 
+ 12500
+ | 
+ 7500
+ | 
+ 14375
+ |
+
+| 
+ Law
+ and Order: 10% chance to deal 5% damage; Increases Player's Attack, 
+Defense and Perception by 2,500; Increases Player's Health by 10,000; 
+Gains 1,000 Attack and Defense for the following owned: Spirit of the Mountain , Spirit of Courage , Spirit of the People ; (Passive): Increases Legion Power Bonus by 25% 
+ | 
+ Cryptic Tales
+
+|
+
+Categories
+
+Categories :
+
+Pages using DynamicPageList3 parser function
+
+Items
+
+Community content is available under CC-BY-SA unless otherwise noted.
+
+More Fandoms
+
+Fantasy
+
+Comments
+ Start a conversation
+ Sign in to share your thoughts and get the conversation going.
+ SIGN IN Don't have account? Register now
+
+Advertisement
+
+Advertisement
+
+Advertisement
+
+Advertisement
+
+Explore properties
+
+Fandom
+
+Fanatical
+
+GameSpot
+
+Metacritic
+
+TV Guide
+
+Honest Entertainment
+
+Follow Us
+
+Overview
+
+What is Fandom?
+
+Essentials
+
+About
+
+Careers
+
+Press
+
+Contact
+
+Terms of Use
+
+Privacy Policy
+
+Digital Services Act
+
+Global Sitemap
+
+Local Sitemap
+
+Do Not Sell My Personal Information
+
+Community
+
+Community Central
+
+Support
+
+Help
+
+Advertise
+
+Media Kit
+
+Contact
+
+Fandom Apps
+
+Take your favorite fandoms with you and never miss a beat.
+
+Dawn of the Dragons Wiki is a Fandom Games Community.
+
+View Mobile Site
+
+Do Not Sell My Personal Information
+ When
+ you visit our website, we store cookies on your browser to collect 
+information. The information collected might relate to you, your 
+preferences or your device, and is mostly used to make the site work as 
+you expect it to and to provide a more personalized web experience. 
+However, you can choose not to allow certain types of cookies, which may
+ impact your experience of the site and the services we are able to 
+offer. Click on the different category headings to find out more and 
+change our default settings according to your preference. You cannot 
+opt-out of our First Party Strictly Necessary Cookies as they are 
+deployed in order to ensure the proper functioning of our website (such 
+as prompting the cookie banner and remembering your settings, to log 
+into your account, to redirect you when you log out, etc.). For more 
+information about the First and Third Party Cookies used please follow 
+this link.
+
+Privacy Policy Allow All Manage Consent Preferences
+ Strictly Necessary Cookies
+ Always Active These
+ cookies are necessary for the website to function and cannot be 
+switched off in our systems. They are usually only set in response to 
+actions made by you which amount to a request for services, such as 
+setting your privacy preferences, logging in or filling in forms. You 
+can set your browser to block or alert you about these cookies, but some
+ parts of the site will not then work. These cookies do not store any 
+personally identifiable information.
+ Functional Cookies
+ Functional Cookies These
+ cookies enable the website to provide enhanced functionality and 
+personalisation. They may be set by us or by third party providers whose
+ services we have added to our pages. If you do not allow these cookies 
+then some or all of these services may not function properly.
+ Performance Cookies
+ Performance Cookies These
+ cookies allow us to count visits and traffic sources so we can measure 
+and improve the performance of our site. They help us to know which 
+pages are the most and least popular and see how visitors move around 
+the site. All information these cookies collect is aggregated and 
+therefore anonymous. If you do not allow these cookies we will not know 
+when you have visited our site, and will not be able to monitor its 
+performance.
+ Targeting Cookies
+ Targeting Cookies These
+ cookies may be set through our site by our advertising partners. They 
+may be used by those companies to build a profile of your interests and 
+show you relevant adverts on other sites. They do not store directly 
+personal information, but are based on uniquely identifying your browser
+ and internet device. If you do not allow these cookies, you will 
+experience less targeted advertising.
+ Social Media Cookies
+ Social Media Cookies These
+ cookies are set by a range of social media services that we have added 
+to the site to enable you to share our content with your friends and 
+networks. They are capable of tracking your browser across other sites 
+and building up a profile of your interests. This may impact the content
+ and messages you see on other websites you visit. If you do not allow 
+these cookies you may not be able to use or see these sharing tools.
+ Back Button Cookie List
+
+Search Icon Filter Icon Clear checkbox label label 
+ Apply Cancel Consent Leg.Interest checkbox label label checkbox label label checkbox label label Confirm My Choices Search this wiki Search all wikis

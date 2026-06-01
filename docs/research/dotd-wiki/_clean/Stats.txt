@@ -1,0 +1,3027 @@
+﻿mw-parser-output" lang="en" dir="ltr"> Here are the character and item stats as used in DotD.
+
+Contents
+
+1 LSI
+
+2 BSI
+
+3 Character Stats
+
+3.1 Attack (Att)
+
+3.2 Defense (Def)
+
+3.3 Perception (Per)
+
+3.4 Attack Value (AV)
+
+3.5 Legion damage formula (LD)
+
+4 The Bars
+
+4.1 Health (HP)
+
+4.1.1 PVP Health
+
+4.2 Energy (E/Ene)
+
+4.3 Stamina (S/Stam)
+
+4.4 Honor (H/Hon)
+
+5 PVP Stats
+
+5.1 Power
+
+5.2 Damage
+
+5.3 Deflect
+
+6 Stat Allocation Costs
+
+LSI [ ]
+
+Leveling Speed Index - amount of stat points you have 
+spent on energy and stamina. This is capped at 7 points per character 
+level. It can be boosted above 7 with items, useful for autoleveling . (LSI = (E + (S * 2)) / lvl)
+
+BSI [ ]
+
+Battle Strength Index - amount of stat points you have spent on attack and defense. (BSI = (Att + Def) / lvl)
+
+Character Stats [ ]
+
+Attack (Att) [ ]
+
+Your base damage. Each point increases raid damage by 4
+
+Defense (Def) [ ]
+
+Your base defense. Each point increases raid damage by 1.
+
+Perception (Per) [ ]
+
+Increases the value of Perception Rewards while doing quests . Also slightly increases the chance of finding Perception Rewards , however this is negligible after 10,000 perception. A higher value brings more valuable Perception Items.
+
+Perception slightly increases critical hit damage bonus.
+
+Up to total player Perception of 500,000, for every 5,000 total Player Perception, a player gains 1% critical damage bonus.
+
+Starting at total player Perception 500,001 and beyond, the formula 
+changes to 1% critical damage for every 10,000 total Player Perception.
+
+It has no influence on critical hit chance.
+
+Attack Value (AV) [ ]
+
+AV is raid 
+ power, which is Attack*4 + Defense. This number represents the actual 
+average damage that item would give you in a raid on a 1 stamina or 
+honor hit. Note that AV does not figure in additional damage given from 
+abilities.  NOTE: AV = attack + defence/4, whereas  Raid Power =  AV*4. Raid Power is the average damage per 1 stamina/honor hit.
+
+Example Elven Blade has Attack of 18 and Defense of 9.
+ AV= 18 + (9 / 4)= 20.25
+
+Average 1-stamina raid hit= 20.25 x 4= 81 damage
+
+Example   Elven Blade  has Attack of 18 and Defense of 9.
+Average 1-stamina raid hit= (ATKx 4) + DEF
+Average 1-stamina raid hit= (18 x 4) + 9= 81 damage  
+ Legion damage formula (LD) [ ]
+
+Legion damage for units is calculated as follows:
+
+Armaments:
+
+Relics = 4*Attack + .8*Defense
+
+Support = 3*Attack + .6*Defense
+
+Siege = 2*attack + .4*Defense (same as generals)
+
+Generals = 2*Attack + .4*Defense
+
+Troops = 1.44*Attack + .36*Defense
+
+Legion power = (100% + % bonus from boosts/generals/legion + % bonus vs raid type [if any])*(Generals + Troops)
+
+The Bars [ ]
+
+Health (HP) [ ]
+
+Health is needed to attack Raids, Quest Bosses, and Mini 
+Boss encounters. Every Hit you take lowers your Health Bar. If your 
+health bar reaches 0 the fight against Quest and Mini Bosses is lost. 
+When your health bar is 10 and below you have to refill it to attack a 
+Raid. The bar slowly fills up over time (+1 every 2 min); completely 
+fills after you level. The Costs (gold) for a refill is calculated: HP 
+to refill multiplied by your level multiplied by 2
+
+Example 
+ Your Health is 100 and you are level 10
+
+Refill Costs = 100 x 10 x 2 = 2000 gold
+
+PVP Health [ ]
+
+PVP Health is needed for PVP Attacks ( Duel , Invasion , The Colosseum , Joust ).
+ The amount of PVP Health you have is the same as your normal Health. 
+For each hit you take the bar is lowered. If your PVP Health is 10 or 
+below, you cannot attack. When your bar hits 0 your PVP death counter is
+ incremented, when your opponent bar hits 0 your PVP kill counter is 
+incremented. 
+The bar slowly fills up over time (+1 every 2 min); completely fills 
+after you level.
+
+Energy (E/Ene) [ ]
+
+Energy is used for quests .
+ The more energy you have, the more quests you can do per level. Slowly 
+fills up over time (speed depends on your chosen class); completely 
+fills after you level.
+
+Stamina (S/Stam) [ ]
+
+Stamina is used for Raids .
+ The more stamina you have, the more attacks you can cast an Raids. 
+Slowly fills up over time (speed depends on your chosen class); 
+completely fills after you level.
+
+Honor (H/Hon) [ ]
+
+Honor is used for Guild Raids or Joust Attacks .
+ The more honor you have, the more attacks you can cast an Raids and 
+Jousts. Slowly fills up over time (+1 every 2 min); completely fills 
+after you level. The basic amount of honor you have is the same as your 
+level
+
+PVP Stats [ ]
+
+Power [ ]
+
+Power is your PVP strength. At a pvp match the player with
+ the highest power wins. Each of the different PVP Types calculates your
+ PVP power in another way.
+
+Damage [ ]
+
+Damage is the amount of damage you do to another player, if he would have no defense and deflect.
+
+Deflect [ ]
+
+Deflect is a defensive stat. Deflect is an amount that reduces the damage you take. This amount is returned to the attacker.
+
+Stat Allocation Costs [ ]
+
+Stat
+ | 
+ Lvl <1500
+ | 
+ Lvl 1500
+ | 
+ Lvl 2000
+ | 
+ Lvl 2500
+ | 
+ Lvl 3000
+ | 
+ Lvl 3500
+ | 
+ Lvl 4000
+ | 
+ Lvl 4500
+ | 
+ Lvl 5000
+ | 
+ Lvl 5500
+ | 
+ Lvl 6000
+ | 
+ Lvl 6500
+ | 
+ Lvl 7000
+ |
+
+1
+ | 
+ 10000
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ |
+
+10001
+ | 
+ 11500
+ | 
+ 2
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ |
+
+11501
+ | 
+ 13000
+ | 
+ 3
+ | 
+ 2
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ |
+
+13001
+ | 
+ 14500
+ | 
+ 4
+ | 
+ 3
+ | 
+ 2
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ |
+
+14501
+ | 
+ 16000
+ | 
+ 5
+ | 
+ 4
+ | 
+ 3
+ | 
+ 2
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ |
+
+16001
+ | 
+ 17500
+ | 
+ 6
+ | 
+ 5
+ | 
+ 4
+ | 
+ 3
+ | 
+ 2
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ |
+
+17501
+ | 
+ 19000
+ | 
+ 7
+ | 
+ 6
+ | 
+ 5
+ | 
+ 4
+ | 
+ 3
+ | 
+ 2
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ |
+
+19001
+ | 
+ 20500
+ | 
+ 8
+ | 
+ 7
+ | 
+ 6
+ | 
+ 5
+ | 
+ 4
+ | 
+ 3
+ | 
+ 2
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ |
+
+20501
+ | 
+ 22000
+ | 
+ 9
+ | 
+ 8
+ | 
+ 7
+ | 
+ 6
+ | 
+ 5
+ | 
+ 4
+ | 
+ 3
+ | 
+ 2
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ |
+
+22001
+ | 
+ 23500
+ | 
+ 10
+ | 
+ 9
+ | 
+ 8
+ | 
+ 7
+ | 
+ 6
+ | 
+ 5
+ | 
+ 4
+ | 
+ 3
+ | 
+ 2
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ |
+
+23501
+ | 
+ 25000
+ | 
+ 11
+ | 
+ 10
+ | 
+ 9
+ | 
+ 8
+ | 
+ 7
+ | 
+ 6
+ | 
+ 5
+ | 
+ 4
+ | 
+ 3
+ | 
+ 2
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ |
+
+25001
+ | 
+ 26000
+ | 
+ 12
+ | 
+ 11
+ | 
+ 10
+ | 
+ 9
+ | 
+ 8
+ | 
+ 7
+ | 
+ 6
+ | 
+ 5
+ | 
+ 4
+ | 
+ 3
+ | 
+ 2
+ | 
+ 1
+ | 
+ 1
+ |
+
+26001
+ | 
+ 27000
+ | 
+ 13
+ | 
+ 12
+ | 
+ 11
+ | 
+ 10
+ | 
+ 9
+ | 
+ 8
+ | 
+ 7
+ | 
+ 6
+ | 
+ 5
+ | 
+ 4
+ | 
+ 3
+ | 
+ 2
+ | 
+ 1
+ |
+
+27001
+ | 
+ 28000
+ | 
+ 14
+ | 
+ 13
+ | 
+ 12
+ | 
+ 11
+ | 
+ 10
+ | 
+ 9
+ | 
+ 8
+ | 
+ 7
+ | 
+ 6
+ | 
+ 5
+ | 
+ 4
+ | 
+ 3
+ | 
+ 2
+ |
+
+28001
+ | 
+ 29000
+ | 
+ 15
+ | 
+ 14
+ | 
+ 13
+ | 
+ 12
+ | 
+ 11
+ | 
+ 10
+ | 
+ 9
+ | 
+ 8
+ | 
+ 7
+ | 
+ 6
+ | 
+ 5
+ | 
+ 4
+ | 
+ 3
+ |
+
+29001
+ | 
+ 30000
+ | 
+ 16
+ | 
+ 15
+ | 
+ 14
+ | 
+ 13
+ | 
+ 12
+ | 
+ 11
+ | 
+ 10
+ | 
+ 9
+ | 
+ 8
+ | 
+ 7
+ | 
+ 6
+ | 
+ 5
+ | 
+ 4
+ |
+
+30001
+ | 
+ 31000
+ | 
+ 17
+ | 
+ 16
+ | 
+ 15
+ | 
+ 14
+ | 
+ 13
+ | 
+ 12
+ | 
+ 11
+ | 
+ 10
+ | 
+ 9
+ | 
+ 8
+ | 
+ 7
+ | 
+ 6
+ | 
+ 5
+ |
+
+31001
+ | 
+ 32000
+ | 
+ 18
+ | 
+ 17
+ | 
+ 16
+ | 
+ 15
+ | 
+ 14
+ | 
+ 13
+ | 
+ 12
+ | 
+ 11
+ | 
+ 10
+ | 
+ 9
+ | 
+ 8
+ | 
+ 7
+ | 
+ 6
+ |
+
+32001
+ | 
+ 33000
+ | 
+ 19
+ | 
+ 18
+ | 
+ 17
+ | 
+ 16
+ | 
+ 15
+ | 
+ 14
+ | 
+ 13
+ | 
+ 12
+ | 
+ 11
+ | 
+ 10
+ | 
+ 9
+ | 
+ 8
+ | 
+ 7
+ |
+
+33001
+ | 
+ 34000
+ | 
+ 20
+ | 
+ 19
+ | 
+ 18
+ | 
+ 17
+ | 
+ 16
+ | 
+ 15
+ | 
+ 14
+ | 
+ 13
+ | 
+ 12
+ | 
+ 11
+ | 
+ 10
+ | 
+ 9
+ | 
+ 8
+ |
+
+34001
+ | 
+ 35000
+ | 
+ 21
+ | 
+ 20
+ | 
+ 19
+ | 
+ 18
+ | 
+ 17
+ | 
+ 16
+ | 
+ 15
+ | 
+ 14
+ | 
+ 13
+ | 
+ 12
+ | 
+ 11
+ | 
+ 10
+ | 
+ 9
+ |
+
+35001
+ | 
+ 36000
+ | 
+ 22
+ | 
+ 21
+ | 
+ 20
+ | 
+ 19
+ | 
+ 18
+ | 
+ 17
+ | 
+ 16
+ | 
+ 15
+ | 
+ 14
+ | 
+ 13
+ | 
+ 12
+ | 
+ 11
+ | 
+ 10
+ |
+
+36001
+ | 
+ 37000
+ | 
+ 23
+ | 
+ 22
+ | 
+ 21
+ | 
+ 20
+ | 
+ 19
+ | 
+ 18
+ | 
+ 17
+ | 
+ 16
+ | 
+ 15
+ | 
+ 14
+ | 
+ 13
+ | 
+ 12
+ | 
+ 11
+ |
+
+37001
+ | 
+ 38000
+ | 
+ 24
+ | 
+ 23
+ | 
+ 22
+ | 
+ 21
+ | 
+ 20
+ | 
+ 19
+ | 
+ 18
+ | 
+ 17
+ | 
+ 16
+ | 
+ 15
+ | 
+ 14
+ | 
+ 13
+ | 
+ 12
+ |
+
+38001
+ | 
+ 39000
+ | 
+ 25
+ | 
+ 24
+ | 
+ 23
+ | 
+ 22
+ | 
+ 21
+ | 
+ 20
+ | 
+ 19
+ | 
+ 18
+ | 
+ 17
+ | 
+ 16
+ | 
+ 15
+ | 
+ 14
+ | 
+ 13
+ |
+
+39001
+ | 
+ 40000
+ | 
+ 26
+ | 
+ 25
+ | 
+ 24
+ | 
+ 23
+ | 
+ 22
+ | 
+ 21
+ | 
+ 20
+ | 
+ 19
+ | 
+ 18
+ | 
+ 17
+ | 
+ 16
+ | 
+ 15
+ | 
+ 14
+ |
+
+40001
+ | 
+ 41000
+ | 
+ 27
+ | 
+ 26
+ | 
+ 25
+ | 
+ 24
+ | 
+ 23
+ | 
+ 22
+ | 
+ 21
+ | 
+ 20
+ | 
+ 19
+ | 
+ 18
+ | 
+ 17
+ | 
+ 16
+ | 
+ 15
+ |
+
+41001
+ | 
+ 42000
+ | 
+ 28
+ | 
+ 27
+ | 
+ 26
+ | 
+ 25
+ | 
+ 24
+ | 
+ 23
+ | 
+ 22
+ | 
+ 21
+ | 
+ 20
+ | 
+ 19
+ | 
+ 18
+ | 
+ 17
+ | 
+ 16
+ |
+
+42001
+ | 
+ 43000
+ | 
+ 29
+ | 
+ 28
+ | 
+ 27
+ | 
+ 26
+ | 
+ 25
+ | 
+ 24
+ | 
+ 23
+ | 
+ 22
+ | 
+ 21
+ | 
+ 20
+ | 
+ 19
+ | 
+ 18
+ | 
+ 17
+ |
+
+43001
+ | 
+ 44000
+ | 
+ 30
+ | 
+ 29
+ | 
+ 28
+ | 
+ 27
+ | 
+ 26
+ | 
+ 25
+ | 
+ 24
+ | 
+ 23
+ | 
+ 22
+ | 
+ 21
+ | 
+ 20
+ | 
+ 19
+ | 
+ 18
+ |
+
+44001
+ | 
+ 45000
+ | 
+ 31
+ | 
+ 30
+ | 
+ 29
+ | 
+ 28
+ | 
+ 27
+ | 
+ 26
+ | 
+ 25
+ | 
+ 24
+ | 
+ 23
+ | 
+ 22
+ | 
+ 21
+ | 
+ 20
+ | 
+ 19
+ |
+
+45001
+ | 
+ 46000
+ | 
+ 32
+ | 
+ 31
+ | 
+ 30
+ | 
+ 29
+ | 
+ 28
+ | 
+ 27
+ | 
+ 26
+ | 
+ 25
+ | 
+ 24
+ | 
+ 23
+ | 
+ 22
+ | 
+ 21
+ | 
+ 20
+ |
+
+46001
+ | 
+ 47000
+ | 
+ 33
+ | 
+ 32
+ | 
+ 31
+ | 
+ 30
+ | 
+ 29
+ | 
+ 28
+ | 
+ 27
+ | 
+ 26
+ | 
+ 25
+ | 
+ 24
+ | 
+ 23
+ | 
+ 22
+ | 
+ 21
+ |
+
+47001
+ | 
+ 48000
+ | 
+ 34
+ | 
+ 33
+ | 
+ 32
+ | 
+ 31
+ | 
+ 30
+ | 
+ 29
+ | 
+ 28
+ | 
+ 27
+ | 
+ 26
+ | 
+ 25
+ | 
+ 24
+ | 
+ 23
+ | 
+ 22
+ |
+
+48001
+ | 
+ 49000
+ | 
+ 35
+ | 
+ 34
+ | 
+ 33
+ | 
+ 32
+ | 
+ 31
+ | 
+ 30
+ | 
+ 29
+ | 
+ 28
+ | 
+ 27
+ | 
+ 26
+ | 
+ 25
+ | 
+ 24
+ | 
+ 23
+ |
+
+49001
+ | 
+ 50000
+ | 
+ 36
+ | 
+ 35
+ | 
+ 34
+ | 
+ 33
+ | 
+ 32
+ | 
+ 31
+ | 
+ 30
+ | 
+ 29
+ | 
+ 28
+ | 
+ 27
+ | 
+ 26
+ | 
+ 25
+ | 
+ 24
+ |
+
+50001
+ | 
+ 51000
+ | 
+ 37
+ | 
+ 36
+ | 
+ 35
+ | 
+ 34
+ | 
+ 33
+ | 
+ 32
+ | 
+ 31
+ | 
+ 30
+ | 
+ 29
+ | 
+ 28
+ | 
+ 27
+ | 
+ 26
+ | 
+ 25
+ |
+
+51001
+ | 
+ 52000
+ | 
+ 38
+ | 
+ 37
+ | 
+ 36
+ | 
+ 35
+ | 
+ 34
+ | 
+ 33
+ | 
+ 32
+ | 
+ 31
+ | 
+ 30
+ | 
+ 29
+ | 
+ 28
+ | 
+ 27
+ | 
+ 26
+ |
+
+52001
+ | 
+ 53000
+ | 
+ 39
+ | 
+ 38
+ | 
+ 37
+ | 
+ 36
+ | 
+ 35
+ | 
+ 34
+ | 
+ 33
+ | 
+ 32
+ | 
+ 31
+ | 
+ 30
+ | 
+ 29
+ | 
+ 28
+ | 
+ 27
+ |
+
+53001
+ | 
+ 54000
+ | 
+ 40
+ | 
+ 39
+ | 
+ 38
+ | 
+ 37
+ | 
+ 36
+ | 
+ 35
+ | 
+ 34
+ | 
+ 33
+ | 
+ 32
+ | 
+ 31
+ | 
+ 30
+ | 
+ 29
+ | 
+ 28
+ |
+
+54001
+ | 
+ 55000
+ | 
+ 41
+ | 
+ 40
+ | 
+ 39
+ | 
+ 38
+ | 
+ 37
+ | 
+ 36
+ | 
+ 35
+ | 
+ 34
+ | 
+ 33
+ | 
+ 32
+ | 
+ 31
+ | 
+ 30
+ | 
+ 29
+ |
+
+55001
+ | 
+ 56000
+ | 
+ 42
+ | 
+ 41
+ | 
+ 40
+ | 
+ 39
+ | 
+ 38
+ | 
+ 37
+ | 
+ 36
+ | 
+ 35
+ | 
+ 34
+ | 
+ 33
+ | 
+ 32
+ | 
+ 31
+ | 
+ 30
+ |
+
+56001
+ | 
+ 57000
+ | 
+ 43
+ | 
+ 42
+ | 
+ 41
+ | 
+ 40
+ | 
+ 39
+ | 
+ 38
+ | 
+ 37
+ | 
+ 36
+ | 
+ 35
+ | 
+ 34
+ | 
+ 33
+ | 
+ 32
+ | 
+ 31
+ |
+
+57001
+ | 
+ 58000
+ | 
+ 44
+ | 
+ 43
+ | 
+ 42
+ | 
+ 41
+ | 
+ 40
+ | 
+ 39
+ | 
+ 38
+ | 
+ 37
+ | 
+ 36
+ | 
+ 35
+ | 
+ 34
+ | 
+ 33
+ | 
+ 32
+ |
+
+58001
+ | 
+ 59000
+ | 
+ 45
+ | 
+ 44
+ | 
+ 43
+ | 
+ 42
+ | 
+ 41
+ | 
+ 40
+ | 
+ 39
+ | 
+ 38
+ | 
+ 37
+ | 
+ 36
+ | 
+ 35
+ | 
+ 34
+ | 
+ 33
+ |
+
+59001
+ | 
+ 60000
+ | 
+ 46
+ | 
+ 45
+ | 
+ 44
+ | 
+ 43
+ | 
+ 42
+ | 
+ 41
+ | 
+ 40
+ | 
+ 39
+ | 
+ 38
+ | 
+ 37
+ | 
+ 36
+ | 
+ 35
+ | 
+ 34
+ |
+
+60001
+ | 
+ 61000
+ | 
+ 47
+ | 
+ 46
+ | 
+ 45
+ | 
+ 44
+ | 
+ 43
+ | 
+ 42
+ | 
+ 41
+ | 
+ 40
+ | 
+ 39
+ | 
+ 38
+ | 
+ 37
+ | 
+ 36
+ | 
+ 35
+ |
+
+61001
+ | 
+ 62000
+ | 
+ 48
+ | 
+ 47
+ | 
+ 46
+ | 
+ 45
+ | 
+ 44
+ | 
+ 43
+ | 
+ 42
+ | 
+ 41
+ | 
+ 40
+ | 
+ 39
+ | 
+ 38
+ | 
+ 37
+ | 
+ 36
+ |
+
+62001
+ | 
+ 63000
+ | 
+ 49
+ | 
+ 48
+ | 
+ 47
+ | 
+ 46
+ | 
+ 45
+ | 
+ 44
+ | 
+ 43
+ | 
+ 42
+ | 
+ 41
+ | 
+ 40
+ | 
+ 39
+ | 
+ 38
+ | 
+ 37
+ |
+
+63001
+ | 
+ 64000
+ | 
+ 50
+ | 
+ 49
+ | 
+ 48
+ | 
+ 47
+ | 
+ 46
+ | 
+ 45
+ | 
+ 44
+ | 
+ 43
+ | 
+ 42
+ | 
+ 41
+ | 
+ 40
+ | 
+ 39
+ | 
+ 38
+ |
+
+64001
+ | 
+ 65000
+ | 
+ 51
+ | 
+ 50
+ | 
+ 49
+ | 
+ 48
+ | 
+ 47
+ | 
+ 46
+ | 
+ 45
+ | 
+ 44
+ | 
+ 43
+ | 
+ 42
+ | 
+ 41
+ | 
+ 40
+ | 
+ 39
+ |
+
+65001
+ | 
+ 66000
+ | 
+ 52
+ | 
+ 51
+ | 
+ 50
+ | 
+ 49
+ | 
+ 48
+ | 
+ 47
+ | 
+ 46
+ | 
+ 45
+ | 
+ 44
+ | 
+ 43
+ | 
+ 42
+ | 
+ 41
+ | 
+ 40
+ |
+
+66001
+ | 
+ 67000
+ | 
+ 53
+ | 
+ 52
+ | 
+ 51
+ | 
+ 50
+ | 
+ 49
+ | 
+ 48
+ | 
+ 47
+ | 
+ 46
+ | 
+ 45
+ | 
+ 44
+ | 
+ 43
+ | 
+ 42
+ | 
+ 41
+ |
+
+67001
+ | 
+ 68000
+ | 
+ 54
+ | 
+ 53
+ | 
+ 52
+ | 
+ 51
+ | 
+ 50
+ | 
+ 49
+ | 
+ 48
+ | 
+ 47
+ | 
+ 46
+ | 
+ 45
+ | 
+ 44
+ | 
+ 43
+ | 
+ 42
+ |
+
+68001
+ | 
+ 69000
+ | 
+ 55
+ | 
+ 54
+ | 
+ 53
+ | 
+ 52
+ | 
+ 51
+ | 
+ 50
+ | 
+ 49
+ | 
+ 48
+ | 
+ 47
+ | 
+ 46
+ | 
+ 45
+ | 
+ 44
+ | 
+ 43
+ |
+
+69001
+ | 
+ 70000
+ | 
+ 56
+ | 
+ 55
+ | 
+ 54
+ | 
+ 53
+ | 
+ 52
+ | 
+ 51
+ | 
+ 50
+ | 
+ 49
+ | 
+ 48
+ | 
+ 47
+ | 
+ 46
+ | 
+ 45
+ | 
+ 44
+ |
+
+70001
+ | 
+ 71000
+ | 
+ 57
+ | 
+ 56
+ | 
+ 55
+ | 
+ 54
+ | 
+ 53
+ | 
+ 52
+ | 
+ 51
+ | 
+ 50
+ | 
+ 49
+ | 
+ 48
+ | 
+ 47
+ | 
+ 46
+ | 
+ 45
+ |
+
+71001
+ | 
+ 72000
+ | 
+ 58
+ | 
+ 57
+ | 
+ 56
+ | 
+ 55
+ | 
+ 54
+ | 
+ 53
+ | 
+ 52
+ | 
+ 51
+ | 
+ 50
+ | 
+ 49
+ | 
+ 48
+ | 
+ 47
+ | 
+ 46
+ |
+
+72001
+ | 
+ 73000
+ | 
+ 59
+ | 
+ 58
+ | 
+ 57
+ | 
+ 56
+ | 
+ 55
+ | 
+ 54
+ | 
+ 53
+ | 
+ 52
+ | 
+ 51
+ | 
+ 50
+ | 
+ 49
+ | 
+ 48
+ | 
+ 47
+ |
+
+73001
+ | 
+ 74000
+ | 
+ 60
+ | 
+ 59
+ | 
+ 58
+ | 
+ 57
+ | 
+ 56
+ | 
+ 55
+ | 
+ 54
+ | 
+ 53
+ | 
+ 52
+ | 
+ 51
+ | 
+ 50
+ | 
+ 49
+ | 
+ 48
+ |
+
+74001
+ | 
+ 75000
+ | 
+ 61
+ | 
+ 60
+ | 
+ 59
+ | 
+ 58
+ | 
+ 57
+ | 
+ 56
+ | 
+ 55
+ | 
+ 54
+ | 
+ 53
+ | 
+ 52
+ | 
+ 51
+ | 
+ 50
+ | 
+ 49
+ |
+
+75001
+ | 
+ 76000
+ | 
+ 62
+ | 
+ 61
+ | 
+ 60
+ | 
+ 59
+ | 
+ 58
+ | 
+ 57
+ | 
+ 56
+ | 
+ 55
+ | 
+ 54
+ | 
+ 53
+ | 
+ 52
+ | 
+ 51
+ | 
+ 50
+ |
+
+76001
+ | 
+ 77000
+ | 
+ 63
+ | 
+ 62
+ | 
+ 61
+ | 
+ 60
+ | 
+ 59
+ | 
+ 58
+ | 
+ 57
+ | 
+ 56
+ | 
+ 55
+ | 
+ 54
+ | 
+ 53
+ | 
+ 52
+ | 
+ 51
+ |
+
+77001
+ | 
+ 78000
+ | 
+ 64
+ | 
+ 63
+ | 
+ 62
+ | 
+ 61
+ | 
+ 60
+ | 
+ 59
+ | 
+ 58
+ | 
+ 57
+ | 
+ 56
+ | 
+ 55
+ | 
+ 54
+ | 
+ 53
+ | 
+ 52
+ |
+
+78001
+ | 
+ 79000
+ | 
+ 65
+ | 
+ 64
+ | 
+ 63
+ | 
+ 62
+ | 
+ 61
+ | 
+ 60
+ | 
+ 59
+ | 
+ 58
+ | 
+ 57
+ | 
+ 56
+ | 
+ 55
+ | 
+ 54
+ | 
+ 53
+ |
+
+79001
+ | 
+ 80000
+ | 
+ 66
+ | 
+ 65
+ | 
+ 64
+ | 
+ 63
+ | 
+ 62
+ | 
+ 61
+ | 
+ 60
+ | 
+ 59
+ | 
+ 58
+ | 
+ 57
+ | 
+ 56
+ | 
+ 55
+ | 
+ 54
+ |
+
+80001
+ | 
+ 81000
+ | 
+ 67
+ | 
+ 66
+ | 
+ 65
+ | 
+ 64
+ | 
+ 63
+ | 
+ 62
+ | 
+ 61
+ | 
+ 60
+ | 
+ 59
+ | 
+ 58
+ | 
+ 57
+ | 
+ 56
+ | 
+ 55
+ |
+
+81001
+ | 
+ 82000
+ | 
+ 68
+ | 
+ 67
+ | 
+ 66
+ | 
+ 65
+ | 
+ 64
+ | 
+ 63
+ | 
+ 62
+ | 
+ 61
+ | 
+ 60
+ | 
+ 59
+ | 
+ 58
+ | 
+ 57
+ | 
+ 56
+ |
+
+82001
+ | 
+ 83000
+ | 
+ 69
+ | 
+ 68
+ | 
+ 67
+ | 
+ 66
+ | 
+ 65
+ | 
+ 64
+ | 
+ 63
+ | 
+ 62
+ | 
+ 61
+ | 
+ 60
+ | 
+ 59
+ | 
+ 58
+ | 
+ 57
+ |
+
+83001
+ | 
+ 84000
+ | 
+ 70
+ | 
+ 69
+ | 
+ 68
+ | 
+ 67
+ | 
+ 66
+ | 
+ 65
+ | 
+ 64
+ | 
+ 63
+ | 
+ 62
+ | 
+ 61
+ | 
+ 60
+ | 
+ 59
+ | 
+ 58
+ |
+
+84001
+ | 
+ 85000
+ | 
+ 71
+ | 
+ 70
+ | 
+ 69
+ | 
+ 68
+ | 
+ 67
+ | 
+ 66
+ | 
+ 65
+ | 
+ 64
+ | 
+ 63
+ | 
+ 62
+ | 
+ 61
+ | 
+ 60
+ | 
+ 59
+ |
+
+85001
+ | 
+ 86000
+ | 
+ 72
+ | 
+ 71
+ | 
+ 70
+ | 
+ 69
+ | 
+ 68
+ | 
+ 67
+ | 
+ 66
+ | 
+ 65
+ | 
+ 64
+ | 
+ 63
+ | 
+ 62
+ | 
+ 61
+ | 
+ 60
+ |
+
+86001
+ | 
+ 87000
+ | 
+ 73
+ | 
+ 72
+ | 
+ 71
+ | 
+ 70
+ | 
+ 69
+ | 
+ 68
+ | 
+ 67
+ | 
+ 66
+ | 
+ 65
+ | 
+ 64
+ | 
+ 63
+ | 
+ 62
+ | 
+ 61
+ |
+
+87001
+ | 
+ 88000
+ | 
+ 74
+ | 
+ 73
+ | 
+ 72
+ | 
+ 71
+ | 
+ 70
+ | 
+ 69
+ | 
+ 68
+ | 
+ 67
+ | 
+ 66
+ | 
+ 65
+ | 
+ 64
+ | 
+ 63
+ | 
+ 62
+ |
+
+88001
+ | 
+ 89000
+ | 
+ 75
+ | 
+ 74
+ | 
+ 73
+ | 
+ 72
+ | 
+ 71
+ | 
+ 70
+ | 
+ 69
+ | 
+ 68
+ | 
+ 67
+ | 
+ 66
+ | 
+ 65
+ | 
+ 64
+ | 
+ 63
+ |
+
+89001
+ | 
+ 90000
+ | 
+ 76
+ | 
+ 75
+ | 
+ 74
+ | 
+ 73
+ | 
+ 72
+ | 
+ 71
+ | 
+ 70
+ | 
+ 69
+ | 
+ 68
+ | 
+ 67
+ | 
+ 66
+ | 
+ 65
+ | 
+ 64
+ |
+
+90001
+ | 
+ 91000
+ | 
+ 77
+ | 
+ 76
+ | 
+ 75
+ | 
+ 74
+ | 
+ 73
+ | 
+ 72
+ | 
+ 71
+ | 
+ 70
+ | 
+ 69
+ | 
+ 68
+ | 
+ 67
+ | 
+ 66
+ | 
+ 65
+ |
+
+91001
+ | 
+ 92000
+ | 
+ 78
+ | 
+ 77
+ | 
+ 76
+ | 
+ 75
+ | 
+ 74
+ | 
+ 73
+ | 
+ 72
+ | 
+ 71
+ | 
+ 70
+ | 
+ 69
+ | 
+ 68
+ | 
+ 67
+ | 
+ 66
+ |
+
+92001
+ | 
+ 93000
+ | 
+ 79
+ | 
+ 78
+ | 
+ 77
+ | 
+ 76
+ | 
+ 75
+ | 
+ 74
+ | 
+ 73
+ | 
+ 72
+ | 
+ 71
+ | 
+ 70
+ | 
+ 69
+ | 
+ 68
+ | 
+ 67
+ |
+
+93001
+ | 
+ 94000
+ | 
+ 80
+ | 
+ 79
+ | 
+ 78
+ | 
+ 77
+ | 
+ 76
+ | 
+ 75
+ | 
+ 74
+ | 
+ 73
+ | 
+ 72
+ | 
+ 71
+ | 
+ 70
+ | 
+ 69
+ | 
+ 68
+ |
+
+94001
+ | 
+ 95000
+ | 
+ 81
+ | 
+ 80
+ | 
+ 79
+ | 
+ 78
+ | 
+ 77
+ | 
+ 76
+ | 
+ 75
+ | 
+ 74
+ | 
+ 73
+ | 
+ 72
+ | 
+ 71
+ | 
+ 70
+ | 
+ 69
+ |
+
+95001
+ | 
+ 96000
+ | 
+ 82
+ | 
+ 81
+ | 
+ 80
+ | 
+ 79
+ | 
+ 78
+ | 
+ 77
+ | 
+ 76
+ | 
+ 75
+ | 
+ 74
+ | 
+ 73
+ | 
+ 72
+ | 
+ 71
+ | 
+ 70
+ |
+
+96001
+ | 
+ 97000
+ | 
+ 83
+ | 
+ 82
+ | 
+ 81
+ | 
+ 80
+ | 
+ 79
+ | 
+ 78
+ | 
+ 77
+ | 
+ 76
+ | 
+ 75
+ | 
+ 74
+ | 
+ 73
+ | 
+ 72
+ | 
+ 71
+ |
+
+97001
+ | 
+ 98000
+ | 
+ 84
+ | 
+ 83
+ | 
+ 82
+ | 
+ 81
+ | 
+ 80
+ | 
+ 79
+ | 
+ 78
+ | 
+ 77
+ | 
+ 76
+ | 
+ 75
+ | 
+ 74
+ | 
+ 73
+ | 
+ 72
+ |
+
+98001
+ | 
+ 99000
+ | 
+ 85
+ | 
+ 84
+ | 
+ 83
+ | 
+ 82
+ | 
+ 81
+ | 
+ 80
+ | 
+ 79
+ | 
+ 78
+ | 
+ 77
+ | 
+ 76
+ | 
+ 75
+ | 
+ 74
+ | 
+ 73
+ |
+
+99001
+ | 
+ 100000
+ | 
+ 86
+ | 
+ 85
+ | 
+ 84
+ | 
+ 83
+ | 
+ 82
+ | 
+ 81
+ | 
+ 80
+ | 
+ 79
+ | 
+ 78
+ | 
+ 77
+ | 
+ 76
+ | 
+ 75
+ | 
+ 74
+ |
+
+|
+
+|
+
+Categories
+
+Categories :
+
+Guide
+
+Community content is available under CC-BY-SA unless otherwise noted.
+
+More Fandoms
+
+Fantasy
+
+8 Comments
+ Join the conversation
+ Sign in to read what others are saying and share your thoughts.
+ SIGN IN Don't have account? Register now
+
+Advertisement
+
+Advertisement
+
+Advertisement
+
+Advertisement
+
+Explore properties
+
+Fandom
+
+Fanatical
+
+GameSpot
+
+Metacritic
+
+TV Guide
+
+Honest Entertainment
+
+Follow Us
+
+Overview
+
+What is Fandom?
+
+Essentials
+
+About
+
+Careers
+
+Press
+
+Contact
+
+Terms of Use
+
+Privacy Policy
+
+Digital Services Act
+
+Global Sitemap
+
+Local Sitemap
+
+Do Not Sell My Personal Information
+
+Community
+
+Community Central
+
+Support
+
+Help
+
+Advertise
+
+Media Kit
+
+Contact
+
+Fandom Apps
+
+Take your favorite fandoms with you and never miss a beat.
+
+Dawn of the Dragons Wiki is a Fandom Games Community.
+
+View Mobile Site
+
+Do Not Sell My Personal Information
+ When
+ you visit our website, we store cookies on your browser to collect 
+information. The information collected might relate to you, your 
+preferences or your device, and is mostly used to make the site work as 
+you expect it to and to provide a more personalized web experience. 
+However, you can choose not to allow certain types of cookies, which may
+ impact your experience of the site and the services we are able to 
+offer. Click on the different category headings to find out more and 
+change our default settings according to your preference. You cannot 
+opt-out of our First Party Strictly Necessary Cookies as they are 
+deployed in order to ensure the proper functioning of our website (such 
+as prompting the cookie banner and remembering your settings, to log 
+into your account, to redirect you when you log out, etc.). For more 
+information about the First and Third Party Cookies used please follow 
+this link.
+
+Privacy Policy Allow All Manage Consent Preferences
+ Strictly Necessary Cookies
+ Always Active These
+ cookies are necessary for the website to function and cannot be 
+switched off in our systems. They are usually only set in response to 
+actions made by you which amount to a request for services, such as 
+setting your privacy preferences, logging in or filling in forms. You 
+can set your browser to block or alert you about these cookies, but some
+ parts of the site will not then work. These cookies do not store any 
+personally identifiable information.
+ Functional Cookies
+ Functional Cookies These
+ cookies enable the website to provide enhanced functionality and 
+personalisation. They may be set by us or by third party providers whose
+ services we have added to our pages. If you do not allow these cookies 
+then some or all of these services may not function properly.
+ Performance Cookies
+ Performance Cookies These
+ cookies allow us to count visits and traffic sources so we can measure 
+and improve the performance of our site. They help us to know which 
+pages are the most and least popular and see how visitors move around 
+the site. All information these cookies collect is aggregated and 
+therefore anonymous. If you do not allow these cookies we will not know 
+when you have visited our site, and will not be able to monitor its 
+performance.
+ Targeting Cookies
+ Targeting Cookies These
+ cookies may be set through our site by our advertising partners. They 
+may be used by those companies to build a profile of your interests and 
+show you relevant adverts on other sites. They do not store directly 
+personal information, but are based on uniquely identifying your browser
+ and internet device. If you do not allow these cookies, you will 
+experience less targeted advertising.
+ Social Media Cookies
+ Social Media Cookies These
+ cookies are set by a range of social media services that we have added 
+to the site to enable you to share our content with your friends and 
+networks. They are capable of tracking your browser across other sites 
+and building up a profile of your interests. This may impact the content
+ and messages you see on other websites you visit. If you do not allow 
+these cookies you may not be able to use or see these sharing tools.
+ Back Button Cookie List
+
+Search Icon Filter Icon Clear checkbox label label 
+ Apply Cancel Consent Leg.Interest checkbox label label checkbox label label checkbox label label Confirm My Choices Search this wiki Search all wikis

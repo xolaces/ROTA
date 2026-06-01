@@ -1,0 +1,162 @@
+[
+  {
+    "id": "gen_ironward",
+    "name": "Ironward the Steadfast",
+    "description": "A stalwart Human Tank general whose shield stance can deflect devastating strikes.",
+    "unitType": "General",
+    "rarity": "Green",
+    "baseAttack": 80,
+    "baseDefense": 60,
+    "race": "Human",
+    "role": "Tank",
+    "attribute": "Strength",
+    "ability": {
+      "procChance": 0.08,
+      "procAmount": 0.40,
+      "conditions": []
+    },
+    "isPassive": false,
+    "legionBonus": 5,
+    "iconPath": "",
+    "acquisition": "Quest drop"
+  },
+  {
+    "id": "gen_ashblade",
+    "name": "Ashblade",
+    "description": "A swift Human Melee general who strikes with burning precision.",
+    "unitType": "General",
+    "rarity": "Blue",
+    "baseAttack": 140,
+    "baseDefense": 50,
+    "race": "Human",
+    "role": "Melee",
+    "attribute": "Agility",
+    "ability": {
+      "procChance": 0.10,
+      "procAmount": 0.60,
+      "conditions": []
+    },
+    "isPassive": false,
+    "legionBonus": 10,
+    "iconPath": "",
+    "acquisition": "Raid drop"
+  },
+  {
+    "id": "gen_sylvaire",
+    "name": "Sylvaire",
+    "description": "An Elf Ranged general whose arrows seek vital points with unerring accuracy.",
+    "unitType": "General",
+    "rarity": "Blue",
+    "baseAttack": 120,
+    "baseDefense": 70,
+    "race": "Elf",
+    "role": "Ranged",
+    "attribute": "Intellect",
+    "ability": {
+      "procChance": 0.06,
+      "procAmount": 0.90,
+      "conditions": []
+    },
+    "isPassive": false,
+    "legionBonus": 10,
+    "iconPath": "",
+    "acquisition": "Gem shop"
+  },
+  {
+    "id": "gen_morvath",
+    "name": "Morvath the Unliving",
+    "description": "An Undead Special general whose cursed wisdom amplifies every strike of his legion.",
+    "unitType": "General",
+    "rarity": "Purple",
+    "baseAttack": 200,
+    "baseDefense": 90,
+    "race": "Undead",
+    "role": "Special",
+    "attribute": "Wisdom",
+    "ability": {
+      "procChance": 0.05,
+      "procAmount": 1.20,
+      "conditions": []
+    },
+    "isPassive": false,
+    "legionBonus": 20,
+    "iconPath": "",
+    "acquisition": "Raid drop"
+  },
+  {
+    "id": "troop_militia",
+    "name": "Conscript Militia",
+    "description": "Untrained Human foot soldiers — numerous but unremarkable.",
+    "unitType": "Troop",
+    "rarity": "White",
+    "baseAttack": 30,
+    "baseDefense": 20,
+    "race": "Human",
+    "role": "Melee",
+    "attribute": "Strength",
+    "ability": null,
+    "isPassive": false,
+    "legionBonus": 0,
+    "iconPath": "",
+    "acquisition": "Starting roster"
+  },
+  {
+    "id": "troop_archers",
+    "name": "Wood Archers",
+    "description": "Elf Ranged troops who pepper enemies from a distance.",
+    "unitType": "Troop",
+    "rarity": "Green",
+    "baseAttack": 45,
+    "baseDefense": 25,
+    "race": "Elf",
+    "role": "Ranged",
+    "attribute": "Agility",
+    "ability": {
+      "procChance": 0.06,
+      "procAmount": 0.15,
+      "conditions": []
+    },
+    "isPassive": false,
+    "legionBonus": 0,
+    "iconPath": "",
+    "acquisition": "Quest drop"
+  },
+  {
+    "id": "troop_pikemen",
+    "name": "Iron Pikemen",
+    "description": "Stalwart Human Tank troops who hold the line against any charge.",
+    "unitType": "Troop",
+    "rarity": "Green",
+    "baseAttack": 40,
+    "baseDefense": 40,
+    "race": "Human",
+    "role": "Tank",
+    "attribute": "Strength",
+    "ability": null,
+    "isPassive": false,
+    "legionBonus": 0,
+    "iconPath": "",
+    "acquisition": "Quest drop"
+  },
+  {
+    "id": "troop_acolytes",
+    "name": "Shadow Acolytes",
+    "description": "Undead Special troops channeling dark wisdom into devastating blasts.",
+    "unitType": "Troop",
+    "rarity": "Blue",
+    "baseAttack": 60,
+    "baseDefense": 35,
+    "race": "Undead",
+    "role": "Special",
+    "attribute": "Wisdom",
+    "ability": {
+      "procChance": 0.05,
+      "procAmount": 0.30,
+      "conditions": []
+    },
+    "isPassive": false,
+    "legionBonus": 0,
+    "iconPath": "",
+    "acquisition": "Raid drop"
+  }
+]

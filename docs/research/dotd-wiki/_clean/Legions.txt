@@ -1,0 +1,7757 @@
+﻿mw-parser-output" lang="en" dir="ltr"> Contents
+
+1 Info
+
+2 Available Spaces
+
+3 Legion Types
+
+4 Filling Your Legion
+
+4.1 Choosing the Best Setup
+
+5 Legion damage formula
+
+6 List of Legions
+
+Info [ ]
+
+Legions are an important part of Dawn of the Dragons, and having a 
+good Legion setup will greatly increase your effectiveness in Raids -- 
+allowing you to do far more damage than you would otherwise be able to.
+
+You'll obtain many Legions during your adventures -- either by 
+purchasing them, looting them from Raids or Quests, creating them on the
+ Craft page, or through other means.
+
+The Legions you currently own are displayed in the lower 
+left-hand portion of the page. That list may be sorted according to your
+ requirements via the pull-down menu below it.
+
+Placing your cursor over any of the Legions in the list will 
+cause its details to appear on a tool-tip, and clicking on one of them 
+will equip the Legion (making it your 'active Legion'). When a Legion is
+ equipped, it appears at the top of the page.
+
+Each Legion is defined by the following elements:
+
+1) How many Generals can be placed in it.
+2) What type(s) of Generals can be placed in it.
+3) How many Troops can be placed in it.
+4) What type(s) of Troops can be placed in it.
+5) What Power Bonus it provides, if any.
+
+Available Spaces [ ]
+
+When a Legion is first selected, and appears at the top of the page, 
+it will contain a number of empty boxes. Some will usually be in the 
+section marked ' Generals 
+ ', and others in the section marked 'Troops' (though there are Legions 
+which only contain Generals, or only contain Troops -- and offer no 
+spaces for the other category).
+
+These boxes define how many Generals and Troops that Legion may 
+hold when at full strength. You don't need to fill all of a Legion's 
+boxes to make use of it, but you should do so if you wish to maximize 
+your power.
+
+Legion Types [ ]
+
+Depending on the Legion's details, some of those boxes might be 
+completely blank -- indicating that any Generals or Troops may be placed
+ within them. But there will often be small icons in their corners. 
+These define the types of Generals and Troops which may be inserted into
+ those places.
+
+There are three sets of icons:
+
+Races (yellow)
+
+Roles (blue)
+
+Attributes (red)
+
+Race defines whether a General or Troop is human, undead, an oroc, a 
+dwarf, or belongs to one of the other races present in the world of 
+Tor'gyyl.
+
+Role defines what the General or Troop does in storyline terms. 
+For example, a Tank primarily defends his or her allies. A Melee 
+character harms his or her enemies in close-quarter combat. A Ranged 
+character attacks his or her enemies from a distance. A Healer character
+ uses his or her abilities to aid injured comrades. A Special character 
+does something out of the ordinary.
+
+Attribute defines the General or Troop's primary source of power.
+ A Strength character relies on physical might. An Agility character 
+uses stealth or quickness. An Intellect character has developed powers 
+or abilities through intelligence or scholarly learning. A Wisdom 
+character obtains power through prayer, meditation, or by harnessing 
+nature. A Special character uses some special property instead, perhaps 
+an unusual trait they were born with.
+
+In each case, if a Race, Role, or Attribute icon appears on a 
+space within a Legion, only Generals or Troops bearing the corresponding
+ icon may be placed within them. Though there are a few exceptions. For 
+example, half-elves count as both humans and elves for this purpose. And
+ some characters might have their Role or Attribute listed as 'Any' -- 
+meaning that they have access to all the icons in that category.
+
+Filling Your Legion [ ]
+
+Below your selected Legion, to the right of the Legion list, all the 
+Generals or Troops you've obtained are displayed (clicking on the 
+appropriate tab will determine which of the two categories is shown at 
+any given time). As with Legions, Generals and Troops can be gained from
+ Quests, Raids, the Craft page, the Bazaar, and various other places.
+
+If you only wish to view Generals or Troops which possess a 
+specific Race, Role, or Attribute, you may make that selection via the 
+pull-down menus above the Generals / Troops box. You may also arrange 
+them according to other criteria via the pull-down menu below the box 
+(e.g. you may select 'Newest' -- so your most recently obtained Generals
+ or Troops will appear at the top of the list).
+
+For your convenience, Generals or Troops who cannot be placed in 
+the current Legion (because they do not meet the Race, Role, or 
+Attribute requirement for any of the spaces) appear slightly transparent
+ -- whereas ones which could be put in the Legion remain solid.
+
+To place a General or Troop in a Legion, you may either 
+double-click their icon or else drag and drop it into the Legion 
+manually.
+
+Once you've filled your Legion, or at least filled as many slots 
+as you're able to -- or wish to -- you can click the Save button to 
+ensure that your setup is preserved.
+
+Choosing the Best Setup [ ]
+
+Once you have a number of Generals and Troops, you'll find that you 
+usually have many choices over which of them to place in each slot 
+within a Legion.
+
+If you wish to maximize your power, certain factors should be considered.
+
+Each General and Troop has an Attack and Defense rating, which 
+will contribute to the Legion's overall power. For example, when you 
+place a General with very high Attack and Defense into a Legion, you'll 
+see that the Power number displayed above that Legion will increase far 
+more than when you insert a General with low Attack and Defense numbers.
+
+However, there are other elements to be aware of.
+
+All Generals, and some Troops, have special abilities listed on 
+their tool-tips (they're displayed as orange text). For example, many 
+have a chance to do additional damage in a Raid. Alternatively, some may
+ increase one of your own statistics (e.g. by providing a bonus to your 
+maximum Stamina) or possess some other ability.
+
+Unless these abilities are marked 'Passive', a General must be 
+placed in your active Legion for you to benefit from them. Hence when 
+setting up your Legion you may wish to consider which of these abilities
+ would most benefit you.
+
+As you learn more about the game and its mechanics, selecting the
+ right Generals and Troops for a Legion (or the best Legion to make use 
+of the Generals and Troops you possess) should become second nature to 
+you. But if you want a little help, you may click the Auto Assign button
+ above the General / Troop window. Clicking this button and confirming 
+your choice will cause the game to fill your active Legion for you -- 
+selecting the Generals and Troops which will yield the highest Power 
+number. If a Legion is already partially filled, using this button will 
+only fill the empty slots -- rather than removing your existing 
+selections.
+
+One final aspect to consider when designing your optimum Legion 
+setup is the Power Bonus a Legion might possess. If a Legion has a Power
+ Bonus, this will enhance the Power of the Generals and Troops placed 
+within it. So, it may be a determining factor when comparing two Legions
+ and trying to decide which would be most effective for your current 
+range of Generals and Troops.
+
+Legion damage formula [ ]
+
+Legion damage for units is calculated as follows:
+
+Generals = 2*Attack + .4*Defense
+
+Troops = 1.44*Attack + .36*Defense
+
+Armaments:
+
+Relic = 4*Attack + .8*Defense
+
+Siege = 2*Attack + .4*Defense
+
+Support = 3*Attack + .6*Defense
+
+Legion power = (100% + % bonus from boosts/generals/legion + % bonus vs raid type [if any])*(Generals + Troops)
+
+List of Legions [ ]
+
+This content is for the web version of Dawn of the Dragons â†’ Go to the mobile version of this page
+
+You can sort this table by any column by clicking on the triangle icons beside the column heading.
+
+Click twice to sort by last to first, especially useful for the Size
+ and Power Bonus columns so that they are sorted from most to least 
+powerful.
+
+See stats for more information.
+
+There are currently 490 legions in the web version of DotD.
+
+Size
+ | 
+ Name
+ | 
+ Generals
+ | 
+ Troops
+ | 
+ Armaments
+ | 
+ PB
+ | 
+ Obtained
+ |
+
+4
+ | 
+ Fellowship 
+ | 
+ 4 Generals: 1 Tank, 1 Melee, 1 Ranged, 1 Healer
+ | 
+ 0 Troops
+ |
+
+| 
+ 300% 
+ | 
+ Crafting/General/General 
+ |
+
+15
+ | 
+ Crusade 
+ | 
+ 2 Generals: Wisdom
+ | 
+ 13 Troops: Wisdom
+ |
+
+|
+
+| 
+ First 2 sets of Guild Raids 
+ |
+
+3
+ | 
+ March 
+ | 
+ 1 Generals: Any
+ | 
+ 2 Troops: Any
+ |
+
+|
+
+| 
+ Beginning legion
+ |
+
+12
+ | 
+ Double Strike 
+ | 
+ 2 Generals: 1 Melee, 1 Ranged
+ | 
+ 10 Troops: 5 Melee, 5 Ranged
+ |
+
+| 
+ 10 
+ | 
+ Crafting (General) - Hilted Spears
+ |
+
+10
+ | 
+ Holy Blast 
+ | 
+ 2 Generals: Healer
+ | 
+ 8 Troops: Healer
+ |
+
+| 
+ 60 
+ | 
+ Quest Boss - Ataxes , Lurking Horror and Bloody Alice 
+ |
+
+7
+ | 
+ March II 
+ | 
+ 2 Generals: Any
+ | 
+ 5 Troops: Any
+ |
+
+|
+
+| 
+ Bazaar - Faedark Valley 
+ |
+
+11
+ | 
+ March III 
+ | 
+ 2 Generals: Any
+ | 
+ 9 Troops: Any
+ |
+
+|
+
+| 
+ Quest Boss - Scylla , Gravlok the Night-Hunter and Erebus the Black 
+ |
+
+11
+ | 
+ Shield Wall 
+ | 
+ 2 Generals: Tank
+ | 
+ 9 Troops: Tank
+ |
+
+|
+
+| 
+ Bazaar - Burden's Rest : Town Square 
+ |
+
+8
+ | 
+ Four Virtues 
+ | 
+ 4 Generals: 1 Strength, 1 Agility, 1 Intellect, 1 Wisdom
+ | 
+ 4 Troops: 1 Strength, 1 Agility, 1 Intellect, 1 Wisdom
+ |
+
+| 
+ 25 
+ | 
+ Legendary + Bloodmane (Raid) , Kerberos (Raid) , and Hydra (Raid) 
+ |
+
+15
+ | 
+ Hammer and Anvil 
+ | 
+ 3 Generals: 1 Tank, 1 Melee, 1 Ranged
+ | 
+ 12 Troops: 4 Tank, 4 Melee, 4 Ranged
+ |
+
+|
+
+| 
+ Nightmare Lord Tyranthius (Raid) 
+ |
+
+9
+ | 
+ Phalanx 
+ | 
+ 3 Generals: Human
+ | 
+ 6 Troops: Human
+ |
+
+|
+
+| 
+ Bazaar - Fallows 
+ |
+
+19
+ | 
+ Rapid Assault 
+ | 
+ 3 Generals: Agility
+ | 
+ 16 Troops: Agility
+ |
+
+| 
+ 130 
+ | 
+ Retired Expeditions 
+ |
+
+20
+ | 
+ Riot 
+ | 
+ 0 Generals:
+ | 
+ 20 Troops: Any
+ |
+
+|
+
+| 
+ Nightmare Tainted Erebus (Raid) 
+ |
+
+13
+ | 
+ Shield Wall II 
+ | 
+ 3 Generals: Tank
+ | 
+ 10 Troops: Tank
+ |
+
+| 
+ 200 
+ | 
+ Retired Expeditions 
+ |
+
+10
+ | 
+ Snipe 
+ | 
+ 2 Generals: Ranged
+ | 
+ 8 Troops: Ranged
+ |
+
+| 
+ 340 
+ | 
+ Limited Time Item 
+ |
+
+7
+ | 
+ Strike 
+ | 
+ 1 Generals: Melee
+ | 
+ 6 Troops: Melee
+ |
+
+| 
+ 10 
+ | 
+ Quest Boss - Chieftain Horgrak , Mazalu , and General Grune 
+ |
+
+11
+ | 
+ Strike II 
+ | 
+ 2 Generals: Melee
+ | 
+ 9 Troops: Melee
+ |
+
+| 
+ 10 
+ | 
+ Bazaar - Ryndor 
+ |
+
+12
+ | 
+ Gladiators 
+ | 
+ 3 Generals: 1 Human, 1 Elf, 1 Goblin
+ | 
+ 9 Troops: 3 Human, 3 Elf, 3 Goblin
+ |
+
+| 
+ 30%, +470% vs Colosseum Beasts 
+ | 
+ Colosseum Reward (Rank 19)
+ |
+
+14
+ | 
+ Life and Death 
+ | 
+ 4 Generals: 2 Healer, 2 Undead
+ | 
+ 10 Troops: 5 Healer, 5 Undead
+ |
+
+| 
+ 140 
+ | 
+ Limited Time Item 
+ |
+
+18
+ | 
+ Arrow Fodder 
+ | 
+ 2 Generals: Any
+ | 
+ 16 Troops: Any
+ |
+
+| 
+ 165 
+ | 
+ Retired Expeditions 
+ |
+
+16
+ | 
+ Four Virtues II 
+ | 
+ 4 Generals: 1 Strength, 1 Agility, 1 Intellect, 1 Wisdom
+ | 
+ 12 Troops: 3 Strength, 3 Agility, 3 Intellect, 3 Wisdom
+ |
+
+| 
+ 115 
+ | 
+ Retired Expeditions 
+ |
+
+14
+ | 
+ Blood and Crystal 
+ | 
+ 4 Generals: 2 Human, 2 Oroc
+ | 
+ 10 Troops: 5 Human, 5 Oroc
+ |
+
+| 
+ 10 
+ | 
+ Crafting (General) - Human-Oroc Treaty
+ |
+
+16
+ | 
+ Monster Hunters 
+ | 
+ 4 Generals: Strength, Agility, Tank, Ranged
+ | 
+ 12 Troops: 3 Strength, 3 Agility, 3 Tank, 3 Ranged
+ |
+
+| 
+ 500 vs Colossal Raids 
+ | 
+ Limited Time Item 
+ |
+
+12
+ | 
+ Boar's Snout 
+ | 
+ 2 Generals: 1 Tank, 1 Ranged
+ | 
+ 10 Troops: 5 Tank, 5 Ranged
+ |
+
+|
+
+| 
+ Bazaar - Bludheim 
+ |
+
+14
+ | 
+ Cerebral Assault 
+ | 
+ 4 Generals: Intellect
+ | 
+ 10 Troops: Intellect
+ |
+
+| 
+ 30% 
+ | 
+ Hard + Tithriasia , Black Moon Pack , Varlachleth and Euphronios guild raids
+ |
+
+10
+ | 
+ Danse Macabre 
+ | 
+ 3 Generals: Undead
+ | 
+ 7 Troops: Undead
+ |
+
+|
+
+| 
+ Bazaar - Vornstaag 
+ |
+
+14
+ | 
+ Double Strike II 
+ | 
+ 4 Generals: 2 Melee, 2 Ranged
+ | 
+ 10 Troops: 5 Melee, 5 Ranged
+ |
+
+|
+
+| 
+ All Legendary + Vornstaag raids
+ |
+
+10
+ | 
+ Omnifarious 
+ | 
+ 5 Generals: 1 Strength, 1 Agility, 1 Intellect, 1 Wisdom, 1 Special (Attribute)
+ | 
+ 5 Troops: 1 Strength, 1 Agility, 1 Intellect, 1 Wisdom, 1 Special (Attribute)
+ |
+
+| 
+ 160 
+ | 
+ Limited Time Item 
+ |
+
+12
+ | 
+ Oroc Warband 
+ | 
+ 2 Generals: 2 Oroc
+ | 
+ 10 Troops: 10 Oroc
+ |
+
+| 
+ 25 
+ | 
+ Bazaar - Subterranean Depths 
+ |
+
+21
+ | 
+ Strike III 
+ | 
+ 3 Generals: Melee
+ | 
+ 18 Troops: Melee
+ |
+
+| 
+ 115 
+ | 
+ Retired Expeditions 
+ |
+
+20
+ | 
+ Support 
+ | 
+ 4 Generals: 2 Ranged, 2 Healer
+ | 
+ 16 Troops: 8 Ranged, 8 Healer
+ |
+
+| 
+ 100 
+ | 
+ Retired Expeditions 
+ |
+
+15
+ | 
+ Underground Alliance 
+ | 
+ 3 Generals: 1 Dwarf, 1 Goblin, 1 Oroc
+ | 
+ 12 Troops: 4 Dwarf, 4 Goblin, 4 Oroc
+ |
+
+| 
+ 15 
+ | 
+ All Hard + Subterranean Depths raids
+ |
+
+18
+ | 
+ Unstoppable 
+ | 
+ 4 Generals: 2 Melee, 2 Healer
+ | 
+ 14 Troops: 7 Melee,7 Healer
+ |
+
+|
+
+| 
+ All Legendary + Bludheim raids
+ |
+
+16
+ | 
+ Clockwork 
+ | 
+ 4 Generals: Tank, Melee, Ranged, Healer
+ | 
+ 12 Troops: 3 Tank, 3 Melee, 3 Ranged, 3 Healer
+ |
+
+|
+
+| 
+ Crafting - 600x Perfected Clockwork Part 
+ |
+
+19
+ | 
+ Henchmen 
+ | 
+ 3 Generals: Intellect
+ | 
+ 16 Troops: Strength
+ |
+
+| 
+ 200% 
+ | 
+ Achievements/Rewards 
+ |
+
+22
+ | 
+ Life and Death II 
+ | 
+ 6 Generals: 3 Healer, 3 Undead
+ | 
+ 16 Troops: 8 Healer, 8 Undead
+ |
+
+| 
+ 140 
+ | 
+ Retired Expeditions 
+ |
+
+24
+ | 
+ Serpent Strike 
+ | 
+ 4 Generals: 2 Melee, 2 Agility
+ | 
+ 20 Troops: 10 Melee, 10 Agility
+ |
+
+| 
+ 70 
+ | 
+ Retired Expeditions 
+ |
+
+24
+ | 
+ Tranquility 
+ | 
+ 4 Generals: 2 Healer, 2 Wisdom
+ | 
+ 20 Troops: 10 Healer, 10 Wisdom
+ |
+
+| 
+ 75 
+ | 
+ Limited Time Item 
+ |
+
+20
+ | 
+ Clockwork II 
+ | 
+ 5 Generals: Tank, Melee, Ranged, Healer, Special(Role)
+ | 
+ 15 Troops: 3 Tank, 3 Melee, 3 Ranged, 3 Healer, 3 Special(Role)
+ |
+
+| 
+ 15 
+ | 
+ Crafting - 1000x Perfected Clockwork Part 
+ |
+
+23
+ | 
+ Demagoguery 
+ | 
+ 3 Generals: Intellect
+ | 
+ 20 Troops: Any
+ |
+
+|
+
+| 
+ Lunatics (Guild Raid) 
+ |
+
+9
+ | 
+ Krypteia 
+ | 
+ 3 Generals: Melee
+ | 
+ 6 Troops: Melee
+ |
+
+| 
+ 10 
+ | 
+ Bazaar - Bludheim 
+ |
+
+24
+ | 
+ Crimson Surprise 
+ | 
+ 4 Generals: 3 Tank, 1 Special (Role)
+ | 
+ 20 Troops: 15 Tank, 5 Special (Role)
+ |
+
+| 
+ 95 
+ | 
+ Retired Expeditions 
+ |
+
+25
+ | 
+ Snipe II 
+ | 
+ 5 Generals: 5 Ranged
+ | 
+ 20 Troops: 20 Ranged
+ |
+
+| 
+ 105 
+ | 
+ Retired Expeditions 
+ |
+
+23
+ | 
+ Avenging Shadows 
+ | 
+ 3 Generals: 2 Melee, 1 Special(Attribute)
+ | 
+ 20 Troops: 10 Melee, 10 Special(Attribute)
+ |
+
+| 
+ 100 
+ | 
+ Limited Time Item 7/1/11 until 7/22/11 
+ |
+
+21
+ | 
+ Pandemonium 
+ | 
+ 5 Generals: Human
+ | 
+ 16 Troops: Any
+ |
+
+| 
+ 105 
+ | 
+ Limited Time Item 
+ |
+
+23
+ | 
+ Mind and Spirit 
+ | 
+ 5 Generals: 2 Wisdom, 2 Intellect, 1 Special (Attribute)
+ | 
+ 18 Troops: 8 Wisdom, 8 Intellect, 2 Special (Attribute)
+ |
+
+| 
+ 90 
+ | 
+ Raid Bag 
+ |
+
+36
+ | 
+ Warlord's Delight 
+ | 
+ 6 Generals: 2 Melee, 2 Ranged, 2 Tank
+ | 
+ 30 Troops: 10 Melee, 10 Ranged, 10 Tank
+ |
+
+| 
+ 50 
+ | 
+ Retired Expeditions , Raid Bag 
+ |
+
+24
+ | 
+ Serpent Strike II 
+ | 
+ 8 Generals: 4 Melee, 4 Agility
+ | 
+ 16 Troops: 8 Melee, 8 Agility
+ |
+
+| 
+ 70 
+ | 
+ Raid Bag 
+ |
+
+24
+ | 
+ Guards! Guards! 
+ | 
+ 4 Generals: 2 Melee, 2 Tank
+ | 
+ 20 Troops: 10 Melee, 10 Tank
+ |
+
+|
+
+| 
+ Together in Eclectic Dreams raids
+ |
+
+26
+ | 
+ Cerebral Assault II 
+ | 
+ 6 Generals: Intellect
+ | 
+ 20 Troops: Intellect
+ |
+
+|
+
+| 
+ Bazaar - Together in Eclectic Dreams 
+ |
+
+22
+ | 
+ Strength and Speed 
+ | 
+ 6 Generals: 3 Strength, 3 Agility
+ | 
+ 16 Troops: 8 Strength, 8 Agility
+ |
+
+| 
+ 75 
+ | 
+ Raid Bag 
+ |
+
+24
+ | 
+ Unstoppable II 
+ | 
+ 6 Generals: 3 Melee, 3 Healer
+ | 
+ 18 Troops: 9 Melee, 9 Healer
+ |
+
+| 
+ 80 
+ | 
+ Limited Time Item 
+ |
+
+16
+ | 
+ Four Virtues III 
+ | 
+ 8 Generals: 2 Strength, 2 Agility, 2 Intellect, 2 Wisdom
+ | 
+ 8 Troops: 2 Strength, 2 Agility, 2 Intellect, 2 Wisdom
+ |
+
+| 
+ 75 
+ | 
+ Retired Expeditions 
+ |
+
+12
+ | 
+ Life and Death III 
+ | 
+ 6 Generals: 3 Healer, 3 Undead
+ | 
+ 18 Troops: 9 Healer, 9 Undead
+ |
+
+| 
+ 75 
+ | 
+ Retired Expeditions 
+ |
+
+36
+ | 
+ Vornstaag Patrol 
+ | 
+ 6 Generals: 3 Human, 3 Undead
+ | 
+ 30 Troops: Undead
+ |
+
+| 
+ 200 vs Vornstaag bosses 
+ | 
+ Skull Bag Halloween 2011
+ |
+
+22
+ | 
+ Castle Crashers 
+ | 
+ 2 Generals: 1 Human/Strength/Tank, 1 Goblin/Intellect/Melee
+ | 
+ 20 Troops: Any
+ |
+
+| 
+ 500 vs Kessov Castle Raid 
+ | 
+ Crafting (Events) - Kessov Banner 
+ |
+
+36
+ | 
+ Indigo Army 
+ | 
+ 6 Generals: 3 Human, 3 Felpuur
+ | 
+ 30 Troops: 15 Human, 15 Felpuur
+ |
+
+| 
+ 20% + 180 vs Dragons 
+ | 
+ Limited Time Item , Retired Expeditions 
+ |
+
+24
+ | 
+ Boar's Snout II 
+ | 
+ 4 Generals: 2 Tank, 2 Ranged
+ | 
+ 20 Troops: 10 Tank, 10 Ranged
+ |
+
+|
+
+| 
+ Mesyra the Watcher (Raid) , Nimrod the Hunter (Raid) , Phaedra the Deceiver (Raid) , Tenebra the Shadow-Mistress (Raid) , Valanazes the Gold (Raid) 
+ |
+
+35
+ | 
+ Clockwork III 
+ | 
+ 5 Generals: Tank, Melee, Ranged, Healer, Special(Role)
+ | 
+ 30 Troops: 6 Tank, 6 Melee, 6 Ranged, 6 Healer, 6 Special(Role)
+ |
+
+| 
+ 125 
+ | 
+ Crafting - 1600x Perfected Clockwork Part 
+ |
+
+30
+ | 
+ Henchmen II 
+ | 
+ 5 Generals: Intellect
+ | 
+ 25 Troops: Strength
+ |
+
+| 
+ 50 
+ | 
+ Retired Expeditions , Limited Time Item 
+ |
+
+32
+ | 
+ Angels 
+ | 
+ 6 Generals: 3 Healer, 3 Agility
+ | 
+ 26 Troops: 13 Healer, 13 Agility
+ |
+
+| 
+ 80% 
+ | 
+ Citadel : Training Grounds Level 3
+ |
+
+32
+ | 
+ Crusade II 
+ | 
+ 6 Generals: Wisdom
+ | 
+ 26 Troops: Wisdom
+ |
+
+| 
+ 80 
+ | 
+ Retired Expeditions 
+ |
+
+16
+ | 
+ Strike IV 
+ | 
+ 4 Generals: Melee
+ | 
+ 12 Troops: Melee
+ |
+
+| 
+ 30% 
+ | 
+ Duel Rank Reward (Rank 27)
+ |
+
+31
+ | 
+ Bucket Brigade 
+ | 
+ 1 General: Any
+ | 
+ 30 Troops: Any
+ |
+
+| 
+ +600% vs Rhalmarius the Despoiler (Guild Raid) 
+ | 
+ Rhalmarius the Despoiler (Guild Raid) 
+ |
+
+35
+ | 
+ Crystal Spear Tip 
+ | 
+ 5 Generals: 2 Orocs, 3 Any
+ | 
+ 30 Troops: 20 Oroc, 10 Any
+ |
+
+| 
+ 15 (285 vs Underground ) 
+ | 
+ Limited Time Item 
+ |
+
+38
+ | 
+ Loyalists 
+ | 
+ 8 Generals: 2 Strength, 2 Intellect, 2 Wisdom, 2 Any
+ | 
+ 30 Troops: 10 Strength, 10 Intellect, 10 Wisdom
+ |
+
+| 
+ 85 
+ | 
+ Current Expeditions 
+ |
+
+38
+ | 
+ Betrayed 
+ | 
+ 8 Generals: 2 Ranged, 2 Healer, 2 Agility, 2 Any
+ | 
+ 30 Troops: 10 Ranged, 10 Healer, 10 Agility
+ |
+
+| 
+ 85% 
+ | 
+ Citadel : Training Grounds Level 3
+ |
+
+31
+ | 
+ Bucket Brigade II 
+ | 
+ 1 General: Any
+ | 
+ 30 Troops: Any
+ |
+
+| 
+ 750% vs Rhalmarius the Despoiler (Guild Raid) 
+ | 
+ Crafting ( General / Events ) - Riot II + Bucket Brigade 
+ |
+
+30
+ | 
+ Riot II 
+ | 
+ 0 Generals:
+ | 
+ 30 Troops: Any
+ |
+
+| 
+ 15% 
+ | 
+ Crafting 
+ |
+
+34
+ | 
+ Double Strike III 
+ | 
+ 4 Generals: 2 Melee, 2 Ranged
+ | 
+ 30 Troops: 15 Melee, 15 Ranged
+ |
+
+|
+
+| 
+ Crafting 
+ |
+
+10
+ | 
+ Blood and Guts 
+ | 
+ 2 Generals: Melee
+ | 
+ 8 Troops: Melee
+ |
+
+| 
+ 10 
+ | 
+ Scrolls of Dahrizon raids
+ |
+
+10
+ | 
+ Death from Afar 
+ | 
+ 2 Generals: Ranged
+ | 
+ 8 Troops: Ranged
+ |
+
+| 
+ 10 
+ | 
+ Scrolls of Dahrizon raids
+ |
+
+10
+ | 
+ Unbreakable 
+ | 
+ 2 Generals: Tank
+ | 
+ 8 Troops: Tank
+ |
+
+| 
+ 10 
+ | 
+ Scrolls of Dahrizon raids
+ |
+
+10
+ | 
+ Saviors 
+ | 
+ 2 Generals: Healer
+ | 
+ 8 Troops: Healer
+ |
+
+| 
+ 10 
+ | 
+ Scrolls of Dahrizon raids
+ |
+
+10
+ | 
+ Might 
+ | 
+ 2 Generals: Strength
+ | 
+ 8 Troops: Strength
+ |
+
+| 
+ 10 
+ | 
+ Scrolls of Dahrizon raids
+ |
+
+10
+ | 
+ Sharpness 
+ | 
+ 2 Generals: Intellect
+ | 
+ 8 Troops: Intellect
+ |
+
+| 
+ 10 
+ | 
+ Scrolls of Dahrizon raids
+ |
+
+10
+ | 
+ Contemplation 
+ | 
+ 2 Generals: Wisdom
+ | 
+ 8 Troops: Wisdom
+ |
+
+| 
+ 10 
+ | 
+ Scrolls of Dahrizon raids
+ |
+
+25
+ | 
+ Blood and Guts IV 
+ | 
+ 5 Generals: Melee
+ | 
+ 20 Troops: Melee
+ |
+
+| 
+ 55 
+ | 
+ Simulacrum of Dahrizon (Raid) 
+ |
+
+25
+ | 
+ Death from Afar IV 
+ | 
+ 5 Generals: Ranged
+ | 
+ 20 Troops: Ranged
+ |
+
+| 
+ 55 
+ | 
+ Simulacrum of Dahrizon (Raid) 
+ |
+
+15
+ | 
+ Death from Afar II 
+ | 
+ 3 Generals: Ranged
+ | 
+ 12 Troops: Ranged
+ |
+
+| 
+ 25 
+ | 
+ Guardian Golem (Raid) , Animated Armor (Raid) , Simulacrum of Dahrizon (Raid) 
+ |
+
+15
+ | 
+ Blood and Guts II 
+ | 
+ 3 Generals: Melee
+ | 
+ 12 Troops: Melee
+ |
+
+| 
+ 25 
+ | 
+ Guardian Golem (Raid) , Animated Armor (Raid) , Simulacrum of Dahrizon (Raid) 
+ |
+
+15
+ | 
+ Saviors II 
+ | 
+ 3 Generals: Healer
+ | 
+ 12 Troops: Healer
+ |
+
+| 
+ 25 
+ | 
+ Guardian Golem (Raid) , Animated Armor (Raid) , Simulacrum of Dahrizon (Raid) 
+ |
+
+15
+ | 
+ Might II 
+ | 
+ 3 Generals: Strength
+ | 
+ 12 Troops: Strength
+ |
+
+| 
+ 25 
+ | 
+ Guardian Golem (Raid) , Animated Armor (Raid) , Simulacrum of Dahrizon (Raid) 
+ |
+
+15
+ | 
+ Sharpness II 
+ | 
+ 3 Generals: Intellect
+ | 
+ 12 Troops: Intellect
+ |
+
+| 
+ 25 
+ | 
+ Guardian Golem (Raid) , Animated Armor (Raid) , Simulacrum of Dahrizon (Raid) 
+ |
+
+15
+ | 
+ Contemplation II 
+ | 
+ 3 Generals: Wisdom
+ | 
+ 12 Troops: Wisdom
+ |
+
+| 
+ 25 
+ | 
+ Guardian Golem (Raid) , Animated Armor (Raid) , Simulacrum of Dahrizon (Raid) 
+ |
+
+15
+ | 
+ Unbreakable II 
+ | 
+ 3 Generals: Tank
+ | 
+ 12 Troops: Tank
+ |
+
+| 
+ 25 
+ | 
+ Guardian Golem (Raid) , Animated Armor (Raid) , Simulacrum of Dahrizon (Raid) 
+ |
+
+20
+ | 
+ Death from Afar III 
+ | 
+ 4 Generals: Ranged
+ | 
+ 16 Troops: Ranged
+ |
+
+| 
+ 40 
+ | 
+ Animated Armor (Raid) , Simulacrum of Dahrizon (Raid) 
+ |
+
+20
+ | 
+ Unbreakable III 
+ | 
+ 4 Generals: Tank
+ | 
+ 16 Troops: Tank
+ |
+
+| 
+ 40 
+ | 
+ Animated Armor (Raid) , Simulacrum of Dahrizon (Raid) 
+ |
+
+20
+ | 
+ Contemplation III 
+ | 
+ 4 Generals: Wisdom
+ | 
+ 16 Troops: Wisdom
+ |
+
+| 
+ 40 
+ | 
+ Animated Armor (Raid) , Simulacrum of Dahrizon (Raid) 
+ |
+
+20
+ | 
+ Sharpness III 
+ | 
+ 4 Generals: Intellect
+ | 
+ 16 Troops: Intellect
+ |
+
+| 
+ 40 
+ | 
+ Animated Armor (Raid) , Simulacrum of Dahrizon (Raid) 
+ |
+
+20
+ | 
+ Might III 
+ | 
+ 4 Generals: Strength
+ | 
+ 16 Troops: Strength
+ |
+
+| 
+ 40 
+ | 
+ Animated Armor (Raid) , Simulacrum of Dahrizon (Raid) 
+ |
+
+25
+ | 
+ Unbreakable IV 
+ | 
+ 5 Generals: Tank
+ | 
+ 20 Troops: Tank
+ |
+
+| 
+ 55 
+ | 
+ Simulacrum of Dahrizon (Raid) 
+ |
+
+25
+ | 
+ Saviors IV 
+ | 
+ 5 Generals: Healer
+ | 
+ 20 Troops: Healer
+ |
+
+| 
+ 55 
+ | 
+ Simulacrum of Dahrizon (Raid) 
+ |
+
+25
+ | 
+ Might IV 
+ | 
+ 5 Generals: Strength
+ | 
+ 20 Troops: Strength
+ |
+
+| 
+ 55 
+ | 
+ Simulacrum of Dahrizon (Raid) 
+ |
+
+25
+ | 
+ Sharpness IV 
+ | 
+ 5 Generals: Intellect
+ | 
+ 20 Troops: Intellect
+ |
+
+| 
+ 55 
+ | 
+ Simulacrum of Dahrizon (Raid) 
+ |
+
+25
+ | 
+ Contemplation IV 
+ | 
+ 5 Generals: Wisdom
+ | 
+ 20 Troops: Wisdom
+ |
+
+| 
+ 55 
+ | 
+ Simulacrum of Dahrizon (Raid) 
+ |
+
+15
+ | 
+ Swiftness II 
+ | 
+ 3 Generals: Agility
+ | 
+ 12 Troops: Agility
+ |
+
+| 
+ 25 
+ | 
+ Guardian Golem (Raid) , Animated Armor (Raid) , Simulacrum of Dahrizon (Raid) 
+ |
+
+20
+ | 
+ Swiftness III 
+ | 
+ 4 Generals: Agility
+ | 
+ 16 Troops: Agility
+ |
+
+| 
+ 40 
+ | 
+ Animated Armor (Raid) , Simulacrum of Dahrizon (Raid) 
+ |
+
+25
+ | 
+ Swiftness IV 
+ | 
+ 5 Generals: Agility
+ | 
+ 20 Troops: Agility
+ |
+
+| 
+ 55 
+ | 
+ Simulacrum of Dahrizon (Raid) 
+ |
+
+10
+ | 
+ Swiftness 
+ | 
+ 2 Generals: Agility
+ | 
+ 8 Troops: Agility
+ |
+
+| 
+ 10 
+ | 
+ Scrolls of Dahrizon raids
+ |
+
+35
+ | 
+ Breaking Dawn 
+ | 
+ 5 Generals: 1 Strength, 1 Agility, 1 Intellect, 1 Wisdom, 1 Special (Attribute)
+ | 
+ 30 Troops: 6 Strength, 6 Agility, 6 Intellect, 6 Wisdom, 6 Special (Attribute)
+ |
+
+| 
+ 140 
+ | 
+ Crafting (Special) - Solus Coins
+ |
+
+34
+ | 
+ Dwarven Drinking Party 
+ | 
+ 4 Generals: 2 Human, 2 Dwarf
+ | 
+ 30 Troops: 30 Dwarf
+ |
+
+| 
+ 175 
+ | 
+ Retired Expeditions 
+ |
+
+35
+ | 
+ Automated Army 
+ | 
+ 5 Generals: 3 Human, 2 Construct
+ | 
+ 30 Troops: 30 Construct
+ |
+
+| 
+ 160% 
+ | 
+ Citadel : Training Grounds Level 1
+ |
+
+36
+ | 
+ Unstoppable III 
+ | 
+ 6 Generals: 3 Melee, 3 Healer
+ | 
+ 30 Troops: 10 Melee, 20 Healer
+ |
+
+| 
+ 105% 
+ | 
+ Citadel : Training Grounds Level 1
+ |
+
+20
+ | 
+ Blood and Guts III 
+ | 
+ 4 Generals: Melee
+ | 
+ 16 Troops: Melee
+ |
+
+| 
+ 40 
+ | 
+ Animated Armor (Raid) , Simulacrum of Dahrizon (Raid) 
+ |
+
+46
+ | 
+ Danse Macabre II 
+ | 
+ 6 Generals: Undead
+ | 
+ 40 Troops: Undead
+ |
+
+| 
+ 113 
+ | 
+ Limited Time Item  : Vornstaag Crypt 
+ |
+
+36
+ | 
+ Feast of Blood 
+ | 
+ 6 Generals: 3 Melee, 3 Undead
+ | 
+ 30 Troops: 15 Melee, 15 Undead
+ |
+
+| 
+ 45 
+ | 
+ Limited Time Item Vornstaag Crypt 
+ |
+
+28
+ | 
+ Wall of the Dead 
+ | 
+ 8 Generals: 4 Tank, 4 Undead
+ | 
+ 20 Troops: 10 Tank, 10 Undead
+ |
+
+| 
+ 40 
+ | 
+ Limited Time Item  : Vornstaag Crypt 
+ |
+
+36
+ | 
+ Life and Death IV 
+ | 
+ 10 Generals: 5 Healer, 5 Undead
+ | 
+ 26 Troops: 13 Healer, 13 Undead
+ |
+
+| 
+ 100 
+ | 
+ Limited Time Item  : Vornstaag Crypt 
+ |
+
+20
+ | 
+ Fellowship II 
+ | 
+ 10 Generals: 2 Tank, 2 Melee, 2 Ranged, 2 Healer, 2 Special (Role)
+ | 
+ 10 Troops: 2 Tank, 2 Melee, 2 Ranged, 2 Healer, 2 Special (Role)
+ |
+
+| 
+ 200 
+ | 
+ Retired Expeditions 
+ |
+
+34
+ | 
+ Tundra Stalkers 
+ | 
+ 4 Generals: 2 Any, 2 Healer
+ | 
+ 30 Troops: 30 Any
+ |
+
+| 
+ 50 
+ | 
+ Limited Time Item 
+9/7/12 - 21/7/12 , Current Expeditions , Starter Packs 
+ |
+
+32
+ | 
+ Bucket Brigade III 
+ | 
+ 2 General: 2 Any
+ | 
+ 30 Troops: 30 Any
+ |
+
+| 
+ 900% vs Rhalmarius the Despoiler (Guild Raid) 
+ | 
+ Crafting 
+ |
+
+17
+ | 
+ Oh, Siege! 
+ | 
+ 2 Generals: 2 Ranged
+ | 
+ 15 Troops: 15 Construct/Ranged/Special (Attribute)
+ |
+
+| 
+ +200% vs Sieges 
+ | 
+ Bazaar 
+ |
+
+50
+ | 
+ Unyielding Dead 
+ | 
+ 0 Generals
+ | 
+ 50 Troops: 50 Undead/Tank
+ |
+
+| 
+ 120 
+ | 
+ Bazaar -- Halloween 2012
+ |
+
+36
+ | 
+ Rain of Bone 
+ | 
+ 6 Generals: 3 Ranged, 3 Undead
+ | 
+ 30 Troops: 15 Ranged, 15 Undead
+ |
+
+| 
+ 45% 
+ | 
+ Vornstaag Crypt II: Dead by Dusk 
+ |
+
+48
+ | 
+ Yellow Army 
+ | 
+ 8 Generals: 4 Melee, 4 Agility
+ | 
+ 40 Troops: 20 Melee, 20 Agility
+ |
+
+| 
+ 100 
+ | 
+ Limited Time Item 
+11/16/12-11/30/12 
+ |
+
+32
+ | 
+ Dungeon Plunderers 
+ | 
+ 8 Generals: 2 Strength, 2 Agility, 2 Tank, 2 Melee
+ | 
+ 24 Troops: 6 Strength, 6 Agility, 6 Tank, 6 Melee
+ |
+
+| 
+ +400% vs Underground 
+ | 
+ Nightmare Caracalla quest boss
+ |
+
+48
+ | 
+ Green Army 
+ | 
+ 8 Generals: 4 Melee, 4 Strength
+ | 
+ 40 Troops: 20 Melee, 20 Strength
+ |
+
+| 
+ 100 
+ | 
+ Limited Time Item 
+12/28/12-1/11/13 
+ |
+
+36
+ | 
+ Rensha's Breath 
+ | 
+ 6 Generals: 3 Melee, 3 Healer
+ | 
+ 30 Troops: 15 Melee, 15 Healer
+ |
+
+| 
+ 200 
+ | 
+ Retired Expeditions 
+ |
+
+35
+ | 
+ Veni, Vidi Vomui 
+ | 
+ 5 Generals: 3 Human, 2 Construct
+ | 
+ 30 Troops: 15 Human, 15 Construct
+ |
+
+| 
+ 240 
+ | 
+ Retired Expeditions 
+ |
+
+24
+ | 
+ Echidna Hunters 
+ | 
+ 4 Generals: 4 Any
+ | 
+ 20 Troops: 20 Any
+ |
+
+| 
+ 1000% vs Echidna 
+ | 
+ Crafting (Events) - Charred Sheep's Head 
+ |
+
+36
+ | 
+ Pax 
+ | 
+ 6 Generals: 6 Tank
+ | 
+ 30 Troops: 15 Tank, 15 Wisdom
+ |
+
+| 
+ 150 
+ | 
+ Holy Chest 
+ |
+
+36
+ | 
+ Lux Aeterna 
+ | 
+ 6 Generals: 6 Melee
+ | 
+ 30 Troops: 15 Melee, 15 Strength
+ |
+
+| 
+ 150 
+ | 
+ Holy Chest 
+ |
+
+36
+ | 
+ Whispers on the Wind 
+ | 
+ 6 Generals: 6 Ranged
+ | 
+ 30 Troops: 15 Ranged, 15 Agility
+ |
+
+| 
+ 150 
+ | 
+ Holy Chest 
+ |
+
+46
+ | 
+ Man and Elf 
+ | 
+ 6 Generals: 3 Human, 3 Elf
+ | 
+ 40 Troops: 20 Human, 20 Elf
+ |
+
+| 
+ 220 
+ | 
+ Retired Expeditions 
+ |
+
+47
+ | 
+ New Lions 
+ | 
+ 9 Generals: 5 Agility, 4 Melee
+ | 
+ 38 Troops: 19 Melee, 19 Agility
+ |
+
+| 
+ 120 
+ | 
+ Limited Time Item 
+ |
+
+38
+ | 
+ Steel Waltz 
+ | 
+ 8 Generals: 4 Tank, 2 Agility, 2 Healer
+ | 
+ 30 Troops: 15 Tank, 10 Agility, 5 Healer
+ |
+
+| 
+ 240 
+ | 
+ Retired Expeditions 
+ |
+
+38
+ | 
+ Etricia's Hands 
+ | 
+ 8 Generals: 4 Melee, 3 Intellect, 1 Special (Role)
+ | 
+ 30 Troops: 15 Melee, 10 Intellect, 5 Special (Role)
+ |
+
+| 
+ 240 
+ | 
+ Retired Expeditions 
+ |
+
+38
+ | 
+ Blackwing Flight 
+ | 
+ 8 Generals: 4 Ranged, 3 Wisdom, 1 Special (Role)
+ | 
+ 30 Troops: 15 Ranged, 10 Wisdom, 5 Special (Role)
+ |
+
+| 
+ 240 
+ | 
+ Retired Expeditions 
+ |
+
+38
+ | 
+ Stanza-Slingers 
+ | 
+ 8 Generals: 4 Tank, 4 Special (Attribute)
+ | 
+ 30 Troops: 15 Tank, 15 Special (Attribute)
+ |
+
+| 
+ 230 
+ | 
+ Ear for Poetry Box 
+ |
+
+38
+ | 
+ Split Skulls, Saved Souls 
+ | 
+ 8 Generals: 4 Melee, 4 Wisdom
+ | 
+ 30 Troops: 15 Melee, 15 Wisdom
+ |
+
+| 
+ 230 
+ | 
+ Ear for Poetry Box 
+ |
+
+30
+ | 
+ Blue Tide 
+ | 
+ 6 Generals: 3 Human, 3 Orc
+ | 
+ 24 Troops: 12 Human, 12 Orc
+ |
+
+| 
+ 50 
+ | 
+ Teremarthu 
+ |
+
+32
+ | 
+ Guardian Angels 
+ | 
+ 8 Generals: 2 Strength, 2 Agility, 2 Tank, 2 Ranged
+ | 
+ 24 Troops: 6 Strength, 6 Agility, 6 Tank, 6 Ranged
+ |
+
+| 
+ +500% vs Demons 
+ | 
+ Crafting 
+ |
+
+47
+ | 
+ Violet Army 
+ | 
+ 9 Generals: 5 Agility, 4 Ranged
+ | 
+ 38 Troops: 19 Ranged, 19 Agility
+ |
+
+| 
+ 120 
+ | 
+ Limited Time Item 
+05/04/13-05/18/13 
+ |
+
+38
+ | 
+ Symposium 
+ | 
+ 8 Generals: 2 Healer, 3 Intellect, 3 Wisdom
+ | 
+ 30 Troops: 10 Healer, 10 Intellect, 10 Wisdom
+ |
+
+| 
+ 230% 
+ | 
+ Citadel : Training Grounds Level 2
+ |
+
+32
+ | 
+ Divine and Mundane 
+ | 
+ 6 Generals: 3 Human, 3 Angel
+ | 
+ 26 Troops: 13 Human, 13 Angel
+ |
+
+| 
+ 230% 
+ | 
+ Citadel : Training Grounds Level 2
+ |
+
+36
+ | 
+ Swords and Stitches 
+ | 
+ 6 Generals: 3 Melee, 3 Healer
+ | 
+ 30 Troops: 15 Melee, 15 Healer
+ |
+
+| 
+ 240 
+ | 
+ Count Siculus' Phantom (Raid) 
+ |
+
+39
+ | 
+ Students 
+ | 
+ 9 Generals: 3 Healer, 3 Special (Attribute), 3 Intellect
+ | 
+ 30 Troops: 10 Healer, 10 Special (Attribute), 10 Intellect
+ |
+
+| 
+ 240% 
+ | 
+ Crafting (General/Events) - Ruined Grimoires
+ |
+
+36
+ | 
+ Double Strike IV 
+ | 
+ 6 Generals: 3 Ranged, 3 Melee
+ | 
+ 30 Troops: 15 Ranged, 15 Melee
+ |
+
+| 
+ 240% 
+ | 
+ Invasion Rank: Senior Tactician
+ |
+
+40
+ | 
+ Glorious Dawn 
+ | 
+ 10 Generals: 2 Strength, 2 Agility, 2 Intellect, 2 Wisdom, 2 Special (Attribute)
+ | 
+ 30 Troops: 30 Any
+ |
+
+| 
+ 240% 
+ | 
+ Crafting (Special) - Glorious Dawn Coins
+ |
+
+36
+ | 
+ Greenskins 
+ | 
+ 8 Generals: 4 Orc, 4 Goblin
+ | 
+ 28 Troops: 14 Orc, 14 Goblin
+ |
+
+| 
+ 240% 
+ | 
+ Citadel : Training Grounds Level 6
+ |
+
+36
+ | 
+ Special Forces 
+ | 
+ 6 Generals: 3 Special (Role), 3 Special (Attribute)
+ | 
+ 30 Troops: 15 Special (Role), 15 Special (Attribute)
+ |
+
+| 
+ 240% 
+ | 
+ Citadel : Training Grounds Level 6
+ |
+
+38
+ | 
+ Immovable 
+ | 
+ 8 Generals: 4 Tank, 4 Strength
+ | 
+ 30 Troops: 15 Tank, 15 Strength
+ |
+
+| 
+ 240% 
+ | 
+ Invasion Rank: Master Commander
+ |
+
+38
+ | 
+ Total War 
+ | 
+ 8 Generals: 2 Tank, 2 Melee, 2 Ranged, 2 Healer
+ | 
+ 36 Troops: 9 Tank, 9 Melee, 9 Ranged, 9 Healer
+ |
+
+| 
+ 240% 
+ | 
+ Invasion Rank: Master Captain
+ |
+
+44
+ | 
+ Crystal Punch 
+ | 
+ 6 Generals: 3 Melee, 3 Strength
+ | 
+ 38 Troops: 19 Melee, 19 Strength
+ |
+
+| 
+ 240 
+ | 
+ Current Expeditions 
+ |
+
+37
+ | 
+ Gory Gallery 
+ | 
+ 9 Generals: 4 Special (Role), 4 Intellect, 1 Any
+ | 
+ 28 Troops: 14 Special (Role), 14 Intellect
+ |
+
+| 
+ 240 
+ | 
+ Current Expeditions 
+ |
+
+42
+ | 
+ Greenskins of Tyrol 
+ | 
+ 8 Generals: 4 Healer, 4 Strength
+ | 
+ 34 Troops: 17 Healer, 17 Strength
+ |
+
+| 
+ 240 
+ | 
+ Retired Expeditions 
+ |
+
+36
+ | 
+ Ghastly Gastronomy 
+ | 
+ 9 Generals: 3 Tank, 3 Healer, 3 Intellect
+ | 
+ 36 Troops: 36 Intellect
+ |
+
+| 
+ 240 
+ | 
+ Banquet Box 
+ |
+
+30
+ | 
+ Blood on the Water 
+ | 
+ 8 Generals: 4 Melee, 4 Healer
+ | 
+ 30 Troops: 15 Melee, 15 Healer
+ |
+
+| 
+ 240%, 500 vs Aquatic 
+ | 
+ Vhaliribdis the Third Terror (World Raid) 
+ |
+
+36
+ | 
+ Fine Dining 
+ | 
+ 9 Generals: 3 Intellect, 3 Ranged, 3 Melee
+ | 
+ 36 Troops: 36 Intellect
+ |
+
+| 
+ 240 
+ | 
+ Banquet Box 
+ |
+
+30
+ | 
+ Prongs of the Trident 
+ | 
+ 9 Generals: 4 Melee, 4 Healer, 1 Any
+ | 
+ 30 Troops: 15 Melee, 15 Healer
+ |
+
+| 
+ 245 
+ | 
+ Merfolk Chest , Current Expeditions 
+ |
+
+38
+ | 
+ Runeweavers 
+ | 
+ 8 Generals: 4 Ranged, 4 Intellect
+ | 
+ 30 Troops: 15 Ranged, 15 Intellect
+ |
+
+| 
+ 85 
+ | 
+ Citadel : Training Grounds Level 1
+ |
+
+34
+ | 
+ Ukshmi's Hands 
+ | 
+ 8 Generals: 4 Ranged, 4 Agility
+ | 
+ 34 Troops: 17 Ranged, 17 Agility
+ |
+
+| 
+ 240% 
+ | 
+ Crafting 
+ |
+
+36
+ | 
+ Those Who Help Themselves 
+ | 
+ 8 Generals: 4 Strength, 4 Wisdom
+ | 
+ 28 Troops: 14 Strength, 14 Wisdom
+ |
+
+| 
+ +275% vs Beastmen 
+ | 
+ Hurkus the Eviscerator 
+ |
+
+38
+ | 
+ Wyrmskinners 
+ | 
+ 9 Generals: 2 Strength, 2 Agility, 2 Intellect, 2 Wisdom, 1 Any
+ | 
+ 38 Troops: 30 Strength, 8 Any
+ |
+
+| 
+ 250% +350% vs Dragons 
+ | 
+ Wyrmskinner Chest , Current Expeditions 
+ |
+
+28
+ | 
+ Bane of Beastmen 
+ | 
+ 10 Generals: 4 Strength, 4 Wisdom, 2 Any
+ | 
+ 28 Troops: 10 Strength, 10 Wisdom, 8 Any
+ |
+
+| 
+ 240, +360% vs Beastmen 
+ | 
+ Zranras the Smasher (Raid) 
+ |
+
+36
+ | 
+ Strength and Strangeness 
+ | 
+ 8 Generals: 3 Special (Role), 3 Special (Attribute), 2 Strength
+ | 
+ 28 Troops: 10 Special (Role), 10 Special (Attribute), 8 Strength
+ |
+
+| 
+ 240 
+ | 
+ Malleus Vivorum (Raid) 
+ |
+
+23
+ | 
+ Besiegers' Blood 
+ | 
+ 3 Generals: 1 Human/Strength/Tank, 1 Goblin/Intellect/Melee, 1 Any
+ | 
+ 20 Troops: Any
+ |
+
+| 
+ 1600% vs Sieges 
+ | 
+ Crafting (General - Events) - Besieger Troops 
+ |
+
+42
+ | 
+ Way of the Undead Fist 
+ | 
+ 8 Generals: 4 Agility, 2 Undead, 2 Human
+ | 
+ 34 Troops: 18 Agility, 8 Undead, 8 Human
+ |
+
+| 
+ 240% 
+ | 
+ 100k+ damage to Wei of the Siwang Shou (World Raid) 
+ |
+
+43
+ | 
+ Skeletal Host 
+ | 
+ 9 Generals: 3 Undead or 3 Angel, 3 Melee, 3 Agility
+ | 
+ 34 Troops: 17 Melee, 17 Agility
+ |
+
+| 
+ 245 
+ | 
+ Retired Expeditions 
+ |
+
+36
+ | 
+ Bronzefists 
+ | 
+ 8 Generals: 4 Human, 4 Dwarf
+ | 
+ 36 Troops: 18 Human, 18 Dwarf
+ |
+
+| 
+ 245 
+ | 
+ Limited Time Item 
+7/12/13 - 7/26/13 
+ |
+
+45
+ | 
+ Bad Breath, Bad Death 
+ | 
+ 9 Generals: 4 Ranged, 4 Intellect, 1 Any
+ | 
+ 36 Troops: 6 Goblin or 6 Human, 15 Ranged, 15 Intellect
+ |
+
+| 
+ 245 
+ | 
+ Current Expeditions 
+ |
+
+46
+ | 
+ Lightning Strikes 
+ | 
+ 8 Generals: 2 Human, 3 Ranged, 3 Wisdom
+ | 
+ 38 Troops: 11 Human, 11 Wisdom, 11 Ranged, 5 Any
+ |
+
+| 
+ 245 
+ | 
+ Current Expeditions 
+ |
+
+49
+ | 
+ Nine Lives, No Undeaths 
+ | 
+ 9 Generals: 3 Agility, 3 Melee, 2 Tank, 1 Any
+ | 
+ 40 Troops: 12 Agility, 12 Melee, 12 Tank, 4 Any
+ |
+
+| 
+ 220%, +380% vs Undead 
+ | 
+ Hunters of the Dark Chest , Current Expeditions 
+ |
+
+20
+ | 
+ Bestiarii 
+ | 
+ 0 Generals
+ | 
+ 20 Troops: 2 Human, 2 Elf, 2 Goblin, 2 Oroc, 2 Gnome, 2 Half-Elf, 2 Felpuur, 2 Undead, 2 Construct, 2 Dwarf
+ |
+
+| 
+ +300% vs Colosseum Beasts 
+ | 
+ Tisiphone the Vengeful (Raid) 
+ |
+
+39
+ | 
+ Vorks, Vorks, Vorks 
+ | 
+ 9 Generals: 2 Strength, 2 Agility, 2 Intellect, 2 Wisdom, 1 Special (Attribute)
+ | 
+ 30 Troops: 6 Strength, 6 Agility, 6 Intellect, 6 Wisdom, 6 Special (Attribute)
+ |
+
+| 
+ 240 
+ | 
+ Kevinator (World Raid) 
+ |
+
+51
+ | 
+ Mulcarin's Host 
+ | 
+ 9 Generals: 3 Ranged, 3 Melee, 3 Tank
+ | 
+ 42 Troops: 13 Ranged, 13 Melee, 13 Tank, 3 Any
+ |
+
+| 
+ 255 
+ | 
+ Mulcarin's Chest 
+ |
+
+51
+ | 
+ Batten Down the Hatches 
+ | 
+ 6 Generals: 1 Strength, 1 Agility, 1 Intellect, 1 Wisdom, 1 Special (Attribute), 1 Any
+ | 
+ 45 Troops: 8 Strength, 8 Agility, 8 Intellect, 8 Wisdom, 8 Special (Attribute), 5 Any
+ |
+
+| 
+ 240 
+ | 
+ Crafting 
+ |
+
+35
+ | 
+ Diekplous 
+ | 
+ 10 Generals: 1 Strength, 2 Agility, 2 Intellect, 2 Wisdom, 2 Special (Attribute), 1 Any
+ | 
+ 25 Troops: 4 Strength, 4 Agility, 4 Intellect, 4 Wisdom, 4 Special (Attribute), 5 Any
+ |
+
+| 
+ 240% 
+ | 
+ Crafting 
+ |
+
+38
+ | 
+ Watery Grave 
+ | 
+ 8 Generals: 2 Strength, 2 Agility, 1 Intellect, 1 Wisdom, 1 Special (Attribute), 1 Any
+ | 
+ 30 Troops: 5 Strength, 5 Agility, 5 Intellect, 5 Wisdom, 5 Special (Attribute), 5 Any
+ |
+
+| 
+ 240% 
+ | 
+ Crafting 
+ |
+
+45
+ | 
+ Knights of Good 
+ | 
+ 9 Generals: 2 Melee, 2 Ranged, 2 Tank, 2 Healer, 1 Any
+ | 
+ 36 Troops: 6 Melee, 6 Ranged, 6 Tank, 6 Healer, 12 Any
+ |
+
+| 
+ 250 
+ | 
+ Limited Time Item Nov 1, 2013 
+ |
+
+28
+ | 
+ Steam Dream 
+ | 
+ 9 Generals: 3 Ranged, 3 Intellect, 3 Healer
+ | 
+ 28 Troops: 7 Ranged, 7 Intellect, 7 Healer, 7 Any
+ |
+
+| 
+ 240% 
+ | 
+ Crafting ( General / Events )
+ |
+
+51
+ | 
+ Apocolocyntosis Caelestis 
+ | 
+ 9 Generals: 3 Angel, 3 Intellect or 3 Wisdom, 3 Strength
+ | 
+ 42 Troops: 14 Angel, 14 Intellect or 14 Wisdom, 14 Strength
+ |
+
+| 
+ 250 
+ | 
+ Current Expeditions 
+ |
+
+48
+ | 
+ Befoulers 
+ | 
+ 10 Generals: 3 Dwarf or 3 Construct, 3 Special (Attribute), 3 Special (Role), 1 Any
+ | 
+ 38 Troops: 10 Dwarf or 10 Construct, 9 Special (Attribute), 9 Special (Role), 10 Any
+ |
+
+| 
+ 250 
+ | 
+ Current Expeditions 
+ |
+
+47
+ | 
+ Green Fire 
+ | 
+ 11 Generals: 3 Intellect, 3 Ranged, 3 Orc or 3 Human, 2 Any
+ | 
+ 36 Troops: 9 Intellect, 9 Ranged, 9 Orc or 9 Human, 9 Any
+ |
+
+| 
+ 250 
+ | 
+ Orc Firelord's Chest , Current Expeditions 
+ |
+
+32
+ | 
+ All the King's Men 
+ | 
+ 8 Generals: 2 Special (Role), 2 Agility, 2 Intellect, 2 Strength
+ | 
+ 24 Troops: 6 Special (Role), 6 Agility, 6 Intellect, 6 Strength
+ |
+
+| 
+ 240% 
+ | 
+ Verkiteia (Raid) 
+ |
+
+38
+ | 
+ Bow and Dagger 
+ | 
+ 8 Generals: 4 Ranged, 4 Agility
+ | 
+ 30 Troops: 15 Ranged, 15 Agility
+ |
+
+| 
+ 45 
+ | 
+ Current Expeditions 
+ |
+
+36
+ | 
+ Crystal Smash 
+ | 
+ 8 Generals: 4 Melee, 4 Strength
+ | 
+ 28 Troops: 14 Melee, 14 Strength
+ |
+
+| 
+ 45 
+ | 
+ Current Expeditions 
+ |
+
+38
+ | 
+ Matricide's Claws 
+ | 
+ 8 Generals: 2 Tank, 2 Construct, 2 Strength, 2 Any
+ | 
+ 30 Troops: 8 Tank, 8 Construct, 8 Strength, 6 Any
+ |
+
+| 
+ 240% 
+ | 
+ Crafting 
+ |
+
+20
+ | 
+ Saviors III 
+ | 
+ 4 Generals: Healer
+ | 
+ 16 Troops: Healer
+ |
+
+| 
+ 40 
+ | 
+ Animated Armor (Raid) , Simulacrum of Dahrizon (Raid) 
+ |
+
+45
+ | 
+ The Forgotten 
+ | 
+ 9 Generals: 3 Melee, 3 Wisdom, 3 Human
+ | 
+ 36 Troops: 12 Melee, 12 Wisdom, 12 Human
+ |
+
+| 
+ 250 
+ | 
+ Limited Time Item Nov 27, 2013 , Current Expeditions 
+ |
+
+38
+ | 
+ Yydian's Abandoned 
+ | 
+ 10 Generals: 2 Reserved for Jerome or Emilia , 2 Melee, 2 Ranged, 2 Healer, 2 Tank
+ | 
+ 28 Troops: 7 Melee or 7 Special (Attribute), 7 
+Ranged or 7 Special (Attribute), 7 Healer or 7 Special (Attribute), 7 
+Tank or 7 Special (Attribute)
+ |
+
+| 
+ 240% 
+ | 
+ Crafting 
+ |
+
+46
+ | 
+ Glorious Dawn II 
+ | 
+ 12 Generals: 2 Strength, 2 Agility, 2 Intellect, 2 Wisdom, 2 Special (Attribute), 2 Any
+ | 
+ 34 Troops: 34 Any
+ |
+
+| 
+ 250% 
+ | 
+ Crafting (Special) - Glorious Dawn Coins
+ |
+
+45
+ | 
+ Headhunting 
+ | 
+ 10 Generals: 3 Healer, 3 Agility, 3 Gnome, 1 Any
+ | 
+ 35 Troops: 10 Healer, 10 Agility, 10 Gnome, 5 Any
+ |
+
+| 
+ 250% 
+ | 
+ Limited Time Item 
+12/27/13 - 1/10/14 
+ |
+
+41
+ | 
+ Better Dead than Damned 
+ | 
+ 9 Generals: 2 Melee, 2 Strength, 2 Ranged, 2 Agility, 1 Any
+ | 
+ 32 Troops: 7 Melee, 7 Strength, 7 Ranged, 7 Agility, 4 Any
+ |
+
+| 
+ 200%, +300% vs Campaigns 
+ | 
+ Bastion of Blood 
+ |
+
+45
+ | 
+ Blue and Gold 
+ | 
+ 9 Generals: 2 Melee, 2 Ranged, 2 Healer, 2 Tank, 1 Any
+ | 
+ 36 Troops: 8 Melee, 8 Ranged, 8 Healer, 8 Tank, 4 Any
+ |
+
+| 
+ 250 
+ | 
+ Current Expeditions 
+ |
+
+46
+ | 
+ The Unseen 
+ | 
+ 10 Generals (3 Wisdom, 3 Healer, 2 Special (Attribute), 2 Any)
+ | 
+ 36 Troops (10 Wisdom or 10 Oroc, 10 Healer, 10 Special (Attribute), 6 Any)
+ |
+
+| 
+ 250 
+ | 
+ Tactical Trio Chest 
+ |
+
+46
+ | 
+ Bomber Squad 
+ | 
+ 10 Generals (3 Agility, 3 Ranged, 2 Special (Attribute), 2 Any)
+ | 
+ 36 Troops (10 Agility or 10 Goblin, 10 Ranged, 10 Special (Attribute), 6 Any)
+ |
+
+| 
+ 250 
+ | 
+ Tactical Trio Chest 
+ |
+
+46
+ | 
+ Toxic Termination 
+ | 
+ 10 Generals: 3 Strength, 3 Melee, 2 Tank, 2 Any
+ | 
+ 36 Troops: 10 Agility or 10 Merfolk, 10 Ranged, 10 Tank, 6 Any
+ |
+
+| 
+ 250 
+ | 
+ Tactical Trio Chest 
+ |
+
+41
+ | 
+ Fur and Fury 
+ | 
+ 11 Generals: 5 Felpuur or 5 Strength, 5 Felpuur or 5 Agility, 1 Any
+ | 
+ 30 Troops: 15 Felpuur or 15 Strength, 15 Felpuur or 15 Agility
+ |
+
+| 
+ 250 
+ | 
+ Current Expeditions 
+ |
+
+45
+ | 
+ Spikes 
+ | 
+ 9 Generals: 2 Strength, 2 Agility, 2 Intellect, 2 Wisdom, 1 Any
+ | 
+ 36 Troops: 8 Strength, 8 Agility, 8 Intellect, 8 Wisdom, 4 Any
+ |
+
+| 
+ 250 
+ | 
+ Current Expeditions 
+ |
+
+45
+ | 
+ Black Depth Gatekeepers 
+ | 
+ 10 Generals: 3 Wisdom, 3 Ranged, 3 Tank, 1 Any
+ | 
+ 35 Troops: 11 Wisdom, 11 Ranged, 11 Tank, 2 Any
+ |
+
+| 
+ 220%, +380% vs Demons 
+ | 
+ Hunters of the Dark Chest 
+ |
+
+43
+ | 
+ The Twilight 
+ | 
+ 9 Generals: 2 Strength, 3 Melee, 3 Ranged, 1 Any
+ | 
+ 34 Troops: 9 Strength, 9 Melee, 9 Ranged, 7 Any
+ |
+
+| 
+ 200%, +400% vs Demons 
+ | 
+ Limited Time Item 
+02/28/14 - 03/07/14 
+ |
+
+41
+ | 
+ The Vortex 
+ | 
+ 9 Generals: 2 Strength, 2 Melee, 4 Tank, 1 Healer
+ | 
+ 32 Troops: 10 Tank, 8 Strength, 8 Melee, 6 Healer
+ |
+
+| 
+ 200%, +200% vs Qwiladrian 
+ | 
+ Vortex Abomination (Raid) 
+ |
+
+52
+ | 
+ The Travelers 
+ | 
+ 8 Generals: 2 Wisdom, 2 Special (Attribute), 2 Healer, 2 Any
+ | 
+ 44 Troops: 13 Wisdom, 13 Special (Attribute), 13 Healer, 5 Any
+ |
+
+| 
+ 200%, +300% vs Qwiladrian 
+ | 
+ Festival of Drifting Dreams : Training Dummy, Rank 11
+ |
+
+38
+ | 
+ The Dragon 
+ | 
+ 10 Generals: 1 Special (Role), 1 Special (Attribute), 1 Agility, 1 Ranged, 2 Intellect, 2 Wisdom, 2 Any
+ | 
+ 28 Troops: 3 Special (Role), 3 Special (Attribute), 3 Agility, 3 Ranged, 6 Intellect, 6 Wisdom, 4 Any
+ |
+
+| 
+ 200%, +300% vs Humans 
+ | 
+ Festival of Drifting Dreams : Training Dummy, Rank 16
+ |
+
+47
+ | 
+ The Dreamers 
+ | 
+ 9 Generals: 2 Strength, 2 Agility, 2 Special (Role), 2 Tank, 1 Any
+ | 
+ 38 Troops: 8 Strength, 8 Agility, 8 Special (Role), 8 Tank, 6 Any
+ |
+
+| 
+ 200%, +300% vs Magical Creatures 
+ | 
+ Festival of Drifting Dreams : Magic Vortex
+ |
+
+42
+ | 
+ Lava Riders 
+ | 
+ 9 Generals: 3 Melee or 3 Oroc, 3 Strength or 3 Oroc, 3 Tank or 3 Oroc
+ | 
+ 33 Troops: 11 Melee or 11 Oroc, 11 Strength or 11 Oroc, 11 Tank or 11 Oroc
+ |
+
+| 
+ 200%, +200% vs Underground 
+ | 
+ Monsters and Magma 
+ |
+
+37
+ | 
+ Fortune's Favored 
+ | 
+ 9 Generals: 3 Special (Role), 3 Special (Attribute), 1 Melee, 1 Ranged, 1 Wisdom
+ | 
+ 28 Troops: 6 Special (Role), 6 Special (Attribute), 4 Melee, 4 Ranged, 4 Wisdom, 4 Any
+ |
+
+| 
+ 200%, +200% vs Large Raids 
+ | 
+ Leprechaun Revelers (Event Raid) (1b)
+ |
+
+39
+ | 
+ Whispering Blades 
+ | 
+ 9 Generals: 3 Melee or 3 Agility, 2 Ranged, 2 Special (Role), 2 Any
+ | 
+ 30 Troops: 10 Melee or 10 Agility, 6 Ranged, 6 Special (Role), 8 Any
+ |
+
+| 
+ 200%, +300% vs Epic Raids 
+ | 
+ Current Expeditions 
+ |
+
+37
+ | 
+ Darkwall Mining Company 
+ | 
+ 11 Generals: 3 Melee or 3 Dwarf, 3 Strength or 3 Dwarf, 2 Agility, 2 Wisdom, 1 Any
+ | 
+ 26 Troops: 7 Melee or 7 Dwarf, 7 Strength or 7 Dwarf, 4 Agility, 4 Wisdom, 4 Any
+ |
+
+| 
+ 250% 
+ | 
+ Current Expeditions 
+ |
+
+34
+ | 
+ Stone Pincer 
+ | 
+ 4 Generals: Construct
+ | 
+ 30 Troops: Construct
+ |
+
+| 
+ 400 vs Mazalu and Hargamesh 
+ | 
+ Limited Time Item 
+ |
+
+42
+ | 
+ Ravenguard 
+ | 
+ 12 Generals: 2 Strength, 2 Agility, 2 Intellect, 2 Wisdom, 2 Special (Attribute), 2 Any
+ | 
+ 30 Troops: 5 Strength, 5 Agility, 5 Intellect, 5 Wisdom, 5 Special (Attribute), 5 Any
+ |
+
+| 
+ 200%, +400% vs Campaigns 
+ | 
+ Guild Shop 
+ |
+
+40
+ | 
+ Sinews of War 
+ | 
+ 8 Generals: 2 Tank, 2 Melee, 2 Ranged, 2 Healer
+ | 
+ 32 Troops: 8 Tank, 8 Melee, 8 Ranged, 8 Healer
+ |
+
+| 
+ 200%, +300% vs Campaigns 
+ | 
+ Bastion of Blood 
+ |
+
+44
+ | 
+ Priests of the Sword 
+ | 
+ 10 Generals: 4 Healer, 4 Wisdom, 2 Any
+ | 
+ 34 Troops: 13 Healer, 13 Wisdom, 8 Any
+ |
+
+| 
+ 250 
+ | 
+ Limited Time Item 
+04/11/14 - 04/18/14 
+ |
+
+48
+ | 
+ Art Attack 
+ | 
+ 8 Generals: 2 Melee or 2 Construct, 2 Healer or 2 Construct, 2 Tank or 2 Construct, 2 Ranged or 2 Construct
+ | 
+ 40 Troops: 10 Melee or 10 Construct, 10 Healer or 10 Construct, 10 Tank or 10 Construct, 10 Ranged or 10 Construct
+ |
+
+| 
+ 200%, +200% vs Siege 
+ | 
+ Crafting/Misc/Citadel 
+ |
+
+39
+ | 
+ Fish with a Barrel 
+ | 
+ 9 Generals: 3 Special (Attribute), 3 Intellect, 2 Melee, 1 Any
+ | 
+ 30 Troops: 10 Special (Attribute), 10 Intellect, 6 Melee, 4 Any
+ |
+
+| 
+ 200%, +200% vs Aquatic 
+ | 
+ Crafting/Misc/Citadel 
+ |
+
+46
+ | 
+ Angelic Empiricism 
+ | 
+ 10 Generals: 2 Strength, 2 Intellect, 2 Melee, 2 Tank, 2 Any
+ | 
+ 36 Troops: 9 Strength, 9 Intellect, 9 Melee, 9 Tank
+ |
+
+| 
+ +600% vs Demons 
+ | 
+ Echthros, Scourge of West Kruna 
+ |
+
+49
+ | 
+ Elementary 
+ | 
+ 9 Generals: 3 Strength or 3 Magical Being, 3 Tank or 3 Magical Being, 3 Melee
+ | 
+ 40 Troops: 12 Strength or 12 Magical Being, 12 Tank or 12 Magical Being, 12 Melee, 4 Any
+ |
+
+| 
+ 240% 
+ | 
+ Grundus (Guild Raid) 
+ |
+
+60
+ | 
+ The Crystal Dawn 
+ | 
+ 10 Generals: 2 Strength or 2 Macical Being, 2 
+Agility or Magical Being, 2 Wisdom or Magical Being, 2 Intellect or 
+Magical Being, 2 Any
+ | 
+ 50 Troops: 10 Strength or 10 Macical Being, 10 
+Agility or Magical Being, 10 Wisdom or Magical Being, 10 Intellect or 
+Magical Being, 10 Any
+ |
+
+| 
+ 250, +375% vs Dragons 
+ | 
+ Crafting 
+ |
+
+48
+ | 
+ Woodland Spirits 
+ | 
+ 8 Generals: 3 Special (Attribute), 3 Intellect, 2 Any
+ | 
+ 40 Troops: 13 Special (Attribute), 13 Intellect, 14 Any
+ |
+
+| 
+ 200%, +400% vs Guild Raids and Campaigns 
+ | 
+ Campaign : N Craenaestra the Stalker or Fatigued final loot
+ |
+
+40
+ | 
+ Guardian Angels II 
+ | 
+ 8 Generals: 2 Strength or 2 Angel, 2 Agility or 2 Angel, 2 Tank or 2 Angel, 2 Ranged or 2 Angel
+ | 
+ 32 Troops: 8 Strength or 8 Angel, 8 Agility or 8 Angel, 8 Tank or 8 Angel, 8 Ranged or 8 Angel
+ |
+
+| 
+ +500% vs Demons 
+ | 
+ Crafting 
+ |
+
+44
+ | 
+ Hell Hunters 
+ | 
+ 8 Generals: 3 Melee, 3 Agility, 1 Tank, 1 Wisdom
+ | 
+ 36 Troops: 10 Melee, 10 Agility, 8 Tank, 8 Wisdom
+ |
+
+| 
+ 100%, +400% vs Undead 
+ | 
+ Crafting/General/Events 
+ |
+
+35
+ | 
+ Butcher's Den 
+ | 
+ 7 Generals: 2 Orc, 3 Strength, 1 Construct, 1 Any
+ | 
+ 28 Troops: 5 Orc, 10 Strength, 5 Construct, 5 Human, 3 Any
+ |
+
+| 
+ 80%, +80% vs Humans 
+ | 
+ Filth Crawler Thug (Adventure Raid) 
+ |
+
+49
+ | 
+ Eternal Celebration 
+ | 
+ 9 Generals: 2 Healer or 2 Angel, 2 Tank or 2 Angel, 2 Ranged or 2 Angel, 3 Melee
+ | 
+ 40 Troops: 18 Angel, 4 Tank, 4 Healer, 4 Ranged, 4 Melee
+ |
+
+| 
+ 250% 
+ | 
+ Current Expeditions 
+ |
+
+45
+ | 
+ Qwil-Killers 
+ | 
+ 9 Generals: 3 Strength or 3 Goblin, 2 Melee or 2 Goblin, 2 Intellect or 2 Goblin, 2 Any
+ | 
+ 36 Troops: 9 Strength or 9 Goblin, 9 Melee or 9 Goblin, 9 Intellect or 9 Goblin, 9 Any
+ |
+
+| 
+ 225%, +300% vs Qwiladrian 
+ | 
+ Qwil-Killer Vault 
+ |
+
+50
+ | 
+ Portrait of Many Souls 
+ | 
+ 8 Generals: 4 Special (Role) or 4 Magical Being, 4 Special (Attribute) or 4 Magical Being
+ | 
+ 42 Troops: 17 Special (Role) or 17 Magical Being, 17 Special (Attribute) or 17 Magical Being, 8 Intellect
+ |
+
+| 
+ 200%, +500% vs Small and Medium Raids 
+ | 
+ Current Expeditions 
+ |
+
+57
+ | 
+ Sentient Blades 
+ | 
+ 9 Generals: 3 Human, 4 Construct, 2 Any
+ | 
+ 48 Troops: 15 Human, 15 Intellect, 15 Construct, 3 Any
+ |
+
+| 
+ 250% 
+ | 
+ Current Expeditions 
+ |
+
+33
+ | 
+ Insecticide 
+ | 
+ 3 Generals: 1 Human/Tank/Strength, 1 Human/Melee/Strength, 1 Human/Ranged/Agility
+ | 
+ 30 Troops: 10 Human/Tank/Strength, 10 Human/Melee/Strength, 10 Human/Ranged/Agility
+ |
+
+| 
+ +500% vs N'rlux 
+ | 
+ Crafting (Guild) - Krasgore
+
+Xessus of the Grim Wood
+
+Malchar the Tri-Eyed
+
+|
+
+41
+ | 
+ Order of the Adventurer 
+ | 
+ 7 Generals: 1 Half-Elf, 1 Angel, 2 Human, 3 Elf
+ | 
+ 34 Troops: 14 Intellect, 5 Melee, 5 Angel, 10 Half-Elf
+ |
+
+| 
+ 120% 
+ | 
+ Filth Crawler Enforcer (Adventure Raid) 
+ |
+
+48
+ | 
+ Royal Ruffians 
+ | 
+ 8 Generals: 1 King Jamus I , 2 Wisdom, 2 Healer, 2 Tank, 1 Any
+ | 
+ 40 Troops: 15 Tank or Human, 10 Wisdom or Human, 10 Healer or Human, 5 Any
+ |
+
+| 
+ 200%, +100% vs Dragons and Beastmen 
+ | 
+ Quest Boss: Xerkara ( NM )
+ |
+
+56
+ | 
+ Good Advice 
+ | 
+ 6 Generals: 3 Intellect, 3 Ranged
+ | 
+ 50 Troops: 20 Intellect, 20 Ranged, 10 Any
+ |
+
+| 
+ 220% 
+ | 
+ General Korxun (Raid) 
+ |
+
+46
+ | 
+ Clockwork Chaos 
+ | 
+ 8 Generals: 3 Intellect or 3 Gnome, 2 Agility or 2 Gnome, 2 Wisdom or 2 Gnome, 1 Special (Role) or 1 Gnome
+ | 
+ 38 Troops: 20 Construct, 10 Strength, 8 Intellect
+ |
+
+| 
+ 200%, +200% vs Constructs 
+ | 
+ Clockwork Dragon (Raid) 
+ |
+
+32
+ | 
+ Aegis 
+ | 
+ 6 Generals: 3 Tank, 3 Wisdom
+ | 
+ 26 Troops: 13 Tank, 13 Wisdom
+ |
+
+| 
+ 80% 
+ | 
+ Citadel : Training Grounds Level 3
+ |
+
+36
+ | 
+ Angels of Virtue 
+ | 
+ 6 Generals: 3 Special (Role), 3 Wisdom
+ | 
+ 30 Troops: 15 Special (Role), 15 Wisdom
+ |
+
+| 
+ 230% 
+ | 
+ Salome the Seductress (Guild Raid) 
+ |
+
+32
+ | 
+ Echidna Hunters II 
+ | 
+ 6 Generals: 6 Any
+ | 
+ 26 Troops: 26 Any
+ |
+
+| 
+ 1200% vs Echidna 
+ | 
+ Crafting (Events) 
+ |
+
+39
+ | 
+ Eruption 
+ | 
+ 9 Generals: 4 Ranged, 4 Intellect, 1 Any
+ | 
+ 30 Troops: 15 Ranged, 10 Intellect, 5 Any
+ |
+
+| 
+ 240% 
+ | 
+ Monsters and Magma 
+ |
+
+45
+ | 
+ Fey Hunt 
+ | 
+ 9 Generals: 4 Tank or 4 Magical Being, 3 Ranged or 3 Magical Being, 2 Melee or 2 Magical Being
+ | 
+ 36 Troops: 12 Tank or 12 Magical Being, 12 Ranged or 12 Magical Being, 12 Melee or 12 Magical Being
+ |
+
+| 
+ 250 
+ | 
+ Limited Time Item 
+06/20/14 - 06/27/14 
+ |
+
+38
+ | 
+ Made in West Kruna 
+ | 
+ 8 Generals: Marth the Earth-Shaper , Julcinous the Water-Weaver , Trilla the Light-Sculptor , 1 Tank, 1 Ranged, 1 Melee, 1 Healer, 1 Any
+ | 
+ 38 Troops: 33 Construct, 5 Any
+ |
+
+| 
+ 250 
+ | 
+ Limited Time Item 
+7/12/13 - 7/26/13 , Current Expeditions 
+ |
+
+14
+ | 
+ March IV 
+ | 
+ 2 Generals: Any
+ | 
+ 12 Troops: Any
+ |
+
+| 
+ 220% 
+ | 
+ Crafting/General/General 
+ |
+
+40
+ | 
+ Molten Striders 
+ | 
+ 10 Generals: 2 Melee, 2 Strength, 2 Ranged, 2 Agility, 2 Any
+ | 
+ 30 Troops: 6 Melee, 6 Strength, 6 Ranged, 6 Agility, 6 Any
+ |
+
+| 
+ 210%, +200% vs Guild raids 
+ | 
+ Monsters and Magma 
+ |
+
+48
+ | 
+ The Apotheosis 
+ | 
+ 8 Generals: 3 Tank or 3 Human, 3 Strength or 3 Human, 2 Any
+ | 
+ 40 Troops: 16 Tank or 16 Human, 16 Strength or 16 Human, 8 Any
+ |
+
+| 
+ 250 
+ | 
+ Limited Time Item 
+06/06/14 - 06/13/14 
+ |
+
+16
+ | 
+ Wyrm-Slayers 
+ | 
+ 4 Generals: 1 Strength, 1 Agility, 1 Tank, 1 Ranged
+ | 
+ 12 Troops: 3 Strength, 3 Agility, 3 Tank, 3 Ranged
+ |
+
+| 
+ 200% vs Dragons 
+ | 
+ Crafting (Events) - Kessov Banner 
+ |
+
+32
+ | 
+ Wyrm-Slayers II 
+ | 
+ 8 Generals: 2 Strength, 2 Agility, 2 Tank, 2 Ranged
+ | 
+ 24 Troops: 6 Strength, 6 Agility, 6 Tank, 6 Ranged
+ |
+
+| 
+ 300% vs Dragons 
+ | 
+ Nightmare Valanazes the Gold quest boss
+ |
+
+32
+ | 
+ Wyrm-Slayers III 
+ | 
+ 8 Generals: 2 Strength, 2 Agility, 2 Tank, 2 Ranged
+ | 
+ 24 Troops: 6 Strength, 6 Agility, 6 Tank, 6 Ranged
+ |
+
+| 
+ 600% vs Dragons 
+ | 
+ Crafting (General - Events) together Wyrm-Slayers II , 5x Krykagrius Victory Bannerâ€Ž , 1x Krykagrius' Scaleâ€Ž 
+ |
+
+36
+ | 
+ Suplexes in the Snow 
+ | 
+ 8 Generals: 4 Strength, 3 Melee, 1 Special (Role)
+ | 
+ 38 Troops: 20 Strength, 10 Melee, 8 Special (Role)
+ |
+
+| 
+ 200%, +100% vs Humans 
+ | 
+ Crafting 
+ |
+
+40
+ | 
+ Night of the Vampire 
+ | 
+ 10 Generals: 2 Intellect or 2 Undead, 2 Wisdom or 2 Undead, 2 Strength or 2 Undead, 2 Agility or 2 Undead, 2 Any
+ | 
+ 30 Troops: 6 Intellect or 6 Undead, 6 Wisdom or 6 Undead, 6 Strength or 6 Undead, 6 Agility or 6 Undead, 6 Any
+ |
+
+| 
+ 250 
+ | 
+ Locked Vampiric Lockbox 
+ |
+
+48
+ | 
+ Champions of the Lists 
+ | 
+ 11 Generals: 5 Tank, 4 Strength, 2 Any
+ | 
+ 30 Troops: 10 Tank, 10 Strength, 10 Any
+ |
+
+| 
+ 250 
+ | 
+ Champion Jouster Chest 
+ |
+
+50
+ | 
+ Blood on the Water II 
+ | 
+ 10 Generals: 5 Melee or 5 Merfolk, 5 Healer or 5 Merfolk
+ | 
+ 40 Troops: 20 Melee or 20 Merfolk, 20 Healer or 20 Merfolk
+ |
+
+| 
+ 240%, +700 vs Aquatic 
+ | 
+ Crafting/General/Events 
+ |
+
+56
+ | 
+ Magma Marauders 
+ | 
+ 10 Generals: 5 Special (Role) or 5 Angel, 5 Special (Attribute) or 5 Magical Being
+ | 
+ 46 Troops: 23 Special (Role) or 23 Angel, 23 Special (Attribute) or 23 Magical Being
+ |
+
+| 
+ 240% +200% vs Gigantic Raids 
+ | 
+ Imryx the Incinerator (Raid) 
+ |
+
+50
+ | 
+ Warriors of the Purple Mansion 
+ | 
+ 10 Generals: 2 Ranged, 2 Melee, 2 Tank, 2 Healer, 2 Special (Role)
+ | 
+ 40 Troops: 8 Ranged, 8 Melee, 8 Tank, 8 Healer, 8 Special (Role)
+ |
+
+| 
+ 250%, +250% vs Gigantic Raids 
+ | 
+ Current Expeditions 
+ |
+
+60
+ | 
+ Magic of the Purple Mansion 
+ | 
+ 10 Generals: 10 Intellect
+ | 
+ 50 Troops: 50 Intellect
+ |
+
+| 
+ 270% 
+ | 
+ Current Expeditions 
+ |
+
+56
+ | 
+ Tenderness of the Purple Mansion 
+ | 
+ 10 Generals: 5 Strength or 5 Magical Being, 5 Wisdom or 5 Magical Being
+ | 
+ 46 Troops: 23 Strength or 23 Magical Being, 23 Wisdom or 23 Magical Being
+ |
+
+| 
+ 250%, +250% vs Colossal Raids 
+ | 
+ Current Expeditions 
+ |
+
+50
+ | 
+ Beasts and Men 
+ | 
+ 10 Generals: 3 Felpuur, 3 Gnome, 3 Angel, 1 Any
+ | 
+ 40 Troops: 12 Felpuur, 12 Gnome, 12 Angel, 4 Any
+ |
+
+| 
+ 240%, +200% vs Beastman Raids 
+ | 
+ Trekex's Amphibious Assault (Raid) 
+ |
+
+59
+ | 
+ Dead Alchemist's Society 
+ | 
+ 11 Generals: 3 Undead, 3 Healer, 1 Intellect, 1 Wisdom, 3 Any
+ | 
+ 48 Troops: 12 Undead, 12 Healer, 6 Intellect, 6 Wisdom, 12 Any
+ |
+
+| 
+ 270% 
+ | 
+ Potions and Punches Chest 
+ |
+
+54
+ | 
+ Fisticuffs 
+ | 
+ 12 Generals: 2 Strength, 2 Agility, 2 Intellect, 2 Wisdom, 2 Tank, 2 Melee
+ | 
+ 42 Troops: 42 Any
+ |
+
+| 
+ 200% 
+ | 
+ Potions and Punches Chest 
+ |
+
+38
+ | 
+ Kavalan Fury 
+ | 
+ 8 Generals: 4 Melee, 4 Strength
+ | 
+ 30 Troops: 15 Melee, 15 Strength
+ |
+
+| 
+ 240%, +200% vs Guild Raids 
+ | 
+ Guild Raid: Adrastos of the Kavala 
+ |
+
+65
+ | 
+ Megacidal Maniacs 
+ | 
+ 15 Generals: 1 Reserved for Merhatl the Heartless , 1 Reserved for Kortoh of the Serpent , 1 Reserved for Jallop Bloodwater , 1 Reserved for Besania the Elucidator , 1 Reserved for Obsidia , 1 Reserved for Circay of the Shark , 2 Wisdom, 2 Intellect, 2 Agility, 2 Strength, 1 Any
+ | 
+ 50 Troops: 50 Any
+ |
+
+| 
+ 240%, +500% vs Giants 
+ | 
+ Current Expeditions 
+ |
+
+45
+ | 
+ Ragath's Company 
+ | 
+ 9 Generals: 1 Reserved for Ragath , 4 Melee, 4 Wisdom
+ | 
+ 36 Troops: 36 Human
+ |
+
+| 
+ 240%, +200% vs Giants 
+ | 
+ Gigantomachy (Raid) 
+ |
+
+54
+ | 
+ Warrior Poetry 
+ | 
+ 8 Generals: 4 Melee or 4 Human, 4 Intellect or 4 Human
+ | 
+ 46 Troops: 18 Melee or 18 Human, 18 Intellect or 18 Human, 10 Any
+ |
+
+| 
+ 250% 
+ | 
+ Limited Time Item 
+09/19/14 - 09/26/14 
+ |
+
+60
+ | 
+ Compliments to the Chef 
+ | 
+ 10 Generals: 2 Strength, 2 Agility, 2 Intellect, 2 Wisdom, 2 Any
+ | 
+ 50 Troops: 10 Strength, 10 Agility, 10 Intellect, 10 Wisdom, 10 Any
+ |
+
+| 
+ 200%, +300% vs Campaigns 
+ | 
+ Campaign : N Giant Cook 
+ |
+
+49
+ | 
+ Rosperina's Rapiers 
+ | 
+ 9 Generals: 4 Tank, 4 Agility, 1 Any
+ | 
+ 40 Troops: 20 Tank, 20 Agility
+ |
+
+| 
+ 240%, +200% vs Human Raids 
+ | 
+ Gataalli Huxac (Raid) 
+ |
+
+42
+ | 
+ Montague's Chisel 
+ | 
+ 12 Generals: 4 Human, 4 Tank, 4 Wisdom
+ | 
+ 30 Troops: 10 Construct, 10 Special (Role), 10 Strength
+ |
+
+| 
+ 240%, +330% vs Construct Raids 
+ | 
+ Love's Labors Chest 
+ |
+
+42
+ | 
+ Veitt's Hammer 
+ | 
+ 10 Generals: 3 Human, 3 Ranged, 3 Intellect, 1 Any
+ | 
+ 50 Troops: 20 Construct, 10 Special (Role), 20 Agility
+ |
+
+| 
+ 200%, +225% vs Human Raids 
+ | 
+ Love's Labors Chest 
+ |
+
+52
+ | 
+ Skulls and Suplexes 
+ | 
+ 12 Generals: 4 Human, 4 Melee, 4 Agility
+ | 
+ 40 Troops: 12 Human, 12 Melee, 12 Agility, 4 Any
+ |
+
+| 
+ 240%, +425% vs Magical Creature 
+ | 
+ Current Expeditions 
+ |
+
+52
+ | 
+ Gleaming Eyes, Glittering Blood 
+ | 
+ 12 Generals: 1 Orc, 1 Magical Being, 1 Human, 2 Tank, 2 Melee, 2 Healer, 3 Any
+ | 
+ 40 Troops: 10 Undead, 10 Melee, 10 Wisdom, 10 Any
+ |
+
+| 
+ 240%, +380% vs Undead 
+ | 
+ Current Expeditions 
+ |
+
+52
+ | 
+ Luck of the Devil 
+ | 
+ 14 Generals: 1 Orc, 1 Magical Being, 3 Tank, 3 Ranged, 3 Strength, 3 Intellect
+ | 
+ 38 Troops: 28 Oroc or 28 Magical Being, 10 Any
+ |
+
+| 
+ 200%, +425% vs Demons 
+ | 
+ Current Expeditions 
+ |
+
+50
+ | 
+ Hellementary 
+ | 
+ 12 Generals: 2 Construct, 4 Melee, 4 Agility, 2 Any
+ | 
+ 38 Troops: 4 Construct, 12 Melee, 12 Agility, 10 Any
+ |
+
+| 
+ 200%, +350% vs Demons 
+ | 
+ Hellemental (Raid) 
+ |
+
+50
+ | 
+ Gravediggers 
+ | 
+ 10 Generals: 5 Melee, 5 Agility
+ | 
+ 40 Troops: 20 Melee, 20 Agility
+ |
+
+| 
+ 250%, +250% vs Undead 
+ | 
+ Shadow (Raid) 
+ |
+
+62
+ | 
+ Wolf Pack 
+ | 
+ 12 Generals: 3 Melee, 3 Ranged, 3 Tank, 3 Any
+ | 
+ 50 Troops: 15 Melee, 15 Ranged, 15 Tank, 5 Any
+ |
+
+| 
+ 250 
+ | 
+ Full Moon Chest 
+ |
+
+46
+ | 
+ Bathed in Blood 
+ | 
+ 10 Generals: 2 Strength, 2 Agility, 2 Intellect, 2 Wisdom, 2 Any
+ | 
+ 36 Troops: 8 Strength, 8 Agility, 8 Intellect, 8 Wisdom, 4 Any
+ |
+
+| 
+ 200%, +350% vs Campaigns 
+ | 
+ NM Shadow quest boss 
+ |
+
+62
+ | 
+ Undead Alchemy 
+ | 
+ 12 Generals: 2 Human, 2 Gnome, 2 Goblin, 6 Undead
+ | 
+ 50 Troops: 10 Human, 10 Gnome, 10 Goblin, 20 Undead
+ |
+
+| 
+ 200%, +375% vs Undead 
+ | 
+ Crafting 
+ |
+
+46
+ | 
+ Day of the Dead 
+ | 
+ 10 generals: 3 Human, 3 Ranged, 3 Wisdom, 1 Any
+ | 
+ 36 Troops: 10 Ranged, 10 Tank, 10 Melee, 6 Any
+ |
+
+| 
+ 200%, +250% vs Sieges 
+ | 
+ Castle Mandrake I (Event Raid) (18b)
+ |
+
+61
+ | 
+ Day of the Dead II 
+ | 
+ 13 generals: 4 Human, 4 Ranged, 4 Wisdom, 1 Any
+ | 
+ 48 Troops: 14 Ranged, 14 Tank, 14 Melee, 6 Any
+ |
+
+| 
+ 200%, +350% vs Sieges 
+ | 
+ Crafting/General/Events 
+ |
+
+51
+ | 
+ Lightning Bearers 
+ | 
+ 11 Generals: 3 Orc, 3 Melee, 3 Wisdom, 2 Any
+ | 
+ 40 Troops: 11 Orc, 11 Melee, 11 Wisdom, 7 Any
+ |
+
+| 
+ 240%, +350% vs Giants 
+ | 
+ Kanehuar Yachu (Raid) 
+ |
+
+23
+ | 
+ The Pipes Are Calling 
+ | 
+ 10 Generals: 4 Healer, 4 Special(Attribute), 2 Any
+ | 
+ 44 Troops: 18 Healer, 18 Special(Attribute), 8 Any
+ |
+
+| 
+ 250, +250% vs Qwiladrians 
+ | 
+ Limited Time Item 
+10/31/14 - 11/7/14 
+ |
+
+54
+ | 
+ Football Mob 
+ | 
+ 12 Generals: 4 Angel, 4 Tank, 4 Agility
+ | 
+ 42 Troops: 7 Gnome, 7 Ranged, 7 Agility, 7 Orc, 7 Tank, 7 Strength
+ |
+
+| 
+ 200%, +250% vs Goblins 
+ | 
+ Daily Rewards : Green
+ |
+
+54
+ | 
+ Brethren of the Axe 
+ | 
+ 10 Generals: 5 Melee, 5 Strength
+ | 
+ 44 Troops: 22 Melee, 22 Strength
+ |
+
+| 
+ 210% 
+ | 
+ Daily Rewards : Purple
+ |
+
+72
+ | 
+ Bonds of Hate 
+ | 
+ 12 Generals: 4 Strength, 4 Agility, 4 Intellect
+ | 
+ 60 Troops: 20 Strength, 20 Agility, 20 Intellect
+ |
+
+| 
+ 250 
+ | 
+ Current Expeditions 
+ |
+
+48
+ | 
+ Dogs of the Sea 
+ | 
+ 12 Generals: 4 Human, 4 Ranged, 4 Wisdom
+ | 
+ 48 Troops: 14 Human, 14 Ranged, 14 Wisdom, 6 Any
+ |
+
+| 
+ 220%, +350 vs Orc 
+ | 
+ Crafting/General/Events 
+ |
+
+50
+ | 
+ Adoring Fans 
+ | 
+ 10 Generals: 3 Human, 3 Special (Role), 3 Special (Attribute), 1 Any
+ | 
+ 40 Troops: 10 Special (Attribute), 10 Special (Role), 10 Elf, 10 Any
+ |
+
+| 
+ 200% 
+ | 
+ Rising Hero Chest: Level 100 
+ |
+
+45
+ | 
+ Purple Redemption 
+ | 
+ 10 Generals: 4 Orc, 4 Human, 2 Any
+ | 
+ 45 Troops: 20 Orc, 20 Human, 5 Any
+ |
+
+| 
+ 200% +200% vs Orcs 
+ | 
+ Dar'Hed'Nal (Guild Raid) 
+ |
+
+60
+ | 
+ Polyphasic Strikers 
+ | 
+ 12 Generals: 4 Orc, 4 Tank, 4 Strength
+ | 
+ 48 Troops: 16 Orc, 16 Tank, 16 Strength
+ |
+
+| 
+ 240%, +300% vs Colosseum raids 
+ | 
+ Crafting 
+ |
+
+60
+ | 
+ Magic and Mayhem 
+ | 
+ 12 Generals: 4 Human, 4 Tank, 4 Special (Attribute)
+ | 
+ 48 Troops: 16 Human, 16 Tank, 16 Special (Attribute)
+ |
+
+| 
+ 240%, +300% vs Festival raids 
+ | 
+ Crafting 
+ |
+
+62
+ | 
+ Charnel House 
+ | 
+ 14 Generals: 3 Tank, 3 Strength, 3 Melee, 3 Agility, 1 Intellect, 1 Wisdom
+ | 
+ 48 Troops: 10 Tank, 10 Strength, 10 Melee, 10 Agility, 8 Any
+ |
+
+| 
+ 210% 
+ | 
+ Crafting 
+ |
+
+58
+ | 
+ Puppet Strings 
+ | 
+ 8 Generals: 4 Human, 4 Any
+ | 
+ 50 Troops: 25 Human, 25 Any
+ |
+
+| 
+ 200%, +200% vs Goblins 
+ | 
+ Master Ninja Bakku (Raid) 
+ |
+
+49
+ | 
+ Death to Humans!!!! 
+ | 
+ 9 Generals: 4 Goblin, 3 Melee, 2 Strength
+ | 
+ 40 Troops: 20 Goblin, 5 Melee, 5 Ranged, 5 Strength, 5 Intellect
+ |
+
+| 
+ 250%, +250% vs Humans 
+ | 
+ Murgrux the Mangler (Raid) 
+ |
+
+68
+ | 
+ The Crystal Dawn II 
+ | 
+ 14 Generals: 2 Strength or 2 Magical Being, 2 
+Agility or 2 Magical Being, 2 Intellect or 2 Magical Being, 2 Wisdom or 2
+ Magical Being, 2 Special (Attribute) or 2 Magical Being, 2 Magical 
+Being, 2 Any
+ | 
+ 54 Troops: 9 Strength or 9 Magical Being, 9 
+Agility or 9 Magical Being, 9 Intellect or 9 Magical Being, 9 Wisdom or 9
+ Magical Being, 9 Special (Attribute) or 9 Magical Being, 9 Any
+ |
+
+| 
+ 250, +400% vs Dragons 
+ | 
+ Crafting 
+ |
+
+60
+ | 
+ Runic Swarm 
+ | 
+ 10 Generals: 1 Gnome, 3 Special (Role), 3 Intellect, 3 Any
+ | 
+ 50 Troops: 10 Gnome, 10 Special (Role), 10 Intellect, 20 Any
+ |
+
+| 
+ 260 
+ | 
+ Deathrune's Chest 
+ |
+
+51
+ | 
+ Porters and Protectors 
+ | 
+ 12 Generals: 4 Human, 4 Melee, 4 Strength
+ | 
+ 39 Troops: 13 Human, 13 Melee, 13 Strength
+ |
+
+| 
+ 240 
+ | 
+ Limited Time Item 
+ |
+
+53
+ | 
+ Mummy's Grasp 
+ | 
+ 13 Generals: 4 Undead, 4 Melee, 4 Strength, 1 Any
+ | 
+ 40 Troops: 10 Undead, 10 Melee, 10 Strength, 10 Any
+ |
+
+| 
+ 240 
+ | 
+ Current Expeditions 
+ |
+
+62
+ | 
+ Flagellants 
+ | 
+ 12 Generals: 2 Gnome, 2 Orc, 4 Special (Role), 4 Wisdom
+ | 
+ 50 Troops: 10 Felpuur, 10 Special (Role), 10 Wisdom, 20 Any
+ |
+
+| 
+ 240 
+ | 
+ Current Expeditions 
+ |
+
+57
+ | 
+ Multi-Headed Horrors 
+ | 
+ 12 Generals: 4 Human, 4 Tank, 4 Special (Attribute)
+ | 
+ 45 Troops: 15 Human, 15 Tank, 15 Special (Attribute)
+ |
+
+| 
+ 240%, +360% vs Humans 
+ | 
+ Current Expeditions 
+ |
+
+53
+ | 
+ Dreadnaught 
+ | 
+ 13 Generals: 4 Orc, 4 Tank, 4 Strength, 1 Any
+ | 
+ 40 Troops: 5 Orc, 5 Elf, 5 Tank, 5 Melee, 20 Strength
+ |
+
+| 
+ 240%, +360% vs Beastmen 
+ | 
+ Current Expeditions 
+ |
+
+65
+ | 
+ Leviathan's Bane 
+ | 
+ 15 Generals: 1 Reserved for Ranina , 1 Reserved for Laocon's Ghost , 1 Reserved for Captain Tiphantes , 1 Reserved for First Mate Braeus , 1 Reserved for Lord Verne, Serpent Hunter , 2 Melee, 2 Tank, 2 Ranged, 2 Healer, 2 Any
+ | 
+ 50 Troops: 50 Any
+ |
+
+| 
+ 100%, +750% vs Aquatic 
+ | 
+ Current Expeditions 
+ |
+
+52
+ | 
+ Steel Host 
+ | 
+ 12 Generals: 2 Orc, 2 Undead, 4 Melee, 4 Strength
+ | 
+ 40 Troops: 5 Magical Being, 5 Undead, 15 Melee, 15 Strength
+ |
+
+| 
+ 250% 
+ | 
+ Daily Assignments 
+ |
+
+60
+ | 
+ The Shoreguard 
+ | 
+ 12 Generals: 3 Wisdom, 3 Strength, 3 Special (Role), 3 Tank
+ | 
+ 48 Troops: 12 Wisdom, 12 Strength, 12 Special (Role), 12 Tank
+ |
+
+| 
+ 200%, +400% vs Aquatic and Campaigns 
+ | 
+ The Frozen War 
+ |
+
+56
+ | 
+ Sunken Legion 
+ | 
+ 12 Generals: 3 Intellect or 3 Merfolk, 3 Wisdom or 3 Merfolk, 3 Agility or 3 Merfolk, 3 Strength or 3 Merfolk
+ | 
+ 44 Troops: 11 Intellect or 11 Merfolk, 11 Wisdom or 11 Merfolk, 11 Agility or 11 Merfolk, 11 Strength or 11 Merfolk
+ |
+
+| 
+ 240%, +700% vs Aquatic 
+ | 
+ Crafting 
+ |
+
+66
+ | 
+ Raven's Wing 
+ | 
+ 11 Generals: 2 Strength, 2 Agility, 2 Intellect, 2 Wisdom, 2 Special (Attribute), 1 Any
+ | 
+ 55 Troops: 10 Strength, 10 Agility, 10 Intellect, 10 Wisdom, 10 Special (Attribute), 5 Any
+ |
+
+| 
+ 240%, +600% vs Demons 
+ | 
+ Raven's Wing Chest 
+ |
+
+60
+ | 
+ Into the Shadows 
+ | 
+ 12 Generals: 2 Felpuur, 4 Melee, 4 Agility, 2 Any
+ | 
+ 48 Troops: 12 Felpuur, 12 Special (Role), 12 Agility, 12 Any
+ |
+
+| 
+ 240%, +600% vs Demons 
+ | 
+ Limited Time Item for 10 Planet Coins
+ |
+
+57
+ | 
+ Angelic Empiricism II 
+ | 
+ 12 Generals: 2 Angel, 2 Strength, 2 Intellect, 2 Tank, 2 Melee, 2 Any
+ | 
+ 45 Troops: 9 Angel, 9 Strength, 9 Intellect, 9 Tank, 9 Melee
+ |
+
+| 
+ +700% vs Demons 
+ | 
+ Crafting/General/Events - Scourge Scraps
+ |
+
+57
+ | 
+ Sunstones 
+ | 
+ 13 Generals: 2 Oroc, 2 Human, 4 Healer, 4 Melee, 1 Any
+ | 
+ 44 Troops: 10 Oroc, 15 Tank, 15 Intellect, 4 Any
+ |
+
+| 
+ 220%, +500% vs Undead 
+ | 
+ Current Expeditions 
+ |
+
+62
+ | 
+ Press-gang Infantry 
+ | 
+ 12 Generals: 2 Felpuur, 4 Tank, 4 Wisdom, 2 Any
+ | 
+ 50 Troops: 15 Dwarf, 15 Melee, 15 Strength, 5 Any
+ |
+
+| 
+ 240% 
+ | 
+ Current Expeditions 
+ |
+
+60
+ | 
+ Clockwork IV 
+ | 
+ 10 Generals: 2 Tank, 2 Melee, 2 Ranged, 2 Healer, 2 Special(Role)
+ | 
+ 50 Troops: 10 Tank, 10 Melee, 10 Ranged, 10 Healer, 10 Special(Role)
+ |
+
+| 
+ 125%, +220% vs Constructs 
+ | 
+ Crafting 
+ |
+
+46
+ | 
+ Apex Predators 
+ | 
+ 10 Generals: 1 Felpuur, 3 Melee, 3 Intellect, 3 Any
+ | 
+ 36 Troops: 12 Felpuur, 12 Melee, 12 Agility
+ |
+
+| 
+ 220%, +620% vs Beasts 
+ | 
+ Current Expeditions : Predator Pack
+ |
+
+63
+ | 
+ Ravenguard II 
+ | 
+ 13 Generals: 2 Strength, 2 Agility, 2 Intellect, 2 Wisdom, 2 Special (Attribute), 3 Any
+ | 
+ 50 Troops: 15 Human, 15 Special (Attribute), 15 Melee, 5 Any
+ |
+
+| 
+ 220%, +600% vs Campaigns 
+ | 
+ Crafting 
+ |
+
+54
+ | 
+ Good Deeds 
+ | 
+ 12 Generals: 2 Elf, 2 Intellect, 2 Wisdom, 2 Healer, 2 Strength, 2 Any
+ | 
+ 42 Troops: 7 Elf, 7 Intellect, 7 Wisdom, 7 Healer, 7 Strength, 7 Any
+ |
+
+| 
+ 250% 
+ | 
+ Crafting 
+ |
+
+57
+ | 
+ Roland's Legacy 
+ | 
+ 12 Generals: 4 Strength, 2 Wisdom, 2 Tank, 2 Healer, 2 Melee
+ | 
+ 45 Troops: 15 Agility, 15 Intellect, 15 Strength
+ |
+
+| 
+ 200% 
+ | 
+ Roland's Legacy Chest 
+ |
+
+54
+ | 
+ Azarel's Elite Regiment 
+ | 
+ 12 Generals: 4 Human, 4 Tank, 4 Strength
+ | 
+ 42 Troops: 14 Human, 14 Melee, 14 Strength
+ |
+
+| 
+ 240%, +575% vs Constructs 
+ | 
+ Limited Time Item April 2015 for 10PC
+ |
+
+66
+ | 
+ The Rising Dawn 
+ | 
+ 16 Generals: 3 Strength, 3 Agility, 3 Wisdom, 3 Intellect, 4 Any
+ | 
+ 50 Troops: 10 Strength, 10 Agility, 10 Wisdom, 10 Intellect, 10 Any
+ |
+
+| 
+ 260%, +600% vs Dragons 
+ | 
+ Crafting 
+ |
+
+60
+ | 
+ Kasan House Guard 
+ | 
+ 12 Generals: 4 Human, 4 Melee, 4 Agility
+ | 
+ 48 Troops: 16 Human, 16 Melee, 16 Agility
+ |
+
+| 
+ 200%, 325% vs Magical Creatures 
+ | 
+ Crafting 
+ |
+
+64
+ | 
+ Stonebreaker's Warriors 
+ | 
+ 14 Generals: 2 Strength or 2 Human, 2 Agility 
+or 2 Human, 2 Intellect or 2 Human, 2 Wisdom or 2 Human, 2 Special 
+(Attribute) or 2 Human, 2 Human, 2 Any
+ | 
+ 50 Troops: 8 Strength or 8 Human, 8 Agility or 8
+ Human, 8 Intellect or 8 Human, 8 Wisdom or 8 Human, 8 Special 
+(Attribute) or 8 Human, 5 Human, 5 Any
+ |
+
+| 
+ 250%, +550% vs Sieges 
+ | 
+ Crafting 
+ |
+
+72
+ | 
+ The Second Go Brigade 
+ | 
+ 12 Generals: 3 Human, 3 Special (Role), 3 Special (Attribute), 3 Any
+ | 
+ 60 Troops: 20 Construct, 20 Melee, 10 Special (Attribute), 10 Any
+ |
+
+| 
+ 225%, +400% vs Dragons and Constructs 
+ | 
+ Makeshift Drake (World Raid) 
+ |
+
+62
+ | 
+ Elven Fury 
+ | 
+ 14 Generals: 4 Elf, 4 Melee, 4 Strength, 2 Any
+ | 
+ 48 Troops: 12 Elf, 12 Tank, 12 Strength, 12 Any
+ |
+
+| 
+ 250% 
+ | 
+ Current Expeditions 
+ |
+
+64
+ | 
+ Hunting Party 
+ | 
+ 14 Generals: 2 Merfolk, 4 Ranged, 4 Agility, 4 Any
+ | 
+ 50 Troops: 10 Merfolk, 10 Ranged, 10 Agility, 20 Any
+ |
+
+| 
+ 250%, +400% vs Aquatic and Beasts 
+ | 
+ Current Expeditions 
+ |
+
+62
+ | 
+ Monstrous Alchemists 
+ | 
+ 12 Generals: 2 Goblin, 2 Orc, 3 Ranged, 3 Agility, 2 Any
+ | 
+ 50 Troops: 12 Orc, 12 Ranged, 12 Agility, 14 Any
+ |
+
+| 
+ 220%, +400% vs Dragons and Magical Creatures 
+ | 
+ Drake's Fire Elemental (Guild Raid) 
+ |
+
+65
+ | 
+ Rider's Hand 
+ | 
+ 13 Generals: 4 Elf, 4 Melee, 4 Agility, 1 Any
+ | 
+ 52 Troops: 13 Elf, 13 Melee, 13 Agility, 13 Any
+ |
+
+| 
+ 220%, +450% vs Dragons 
+ | 
+ Crafting 
+ |
+
+53
+ | 
+ Ghost Blasters 
+ | 
+ 13 Generals: 3 Dwarf, 3 Melee, 3 Wisdom, 4 Any
+ | 
+ 40 Troops: 10 Dwarf, 10 Melee, 10 Wisdom, 10 Any
+ |
+
+| 
+ 220%, +400% vs Undead and Dragons 
+ | 
+ Spectres of the Claw (World Raid) 
+ |
+
+62
+ | 
+ Greenhealers 
+ | 
+ 12 Generals: 2 Half-Elf, 4 Healer, 4 Intellect, 2 Any
+ | 
+ 50 Troops: 12 Gnome, 12 Healer, 12 Wisdom, 14 Any
+ |
+
+| 
+ 220%, +450% vs Dragons 
+ | 
+ Horthania the Grey (Raid) 
+ |
+
+57
+ | 
+ Knights of Mathala 
+ | 
+ 12 Generals: 4 Angel, 4 Melee, 4 Tank
+ | 
+ 45 Troops: 15 Angel, 15 Melee, 15 Tank
+ |
+
+| 
+ 220%, +400% vs Demons and Dragons 
+ | 
+ Ell'Shoaz'Dahaq (World Raid) 
+ |
+
+71
+ | 
+ Unconventional Warfare 
+ | 
+ 16 Generals: 2 Oroc, 2 Gnome, 3 Special (Role), 3 Ranged, 3 Intellect, 3 Wisdom
+ | 
+ 55 Troops: 5 Goblin, 5 Merfolk, 5 Dwarf, 5 Ranged, 5 Melee, 5 Tank, 15 Agility, 10 Any
+ |
+
+| 
+ 250% 
+ | 
+ Spoils of War Chest 
+ |
+
+64
+ | 
+ Bones of Tor'gyyl 
+ | 
+ 14 Generals: 2 Dwarf, 2 Oroc, 2 Tank, 2 Ranged, 4 Agility, 2 Any
+ | 
+ 50 Troops: 15 Oroc, 15 Ranged, 15 Agility, 5 Any
+ |
+
+| 
+ 240%, +450% vs Underground 
+ | 
+ Limited Time Item June 2015 for 10PC
+ |
+
+64
+ | 
+ Mundane Murderers 
+ | 
+ 14 Generals: 3 Human, 4 Melee, 4 Intellect, 3 Any
+ | 
+ 50 Troops: 15 Human, 15 Melee, 15 Intellect, 5 Any
+ |
+
+| 
+ 240%, +450% vs Magical Creatures 
+ | 
+ Current Expeditions : Mundane Murderer Pack
+ |
+
+63
+ | 
+ Snake Oil Salesmen 
+ | 
+ 13 Generals: 4 Gnome, 4 Healer, 4 Wisdom, 1 Any
+ | 
+ 50 Troops: 12 Dwarf, 12 Healer, 12 Wisdom, 14 Any
+ |
+
+| 
+ 240%, +375% vs Giants 
+ | 
+ Crafting 
+ |
+
+57
+ | 
+ Trench Dwellers 
+ | 
+ 12 Generals: 3 Melee, 3 Agility, 3 Ranged, 3 Wisdom
+ | 
+ 45 Troops: 10 Melee, 10 Agility, 10 Ranged, 10 Wisdom, 5 Any
+ |
+
+| 
+ 200%, +350% vs Aquatic raids,+650% vs Terror raids 
+ | 
+ Deep Sea Chest 
+ |
+
+63
+ | 
+ Slings and Stones 
+ | 
+ 13 Generals: 3 Goblin, 3 Intellect, 3 Ranged, 4 Any
+ | 
+ 50 Troops: 10 Goblin, 15 Ranged, 15 Agility, 10 Any
+ |
+
+| 
+ 250%, +475% vs Ogres 
+ | 
+ Current Expeditions 
+ |
+
+65
+ | 
+ Sanguine Soldiers 
+ | 
+ 15 Generals: 1 Half-Elf, 1 Construct, 2 Healer, 2 Wisdom, 2 Tank, 2 Melee, 2 Ranged, 2 Agility, 1 Any
+ | 
+ 50 Troops: 10 Construct, 10 Healer, 10 Wisdom, 5 Tank, 5 Ranged, 5 Agility
+ |
+
+| 
+ 250% 
+ | 
+ Current Expeditions 
+ |
+
+66
+ | 
+ Cuirassiers 
+ | 
+ 16 Generals: 2 Tank, 2 Melee, 2 Ranged, 2 Healer, 2 Agility, 2 Wisdom, 2 Intellect, 2 Strength
+ | 
+ 50 Troops: 5 Human, 5 Melee, 5 Ranged, 5 Healer, 5 Agility, 5 Wisdom, 5 Intellect, 5 Strength, 10 Any
+ |
+
+| 
+ 220%, +700% vs Plant Raids 
+ | 
+ AP Shop 
+ |
+
+60
+ | 
+ Trailblazers 
+ | 
+ 10 Generals: 2 Orc, 4 Agility, 4 Any
+ | 
+ 50 Troops: 10 Felpuur, 15 Ranged, 15 Agility, 10 Any
+ |
+
+| 
+ 220%, +380% vs Plant Raids 
+ | 
+ Vineborn Behemoth (Raid) 
+ |
+
+63
+ | 
+ Terror Seekers 
+ | 
+ 13 Generals: 4 Merfolk, 4 Ranged, 4 Wisdom, 1 Any
+ | 
+ 50 Troops: 15 Merfolk, 15 Ranged, 15 Wisdom, 5 Any
+ |
+
+| 
+ 220%, +600% vs Terror raids 
+ | 
+ Euryino, the Fifth Terror (Raid) 
+ |
+
+75
+ | 
+ Festival Entertainers 
+ | 
+ 15 Generals: 3 Human, 2 Goblin, 2 Merfolk, 1 Felpuur, 1 Undead, 1 Elf, 1 Orc, 1 Construct, 3 Any
+ | 
+ 60 Troops: 60 Goblin
+ |
+
+| 
+ Power Bonus: 250%, +700% vs Festival raids 
+ | 
+ Festival of Drifting Dreams 
+ |
+
+70
+ | 
+ Marine Explorers 
+ | 
+ 10 Generals: 1 Gnome, 3 Special (Role), 3 Intellect, 3 Any
+ | 
+ 60 Troops: 30 Human, 10 Special (Role), 10 Intellect, 10 Any
+ |
+
+| 
+ Power Bonus: 250%, +750% vs Terror raids 
+ | 
+ Limited Time Item 
+ |
+
+62
+ | 
+ Directed Aggression 
+ | 
+ 12 Generals: 2 Strength, 2 Agility, 2 Intellect, 2 Wisdom, 2 Special (Role), 2 Any
+ | 
+ 50 Troops: 7 Strength, 7 Agility, 7 Intellect, 7 Wisdom, 7 Special (Role), 15 Any
+ |
+
+| 
+ 220%, +450% vs Guild raids 
+ | 
+ Guild Shop 
+ |
+
+63
+ | 
+ Veterans 
+ | 
+ 13 Generals: 4 Human, 4 Melee, 4 Strength, 1 Any
+ | 
+ 50 Troops: 20 Orc, 15 Melee, 15 Strength
+ |
+
+| 
+ 240%, +800% vs Nightmare Queen raids 
+ | 
+ Limited Time Item 
+ |
+
+57
+ | 
+ Militia 
+ | 
+ 12 Generals: 1 Gnome, 1 Orc, 1 Goblin, 1 Human, 1 Half-Elf, 1 Elf, 1 Dwarf, 1 Felpuur, 1 Magical Being, 1 Angel, 1 Undead, 1 Any
+ | 
+ 45 Troops: 10 Goblin, 10 Ranged, 10 Wisdom, 15 Any
+ |
+
+| 
+ 200%, +175% vs Orcs/+175% vs Goblins 
+ | 
+ Crafting 
+ |
+
+75
+ | 
+ The Fixers 
+ | 
+ 15 Generals: 4 Healer, 4 Tank, 4 Ranged, 3 Any
+ | 
+ 60 Troops: 15 Healer, 15 Tank, 15 Ranged, 15 Any
+ |
+
+| 
+ 210%, +300% vs Beasts 
+ | 
+ Public Relations Chest 
+ |
+
+72
+ | 
+ Queenslayers 
+ | 
+ 12 Generals: 4 Melee, 4 Tank, 4 Any
+ | 
+ 60 Troops: 10 Orc, 10 Goblin, 15 Melee, 15 Tank, 10 Any
+ |
+
+| 
+ 240%, +500% vs Nightmare Queen raids/+400% vs Campaigns 
+ | 
+ The Nightmare Queen's Horde Hard 
+ |
+
+64
+ | 
+ Sharp Edges 
+ | 
+ 14 Generals: 2 Undead, 3 Melee, 3 Agility, 3 Tank, 3 Wisdom
+ | 
+ 50 Troops: 10 Undead, 15 Tank, 15 Wisdom, 10 Any
+ |
+
+| 
+ 240%, +550% vs Orcs 
+ | 
+ Limited Time Item 
+ |
+
+65
+ | 
+ Starbolts 
+ | 
+ 15 Generals: 2 Half-Elf, 2 Magical Being, 2 Ranged, 2 Special (Role), 2 Agility, 2 Special (Attribute), 3 Any
+ | 
+ 50 Troops: 10 Ranged, 10 Special (Role), 10 Agility, 10 Special (Attribute), 10 Any
+ |
+
+| 
+ 240%, +500% vs Qwiladrian 
+ | 
+ Limited Time Item 
+ |
+
+64
+ | 
+ Bombardiers 
+ | 
+ 14 Generals: 2 Goblin, 2 Orc, 4 Ranged, 4 Agility, 2 Any
+ | 
+ 50 Troops: 25 Ranged, 25 Agility
+ |
+
+| 
+ 250%, +575% vs Goblins 
+ | 
+ Limited Time Item 
+ |
+
+74
+ | 
+ Knowledge and Power 
+ | 
+ 14 Generals: 6 Human, 2 Ranged, 2 Melee, 2 Wisdom, 2 Strength
+ | 
+ 60 Troops: 20 Human, 10 Ranged, 10 Melee, 10 Wisdom, 10 Strength
+ |
+
+| 
+ 280% 
+ | 
+ Expeditions October 2015 
+ |
+
+60
+ | 
+ Showstoppers 
+ | 
+ 12 Generals: 4 Melee, 4 Agility, 4 Strength
+ | 
+ 48 Troops: 16 Melee, 16 Agility, 16 Strength
+ |
+
+| 
+ 220%, +300% vs Colosseum raids 
+ | 
+ The Bash Brothers (Guild Raid) 
+ |
+
+61
+ | 
+ Ogre Slayers 
+ | 
+ 11 Generals: 4 Tank, 3 Ranged, 4 Strength
+ | 
+ 50 Troops: 15 Tank, 20 Ranged, 15 Strength
+ |
+
+| 
+ 220%, +350% vs Ogres 
+ | 
+ The Bash Brothers (Guild Raid) 
+ |
+
+66
+ | 
+ Qilin's Disciples 
+ | 
+ 12 Generals: 2 Tank, 2 Ranged, 2 Agility, 2 Strength, 2 Melee, 2 Any
+ | 
+ 54 Troops: 9 Tank, 9 Ranged, 9 Agility, 9 Strength, 9 Melee, 9 Any
+ |
+
+| 
+ 230%, +500% vs NM Queen Raids 
+ | 
+ Echoes of Invasion (World Raid) 
+ |
+
+68
+ | 
+ Drifting Dreamers 
+ | 
+ 12 Generals: 4 Angel, 4 Special (Role), 4 Wisdom
+ | 
+ 56 Troops: 8 Magical Being, 16 Melee, 16 Agility, 16 Any
+ |
+
+| 
+ 225%, +400% vs Undead 
+ | 
+ Crafting 
+ |
+
+65
+ | 
+ The Burial Crew 
+ | 
+ 15 Generals: 1 Human, 1 Undead, 3 Tank, 3 Strength, 3 Healer, 3 Wisdom, 1 Any
+ | 
+ 50 Troops: 50 Any
+ |
+
+| 
+ 240%, +500% vs Undead 
+ | 
+ Limited Time Item 
+ |
+
+74
+ | 
+ Constructed Converts 
+ | 
+ 14 Generals: 4 Construct, 2 Tank, 2 Melee, 2 Strength, 2 Agility, 2 Any
+ | 
+ 60 Troops: 20 Construct, 10 Melee, 10 Tank, 10 Strength, 10 Agility
+ |
+
+| 
+ 240%, +350% vs Undead, +600% vs NM Queen 
+ | 
+ Constructed Converts Bag 
+ |
+
+63
+ | 
+ Insomniacs 
+ | 
+ 13 Generals: 1 Gnome, 4 Healer, 4 Wisdom, 4 Any
+ | 
+ 50 Troops: 20 Dwarf, 15 Melee, 15 Strength
+ |
+
+| 
+ 240%, +400% vs Magical Creatures, +500% vs NM Queen 
+ | 
+ Quest Boss: Prison of Fear NM 
+ |
+
+62
+ | 
+ Failed Experiments 
+ | 
+ 12 Generals: 2 Strength, 2 Agility, 2 Intellect, 2 Wisdom, 4 Any
+ | 
+ 50 Troops: 10 Strength, 10 Agility, 10 Intellect, 10 Wisdom, 10 Any
+ |
+
+| 
+ 220%, +375% vs Dragons/+375% vs Qwiladrians 
+ | 
+ Crafting/General/Events 
+ |
+
+70
+ | 
+ Feasters 
+ | 
+ 16 Generals: 2 Tank, 2 Melee, 2 Ranged, 2 Healer, 2 Strength, 2 Agility, 2 Intellect, 2 Wisdom
+ | 
+ 54 Troops: 6 Tank, 6 Melee, 6 Ranged, 6 Healer, 6 Strength, 6 Agility, 6 Intellect, 6 Wisdom, 6 Any
+ |
+
+| 
+ 250% 
+ | 
+ Horn of Plenty 
+ |
+
+63
+ | 
+ Light Infantry 
+ | 
+ 13 Generals: 1 Gnome, 4 Healer, 4 Wisdom, 4 Any
+ | 
+ 50 Troops: 20 Magical Being, 15 Ranged, 15 Agility
+ |
+
+| 
+ 225%, +350% vs Qwiladrians 
+ | 
+ Qwiladrian Stormship (Raid) 
+ |
+
+67
+ | 
+ The Rising Dawn II 
+ | 
+ 17 Generals: 3 Strength, 3 Agility, 3 Wisdom, 3 Intellect, 5 Any
+ | 
+ 50 Troops: 10 Strength, 10 Agility, 10 Wisdom, 10 Intellect, 10 Any
+ |
+
+| 
+ 250%, +700% vs Dragons 
+ | 
+ Crafting/Misc/Special 
+ |
+
+66
+ | 
+ The Jury 
+ | 
+ 16 Generals: 3 Tank, 3 Ranged, 3 Melee, 3 Healer, 4 Any
+ | 
+ 50 Troops: 10 Tank, 10 Ranged, 10 Melee, 10 Healer, 10 Any
+ |
+
+| 
+ 250%, +650% vs Siege 
+ | 
+ Crafting/Misc/Special 
+ |
+
+75
+ | 
+ Nomads of the North 
+ | 
+ 15 Generals: 1 Human, 1 Undead, 3 Tank, 3 Strength, 3 Healer, 3 Wisdom, 1 Any
+ | 
+ 60 Troops: 20 Elf, 20 Melee, 20 Agility
+ |
+
+| 
+ 240%, +450% vs Winter 
+ | 
+ Limited Time Item 
+ |
+
+66
+ | 
+ Bearskins 
+ | 
+ 12 Generals: 3 Dwarf, 3 Tank, 3 Wisdom, 3 Any
+ | 
+ 50 Troops: 12 Dwarf, 12 Tank, 12 Wisdom, 14 Any
+ | 
+ 4 Armaments: 4 Siege
+ | 
+ 230%, +300% vs Siege 
+ | 
+ The Frozen Spire (Raid) 
+ |
+
+63
+ | 
+ Snowflakes 
+ | 
+ 12 Generals: 3 Angel, 3 Ranged, 3 Wisdom, 3 Any
+ | 
+ 48 Troops: 12 Angel, 12 Ranged, 12 Wisdom, 12 Any
+ | 
+ 3 Armaments: 1 Relic, 1 Siege, 1 Support
+ | 
+ 220%, +220% vs Winter 
+ | 
+ The Thaw of Elvigar (Raid) 
+ |
+
+78
+ | 
+ Reinforcements 
+ | 
+ 14 Generals: 3 Ranged, 3 Melee, 3 Tank, 3 Healer, 2 Any
+ | 
+ 56 Troops: 12 Strength, 12 Agility, 12 Wisdom, 12 Intellect, 8 Any
+ | 
+ 8 Armaments: 2 Relic, 4 Siege, 2 Support
+ | 
+ 275% 
+ | 
+ Reinforcement Chest 
+ |
+
+67
+ | 
+ Fire and Ice 
+ | 
+ 12 Generals: 3 Dwarf, 3 Melee, 3 Intellect, 3 Any
+ | 
+ 50 Troops: 12 Elf, 12 Healer, 12 Intellect, 14 Any
+ | 
+ 5 Armaments: 1 Relic, 3 Siege, 1 Support
+ | 
+ 220%, +250% vs Dragons 
+ | 
+ Frost the Snow Dragon (Raid) 
+ |
+
+63
+ | 
+ Red Snow Wreckers 
+ | 
+ 12 Generals: 3 Human, 3 Special (Role), 3 Wisdom, 3 Any
+ | 
+ 48 Troops: 12 Construct, 12 Melee, 12 Strength, 12 Any
+ | 
+ 3 Armaments: 1 Siege, 2 Support
+ | 
+ 220%, +200% vs Demons 
+ | 
+ Crafting 
+ |
+
+65
+ | 
+ Holy Order 
+ | 
+ 14 Generals: 1 Human, 1 Angel, 3 Melee, 3 Tank, 3 Agility, 3 Strength
+ | 
+ 45 Troops: 10 Human or 10 Angel, 10 Special (Role) or 10 Melee, 10 Special (Attribute) or 10 Strength, 15 Any
+ | 
+ 6 Armaments: 2 Relic, 4 Siege
+ | 
+ 250%, +250% vs Demons 
+ | 
+ Paladin Chest 
+ |
+
+62
+ | 
+ The Dispossessed 
+ | 
+ 12 Generals: 4 Gnome, 4 Special (Role), 4 Wisdom
+ | 
+ 48 Troops: 16 Construct, 16 Tank, 16 Strength
+ | 
+ 2 Armaments: 1 Relic, 1 Siege
+ | 
+ 200%, +200% vs Demons 
+ | 
+ Damned Shade (Raid) 
+ |
+
+57
+ | 
+ Tongue Twisters 
+ | 
+ 14 Generals: 4 Goblin, 4 Tank, 4 Strength, 2 Any
+ | 
+ 36 Troops: 18 Goblin, 9 Tank, 9 Strength
+ | 
+ 7 Armaments: 3 Relic, 1 Siege, 3 Support
+ | 
+ 220%, +225% vs Humans 
+ | 
+ Expeditions January 2016 
+ |
+
+58
+ | 
+ Infernal Purge 
+ | 
+ 15 Generals: 4 Elf, 4 Healer, 4 Wisdom, 3 Any
+ | 
+ 36 Troops: 18 Orc, 9 Melee, 9 Strength
+ | 
+ 7 Armaments: 3 Relic, 3 Siege, 1 Support
+ | 
+ 220%, +225% vs Demons 
+ | 
+ Expeditions January 2016 
+ |
+
+68
+ | 
+ Folly and Fools 
+ | 
+ 13 Generals: 2 Human, 4 Melee, 4 Agility, 3 Any
+ | 
+ 48 Troops: 24 Elf, 12 Ranged, 12 Agility
+ | 
+ 7 Armaments: 2 Relic, 2 Siege, 3 Support
+ | 
+ 230%, +250% vs Festival 
+ | 
+ Crafting 
+ |
+
+56
+ | 
+ Skull Crackers 
+ | 
+ 12 Generals: 4 Orc, 4 Melee, 4 Strength
+ | 
+ 40 Troops: 20 Construct, 10 Tank, 10 Strength
+ | 
+ 4 Armaments: 1 Siege, 1 Relic, 2 Support
+ | 
+ 210%, +250% vs Demons, +250% vs Dragons 
+ | 
+ Dasuthaad's Rising 
+ |
+
+55
+ | 
+ Pod People 
+ | 
+ 14 Generals: 3 Tank, 3 Melee, 3 Ranged, 3 Healer, 2 Any
+ | 
+ 30 Troops: 30 Any
+ | 
+ 11 Armaments: 3 Relic, 3 Siege, 5 Support
+ | 
+ 200%, +500% vs Plants 
+ | 
+ AP Shop 
+ |
+
+67
+ | 
+ The Hive 
+ | 
+ 14 Generals: 4 Magical Being, 4 Ranged, 4 Agility, 2 Any
+ | 
+ 50 Troops: 15 Magical Being, 15 Ranged, 15 Agility, 5 Any
+ | 
+ 3 Armaments: 1 Relic, 1 Siege, 1 Support
+ | 
+ 220%, +300% vs Insects 
+ | 
+ Limited Time Item 
+ |
+
+58
+ | 
+ The Namesakes 
+ | 
+ 14 Generals: 3 Tank, 3 Melee, 3 Ranged, 3 Healer, 2 Any
+ | 
+ 40 Troops: 10 Elf, 10 Ranged, 10 Intellect, 10 Any
+ | 
+ 4 Armaments: 1 Relic, 2 Siege, 1 Support
+ | 
+ 200%, +200% vs Humans 
+ | 
+ Hero Hunter (World Raid) 
+ |
+
+69
+ | 
+ Exterminator's Guild 
+ | 
+ 15 Generals: 3 Tank, 3 Melee, 3 Ranged, 3 Healer, 3 Any
+ | 
+ 48 Troops: 20 Human, 14 Special (Role), 14 Wisdom
+ | 
+ 6 Armaments: 1 Relic, 2 Siege, 3 Support
+ | 
+ 200%, +300% vs Abyssal Raids 
+ | 
+ Limited Time Item 
+ |
+
+69
+ | 
+ Court of the Sunken Throne 
+ | 
+ 15 Generals: 2 Merfolk, 3 Melee, 3 Intellect, 3 Strength, 4 Any
+ | 
+ 48 Troops: 24 Ranged, 24 Agility
+ | 
+ 6 Armaments: 1 Relic, 2 Siege, 3 Support
+ | 
+ 200%, +300% vs Aquatic Raids 
+ | 
+ Expeditions April 2016 
+ |
+
+71
+ | 
+ Coast Wardens 
+ | 
+ 15 Generals: 4 Merfolk, 4 Tank, 4 Strength, 3 Any
+ | 
+ 50 Troops: 15 Human, 10 Tank, 10 Wisdom, 15 Any
+ | 
+ 6 Armaments: 1 Relic, 1 Siege
+ | 
+ 225%, +300% vs Terrors 
+ | 
+ Deadly Vhaliribdis the Third Terror (Raid) 
+ |
+
+64
+ | 
+ Blood on the Water III 
+ | 
+ 14 Generals: 6 Melee, 6 Healer, 2 Any
+ | 
+ 50 Troops: 20 Melee, 20 Healer, 10 Any
+ |
+
+| 
+ 240%, +800 vs Aquatic 
+ | 
+ Crafting 
+ |
+
+60
+ | 
+ Helmsman's Waterwalkers 
+ | 
+ 14 Generals: 2 Human, 5 Ranged, 5 Wisdom, 2 Any
+ | 
+ 42 Troops: 10 Undead, 20 Strength, 12 Any
+ | 
+ 4 Armaments: 1 Relic, 1 Siege, 2 Support
+ | 
+ 200%, +400% vs Campaigns 
+ | 
+ Cenius, the Eighth Terror (Campaign Raid) ( Hard )
+ |
+
+77
+ | 
+ The Second Go Brigade II 
+ | 
+ 14 Generals: 3 Human, 3 Special (Role), 3 Special (Attribute), 5 Any
+ | 
+ 60 Troops: 20 Construct, 20 Melee, 10 Special (Attribute), 10 Any
+ | 
+ 3 Armaments: 1 Relic, 2 Siege, 0 Support
+ | 
+ 240%, +400% vs Dragons 
+ | 
+ Crafting 
+ |
+
+74
+ | 
+ Endless Dawn 
+ | 
+ 18 Generals: 4 Healer, 4 Ranged, 4 Tank, 4 Melee, 2 Any
+ | 
+ 50 Troops: 10 Healer, 10 Ranged, 10 Tank, 10 Melee, 10 Any
+ | 
+ 6 Armaments: 2 Relic, 2 Siege, 2 Support
+ | 
+ 250%, +500% vs Dragons 
+ | 
+ Crafting 
+ |
+
+74
+ | 
+ Iirhinian Archery 
+ | 
+ 13 Generals: 1 Felpuur, 4 Ranged, 4 Agility, 4 Any
+ | 
+ 60 Troops: 5 Goblin, 5 Dwarf, 15 Agility, 15 Intellect, 20 Ranged
+ | 
+ 1 Aramament: 0 Relic, 1 Siege, 0 Support
+ | 
+ 300% 
+ | 
+ Limited Time Item May 2016 for 10 
+ |
+
+68
+ | 
+ The Darkness Below 
+ | 
+ 5 Undead, 5 Melee, 5 Any
+ | 
+ 50 Troops: 20 Undead, 20 Ranged, 10 Any
+ | 
+ 3 Armaments: 1 Relic, 1 Siege, 1 Support
+ | 
+ 225%, +350% vs Dragons 
+ | 
+ Crafting 
+ |
+
+69
+ | 
+ Crypt Garrison 
+ | 
+ 14 Generals: 1 Half-Elf, 3 Melee, 3 Tank, 6 Strength, 1 Any
+ | 
+ 50 Troops: 25 Oroc or 25 Tank, 25 Oroc or 25 Strength
+ | 
+ 5 Armaments: 1 Relic, 1 Siege, 3 Support
+ | 
+ 210% 
+ | 
+ Crafting 
+ |
+
+78
+ | 
+ Ravenguard III 
+ | 
+ 15 Generals: 3 Strength, 3 Agility, 3 Wisdom, 3 Intellect, 3 Special (Attribute)
+ | 
+ 60 Troops: 15 Human, 15 Special (Attribute), 15 Melee, 15 Any
+ | 
+ 3 Armaments: 1 Relic, 1 Siege, 1 Support
+ | 
+ 220%, +600% vs Campaigns 
+ | 
+ Crafting 
+ |
+
+69
+ | 
+ More Than Human 
+ | 
+ 14 Generals: 2 Magical Being, 4 Melee, 4 Agility, 4 Any
+ | 
+ 50 Troops: 10 Magical Being, 20 Tank, 20 Strength
+ | 
+ 5 Armaments: 2 Relic, 3 Siege
+ | 
+ 250%, +360% vs Magical Creatures 
+ | 
+ Expeditions June 2016 
+ |
+
+69
+ | 
+ Big Game Trappers 
+ | 
+ 14 Generals: 2 Elf, 4 Ranged, 4 Intellect, 4 Any
+ | 
+ 50 Troops: 10 Elf, 20 Healer, 20 Wisdom
+ | 
+ 5 Armaments: 2 Relic, 3 Siege
+ | 
+ 240%, +360% vs Beastman 
+ | 
+ Expeditions June 2016 
+ |
+
+73
+ | 
+ The Front Line 
+ | 
+ 10 Generals: 5 Melee, 5 Any
+ | 
+ 50 Troops: 50 Any
+ | 
+ 13 Armaments: 3 Relic, 5 Siege, 5 Support
+ | 
+ 250%, +400% vs War raids 
+ | 
+ Limited Time Item 
+ |
+
+64
+ | 
+ Lightning Bearers II 
+ | 
+ 12 Generals: 3 Orc, 3 Melee, 3 Wisdom, 3 Any
+ | 
+ 50 Troops: 12 Orc, 12 Melee, 12 Wisdom, 14 Any
+ | 
+ 2 Armaments: 1 Relic, 1 Siege
+ | 
+ 240%, +400$ vs Giants 
+ | 
+ Crafting 
+ |
+
+74
+ | 
+ The Littlest Legion 
+ | 
+ 15 Generals: 3 Human, 4 Ranged, 4 Agility, 4 Any
+ | 
+ 55 Troops: 15 Human, 15 Ranged, 15 Agility, 10 Any
+ | 
+ 4 Armaments: 2 Relic, 2 Siege
+ | 
+ 100%, +500% vs Giants 
+ | 
+ Expeditions August 2016 Relic Pack 
+ |
+
+64
+ | 
+ Mercenaries 
+ | 
+ 12 Generals: 4 Human, 4 Melee, 4 Special (Attribute)
+ | 
+ 50 Troops: 25 Human, 25 Special (Attribute)
+ | 
+ 2 Armaments: 1 Relic, 1 Siege
+ | 
+ +500% vs War 
+ | 
+ Into the Caldera community loot
+ |
+
+64
+ | 
+ Anklebiters 
+ | 
+ 12 Generals: 4 Human, 4 Special (Role), 4 Wisdom
+ | 
+ 50 Troops: 10 Human, 10 Melee, 10 Special (Attribute), 20 Any
+ | 
+ 2 Armaments: 1 Relic, 1 Siege
+ | 
+ +400% vs Giants 
+ | 
+ The Scaled God (World Raid) 
+ |
+
+64
+ | 
+ The Reclaimers 
+ | 
+ 16 Generals: 4 Dwarf, 4 Tank, 4 Strength, 4 Any
+ | 
+ 44 Troops: 11 Construct, 11 Tank, 11 Strength, 11 Any
+ | 
+ 4 Armaments: 2 Relic, 2 Siege
+ | 
+ 200%, +400% vs Constructs 
+ | 
+ Expeditions August 2016 
+ |
+
+74
+ | 
+ Anselm's Fallen 
+ | 
+ 18 Generals: 8 Human, 4 Healer, 4 Strength, 2 Any
+ | 
+ 50 Troops: 15 Human, 10 Healer, 10 Strength, 15 Any
+ | 
+ 6 Armaments: 2 Relic, 2 Siege, 2 Support
+ | 
+ 200%, +800% vs Demons 
+ | 
+ Crafting 
+ |
+
+71
+ | 
+ Cheat Death 
+ | 
+ 16 Generals: 2 Goblin, 5 Healer, 5 Wisdom, 4 Any
+ | 
+ 50 Troops: 10 Elf, 20 Healer, 20 Wisdom
+ | 
+ 5 Armaments: 1 Relic, 2 Siege, 2 Support
+ | 
+ 200%, +500% vs Undead 
+ | 
+ Expeditions October 2016 Relic Pack 
+ |
+
+75
+ | 
+ Eyes of Yydian 
+ | 
+ 12 Generals: 4 Angel, 4 Healer, 4 Intellect
+ | 
+ 60 Troops: 60 Angel
+ | 
+ 3 Armaments: 1 Relic, 1 Siege, 1 Support
+ | 
+ 250%, +400% vs Undead 
+ | 
+ Crafting 
+ |
+
+79
+ | 
+ Haunts for Hire 
+ | 
+ 16 Generals: 16 Undead
+ | 
+ 60 Troops: 60 Undead
+ | 
+ 3 Armaments: 1 Relic, 1 Siege, 1 Support
+ | 
+ 250%, +750% vs Undead 
+ | 
+ Crafting 
+ |
+
+70
+ | 
+ The Melting Pot 
+ | 
+ 16 Generals: 4 Tank, 4 Wisdom, 8 Any
+ | 
+ 50 Troops: 20 Human, 10 Tank, 10 Strength, 10 Any
+ | 
+ 4 Armaments: 1 Relic, 2 Siege, 1 Support
+ | 
+ 200%, +500% vs Siege 
+ | 
+ Expeditions November 2016 New Item Pack 
+ |
+
+70
+ | 
+ The Long Night 
+ | 
+ 16 Generals: 4 Undead, 4 Melee, 4 Agility, 4 Any
+ | 
+ 50 Troops: 12 Undead, 12 Melee, 12 Agility, 14 Any
+ | 
+ 4 Armaments: 2 Relic, 2 Siege
+ | 
+ 200%, +500% vs Winter 
+ | 
+ Limited Time Item November 2016 for 10 
+ |
+
+89
+ | 
+ Endless Dawn 2 
+ | 
+ 20 Generals: 4 Healer, 4 Ranged, 4 Tank, 4 Melee, 4 Any
+ | 
+ 60 Troops: 12 Healer, 12 Ranged, 12 Tank, 12 Melee, 12 Any
+ | 
+ 9 Armaments: 3 Relic, 3 Siege, 3 Support
+ | 
+ 100%, +650% vs Dragons 
+ | 
+ Crafting 
+ |
+
+63
+ | 
+ Unfit Toys 
+ | 
+ 16 Generals: 4 Construct, 2 Wisdom, 2 Strength, 4 Tank, 4 Any
+ | 
+ 41 Troops: 20 Construct, 21 Any
+ | 
+ 6 Armaments: 2 Relic, 2 Siege, 2 Support
+ | 
+ 200%, +400% vs Winter 
+ | 
+ Unfit Toy Chest 
+ |
+
+90
+ | 
+ Mob Mentality 
+ | 
+ 21 Generals: 4 Ranged, 4 Agility, 4 Melee, 4 Strength, 5 Any
+ | 
+ 60 Troops: 12 Ranged, 12 Agility, 12 Melee, 12 Strength, 12 Any
+ | 
+ 9 Armaments: 3 Relic, 3 Siege, 3 Support
+ | 
+ 225%, +750% vs Festival 
+ | 
+ Crafting 
+ |
+
+68
+ | 
+ The Rebuilders 
+ | 
+ 15 Generals: 3 Dwarf, 3 Elf, 3 Human, 6 Any
+ | 
+ 50 Troops: 50 Any
+ | 
+ 3 Armaments: 1 Relic, 1 Siege, 1 Support
+ | 
+ 250%, +700% vs Siege 
+ | 
+ Crafting 
+ |
+
+70
+ | 
+ Conscripted Assassins 
+ | 
+ 13 Generals: 5 Human, 4 Melee, 4 Agility
+ | 
+ 54 Troops: 20 Human, 17 Melee, 17 Agility
+ | 
+ 3 Armaments: 1 Relic, 1 Siege, 1 Support
+ | 
+ 240%, +450% vs Black Hand 
+ | 
+ Crafting 
+ |
+
+70
+ | 
+ Conscripted Warriors 
+ | 
+ 13 Generals: 5 Human, 4 Tank, 4 Strength
+ | 
+ 54 Troops: 20 Human, 17 Tank, 17 Strength
+ | 
+ 3 Armaments: 1 Relic, 1 Siege, 1 Support
+ | 
+ 240%, +450% vs Black Hand 
+ | 
+ Crafting 
+ |
+
+70
+ | 
+ Conscripted Mages 
+ | 
+ 13 Generals: 5 Human, 4 Ranged, 4 Intellect
+ | 
+ 54 Troops: 20 Human, 17 Ranged, 17 Intellect
+ | 
+ 3 Armaments: 1 Relic, 1 Siege, 1 Support
+ | 
+ 240%, +450% vs Black Hand 
+ | 
+ Crafting 
+ |
+
+74
+ | 
+ Defectors 
+ | 
+ 16 Generals: 5 Human, 3 Ranged, 3 Melee, 3 Tank, 2 Any
+ | 
+ 55 Troops: 20 Human, 10 Ranged, 10 Melee, 10 Tank, 5 Any
+ | 
+ 3 Armaments: 1 Relic, 1 Siege, 1 Support
+ | 
+ 240%, +450% vs Black Hand 
+ | 
+ Crafting 
+ |
+
+91
+ | 
+ Quadfecta 
+ | 
+ 20 Generals: 5 Melee, 5 Ranged, 5 Tank, 5 Healer
+ | 
+ 60 Troops: 15 Melee, 15 Ranged, 15 Tank, 15 Healer
+ | 
+ 11 Armaments: 3 Relic, 5 Siege, 3 Support
+ | 
+ 350% 
+ | 
+ Gauntlet Shop 
+ |
+
+103
+ | 
+ Claws of the Griffin 
+ | 
+ 21 Generals: 5 Human, 5 Orc, 11 Any
+ | 
+ 70 Troops: 35 Human, 15 Orc, 20 Any
+ | 
+ 12 Armaments: 4 Relic, 4 Siege, 4 Support
+ | 
+ 300%, +500% vs Black Hand, +500% vs War 
+ | 
+ Expeditions January 2017 New Item Pack 
+ |
+
+73
+ | 
+ Find and Seek 
+ | 
+ 15 Generals: 5 Gnome, 5 Ranged, 5 Agility
+ | 
+ 54 Troops: 18 Gnome, 18 Ranged, 18 Agility
+ | 
+ 4 Armaments: 1 Relic, 3 Support
+ | 
+ 300%, +500% vs Guild raids 
+ | 
+ Black Hand Bandits community loot
+ |
+
+101
+ | 
+ March of the Phoenix 
+ | 
+ 20 Generals: 5 Angel, 5 Tank, 10 Any
+ | 
+ 70 Troops: 25 Tank, 25 Strength, 20 Any
+ | 
+ 11 Armaments: 3 Relic, 3 Siege, 5 Support
+ | 
+ 300%, +500% vs Human 
+ | 
+ Limited Time Item February 2017 for 10 
+ |
+
+78
+ | 
+ Shadow March 
+ | 
+ 17 Generals: 5 Human, 5 Melee, 5 Agility, 2 Any
+ | 
+ 55 Troops: 20 Human, 15 Melee, 15 Agility, 5 Any
+ | 
+ 6 Armaments: 3 Relic, 3 Support
+ | 
+ 240%, +460% vs Dragons 
+ | 
+ Enraged Hurler (Campaign Raid) 
+ |
+
+103
+ | 
+ Veil Patrol 
+ | 
+ 21 Generals: 5 Human, 5 Magical Being, 11 Any
+ | 
+ 70 Troops: 35 Magical Being, 15 Human, 20 Any
+ | 
+ 12 Armaments: 4 Relic, 5 Siege, 3 Support
+ | 
+ 300%, +700% vs Magical Creatures 
+ | 
+ Expeditions April 2017 New Item Pack 
+ |
+
+90
+ | 
+ Izot's Diplomacy 
+ | 
+ 16 Generals: 5 Orc, 5 Human, 4 Strength, 2 Any
+ | 
+ 65 Troops: 30 Orc, 30 Strength, 5 Any
+ | 
+ 9 Armaments: 3 Relic, 3 Siege, 3 Support
+ | 
+ 300%, +425% vs Humans 
+ | 
+ Crafting 
+ |
+
+108
+ | 
+ The Eternal Dawn 
+ | 
+ 25 Generals: 5 Dwarf, 5 Human, 15 Any
+ | 
+ 65 Troops: 20 Angel, 20 Melee, 25 Any
+ | 
+ 18 Armaments: 6 Relic, 6 Siege, 6 Support
+ | 
+ 300%, +900% vs Dragons 
+ | 
+ Crafting 
+ |
+
+78
+ | 
+ Wyrm Hunter's Formation 
+ | 
+ 17 Generals: 5 Orc, 5 Human, 5 Melee, 2 Any
+ | 
+ 55 Troops: 30 Orc, 20 Melee, 5 Any
+ | 
+ 6 Armaments: 2 Relic, 2 Siege, 2 Support
+ | 
+ 200%, +700% vs Dragons 
+ | 
+ Gilded Dragon (Campaign Raid) 
+ |
+
+106
+ | 
+ Dungeon Crawl 
+ | 
+ 23 Generals: 10 Human, 5 Gnome, 8 Any
+ | 
+ 70 Troops: 20 Undead, 20 Goblin, 30 Any
+ | 
+ 13 Armaments: 5 Relic, 4 Siege, 4 Support
+ | 
+ 300%, +700% vs Underground Raids 
+ | 
+ Expeditions June 2017 
+ |
+
+105
+ | 
+ Four Elements 
+ | 
+ 23 Generals: 3 Goblin, 3 Human, 3 Magical Being, 14 Any
+ | 
+ 70 Troops: 40 Magical Being, 30 Any
+ | 
+ 12 Armaments: 7 Relic, 2 Siege, 3 Support
+ | 
+ 350% 
+ | 
+ Limited Time Item July 2017 
+ |
+
+105
+ | 
+ Hands of Thay'anora 
+ | 
+ 23 Generals: 10 Human, 5 Elf, 8 Any
+ | 
+ 70 Troops: 40 Elf, 30 Any
+ | 
+ 12 Armaments: 6 Relic, 3 Siege, 3 Support
+ | 
+ 350% 
+ | 
+ Shadow Army Chest 
+ |
+
+104
+ | 
+ Ravenguard IV 
+ | 
+ 22 Generals: 4 Special (Attribute), 4 Agility, 4 Wisdom, 4 Intellect, 6 Any
+ | 
+ 70 Troops: 17 Human, 17 Melee, 17 Special (Attribute), 19 Any
+ | 
+ 12 Armaments: 4 Relic, 4 Siege, 4 Support
+ | 
+ 300%, +800% vs Campaigns 
+ | 
+ Crafting 
+ |
+
+106
+ | 
+ Sun's Stride 
+ | 
+ 23 Generals: 10 Human, 5 Wisdom, 8 Any
+ | 
+ 70 Troops: 40 Wisdom, 30 Any
+ | 
+ 13 Armaments: 6 Relic, 5 Siege, 2 Support
+ | 
+ 300%, +750% vs Shadow Elf 
+ | 
+ Army of the Light Chest 
+ |
+
+102
+ | 
+ Crystal Infusers 
+ | 
+ 20 Generals: 2 Oroc, 4 Melee, 4 Wisdom, 4 Strength, 6 Any
+ | 
+ 70 Troops: 25 Magical Being, 25 Melee, 20 Any
+ | 
+ 12 Armaments: 3 Relic, 3 Siege, 6 Support
+ | 
+ 300%, +650% vs Shadow Elf 
+ | 
+ Shadow Behemoth (World Raid) 
+ |
+
+102
+ | 
+ Marrow March 
+ | 
+ 20 Generals: 8 Melee, 8 Strength, 4 Any
+ | 
+ 70 Troops: 25 Melee, 25 Strength, 20 Any
+ | 
+ 12 Armaments: 2 Relic, 5 Siege, 5 Support
+ | 
+ 300%, +400% vs Giants, +400% vs Colosseum Raids 
+ | 
+ Pit of Bone (Raid) 
+ |
+
+107
+ | 
+ Giant Trackers 
+ | 
+ 22 Generals: 8 Intellect, 8 Wisdom, 6 Any
+ | 
+ 70 Troops: 25 Strength, 25 Ranged, 20 Any
+ | 
+ 15 Armaments: 5 Relic, 5 Siege, 5 Support
+ | 
+ 300%, +700% vs Giants 
+ | 
+ Expeditions August 2017 New Item Pack 
+ |
+
+113
+ | 
+ Demonspur 
+ | 
+ 25 Generals: 5 Angel, 5 Human, 15 Any
+ | 
+ 70 Troops: 20 Angel, 25 Human, 25 Any
+ | 
+ 18 Armaments: 6 Relic, 6 Siege, 6 Support
+ | 
+ 300%, +900% vs Demons 
+ | 
+ Crafting 
+ |
+
+98
+ | 
+ Stride of the Meek 
+ | 
+ 20 Generals: 10 Angel, 5 Human, 5 Any
+ | 
+ 70 Troops: 50 Angel, 20 Any
+ | 
+ 8 Armaments: 2 Relic, 4 Siege, 2 Support
+ | 
+ 240%, +700% vs Demons 
+ | 
+ Crafting 
+ |
+
+113
+ | 
+ Sands of Eternity 
+ | 
+ 25 Generals: 4 Undead, 4 Human, 17 Any
+ | 
+ 70 Troops: 20 Undead, 20 Melee, 30 Any
+ | 
+ 18 Armaments: 8 Relic, 5 Siege, 5 Support
+ | 
+ 300%, +900% vs Undead 
+ | 
+ Expeditions October 2017 Relic Pack 
+ |
+
+113
+ | 
+ Clawguard 
+ | 
+ 25 Generals: 3 Felpuur, 4 Human, 18 Any
+ | 
+ 70 Troops: 10 Felpuur, 10 Wisdom, 50 Any
+ | 
+ 18 Armaments: 5 Relic, 8 Siege, 5 Support
+ | 
+ 300%, +800% vs Elite 
+ | 
+ Bloody Battle Chest 
+ |
+
+105
+ | 
+ Fury of the Sands 
+ | 
+ 22 Generals: 3 Undead, 4 Human, 15 Any
+ | 
+ 70 Troops: 15 Undead, 20 Human, 35 Any
+ | 
+ 13 Armaments: 3 Relic, 7 Siege, 3 Support
+ | 
+ 300%, +650% vs Elite 
+ | 
+ Crafting 
+ |
+
+103
+ | 
+ Haunts for Hire II 
+ | 
+ 21 Generals: 18 Undead, 3 Any
+ | 
+ 70 Troops: 60 Undead, 10 Any
+ | 
+ 12 Armaments: 5 Relic, 4 Siege, 3 Support
+ | 
+ 300%, +750% vs Undead 
+ | 
+ Crafting 
+ |
+
+98
+ | 
+ Angels II 
+ | 
+ 21 Generals: 9 Healer, 8 Agility, 4 Any
+ | 
+ 65 Troops: 25 Healer, 25 Agility, 15 Any
+ | 
+ 12 Armaments: 4 Relic, 4 Siege, 4 Support
+ | 
+ 300%, +650% vs War 
+ | 
+ Crafting 
+ |
+
+98
+ | 
+ Automated Army II 
+ | 
+ 21 Generals: 9 Human, 8 Construct, 4 Any
+ | 
+ 65 Troops: 25 Human, 25 Construct, 15 Any
+ | 
+ 12 Armaments: 6 Relic, 5 Siege, 1 Support
+ | 
+ 300%, +650% vs Siege 
+ | 
+ Crafting 
+ |
+
+98
+ | 
+ Divine and Mundane II 
+ | 
+ 21 Generals: 9 Human, 8 Angel, 4 Any
+ | 
+ 65 Troops: 25 Human, 25 Angel, 15 Any
+ | 
+ 12 Armaments: 1 Relic, 6 Siege, 5 Support
+ | 
+ 300%, +650% vs Beastman 
+ | 
+ Crafting 
+ |
+
+98
+ | 
+ Symposium II 
+ | 
+ 21 Generals: 6 Healer, 6 Intellect, 6 Wisdom, 3 Any
+ | 
+ 65 Troops: 15 Healer, 20 Intellect, 20 Wisdom, 10 Any
+ | 
+ 12 Armaments: 5 Relic, 1 Siege, 6 Support
+ | 
+ 300%, +650% vs Qwiladrians 
+ | 
+ Crafting 
+ |
+
+98
+ | 
+ Brushstalkers 
+ | 
+ 21 Generals: 7 Human, 2 Orc, 4 Agility, 4 Ranged, 4 Any
+ | 
+ 65 Troops: 20 Human, 15 Agility, 15 Ranged, 15 Any
+ | 
+ 12 Armaments: 3 Relic, 1 Siege, 8 Support
+ | 
+ 300%, +650% vs Beast 
+ | 
+ Crafting 
+ |
+
+114
+ | 
+ Call of the Hunt 
+ | 
+ 26 Generals: 3 Magical Being, 3 Orc, 20 Any
+ | 
+ 70 Troops: 25 Agility, 10 Magical Being, 35 Any
+ | 
+ 18 Armaments: 5 Relic, 5 Siege, 8 Support
+ | 
+ 300%, +800% vs Beast 
+ | 
+ Expeditions November 2017 New Item Pack 
+ |
+
+120
+ | 
+ Sic Semper Tyrannis 
+ | 
+ 27 Generals: 3 Melee, 3 Agility, 1 Human, 20 Any
+ | 
+ 75 Troops: 25 Agility, 15 Special (Role), 35 Any
+ | 
+ 18 Armaments: 7 Relic, 6 Siege, 5 Support
+ | 
+ 300%, +900% vs Festival Raids 
+ | 
+ Festival of Drifting Dreams : Magic Vortex
+ |
+
+123
+ | 
+ The Eternal Dawn II 
+ | 
+ 27 Generals: 3 Dwarf, 3 Human, 21 Any
+ | 
+ 75 Troops: 10 Angel, 10 Melee, 55 Any
+ | 
+ 21 Armaments: 7 Relic, 7 Siege, 7 Support
+ | 
+ 300%, +1000% vs Dragons 
+ | 
+ Crafting 
+ |
+
+103
+ | 
+ Bearded Bulwark 
+ | 
+ 21 Generals: 3 Dwarf, 3 Tank, 3 Strength, 12 Any
+ | 
+ 70 Troops: 10 Dwarf, 20 Tank, 20 Strength, 20 Any
+ | 
+ 12 Armaments: 2 Relic, 5 Siege, 5 Support
+ | 
+ 300%, +650% vs Underground Raids 
+ | 
+ Arisses the Dreadflame (Campaign Raid) ( Hard )
+ |
+
+98
+ | 
+ Snow Crash 
+ | 
+ 21 Generals: 9 Strength, 8 Melee, 4 Any
+ | 
+ 65 Troops: 25 Gnome, 25 Strength, 15 Any
+ | 
+ 12 Armaments: 1 Relic, 4 Siege, 7 Support
+ | 
+ 300%, +650% vs Winter 
+ | 
+ Yule Workshop ( Nightmare )
+ |
+
+120
+ | 
+ Thornvenom Stride 
+ | 
+ 27 Generals: 3 Human, 3 Intellect, 21 Any
+ | 
+ 75 Troops: 25 Melee, 15 Agility, 35 Any
+ | 
+ 18 Armaments: 4 Relic, 7 Siege, 7 Support
+ | 
+ 300%, +900% vs Insects 
+ | 
+ Limited Time Item January 2018 
+ |
+
+113
+ | 
+ Quadfecta II 
+ | 
+ 26 Generals: 7 Melee, 6 Ranged, 7 Tank, 6 Healer
+ | 
+ 70 Troops: 20 Melee, 15 Ranged, 20 Tank, 15 Healer
+ | 
+ 17 Armaments: 5 Relic, 7 Siege, 5 Support
+ | 
+ 375% 
+ | 
+ Crafting 
+ |
+
+103
+ | 
+ Chitinous Bulwark 
+ | 
+ 21 Generals: 9 Tank, 8 Strength, 4 Any
+ | 
+ 70 Troops: 25 Tank, 25 Strength, 20 Any
+ | 
+ 12 Armaments: 4 Relic, 3 Siege, 5 Support
+ | 
+ 300%, +650% vs Insects 
+ | 
+ Crafting 
+ |
+
+105
+ | 
+ Ravenguard V 
+ | 
+ 22 Generals: 3 Strength, 3 Agility, 3 Wisdom, 3 Intellect, 10 Any
+ | 
+ 70 Troops: 15 Human, 15 Melee, 15 Special (Attribute), 25 Any
+ | 
+ 13 Armaments: 4 Relic, 4 Siege, 5 Support
+ | 
+ 300%, +900% vs Campaigns 
+ | 
+ Crafting 
+ |
+
+103
+ | 
+ Izot's Diplomacy II 
+ | 
+ 21 Generals: 5 Orc, 5 Human, 4 Strength, 7 Any
+ | 
+ 70 Troops: 20 Orc, 20 Strength, 30 Any
+ | 
+ 12 Armaments: 4 Relic, 4 Siege, 4 Support
+ | 
+ 300%, +650% vs Humans 
+ | 
+ Crafting 
+ |
+
+120
+ | 
+ The Shattered Moon 
+ | 
+ 27 Generals: 2 Human, 2 Wisdom, 23 Any
+ | 
+ 75 Troops: 20 Melee, 10 Wisdom, 45 Any
+ | 
+ 18 Armaments: 3 Relic, 9 Siege, 6 Support
+ | 
+ 300%, +900% vs Humans 
+ | 
+ Expeditions New Item Pack February 2018 
+ |
+
+103
+ | 
+ Spirit Walkers 
+ | 
+ 21 Generals: 3 Human, 3 Intellect, 3 Melee, 12 Any
+ | 
+ 70 Troops: 20 Melee, 20 Strength, 30 Any
+ | 
+ 12 Armaments: 3 Relic, 2 Siege, 7 Support
+ | 
+ 300%, +650% vs Magical Creatures 
+ | 
+ Crafting 
+ |
+
+103
+ | 
+ The Namesakes II 
+ | 
+ 21 Generals: 5 Tank, 4 Melee, 5 Ranged, 4 Healer, 3 Any
+ | 
+ 70 Troops: 20 Elf, 20 Ranged, 20 Intellect, 10 Any
+ | 
+ 12 Armaments: 3 Relic, 6 Siege, 3 Support
+ | 
+ 250%, +625% vs Humans 
+ | 
+ Crafting 
+ |
+
+103
+ | 
+ Clockwork V 
+ | 
+ 21 Generals: 4 Tank, 4 Melee, 4 Ranged, 4 Healer, 5 Special
+ | 
+ 70 Troops: 14 Tank or 14 Construct, 14 Melee or
+ 14 Construct, 14 Ranged or 14 Construct, 14 Healer or 14 Construct, 14 
+Special (Role) or 14 Construct
+ | 
+ 12 Armaments: 2 Relic, 5 Siege, 5 Support
+ | 
+ 300%, +650% vs Constructs 
+ | 
+ Crafting 
+ |
+
+125
+ | 
+ Mystic Trackers 
+ | 
+ 28 Generals: 2 Human, 2 Melee, 24 Any
+ | 
+ 78 Troops: 20 Melee, 10 Human, 48 Any
+ | 
+ 19 Armaments: 6 Relic, 6 Siege, 7 Support
+ | 
+ 320%, +950% vs Magical Creatures 
+ | 
+ Limited Time Item March 2018 
+ |
+
+105
+ | 
+ Arcane Wardancers 
+ | 
+ 22 Generals: 3 Strength, 4 Intellect, 3 Human, 12 Any
+ | 
+ 70 Troops: 20 Intellect, 20 Strength, 30 Any
+ | 
+ 13 Armaments: 3 Relic, 5 Siege, 5 Support
+ | 
+ 300%, +650% vs War 
+ | 
+ Rifts in Magic 
+ |
+
+127
+ | 
+ Battle Chasers 
+ | 
+ 28 Generals: 2 Ranged, 2 Intellect, 24 Any
+ | 
+ 80 Troops: 20 Ranged, 10 Intellect, 50 Any
+ | 
+ 19 Armaments: 4 Relic, 5 Siege, 10 Support
+ | 
+ 320%, +950% vs War 
+ | 
+ Warfare Chest 
+ |
+
+125
+ | 
+ Cavern Lords 
+ | 
+ 28 Generals: 3 Strength, 1 Gnome, 24 Any
+ | 
+ 78 Troops: 28 Strength, 50 Any
+ | 
+ 19 Armaments: 6 Relic, 6 Siege, 7 Support
+ | 
+ 320%, +950% vs Underground 
+ | 
+ Expeditions New Item Pack April 2018 
+ |
+
+105
+ | 
+ The Darkness Below II 
+ | 
+ 22 Generals: 5 Undead, 5 Melee, 12 Any
+ | 
+ 70 Troops: 20 Undead, 20 Ranged, 30 Any
+ | 
+ 13 Armaments: 4 Relic, 4 Siege, 5 Support
+ | 
+ 300%, +650% vs Dragons 
+ | 
+ Crafting 
+ |
+
+105
+ | 
+ All the King's Men II 
+ | 
+ 22 Generals: 4 Special (Role), 4 Agility, 4 Intellect, 4 Strength, 6 Any
+ | 
+ 70 Troops: 10 Special (Role), 10 Agility, 10 Intellect, 10 Strength, 30 Any
+ | 
+ 13 Armaments: 3 Relic, 7 Siege, 3 Support
+ | 
+ 300%, +625% vs Deadly 
+ | 
+ Deadly Verkiteia (Raid) 
+ |
+
+105
+ | 
+ Dragon Strike 
+ | 
+ 22 Generals: 5 Tank, 5 Melee, 12 Any
+ | 
+ 70 Troops: 20 Tank, 20 Melee, 30 Any
+ | 
+ 13 Armaments: 3 Relic, 7 Siege, 3 Support
+ | 
+ 300%, +650% vs Dragons 
+ | 
+ Crafting 
+ |
+
+139
+ | 
+ Celestial Dawn 
+ | 
+ 29 Generals: 2 Angel, 2 Human, 25 Any
+ | 
+ 80 Troops: 80 Any
+ | 
+ 30 Armaments: 10 Relic, 10 Siege, 10 Support
+ | 
+ 320%, +1000% vs Dragons 
+ | 
+ Crafting 
+ |
+
+112
+ | 
+ Rider's Hands II 
+ | 
+ 23 Generals: 5 Elf, 6 Melee, 6 Agility, 6 Any
+ | 
+ 75 Troops: 20 Elf, 20 Melee, 20 Agility, 15 Any
+ | 
+ 14 Armaments: 4 Relic, 4 Siege, 6 Support
+ | 
+ 300%, +650% vs Dragons 
+ | 
+ Crafting 
+ |
+
+112
+ | 
+ Unstoppable IV 
+ | 
+ 23 Generals: 8 Melee, 8 Healer, 7 Any
+ | 
+ 75 Troops: 20 Melee, 30 Healer, 25 Any
+ | 
+ 14 Armaments: 2 Relic, 6 Siege, 6 Support
+ | 
+ 340% 
+ | 
+ Deadly Kalaxia the Far-Seer (Raid) 
+ |
+
+112
+ | 
+ Crimson Corpses 
+ | 
+ 23 Generals: 5 Orc, 5 Undead, 5 Special (Role), 8 Any
+ | 
+ 75 Troops: 20 Orc, 20 Special (Role), 20 Special (Source), 15 Any
+ | 
+ 14 Armaments: 4 Relic, 6 Siege, 4 Support
+ | 
+ 300%, +700% vs Undead 
+ | 
+ Echidna's Revenge 
+ |
+
+112
+ | 
+ Battle Breakers 
+ | 
+ 23 Generals: 8 Strength, 8 Melee, 7 Any
+ | 
+ 75 Troops: 45 Strength, 30 Any
+ | 
+ 14 Armaments: 5 Relic, 5 Siege, 4 Support
+ | 
+ 300% 
+ | 
+ Scales of Battle ( Hard Fatigued)
+ |
+
+134
+ | 
+ Sea Stalkers 
+ | 
+ 29 Generals: 4 Melee or 4 Merfolk, 25 Any
+ | 
+ 80 Troops: 40 Melee or 40 Merfolk, 40 Any
+ | 
+ 25 Armaments: 7 Relic, 10 Siege, 8 Support
+ | 
+ 320%, +1000% vs Aquatic 
+ | 
+ Limited Time Item June 2018 
+ |
+
+112
+ | 
+ Sea Behemoth Hunters 
+ | 
+ 23 Generals: 5 Tank or 5 Merfolk, 5 Melee, 5 Strength, 8 Any
+ | 
+ 75 Troops: 30 Tank or 30 Merfolk, 25 Strength, 20 Any
+ | 
+ 14 Armaments: 4 Relic, 4 Siege, 6 Support
+ | 
+ 300%, +700% vs Aquatic 
+ | 
+ Crafting 
+ |
+
+134
+ | 
+ Warrior Bards 
+ | 
+ 29 Generals: 2 Special (Role) or 2 Human, 2 Wisdom, 25 Any
+ | 
+ 80 Troops: 30 Special (Role) or 30 Construct, 10 Wisdom, 40 Any
+ | 
+ 25 Armaments: 6 Relic, 9 Siege, 10 Support
+ | 
+ 320%, +1000% vs Giants 
+ | 
+ Expeditions New Item Pack July 2018 
+ |
+
+99
+ | 
+ Echidna Hunters III 
+ | 
+ 20 Generals: 20 Any
+ | 
+ 65 Troops: 65 Any
+ | 
+ 14 Armaments: 5 Relic, 5 Siege, 4 Support
+ | 
+ +2000% vs Echidna 
+ | 
+ Crafting 
+ |
+
+112
+ | 
+ Broadside 
+ | 
+ 23 Generals: 3 Strength, 3 Agility, 3 Intellect, 3 Wisdom, 3 Special (Attribute), 8 Any
+ | 
+ 75 Troops: 10 Strength, 10 Agility, 10 Intellect, 10 Wisdom, 10 Special (Attribute), 25 Any
+ | 
+ 14 Armaments: 2 Relic, 10 Siege, 2 Support
+ | 
+ 340% 
+ | 
+ Crafting 
+ |
+
+112
+ | 
+ Cabalist's Code 
+ | 
+ 23 Generals: 5 Intellect or 5 Shadow Elf, 5 Melee, 5 Strength, 8 Any
+ | 
+ 75 Troops: 30 Intellect, 25 Strength or 25 Orc, 20 Any
+ | 
+ 14 Armaments: 4 Relic, 5 Siege, 5 Support
+ | 
+ 300%, +700% vs Giant 
+ | 
+ Gloom Colossus (Raid) 
+ |
+
+112
+ | 
+ Good Deeds II 
+ | 
+ 23 Generals: 3 Elf, 3 Intellect, 3 Wisdom, 3 Healer, 3 Strength, 8 Any
+ | 
+ 75 Troops: 12 Elf, 12 Intellect, 12 Wisdom, 12 Healer, 12 Strength, 15 Any
+ | 
+ 14 Armaments: 2 Relic, 6 Siege, 6 Support
+ | 
+ 340% 
+ | 
+ Crafting 
+ |
+
+112
+ | 
+ Bane of Beastmen II 
+ | 
+ 23 Generals: 7 Strength, 7 Wisdom, 9 Any
+ | 
+ 75 Troops: 30 Strength, 30 Wisdom, 15 Any
+ | 
+ 14 Armaments: 4 Relic, 5 Siege, 5 Support
+ | 
+ 300%, +700% vs Beastman 
+ | 
+ Crafting 
+ |
+
+134
+ | 
+ March of Conflict 
+ | 
+ 29 Generals: 2 Strength, 2 Wisdom, 25 Any
+ | 
+ 80 Troops: 20 Strength, 20 Wisdom, 40 Any
+ | 
+ 25 Armaments: 5 Relic, 10 Siege, 10 Support
+ | 
+ 320%, +1000% vs Beastman 
+ | 
+ Limited Time Item August 2018 
+ |
+
+134
+ | 
+ Dune Stalkers 
+ | 
+ 29 Generals: 2 Ranged, 2 Intellect, 25 Any
+ | 
+ 80 Troops: 20 Ranged, 20 Special (Attribute), 40 Any
+ | 
+ 25 Armaments: 7 Relic, 9 Siege, 9 Support
+ | 
+ 320%, +900% vs Elite 
+ | 
+ Expeditions New Item Pack September 2018 
+ |
+
+145
+ | 
+ Purifier's Crusade 
+ | 
+ 30 Generals: 2 Wisdom, 2 Human, 26 Any
+ | 
+ 85 Troops: 20 Undead, 65 Any
+ | 
+ 30 Armaments: 10 Relic, 10 Siege, 10 Support
+ | 
+ 320%, +1000% vs Demon 
+ | 
+ Crafting 
+ |
+
+114
+ | 
+ Infernal Stalkers 
+ | 
+ 24 Generals: 7 Tank, 7 Melee, 10 Any
+ | 
+ 75 Troops: 15 Strength, 15 Agility, 45 Any
+ | 
+ 15 Armaments: 5 Relic, 3 Siege, 7 Support
+ | 
+ 300%, +750% vs Demon 
+ | 
+ Infernal Skeleton (Raid) 
+ |
+
+114
+ | 
+ Brimstone Brawlers 
+ | 
+ 24 Generals: 7 Tank, 7 Wisdom, 10 Any
+ | 
+ 75 Troops: 15 Strength, 15 Tank, 45 Any
+ | 
+ 15 Armaments: 3 Relic, 4 Siege, 8 Support
+ | 
+ 300%, +750% vs Demon 
+ | 
+ Brimstone Baron (Campaign Raid) 
+ |
+
+145
+ | 
+ March of the Dead 
+ | 
+ 30 Generals: 2 Intellect, 2 Tank, 26 Any
+ | 
+ 85 Troops: 20 Tank, 65 Any
+ | 
+ 30 Armaments: 8 Relic, 11 Siege, 11 Support
+ | 
+ 350%, +1000% vs Undead 
+ | 
+ Restless Grave Chest 
+ |
+
+114
+ | 
+ Gourdageddon 
+ | 
+ 24 Generals: 7 Strength, 7 Intellect, 10 Any
+ | 
+ 75 Troops: 15 Strength, 15 Intellect, 45 Any
+ | 
+ 15 Armaments: 5 Relic, 2 Siege, 8 Support
+ | 
+ 300%, +750% vs Undead 
+ | 
+ Crafting 
+ |
+
+145
+ | 
+ Root March 
+ | 
+ 30 Generals: 2 Intellect, 2 Strength, 26 Any
+ | 
+ 85 Troops: 20 Melee, 65 Any
+ | 
+ 30 Armaments: 8 Relic, 11 Siege, 11 Support
+ | 
+ 350%, +1000% vs Beast 
+ | 
+ Expeditions New Item Pack December 2018 
+ |
+
+145
+ | 
+ Charred March 
+ | 
+ 30 Generals: 2 Intellect, 2 Agility, 26 Any
+ | 
+ 85 Troops: 10 Melee, 10 Agility, 65 Any
+ | 
+ 30 Armaments: 8 Relic, 15 Siege, 7 Support
+ | 
+ 350%, +1000% vs Winter 
+ | 
+ Limited Time Item December 2018 
+ |
+
+152
+ | 
+ Celestial Dawn II 
+ | 
+ 31 Generals: 2 Angel, 2 Human, 27 Any
+ | 
+ 88 Troops: 88 Any
+ | 
+ 33 Armaments: 11 Relic, 11 Siege, 11 Support
+ | 
+ 350%, +1000% vs Dragons 
+ | 
+ Crafting 
+ |
+
+118
+ | 
+ Hoarfrost 
+ | 
+ 25 Generals: 7 Wisdom, 7 Intellect, 11 Any
+ | 
+ 78 Troops: 30 Construct, 48 Any
+ | 
+ 15 Armaments: 5 Relic, 6 Siege, 4 Support
+ | 
+ 300%, +750% vs Winter 
+ | 
+ Werereindeer (Raid) 
+ |
+
+118
+ | 
+ Unbound March 
+ | 
+ 25 Generals: 7 Tank, 7 Strength, 11 Any
+ | 
+ 78 Troops: 30 Melee, 48 Any
+ | 
+ 15 Armaments: 4 Relic, 8 Siege, 3 Support
+ | 
+ 300%, +750% vs Construct 
+ | 
+ Bound Protector (Raid) 
+ |
+
+150
+ | 
+ Decimators 
+ | 
+ 31 Generals: 2 Intellect, 2 Human, 27 Any
+ | 
+ 88 Troops: 20 Strength, 68 Any
+ | 
+ 31 Armaments: 8 Relic, 12 Siege, 11 Support
+ | 
+ 350%, +1000% vs Construct 
+ | 
+ Expeditions New Item Pack January 2019 
+ |
+
+118
+ | 
+ Steam Dream II 
+ | 
+ 25 Generals: 5 Ranged, 5 Intellect, 5 Healer, 10 Any
+ | 
+ 78 Troops: 10 Ranged, 10 Intellect, 10 Healer, 48 Any
+ | 
+ 15 Armaments: 5 Relic, 4 Siege, 6 Support
+ | 
+ 300%, +750% vs Human 
+ | 
+ Crafting 
+ |
+
+151
+ | 
+ Warbringers 
+ | 
+ 31 Generals: 2 Strength, 2 Dwarf, 27 Any
+ | 
+ 88 Troops: 20 Tank, 68 Any
+ | 
+ 32 Armaments: 9 Relic, 12 Siege, 11 Support
+ | 
+ 350%, +1000% vs War 
+ | 
+ Expeditions Warbringer Relic Pack 
+ |
+
+151
+ | 
+ Wishful Wanderlust 
+ | 
+ 31 Generals: 2 Special (Role), 1 Human, 1 Magical Being, 27 Any
+ | 
+ 88 Troops: 20 Magical Being, 68 Any
+ | 
+ 32 Armaments: 10 Relic, 11 Siege, 11 Support
+ | 
+ 350%, +1000% vs Magical Creature 
+ | 
+ Limited Time Item March 2019 
+ |
+
+151
+ | 
+ Mayhem's Marauders 
+ | 
+ 31 Generals: 2 Melee, 2 Human, 27 Any
+ | 
+ 88 Troops: 20 Human, 68 Any
+ | 
+ 32 Armaments: 10 Relic, 12 Siege, 10 Support
+ | 
+ 350%, +1000% vs Siege 
+ | 
+ Expeditions New Item Pack April 2019 
+ |
+
+157
+ | 
+ Infinite March 
+ | 
+ 32 Generals: 32 Any
+ | 
+ 90 Troops: 90 Any
+ | 
+ 35 Armaments: 11 Relic, 13 Siege, 11 Support
+ | 
+ 350%, +1200% vs Dragons 
+ | 
+ Crafting 
+ |
+
+122
+ | 
+ Rider's Hands III 
+ | 
+ 26 Generals: 5 Elf, 6 Melee, 6 Agility, 9 Any
+ | 
+ 80 Troops: 20 Elf, 20 Melee, 20 Agility, 20 Any
+ | 
+ 16 Armaments: 4 Relic, 6 Siege, 6 Support
+ | 
+ 320%, +800% vs Dragon 
+ | 
+ Crafting 
+ |
+
+122
+ | 
+ Ravenguard VI 
+ | 
+ 26 Generals: 3 Strength, 3 Agility, 3 Wisdom, 3 Intellect, 14 Any
+ | 
+ 80 Troops: 15 Human, 15 Melee, 15 Special (Attribute), 35 Any
+ | 
+ 16 Armaments: 5 Relic, 5 Siege, 6 Support
+ | 
+ 320%, +1000% vs Campaigns 
+ | 
+ Crafting 
+ |
+
+14
+ | 
+ Brains and Brawn 
+ | 
+ 2 Generals: 1 Strength, 1 Intellect
+ | 
+ 12 Troops: 6 Strength, 6 Intellect
+ |
+
+| 
+ 15% 
+ | 
+ Unobtainable 
+ |
+
+122
+ | 
+ Kraken's Maw 
+ | 
+ 26 Generals: 3 Melee, 3 Human, 3 Strength, 3 Intellect, 14 Any
+ | 
+ 80 Troops: 25 Strength, 20 Melee, 35 Any
+ | 
+ 16 Armaments: 5 Relic, 8 Siege, 3 Support
+ | 
+ 320%, +1000% vs Terror 
+ | 
+ Skulking Terror (Campaign Raid) 
+ |
+
+156
+ | 
+ Depth Divers 
+ | 
+ 32 Generals: 2 Ranged, 2 Intellect, 28 Any
+ | 
+ 90 Troops: 5 Ranged, 5 Intellect, 5 Wisdom, 75 Any
+ | 
+ 34 Armaments: 10 Relic, 13 Siege, 11 Support
+ | 
+ 350%, +1200% vs Terror 
+ | 
+ Expeditions New Item Pack June 2019 
+ |
+
+123
+ | 
+ Greenskins II 
+ | 
+ 27 Generals: 5 Orc, 5 Goblin, 5 Strength, 12 Any
+ | 
+ 80 Troops: 15 Orc, 15 Goblin, 15 Strength, 35 Any
+ | 
+ 16 Armaments: 6 Relic, 7 Siege, 3 Support
+ | 
+ 320%, +800% vs Orcs 
+ | 
+ Crafting 
+ |
+
+123
+ | 
+ Emeraldskins 
+ | 
+ 27 Generals: 5 Orc, 5 Goblin, 5 Agility, 12 Any
+ | 
+ 80 Troops: 15 Orc, 15 Goblin, 15 Agility, 35 Any
+ | 
+ 16 Armaments: 5 Relic, 7 Siege, 4 Support
+ | 
+ 320%, +800% vs Goblins 
+ | 
+ Crafting 
+ |
+
+123
+ | 
+ Thickskins 
+ | 
+ 27 Generals: 5 Orc, 5 Goblin, 5 Melee, 12 Any
+ | 
+ 80 Troops: 15 Orc, 15 Goblin, 15 Melee, 35 Any
+ | 
+ 16 Armaments: 4 Relic, 7 Siege, 5 Support
+ | 
+ 320%, +800% vs Ogres 
+ | 
+ Crafting 
+ |
+
+156
+ | 
+ Savage Breakers 
+ | 
+ 32 Generals: 2 Melee, 2 Tank, 28 Any
+ | 
+ 90 Troops: 7 Melee, 7 Tank, 76 Any
+ | 
+ 34 Armaments: 10 Relic, 12 Siege, 12 Support
+ | 
+ 320%, +1200% vs Orcs 
+ | 
+ Limited Time Item July 2019 
+ |
+
+123
+ | 
+ Fever Fighters 
+ | 
+ 27 Generals: 6 Strength, 6 Intellect, 15 Any
+ | 
+ 80 Troops: 20 Strength, 25 Intellect, 35 Any
+ | 
+ 16 Armaments: 4 Relic, 6 Siege, 6 Support
+ | 
+ 320%, +750% vs Deadly 
+ | 
+ Crafting 
+ |
+
+156
+ | 
+ Dark Stalkers 
+ | 
+ 32 Generals: 2 Agility, 2 Wisdom, 28 Any
+ | 
+ 90 Troops: 7 Agility, 7 Wisdom, 76 Any
+ | 
+ 34 Armaments: 11 Relic, 11 Siege, 12 Support
+ | 
+ 350%, +1200% vs Shadow Elf 
+ | 
+ Gauntlet Shop 
+ |
+
+141
+ | 
+ Storm Chasers 
+ | 
+ 28 Generals: 6 Melee, 6 Strength, 16 Any
+ | 
+ 85 Troops: 20 Melee, 25 Strength, 40 Any
+ | 
+ 28 Armaments: 7 Relic, 10 Siege, 11 Support
+ | 
+ 320%, +800% vs Giant 
+ | 
+ Crafting 
+ |
+
+158
+ | 
+ Titan Rippers 
+ | 
+ 33 Generals: 2 Agility, 1 Elf, 30 Any
+ | 
+ 90 Troops: 10 Agility, 85 Any
+ | 
+ 35 Armaments: 10 Relic, 13 Siege, 12 Support
+ | 
+ 350%, +1200% vs Giant 
+ | 
+ Crafting 
+ |
+
+106
+ | 
+ Anklebiters II 
+ | 
+ 28 Generals: 4 Human, 4 Special (Role), 4 Wisdom, 16 Any
+ | 
+ 50 Troops: 10 Human, 20 Melee, 20 Special (Attribute), 35 Any
+ | 
+ 28 Armaments: 7 Relic, 12 Siege, 9 Support
+ | 
+ 320%, +800% vs Giant 
+ | 
+ Crafting 
+ |
+
+130
+ | 
+ Skull Crackers II 
+ | 
+ 28 Generals: 4 Orc, 5 Melee, 5 Strength, 14 Any
+ | 
+ 85 Troops: 20 Construct, 20 Tank, 20 Strength, 25 Any
+ | 
+ 17 Armaments: 5 Relic, 7 Siege, 5 Support
+ | 
+ 320%, +800% vs Demons, +800% vs Dragons 
+ | 
+ Crafting 
+ |
+
+163
+ | 
+ Dread Legion 
+ | 
+ 33 Generals: 1 Undead, 1 Strength, 31 Any
+ | 
+ 95 Troops: 10 Strength, 85 Any
+ | 
+ 35 Armaments: 9 Relic, 13 Siege, 13 Support
+ | 
+ 375%, +1200% vs Undead 
+ | 
+ Expeditions New Item Pack October 2019 
+ |
+
+163
+ | 
+ Seer's March 
+ | 
+ 33 Generals: 1 Oroc, 1 Wisdom, 31 Any
+ | 
+ 95 Troops: 10 Wisdom, 85 Any
+ | 
+ 35 Armaments: 7 Relic, 8 Siege, 20 Support
+ | 
+ 375%, +1200% vs Underground 
+ | 
+ Limited Time Item October 2019 
+ |
+
+130
+ | 
+ Undead Alchemy II 
+ | 
+ 28 Generals: 2 Human, 2 Gnome, 2 Goblin, 6 Undead, 16 Any
+ | 
+ 85 Troops: 10 Human, 10 Gnome, 10 Goblin, 20 Undead, 35 Any
+ | 
+ 17 Armaments: 3 Relic, 10 Siege, 4 Support
+ | 
+ 320%, +800% vs Undead 
+ | 
+ Crafting 
+ |
+
+130
+ | 
+ Spirits of West Kruna 
+ | 
+ 28 Generals: 10 Undead, 18 Any
+ | 
+ 85 Troops: 30 Undead, 55 Any
+ | 
+ 17 Armaments: 4 Relic, 8 Siege, 5 Support
+ | 
+ 320%, +800% vs Undead 
+ | 
+ Xeurim the Corruptor 
+ |
+
+Categories
+
+Categories :
+
+Pages using DynamicPageList3 parser tag
+
+Guide
+
+Community content is available under CC-BY-SA unless otherwise noted.
+
+More Fandoms
+
+Fantasy
+
+2 Comments
+ Join the conversation
+ Sign in to read what others are saying and share your thoughts.
+ SIGN IN Don't have account? Register now
+
+Advertisement
+
+Advertisement
+
+Advertisement
+
+Advertisement
+
+Explore properties
+
+Fandom
+
+Fanatical
+
+GameSpot
+
+Metacritic
+
+TV Guide
+
+Honest Entertainment
+
+Follow Us
+
+Overview
+
+What is Fandom?
+
+Essentials
+
+About
+
+Careers
+
+Press
+
+Contact
+
+Terms of Use
+
+Privacy Policy
+
+Digital Services Act
+
+Global Sitemap
+
+Local Sitemap
+
+Do Not Sell My Personal Information
+
+Community
+
+Community Central
+
+Support
+
+Help
+
+Advertise
+
+Media Kit
+
+Contact
+
+Fandom Apps
+
+Take your favorite fandoms with you and never miss a beat.
+
+Dawn of the Dragons Wiki is a Fandom Games Community.
+
+View Mobile Site
+
+Do Not Sell My Personal Information
+ When
+ you visit our website, we store cookies on your browser to collect 
+information. The information collected might relate to you, your 
+preferences or your device, and is mostly used to make the site work as 
+you expect it to and to provide a more personalized web experience. 
+However, you can choose not to allow certain types of cookies, which may
+ impact your experience of the site and the services we are able to 
+offer. Click on the different category headings to find out more and 
+change our default settings according to your preference. You cannot 
+opt-out of our First Party Strictly Necessary Cookies as they are 
+deployed in order to ensure the proper functioning of our website (such 
+as prompting the cookie banner and remembering your settings, to log 
+into your account, to redirect you when you log out, etc.). For more 
+information about the First and Third Party Cookies used please follow 
+this link.
+
+Privacy Policy Allow All Manage Consent Preferences
+ Strictly Necessary Cookies
+ Always Active These
+ cookies are necessary for the website to function and cannot be 
+switched off in our systems. They are usually only set in response to 
+actions made by you which amount to a request for services, such as 
+setting your privacy preferences, logging in or filling in forms. You 
+can set your browser to block or alert you about these cookies, but some
+ parts of the site will not then work. These cookies do not store any 
+personally identifiable information.
+ Functional Cookies
+ Functional Cookies These
+ cookies enable the website to provide enhanced functionality and 
+personalisation. They may be set by us or by third party providers whose
+ services we have added to our pages. If you do not allow these cookies 
+then some or all of these services may not function properly.
+ Performance Cookies
+ Performance Cookies These
+ cookies allow us to count visits and traffic sources so we can measure 
+and improve the performance of our site. They help us to know which 
+pages are the most and least popular and see how visitors move around 
+the site. All information these cookies collect is aggregated and 
+therefore anonymous. If you do not allow these cookies we will not know 
+when you have visited our site, and will not be able to monitor its 
+performance.
+ Targeting Cookies
+ Targeting Cookies These
+ cookies may be set through our site by our advertising partners. They 
+may be used by those companies to build a profile of your interests and 
+show you relevant adverts on other sites. They do not store directly 
+personal information, but are based on uniquely identifying your browser
+ and internet device. If you do not allow these cookies, you will 
+experience less targeted advertising.
+ Social Media Cookies
+ Social Media Cookies These
+ cookies are set by a range of social media services that we have added 
+to the site to enable you to share our content with your friends and 
+networks. They are capable of tracking your browser across other sites 
+and building up a profile of your interests. This may impact the content
+ and messages you see on other websites you visit. If you do not allow 
+these cookies you may not be able to use or see these sharing tools.
+ Back Button Cookie List
+
+Search Icon Filter Icon Clear checkbox label label 
+ Apply Cancel Consent Leg.Interest checkbox label label checkbox label label checkbox label label Confirm My Choices Search this wiki Search all wikis

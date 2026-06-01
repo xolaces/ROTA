@@ -47,6 +47,10 @@ public static class ServiceCollectionExtensions
             _ => new GearDefinitionProvider(contentRootPath));
         services.AddSingleton<IMagicDefinitionProvider>(
             _ => new MagicDefinitionProvider(contentRootPath));
+        services.AddSingleton<IUnitDefinitionProvider>(
+            _ => new UnitDefinitionProvider(contentRootPath));
+        services.AddSingleton<ILegionDefinitionProvider>(
+            _ => new LegionDefinitionProvider(contentRootPath));
 
         // Application services
         services.AddScoped<IClassService, ClassService>();

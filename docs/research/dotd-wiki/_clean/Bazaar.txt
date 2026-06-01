@@ -1,0 +1,2782 @@
+﻿mw-parser-output" lang="en" dir="ltr"> 
+ This content is for the web version of Dawn of the Dragons â†’ Go to the mobile version of this page
+
+Items can be bought here. Items can be sold for 0.5% of their 
+purchase price. The price of an item increases by 10% for each instance 
+of that item owned.
+
+Contents
+
+1 Equipment
+
+2 Consumables
+
+3 Adventures
+
+4 Redeem
+
+4.1 Expired codes
+
+Equipment [ ]
+
+Take note that the items below are available for purchase anywhere once the aforementioned area is unlocked.
+
+Burden 
+ Faedark 
+ Fallows 
+ Ryndor 
+ Vornstaag 
+ Bludheim 
+ Depths 
+ Eclectic
+
+Disciple of the Traveler awarded for completing the tutorial.
+
+| 
+ Name
+ | 
+ Att 
+ | 
+ Def 
+ | 
+ AV 
+ | 
+ Per 
+ | 
+ Ability
+ | 
+ Obtained
+ |
+
+| 
+ Eska Rune 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Adds
+ a bonus of 1,000-1,200 to Item's Attack, Defense, and Perception; 25% 
+chance to deal 35,000 Damage; Extra 90,000 damage against Undead raids 
+ | 
+ Bazaar : 5 
+ |
+
+| 
+ Nakkah Rune 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Adds
+ a bonus of 1,000-1,200 to Item's Attack, Defense, and Perception; 25% 
+chance to deal 35,000 Damage; Extra 90,000 damage against Guild raids 
+ | 
+ Bazaar : 5 
+ |
+
+| 
+ Tsalan Rune 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Adds
+ a bonus of 1,000-1,200 to Item's Attack, Defense, and Perception; 25% 
+chance to deal 35,000 Damage; Extra 90,000 damage against Demon raids 
+ | 
+ Bazaar : 5 
+ |
+
+| 
+ Greater Thawing Potion 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Removes the Chilled debuff and grants immunity to the effect for 24 hours 
+ | 
+ Bazaar : 5 
+ |
+
+| 
+ Black Powder 
+ | 
+ 1500
+ | 
+ 1500
+ | 
+ 1875
+ |
+
+| 
+ BOOM:
+ Chance for bonus damage; Extra damage for each unique Armament owned; 
+Black Powder gains 15 Attack and Defense for each unique Armament owned;
+ Black Powder increases critical hit damage by 25%; Increases legion 
+power bonus by 20% 
+ | 
+ Bazaar : 75 
+ |
+
+| 
+ Wizard's Tower Scroll 10 
+ |
+
+|
+
+|
+
+|
+
+| 
+ This scroll allows you to construct additional items from the Wizard's Tower in your Citadel. 
+ | 
+ Bazaar 
+ |
+
+| 
+ Wizard's Tower Scroll 9 
+ |
+
+|
+
+|
+
+|
+
+| 
+ This scroll allows you to construct additional items from the Wizard's Tower in your Citadel. 
+ | 
+ Bazaar 
+ |
+
+| 
+ Abyss 
+ | 
+ 300
+ | 
+ 300
+ | 
+ 375
+ |
+
+| 
+ Pitch
+ Black: Chance for bonus damage; Extra damage for each unique Merfolk or
+ Abyssal Merfolk troop or general owned; Abyss gains 1 Attack and 
+Defense for every 5 Player levels up to Player level 2,500; Abyss gains 1
+ Attack and Defense for every 10 Player levels starting at Player level 
+2,501; (Passive) Each quest click has a chance to trigger a second quest
+ click without additional cost (Note: this cannot spawn a second 
+miniboss) 
+ | 
+ 100 in Bazaar 
+ |
+
+| 
+ Eternal Vow Rings 
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ |
+
+|
+
+| 
+ Bazaar : 100 
+ |
+
+| 
+ Cursed Spike Crusher 
+ | 
+ 550
+ | 
+ 550
+ | 
+ 688
+ |
+
+| 
+ Yarbek's Gift: Chance for bonus damage; Extra damage for each piece of Cursed Spike set worn; Extra damage against Ogre raids; Extra damage against Orc raids; Extra damage for each unique piece of The Autumn Assassin's set owned; Increases Player's Health by 750; PvP Bonus: +450 power, +125 damage 
+ | 
+ Current Expeditions 
+ |
+
+| 
+ Titaran Piper's Sword 
+ | 
+ 405
+ | 
+ 450
+ | 
+ 518
+ |
+
+| 
+ Skirl of the Pipes: Chance for bonus damage; Extra damage for each piece of Titaran Piper Set 
+ worn; Set(8) Extra damage against Qwiladrian raids; Increases Player's 
+Energy and Honor by 20; Increases Player's Energy and Honor by 7 for 
+each Piece of Titaran Piper Set worn 
+ | 
+ Limited Time Item 
+10/31/14 - 11/14/14 
+ |
+
+| 
+ Elven Blade 
+ | 
+ 18
+ | 
+ 9
+ | 
+ 20
+ | 
+ 4
+ |
+
+| 
+ Bazaar after Faedark Valley is unlocked
+ |
+
+| 
+ Short Spear 
+ | 
+ 8
+ | 
+ 2
+ | 
+ 9
+ |
+
+|
+
+| 
+ Bazaar
+ |
+
+| 
+ Small Dagger 
+ | 
+ 1
+ | 
+ 0
+ | 
+ 1
+ |
+
+|
+
+| 
+ Bazaar
+ |
+
+| 
+ Small Shield 
+ | 
+ 1
+ | 
+ 3
+ | 
+ 2
+ |
+
+|
+
+| 
+ Bazaar - Burden's Rest Town Square
+ |
+
+| 
+ Studded Leather Chest 
+ | 
+ 5
+ | 
+ 5
+ | 
+ 6
+ |
+
+|
+
+| 
+ Available from the bazaar once you make it out of the fields in Burden's Rest 
+ |
+
+| 
+ Brass Gloves 
+ | 
+ 1
+ | 
+ 1
+ | 
+ 1
+ |
+
+|
+
+| 
+ Rare loot from Chieftain Horgak (Raid) and Bazaar after Burden's Rest Town Square is unlocked
+ |
+
+| 
+ Studded Leather Gloves 
+ | 
+ 5
+ | 
+ 5
+ | 
+ 6
+ |
+
+|
+
+| 
+ Bazaar after beating Chieftain Horgrak quest boss
+ |
+
+| 
+ Leather Pants 
+ | 
+ 0
+ | 
+ 2
+ | 
+ 1
+ |
+
+|
+
+| 
+ Bazaar 
+ |
+
+| 
+ Studded Leather Pants 
+ | 
+ 5
+ | 
+ 5
+ | 
+ 6
+ |
+
+|
+
+| 
+ Bazaar - Burden's Rest Town Square
+ |
+
+| 
+ Studded Leather Boots 
+ | 
+ 5
+ | 
+ 5
+ | 
+ 6
+ |
+
+|
+
+| 
+ Bazaar after beating Chieftain Horgrak 
+ |
+
+| 
+ White Opal Ring 
+ | 
+ 16
+ | 
+ 16
+ | 
+ 20
+ |
+
+| 
+ Increases Energy by 3 
+ | 
+ Bazaar - Fallows 
+ |
+
+| 
+ Disciple of the Traveler 
+ | 
+ 55
+ | 
+ 55
+ | 
+ 69
+ |
+
+| 
+ Walker Between Worlds: Chance for bonus damage 
+ | 
+ Bazaar 1 
+ |
+
+| 
+ Ruth the Miser 
+ | 
+ 30
+ | 
+ 30
+ | 
+ 38
+ |
+
+| 
+ Moneychanger (Passive): Reduces bank deposit fee by 7.5% 
+ | 
+ Bazaar : 5000 
+ |
+
+| 
+ Farmhand 
+ | 
+ 5
+ | 
+ 5
+ | 
+ 6
+ |
+
+|
+
+| 
+ Bazaar : Burden's Rest 
+ |
+
+| 
+ Town Guard 
+ | 
+ 10
+ | 
+ 15
+ | 
+ 14
+ |
+
+|
+
+| 
+ Bazaar: Burden's Rest 
+ |
+
+| 
+ Ghostly Piper 
+ | 
+ 150
+ | 
+ 140
+ | 
+ 185
+ |
+
+| 
+ Ghostly Piper gains 10 Attack and Defense if Beitidh the Piper is in the active legion; Ghostly Piper gains 10 Attack while in The Pipes Are Calling legion; Increases Player's Attack by 30 against Qwiladrian raids; Increases Player's Energy and Honor By 2 
+ | 
+ Limited Time Item 
+ |
+
+| 
+ Dismemberer 
+ | 
+ 190
+ | 
+ 150
+ | 
+ 228
+ |
+
+| 
+ Dismemberer gains 40 Attack and Defense if Harkan the Dismemberer is in the legion; Increases Player's Attack against Ogre raids by 60; PvP Bonus: +10 power 
+ | 
+ Current Expeditions
+
+|
+
+| 
+ Shield Wall 
+ | 
+ 2 Generals: Tank 
+ 9 Troops: Tank 
+ Power Bonus: none 
+ | 
+ Bazaar - Burden's Rest : Town Square
+
+|
+
+| 
+ The Pipes Are Calling 
+ | 
+ 10 Generals: 4 Healer, 4 Special(Attribute), 2 Any 
+ 44 Troops: 18 Healer, 18 Special(Attribute), 8 Any 
+ Power Bonus: 250, +250% vs Qwiladrians 
+ Whisky and Wailing: Chance for bonus damage; Extra damage against Qwiladrian raids; Extra damage if Beitidh the Piper is in the active legion; Extra damage for each unique piece of Titaran Piper Set owned 
+ | 
+ Limited Time Item 
+10/31/14 - 11/7/14
+
+|
+
+| 
+ Bonds of Hate 
+ | 
+ 12 Generals: 4 Strength, 4 Agility, 4 Intellect 
+ 60 Troops: 20 Strength, 20 Agility, 20 Intellect 
+ Power Bonus: 250 
+ Hate Will Bring Us Together: Chance for bonus damage; Extra damage if Harkan the Dismemberer is in the legion; Extra damage if Magrath is in the legion; Extra damage if Vanyi is in the legion 
+ | 
+ Current Expeditions 
+ |
+
+| 
+ Name
+ | 
+ Att 
+ | 
+ Def 
+ | 
+ AV 
+ | 
+ Per 
+ | 
+ Ability
+ | 
+ Obtained
+ |
+
+| 
+ Parrying Dagger 
+ | 
+ 3
+ | 
+ 15
+ | 
+ 7
+ |
+
+|
+
+| 
+ Bazaar Faedark Valley 
+ |
+
+| 
+ Medium Shield 
+ | 
+ 5
+ | 
+ 15
+ | 
+ 9
+ |
+
+|
+
+| 
+ Bazaar - Faedark Valley 
+ |
+
+| 
+ Bronze Helm 
+ | 
+ 6
+ | 
+ 14
+ | 
+ 10
+ |
+
+|
+
+| 
+ Bazaar - Faedark Valley , Chieftain Horgrak (Raid) 
+ |
+
+| 
+ Bronze Breastplate 
+ | 
+ 6
+ | 
+ 14
+ | 
+ 10
+ |
+
+|
+
+| 
+ Bazaar - Faedark Valley 
+ |
+
+| 
+ Bronze Gloves 
+ | 
+ 6
+ | 
+ 14
+ | 
+ 10
+ |
+
+|
+
+| 
+ Bazaar - Faedark Valley 
+ |
+
+| 
+ Bronze Pants 
+ | 
+ 6
+ | 
+ 14
+ | 
+ 10
+ |
+
+|
+
+| 
+ Bazaar - Faedark Valley 
+ |
+
+| 
+ Bronze Boots 
+ | 
+ 6
+ | 
+ 14
+ | 
+ 10
+ |
+
+|
+
+| 
+ Bazaar - Faedark Valley 
+ |
+
+| 
+ Garnet Ring 
+ | 
+ 8
+ | 
+ 8
+ | 
+ 10
+ |
+
+| 
+ Increases Health by 10 
+ | 
+ Burden's Rest raids and Faedark Valley Bazaar
+ |
+
+| 
+ Tiger 
+ | 
+ 28
+ | 
+ 18
+ | 
+ 33
+ |
+
+| 
+ Pounce: Increases chance to reduce damage taken 
+ | 
+ Bazaar - Faedark Valley 
+ |
+
+| 
+ Silver Arrow 
+ | 
+ 15
+ | 
+ 10
+ | 
+ 18
+ |
+
+|
+
+| 
+ Quests: Faedark Valley
+
+|
+
+| 
+ March II 
+ | 
+ 2 Generals: Any 
+ 5 Troops: Any 
+ Power Bonus: none 
+ | 
+ Bazaar - Faedark Valley 
+ |
+
+| 
+ Name
+ | 
+ Att 
+ | 
+ Def 
+ | 
+ AV 
+ | 
+ Per 
+ | 
+ Ability
+ | 
+ Obtained
+ |
+
+| 
+ Bearded Axe 
+ | 
+ 38
+ | 
+ 19
+ | 
+ 43
+ |
+
+|
+
+| 
+ Bazaar - Fallows 
+ |
+
+| 
+ Tower Shield 
+ | 
+ 10
+ | 
+ 25
+ | 
+ 16
+ |
+
+|
+
+| 
+ Bazaar - Fallows 
+ |
+
+| 
+ Steel Helm 
+ | 
+ 13
+ | 
+ 27
+ | 
+ 20
+ |
+
+|
+
+| 
+ Bazaar - Fallows 
+ |
+
+| 
+ Steel Breastplate 
+ | 
+ 13
+ | 
+ 27
+ | 
+ 20
+ |
+
+|
+
+| 
+ Bazaar - Fallows 
+ |
+
+| 
+ Steel Gloves 
+ | 
+ 13
+ | 
+ 27
+ | 
+ 20
+ |
+
+|
+
+| 
+ Bazaar - Fallows 
+ |
+
+| 
+ Steel Pants 
+ | 
+ 13
+ | 
+ 27
+ | 
+ 20
+ |
+
+|
+
+| 
+ Bazaar - Fallows 
+ |
+
+| 
+ Steel Boots 
+ | 
+ 13
+ | 
+ 27
+ | 
+ 20
+ |
+
+|
+
+| 
+ Bazaar - Fallows 
+ |
+
+| 
+ Pearl Ring 
+ | 
+ 24
+ | 
+ 24
+ | 
+ 30
+ |
+
+| 
+ Increases Energy by 5 
+ | 
+ Bazaar - Fallows 
+ |
+
+| 
+ Poison 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Attacks by any raid member have a 7% chance to deal 4% damage 
+ | 
+ Bazaar - Fallows 
+ |
+
+| 
+ World Mender 
+ | 
+ 20
+ | 
+ 20
+ | 
+ 25
+ |
+
+|
+
+| 
+ Bazaar: Fallows , Daily Rewards ( White )
+
+|
+
+| 
+ Phalanx 
+ | 
+ 3 Generals: Human 
+ 6 Troops: Human 
+ Power Bonus: none 
+ | 
+ Bazaar - Fallows 
+ |
+
+| 
+ Name
+ | 
+ Att 
+ | 
+ Def 
+ | 
+ AV 
+ | 
+ Per 
+ | 
+ Ability
+ | 
+ Obtained
+ |
+
+| 
+ Flanged Mace 
+ | 
+ 47
+ | 
+ 28
+ | 
+ 54
+ |
+
+|
+
+| 
+ Bazaar - Ryndor 
+ |
+
+| 
+ Dueling Dagger 
+ | 
+ 30
+ | 
+ 30
+ | 
+ 38
+ |
+
+|
+
+| 
+ Bazaar - Ryndor 
+ |
+
+| 
+ Kris 
+ | 
+ 25
+ | 
+ 15
+ | 
+ 29
+ |
+
+|
+
+| 
+ Bazaar - Ryndor 
+ |
+
+| 
+ Knightly Helm 
+ | 
+ 28
+ | 
+ 32
+ | 
+ 36
+ |
+
+|
+
+| 
+ Bazaar - Ryndor 
+ |
+
+| 
+ Knightly Breastplate 
+ | 
+ 28
+ | 
+ 32
+ | 
+ 36
+ |
+
+|
+
+| 
+ Bazaar - Ryndor 
+ |
+
+| 
+ Knightly Gauntlets 
+ | 
+ 28
+ | 
+ 32
+ | 
+ 36
+ |
+
+|
+
+| 
+ Bazaar - Ryndor 
+ |
+
+| 
+ Knightly Legplates 
+ | 
+ 28
+ | 
+ 32
+ | 
+ 36
+ |
+
+|
+
+| 
+ Bazaar - Ryndor 
+ |
+
+| 
+ Knightly Boots 
+ | 
+ 28
+ | 
+ 32
+ | 
+ 36
+ |
+
+|
+
+| 
+ Bazaar - Ryndor 
+ |
+
+| 
+ Emerald Ring 
+ | 
+ 38
+ | 
+ 38
+ | 
+ 48
+ |
+
+|
+
+| 
+ Bazzar - Ryndor 
+ |
+
+| 
+ Knight's Charger 
+ | 
+ 62
+ | 
+ 58
+ | 
+ 77
+ |
+
+| 
+ Chivalry: Increases chance to land a critical hit 
+ | 
+ Bazaar - Ryndor 
+ |
+
+| 
+ Syriss Deathclaw 
+ | 
+ 60
+ | 
+ 55
+ | 
+ 74
+ |
+
+| 
+ Catnip: Increases Player's maximum Energy (+15) 
+ | 
+ Bazaar : Ryndor 150k 
+ |
+
+| 
+ Knight 
+ | 
+ 25
+ | 
+ 15
+ | 
+ 29
+ |
+
+|
+
+| 
+ Bazaar - Ryndor
+
+|
+
+| 
+ Strike II 
+ | 
+ 2 Generals: Melee 
+ 9 Troops: Melee 
+ Power Bonus: 10 
+ | 
+ Bazaar - Ryndor 
+ |
+
+| 
+ Name
+ | 
+ Att 
+ | 
+ Def 
+ | 
+ AV 
+ | 
+ Per 
+ | 
+ Ability
+ | 
+ Obtained
+ |
+
+| 
+ Brutal Cleaver 
+ | 
+ 68
+ | 
+ 14
+ | 
+ 72
+ |
+
+|
+
+| 
+ Bazaar - Vornstaag 
+ |
+
+| 
+ Tombstone Shield 
+ | 
+ 20
+ | 
+ 60
+ | 
+ 35
+ |
+
+|
+
+| 
+ Bazaar - Vornstaag 
+ |
+
+| 
+ Reanimator's Hat 
+ | 
+ 27
+ | 
+ 27
+ | 
+ 34
+ | 
+ 26
+ |
+
+| 
+ Bazaar - Vornstaag 
+ |
+
+| 
+ Reanimator's Robes 
+ | 
+ 27
+ | 
+ 27
+ | 
+ 34
+ | 
+ 26
+ |
+
+| 
+ Bazaar after Vornstaag is unlocked
+ |
+
+| 
+ Reanimator's Gloves 
+ | 
+ 27
+ | 
+ 27
+ | 
+ 34
+ | 
+ 26
+ |
+
+| 
+ Bazaar - Vornstaag as well as quest drops from Vornstaag 
+ |
+
+| 
+ Reanimator's Pants 
+ | 
+ 27
+ | 
+ 27
+ | 
+ 34
+ | 
+ 26
+ |
+
+| 
+ Bazaar - Vornstaag 
+ |
+
+| 
+ Reanimator's Boots 
+ | 
+ 27
+ | 
+ 27
+ | 
+ 34
+ | 
+ 26
+ |
+
+| 
+ Vornstaag Bazaar, quests, and quest help rewards
+ |
+
+| 
+ Death's Head Signet 
+ | 
+ 46
+ | 
+ 46
+ | 
+ 58
+ |
+
+|
+
+| 
+ Bazaar - Vornstaag ,
+ Bogstench quest boss
+
+|
+
+| 
+ Wilhelm 
+ | 
+ 75
+ | 
+ 40
+ | 
+ 85
+ |
+
+| 
+ Banshee Scream: Chance for bonus damage 
+ | 
+ Bazaar : Vornstaag 250k 
+ |
+
+| 
+ Igor 
+ | 
+ 20
+ | 
+ 25
+ | 
+ 26
+ |
+
+|
+
+| 
+ Vornstaag
+
+|
+
+| 
+ Danse Macabre 
+ | 
+ 3 Generals: Undead 
+ 7 Troops: Undead 
+ Power Bonus: none 
+ | 
+ Bazaar - Vornstaag 
+ |
+
+| 
+ Name
+ | 
+ Att 
+ | 
+ Def 
+ | 
+ AV 
+ | 
+ Per 
+ | 
+ Ability
+ | 
+ Obtained
+ |
+
+| 
+ Nordent Sword 
+ | 
+ 73
+ | 
+ 47
+ | 
+ 85
+ |
+
+|
+
+| 
+ Bazaar - Bludheim 
+ |
+
+| 
+ Nordent Shield 
+ | 
+ 30
+ | 
+ 70
+ | 
+ 48
+ |
+
+|
+
+| 
+ Bazaar - Bludheim 
+ |
+
+| 
+ Nordent Spangenhelm 
+ | 
+ 42
+ | 
+ 58
+ | 
+ 57
+ |
+
+|
+
+| 
+ Bazaar - Bludheim 
+ |
+
+| 
+ Nordent Mail Hauberk 
+ | 
+ 42
+ | 
+ 58
+ | 
+ 57
+ |
+
+|
+
+| 
+ Bazaar - Bludheim 
+ |
+
+| 
+ Nordent Bracers 
+ | 
+ 42
+ | 
+ 58
+ | 
+ 57
+ |
+
+|
+
+| 
+ Bazaar - Bludheim ; guild raids
+ |
+
+| 
+ Nordent Breeches 
+ | 
+ 42
+ | 
+ 58
+ | 
+ 57
+ |
+
+|
+
+| 
+ Bazaar - Bludheim ; guild raids
+ |
+
+| 
+ Nordent Boots 
+ | 
+ 42
+ | 
+ 58
+ | 
+ 57
+ |
+
+|
+
+| 
+ Bazaar - Bludheim ; guild raids
+ |
+
+| 
+ Nordent Rune Ring 
+ | 
+ 56
+ | 
+ 56
+ | 
+ 70
+ |
+
+|
+
+| 
+ Bazaar - Bludheim 
+ |
+
+| 
+ Yule Tribe Sleigh 
+ | 
+ 85
+ | 
+ 95
+ | 
+ 109
+ |
+
+| 
+ Slay: Increases chance to land a critical hit 
+ | 
+ Bazaar : Bludheim 
+ |
+
+| 
+ Braugord the Einherji 
+ | 
+ 100
+ | 
+ 60
+ | 
+ 115
+ |
+
+| 
+ Defender of Nordent: Chance for bonus damage; Extra damage vs Bludheim bosses 
+ | 
+ Bazaar : Bludheim 1 
+ |
+
+| 
+ Jolla 
+ | 
+ 70
+ | 
+ 95
+ | 
+ 94
+ |
+
+| 
+ Swift Shot: Chance for bonus damage; Extra damage if Frida is in Legion 
+ | 
+ Bazaar : Bludheim 300k 
+ |
+
+| 
+ Kyrose 
+ | 
+ 105
+ | 
+ 105
+ | 
+ 131
+ |
+
+| 
+ Blade of Justice: Chance for bonus damage; Increases Player's Attack (+16) 
+ | 
+ Bazaar : Bludheim 1 
+ |
+
+| 
+ Huscarl 
+ | 
+ 25
+ | 
+ 30
+ | 
+ 33
+ |
+
+|
+
+| 
+ Bazaar: Bludheim
+
+|
+
+| 
+ Boar's Snout 
+ | 
+ 2 Generals: 1 Tank, 1 Ranged 
+ 10 Troops: 5 Tank, 5 Ranged 
+ Power Bonus: none 
+ | 
+ Bazaar - Bludheim
+
+|
+
+| 
+ Krypteia 
+ | 
+ 3 Generals: Melee 
+ 6 Troops: Melee 
+ Power Bonus: 10 
+ | 
+ Bazaar - Bludheim 
+ |
+
+| 
+ Name
+ | 
+ Att 
+ | 
+ Def 
+ | 
+ AV 
+ | 
+ Per 
+ | 
+ Ability
+ | 
+ Obtained
+ |
+
+| 
+ Obsidian Chopper 
+ | 
+ 17
+ | 
+ 12
+ | 
+ 20
+ |
+
+|
+
+| 
+ Bazaar when Subterranean Depths is unlocked
+ |
+
+| 
+ Lava Lamp 
+ | 
+ 30
+ | 
+ 30
+ | 
+ 38
+ | 
+ 40
+ |
+
+| 
+ Bazaar - Subterranean Depths 
+ |
+
+| 
+ Salamander Hide Helm 
+ | 
+ 62
+ | 
+ 58
+ | 
+ 77
+ |
+
+|
+
+| 
+ Bazaar - Subterranean Depths 
+ |
+
+| 
+ Salamander Hide Corselet 
+ | 
+ 62
+ | 
+ 58
+ | 
+ 77
+ |
+
+|
+
+| 
+ Obtained from Subterranean Depths Raids and Slaughterers Six , Lunatics , Felindis & Shaoquin , and Agony Guild Raids
+ |
+
+| 
+ Salamander Hide Gloves 
+ | 
+ 62
+ | 
+ 58
+ | 
+ 77
+ |
+
+|
+
+| 
+ Bazaar - Subterranean Depths and raids
+ |
+
+| 
+ Salamander Hide Breeches 
+ | 
+ 62
+ | 
+ 58
+ | 
+ 77
+ |
+
+|
+
+| 
+ Bazaar - Subterranean Depths 
+ |
+
+| 
+ Salamander Hide Boots 
+ | 
+ 62
+ | 
+ 58
+ | 
+ 77
+ |
+
+|
+
+| 
+ Subterranean Depths Bazaar, quests, quest help rewards
+ |
+
+| 
+ Glowstone Band 
+ | 
+ 68
+ | 
+ 68
+ | 
+ 85
+ |
+
+|
+
+| 
+ Bazaar - Subterranean Depths 
+ |
+
+| 
+ Thud Beast 
+ | 
+ 99
+ | 
+ 99
+ | 
+ 124
+ |
+
+| 
+ Thud!: Chance for bonus damage 
+ | 
+ Bazaar - Subterranean Depths 
+ |
+
+| 
+ Gibbo the Confused 
+ | 
+ 85
+ | 
+ 85
+ | 
+ 106
+ |
+
+| 
+ Ponderous Thoughts: Chance to halve all experience gained 
+ | 
+ Bazaar : Subterranean Depths 350k 
+ |
+
+| 
+ Goblin Scout 
+ | 
+ 30
+ | 
+ 15
+ | 
+ 34
+ |
+
+|
+
+| 
+ Subterranean Depths
+
+|
+
+| 
+ Oroc Warband 
+ | 
+ 2 Generals: 2 Oroc 
+ 10 Troops: 10 Oroc 
+ Power Bonus: 25 
+ Oroc Warband: Chance for bonus damage when Vakshara , Nazula or Oroc Wreckers are in Legion 
+ | 
+ Bazaar - Subterranean Depths 
+ |
+
+| 
+ Name
+ | 
+ Att 
+ | 
+ Def 
+ | 
+ AV 
+ | 
+ Per 
+ | 
+ Ability
+ | 
+ Obtained
+ |
+
+| 
+ Headmaster's Cane 
+ | 
+ 42
+ | 
+ 42
+ | 
+ 53
+ | 
+ 42
+ |
+
+| 
+ Dreams Bazaar, quests, and help requests
+ |
+
+| 
+ Form Master's Cane 
+ | 
+ 48
+ | 
+ 48
+ | 
+ 60
+ | 
+ 64
+ |
+
+| 
+ Bazaar, quests, and help requests of Dreams 
+ |
+
+| 
+ Scholar's Mortarboard 
+ | 
+ 53
+ | 
+ 53
+ | 
+ 66
+ | 
+ 36
+ |
+
+| 
+ Bazaar - Together in Eclectic Dreams 
+ |
+
+| 
+ Scholar's Gown 
+ | 
+ 53
+ | 
+ 53
+ | 
+ 66
+ | 
+ 36
+ |
+
+| 
+ Bazaar Z8 
+ |
+
+| 
+ Scholar's Gloves 
+ | 
+ 53
+ | 
+ 53
+ | 
+ 66
+ | 
+ 36
+ |
+
+| 
+ Bazaar - Together in Eclectic Dreams 
+ |
+
+| 
+ Scholar's Pantaloons 
+ | 
+ 53
+ | 
+ 53
+ | 
+ 66
+ | 
+ 36
+ |
+
+| 
+ Bazaar - Together in Eclectic Dreams 
+ |
+
+| 
+ Scholar's Boots 
+ | 
+ 53
+ | 
+ 53
+ | 
+ 66
+ | 
+ 36
+ |
+
+| 
+ Together in Eclectic Dreams bazaar, quests, and quest help rewards
+ |
+
+| 
+ Old School Ring 
+ | 
+ 50
+ | 
+ 50
+ | 
+ 63
+ | 
+ 60
+ |
+
+| 
+ Bazaar - Together in Eclectic Dreams 
+ |
+
+| 
+ School Horse 
+ | 
+ 80
+ | 
+ 80
+ | 
+ 100
+ | 
+ 80
+ | 
+ Academic Equine: Chance for bonus raid damage 
+ | 
+ Bazaar - Together in Eclectic Dreams 
+ |
+
+| 
+ Clubber 
+ | 
+ 65
+ | 
+ 90
+ | 
+ 88
+ |
+
+| 
+ Pugnacious Porter: Chance for bonus damage 
+ | 
+ Bazaar : Together in Eclectic Dreams 350k 
+ |
+
+| 
+ Kyrose the Vampiress 
+ | 
+ 155
+ | 
+ 125
+ | 
+ 186
+ |
+
+| 
+ Bite of Justice: Chance for bonus damage; Chance to restore Health 
+ | 
+ Bazaar 
+ |
+
+| 
+ K'ton the Avenger 
+ | 
+ 155
+ | 
+ 125
+ | 
+ 186
+ |
+
+| 
+ Dread Vengeance: Chance for bonus raid damage 
+ | 
+ Bazaar 
+ |
+
+| 
+ Prefect 
+ | 
+ 30
+ | 
+ 45
+ | 
+ 41
+ |
+
+|
+
+| 
+ Together in Eclectic Dreams
+
+|
+
+| 
+ Cerebral Assault II 
+ | 
+ 6 Generals: Intellect 
+ 20 Troops: Intellect 
+ Power Bonus: none 
+ | 
+ Bazaar - Together in Eclectic Dreams 
+ |
+
+Consumables [ ]
+
+Vanishing Powder, Energy Potion and Stamina Potion come in packs of 3. Runes come in packs of 10.
+
+| 
+ Name
+ | 
+ Att 
+ | 
+ Def 
+ | 
+ AV 
+ | 
+ Per 
+ | 
+ Ability
+ | 
+ Obtained
+ |
+
+| 
+ Flamedart Scroll (Lesser) 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Deals 40 damage 
+ | 
+ Bazaar 
+ |
+
+| 
+ Flamedart Scroll 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Deals 200 Damage 
+ | 
+ Bazaar 
+ |
+
+| 
+ Healing Potion (Lesser) 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Restores 50 HP 
+ | 
+ Bazaar 
+ |
+
+| 
+ Healing Potion 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Restores 100 HP 
+ | 
+ Citadel : Alchemist , Bazaar 
+ |
+
+| 
+ Vanishing Powder (Lesser) 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Reduce Flee Penalty 10% 
+ | 
+ Bazaar 
+ |
+
+| 
+ Vanishing Powder 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Reduce flee penalty by 50% 
+ | 
+ Bazaar 
+ |
+
+| 
+ Energy Potion 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Restores 10 Energy 
+ | 
+ Citadel : Alchemist , Bazaar , ERs 
+ |
+
+| 
+ Stamina Potion 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Restores 5 Stamina 
+ | 
+ Citadel : Alchemist , Bazaar , ERs 
+ |
+
+| 
+ Volatile Energy Potion 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Restores 25% base Energy 
+ | 
+ Citadel : Alchemist , Bazaar , ERs , WRs , Chests , Daily Rewards 
+ |
+
+| 
+ Volatile Stamina Potion 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Restores 25% Base Stamina 
+ | 
+ Citadel : Alchemist , Bazaar , ERs , WRs , Chests 
+ |
+
+Adventures [ ]
+
+| 
+ Name
+ | 
+ Att 
+ | 
+ Def 
+ | 
+ AV 
+ | 
+ Per 
+ | 
+ Ability
+ | 
+ Obtained
+ |
+
+| 
+ Sar Gregni 
+ | 
+ 20
+ | 
+ 30
+ | 
+ 28
+ |
+
+| 
+ Ability (1): Taunt 
+The Knight who applies Taunt receives bonus damage from Area Boss attacks, but the rest of the party takes reduced damage.
+Ability (8): Shield Slam 
+Knights deal bonus damage based on their Defense value. 
+ | 
+ Bazaar : 5000 
+ |
+
+| 
+ Fliss Bloodcut 
+ | 
+ 26
+ | 
+ 22
+ | 
+ 32
+ |
+
+| 
+ Ability (1): Backstab 
+Party deals bonus damage.
+Ability (6): Dodge 
+Rogues have a chance to dodge incoming damage with each attack. 
+ | 
+ Bazaar : 5000 
+ |
+
+| 
+ Adventurer's Cloak 
+ | 
+ 3
+ | 
+ 3
+ |
+
+|
+
+|
+
+| 
+ Bazaar : 2000 
+ |
+
+| 
+ Greater Rune of Recovery 
+ |
+
+|
+
+|
+
+|
+
+| 
+ If the party is dealt a fatal blow, they will recover and be returned to 20% of their base life. 
+ | 
+ Bazaar : 2 
+ |
+
+| 
+ Greater Adventure Healing Potion 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Restores 10% of the party's base health. 
+ | 
+ Bazaar : 2 
+ |
+
+| 
+ Arcane Powder 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Reduces
+ the parties miss chance from Runes of Binding Tiles by 5%; Limit 1 per 
+party; Does not stack with Mage class; Boon is consumed after use. 
+ | 
+ Bazaar : 2 
+ |
+
+| 
+ Deity Symbol 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Heals
+ the party for 5% of the party's base health upon completing a Relic 
+Tile; Limit 1 per party; Does not stack with Cleric class; Boon is 
+consumed after use. 
+ | 
+ Bazaar : 2 
+ |
+
+| 
+ Holy Water 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Reduces
+ the parties miss chance from Cursed Ground Tiles by 5%; Limit 1 per 
+party; Does not stack with Cleric class; Boon is consumed after use. 
+ | 
+ Bazaar : 2 
+ |
+
+| 
+ Ranger's Notes 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Reduces
+ the extra damage the party receives from Rough Terrain Tiles by 10%; 
+Limit 1 per party; Does not stack with Ranger class; Boon is consumed 
+after use. 
+ | 
+ Bazaar : 2 
+ |
+
+| 
+ Rogue's Toolkit 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Reduces
+ the extra damage the party receives from Trap Tiles by 10%; Limit 1 per
+ party; Does not stack with Rogue class; Boon is consumed after use. 
+ | 
+ Bazaar : 2 
+ |
+
+| 
+ Training Manual 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Doubles
+ your Adventurer's earned experience for one Adventure; Experience bonus
+ applies to exploring Tiles and hitting Area Bosses; Boon is consumed 
+after use. 
+ | 
+ Bazaar : 5 
+ |
+
+| 
+ Warlord's Blessing 
+ |
+
+|
+
+|
+
+|
+
+| 
+ Increases
+ your Adventurer's damage by 15% for one Adventure; Bonus damage applies
+ to attacking Area Bosses; Boon is consumed after use. 
+ | 
+ Bazaar : 5 
+ |
+
+Redeem [ ]
+
+One can also redeem promo codes for items. (not case-sensitive)
+
+OOF : 5 Blue Anniversary Cake , 5 Purple Anniversary Cake , 5 Pink Anniversary Cake
+
+HAPPYNEWYEAR2020: 3 Brown-Grey Celestial Dawn Chest , 3 Green-Blue Celestial Dawn Chest , 3 Purple-Orange Celestial Dawn Chest
+
+ALLGOODTHINGS: 2345 Planet Coins
+
+OOPSIALREADYBLEWALLMYPC: 1000 Planet Coins , 10 Brown-Grey Infinite Dawn Chest , 10 Green-Blue Infinite Dawn Chest , 10 Purple-Orange Infinite Dawn Chest
+
+MOARTROOPS: 999 Planet Coins
+
+MOARRAIDS: Nothing
+
+OKLASTTIME: 999 Planet Coins
+
+Expired codes [ ]
+
+kept as an archive
+
+FESTIVUS19 : 10 Winter Festival Cake , 10 Winter Festival Pie , 15 Winter Festival Pudding , 15 PC
+
+MOARSTUFF : 3 Brown-Grey Infinite Dawn Chest , 3 Green-Blue Infinite Dawn Chest , 3 Purple-Orange Infinite Dawn Chest
+
+NEED4MEAD : 4 Pitchfork Token , 10 Hunter's Mead Horn , 10 Warrior's Mead Horn , 10 Tracker's Mead Horn (until December 1st, 2019)
+
+MEAD4NEED : 4 Pitchfork Token , 10 Hunter's Mead Horn , 10 Warrior's Mead Horn , 10 Tracker's Mead Horn (until December 1st, 2019)
+
+YOUGOTAFRIENDINMEAD : 4 Pitchfork Token , 10 Hunter's Mead Horn , 10 Warrior's Mead Horn , 10 Tracker's Mead Horn (until December 1st, 2019)
+
+HIGHFRUCTOSEHORNSYRUP : 10 Pitchfork Token , 10 Hunter's Mead Horn , 10 Warrior's Mead Horn , 10 Tracker's Mead Horn (until December 1st, 2019)
+
+9YRCAKEZ : 3 Blue Anniversary Cake , 3 Pink Anniversary Cake , 3 Purple Anniversary Cake (until June 7th, 2019)
+
+9YRANNI : 2 Brown-Grey Infinite Dawn Chest , 2 Green-Blue Infinite Dawn Chest and 2 Purple-Orange Infinite Dawn Chest (until June 7th, 2019)
+
+9YRPET : 1 Nonagonis (until June 7th, 2019)
+
+9YRCOINS : 10 Planet Coins (until June 7th, 2019)
+
+9YRSTUFF2 : 5 Green Mushroom , 5 Grand Mushroom of Defense , 5 Life-Drain Draught (until June 7th, 2019)
+
+9YRCELEB : 2 Pitchfork Token , 5 Blue Anniversary Cake , 5 Pink Anniversary Cake , 5 Purple Anniversary Cake (until June 7th, 2019)
+
+4TRESTIVUS18 : 10 Planet Coins (until January 4th, 2019)
+
+FESTIVUS18 : 6 Winter Festival Cake , 6 Winter Festival Pie , 12 Winter Festival Pudding , 5 Planet Coins (until January 4th, 2019)
+
+BESIEGE18 : 2 Bloody Siege Chest (until January 4th, 2019)
+
+DELISHCAKE18 : 6 Winter Festival Pudding (until January 4th, 2019)
+
+CELESTD18 : 2 Brown-Grey Celestial Dawn Chest , 2 Green-Blue Celestial Dawn Chest and 2 Purple-Orange Celestial Dawn Chest (until January 4th, 2019)
+
+TASTYCAKE18 : 6 Winter Festival Cake (until January 4th, 2019)
+
+LOTSOHRN18 : 12 Tracker's Mead Horn , 12 Warrior's Mead Horn , 12 Hunter's Mead Horn (until December 7th, 2018)
+
+DELISHHRN18 : 6 Tracker's Mead Horn (until December 1st, 2018)
+
+YUMMYHRN18 : 6 Warrior's Mead Horn (until December 1st, 2018)
+
+TASTYHRN18 : 6 Hunter's Mead Horn (until December 1st, 2018)
+
+HOTPOT2018 : 3 Volatile Energy Potion , 3 Volatile Stamina Potion , 6 Volatile Honor Potion
+
+ANNI18CHEST = 3 Brown-Grey, Green-Blue and Purple-Orange Celestial Dawn Chests (Code expires June 1st, 2018)
+
+ANNI18FAM = Octodrake Familiar (Code expires June 1st, 2018)
+
+WINTPUD17 : 6 Winter Festival Pudding (until January 1st, 2018)
+
+ETERNALDEC : 2 Brown-Grey Eternal Dawn Chest , 2 Green-Blue Eternal Dawn Chest , 2 Purple-Orange Eternal Dawn Chest (until January 1st, 2018)
+
+GNTSTRIKE18 : 300 Gauntlet Strikes (until March 16th, 2018)
+
+HLWN17 : 1 Helsyph's Messenger (until November 3rd, 2017)
+
+OCT17MUSH : 2 Green Mushroom , 2 Grand Mushroom of Defense (until October 20th, 2017)
+
+S17ENG : 2 Volatile Energy Potion (until October 6th, 2017)
+
+S17HNR : 4 Volatile Honor Potion (until September 29th, 2017)
+
+S17STA : 2 Volatile Stamina Potion (until September 15th, 2017)
+
+GCHAL0917 : 10 Gauntlet Strikes (until September 8th, 2017)
+
+FB15NP04 : 2 Energy and 2 Stamina Potions (Grand)
+
+SLAYER : 2 Energy Potion (Grand)
+
+AUG1087 : 3 Planet Coins (until September 1st, 2017)
+
+ANNIBLING72 : 5 Planet Coins (until June 1st, 2017)
+
+7ANNI172 : 30 Gauntlet Strikes , 1 Blue Anniversary Cake , 1 Pink Anniversary Cake , 1 Purple Anniversary Cake (until June 1st, 2017)
+
+PURPDRINK : 4 Volatile Honor Potion , 1 Purple Anniversary Cake (until June 1st, 2017)
+
+2017ANNI : 2 Brown-Grey Eternal Dawn Chest , 2 Green-Blue Eternal Dawn Chest and 2 Purple-Orange Eternal Dawn Chest (until June 1st, 2017)
+
+2017FAMIL : Gluttonous Drake (until June 1st, 2017)
+
+17ANNICAKE : 2 Blue Anniversary Cake and 2 Pink Anniversary Cake (until June 1st, 2017)
+
+KGAUNT01 : 70 Gauntlet Strikes (valid until January 27th 2017)
+
+DEC0516 : Festive Tree (valid until February 1st 2017) (If someone could supply the link please, as I don't know it)
+
+GAUNTLET : 30 Gauntlet Attack Tokens
+
+FRIDAY13 : Black Cat
+
+APRFOOL16 : 1 Fat Dragon Doodle
+
+BEASTER16 : 1 Brown-Grey Rising Dawn Chest , 1 Green-Blue Rising Dawn Chest , 1 Purple-Orange Rising Dawn Chest , 2 Volatile Energy Potion , 2 Volatile Stamina Potion , 4 Volatile Honor Potion , 1 Beaster Bag
+
+BEASTER160 : 2 Volatile Energy Potion , 2 Volatile Stamina Potion , 4 Volatile Honor Potion , 1 Brown-Grey Rising Dawn Chest , 1 Green-Blue Rising Dawn Chest , 1 Purple-Orange Rising Dawn Chest , 1 Beaster Bag
+
+KRUNAMAS15 : 3 Potion Satchels , Snowman's Head (Angry) , Snowman's Head (Happy) , Snowman's Chest , Snowman's Hands , Snowman's Legs , Snowman's Feet
+
+FEST : 25x Festival Tickets
+
+DR7A1 : 2 Energy Potion (Grand) , 2 Stamina Potion (Grand)
+
+TURKEY14 : 5 Planet Coins
+
+BLACK14: 10 Planet Coins
+
+XMAS : 5 Planet Coins
+
+NY2015 : 5 Planet Coins
+
+KPC1504 : 5 Planet Coins
+
+NY2015S : 5 Planet Coins
+
+KP151Z : 2 Bloodthirst Potion
+
+K15PX2 : 2 Ironhide Potion
+
+KP35AN15 : Volatile Energy Potion & Volatile Stamina Potion
+
+ANNI15VIT : 2 Vitality Potions
+
+15ANNICAKE : 2 Blue and 2 Pink Anniversary Cakes
+
+CAKE15ANN : 2 Blue and 2 Pink Anniversary Cakes
+
+2015ANNI : Purple-Orange , Green-Blue & Brown-Grey Rising Dawn Chest
+
+RDCHST15 : Purple-Orange , Green-Blue & Brown-Grey Rising Dawn Chest
+
+5THANNIFAM : The Thought That Counts
+
+FBRLEG2015 : Roland's Legacy Chest
+
+LDD01A : 2 Life-Drain Draughts
+
+KSHRM02 : 2 Green Mushrooms
+
+6ANNICHESTS : 1 Brown-Grey Endless Dawn Chest , 1 Green-Blue Endless Dawn Chest , 1 Purple-Orange Endless Dawn Chest
+
+EDCHESTRND2 : 1 Brown-Grey Endless Dawn Chest , 1 Green-Blue Endless Dawn Chest , 1 Purple-Orange Endless Dawn Chest
+
+MTHRDAY : The Matriarch
+
+CANDLEGOLEM : Candle Golem
+
+STRAVAGANZA : Farmhand
+
+FTHRDAY : Toymaker
+
+FESTIVAL6 : 25 Festival Ticket s
+
+WK1116 : 30 Gauntlet Strikes
+
+WKNAMES : 15 Gauntlet Strikes
+
+FEST120916 : 175 Festival Tickets
+
+BFRIDAY16 : 2 Volatile Energy Potion , 2 Volatile Stamina Potion , 4 Volatile Honor Potion , 1 Brown-Grey Endless Dawn Chest , 1 Green-Blue Endless Dawn Chest , 1 Purple-Orange Endless Dawn Chest
+
+DEC0216 : 1 Volatile Energy Potion , 1 Volatile Stamina Potion , 2 Volatile Honor Potion
+
+DEC0116 : 2 Green Mushroom , 2 Grand Mushroom of Defense
+
+DEC0316 : 2 Vitality Potion
+
+DEC0416 : 5 Planet Coins
+
+Categories
+
+Categories :
+
+Pages using DynamicPageList3 parser function
+
+Pages using duplicate arguments in template calls
+
+Community content is available under CC-BY-SA unless otherwise noted.
+
+More Fandoms
+
+Fantasy
+
+9 Comments
+ Join the conversation
+ Sign in to read what others are saying and share your thoughts.
+ SIGN IN Don't have account? Register now
+
+Advertisement
+
+Advertisement
+
+Advertisement
+
+Advertisement
+
+Explore properties
+
+Fandom
+
+Fanatical
+
+GameSpot
+
+Metacritic
+
+TV Guide
+
+Honest Entertainment
+
+Follow Us
+
+Overview
+
+What is Fandom?
+
+Essentials
+
+About
+
+Careers
+
+Press
+
+Contact
+
+Terms of Use
+
+Privacy Policy
+
+Digital Services Act
+
+Global Sitemap
+
+Local Sitemap
+
+Do Not Sell My Personal Information
+
+Community
+
+Community Central
+
+Support
+
+Help
+
+Advertise
+
+Media Kit
+
+Contact
+
+Fandom Apps
+
+Take your favorite fandoms with you and never miss a beat.
+
+Dawn of the Dragons Wiki is a Fandom Games Community.
+
+View Mobile Site
+
+Do Not Sell My Personal Information
+ When
+ you visit our website, we store cookies on your browser to collect 
+information. The information collected might relate to you, your 
+preferences or your device, and is mostly used to make the site work as 
+you expect it to and to provide a more personalized web experience. 
+However, you can choose not to allow certain types of cookies, which may
+ impact your experience of the site and the services we are able to 
+offer. Click on the different category headings to find out more and 
+change our default settings according to your preference. You cannot 
+opt-out of our First Party Strictly Necessary Cookies as they are 
+deployed in order to ensure the proper functioning of our website (such 
+as prompting the cookie banner and remembering your settings, to log 
+into your account, to redirect you when you log out, etc.). For more 
+information about the First and Third Party Cookies used please follow 
+this link.
+
+Privacy Policy Allow All Manage Consent Preferences
+ Strictly Necessary Cookies
+ Always Active These
+ cookies are necessary for the website to function and cannot be 
+switched off in our systems. They are usually only set in response to 
+actions made by you which amount to a request for services, such as 
+setting your privacy preferences, logging in or filling in forms. You 
+can set your browser to block or alert you about these cookies, but some
+ parts of the site will not then work. These cookies do not store any 
+personally identifiable information.
+ Functional Cookies
+ Functional Cookies These
+ cookies enable the website to provide enhanced functionality and 
+personalisation. They may be set by us or by third party providers whose
+ services we have added to our pages. If you do not allow these cookies 
+then some or all of these services may not function properly.
+ Performance Cookies
+ Performance Cookies These
+ cookies allow us to count visits and traffic sources so we can measure 
+and improve the performance of our site. They help us to know which 
+pages are the most and least popular and see how visitors move around 
+the site. All information these cookies collect is aggregated and 
+therefore anonymous. If you do not allow these cookies we will not know 
+when you have visited our site, and will not be able to monitor its 
+performance.
+ Targeting Cookies
+ Targeting Cookies These
+ cookies may be set through our site by our advertising partners. They 
+may be used by those companies to build a profile of your interests and 
+show you relevant adverts on other sites. They do not store directly 
+personal information, but are based on uniquely identifying your browser
+ and internet device. If you do not allow these cookies, you will 
+experience less targeted advertising.
+ Social Media Cookies
+ Social Media Cookies These
+ cookies are set by a range of social media services that we have added 
+to the site to enable you to share our content with your friends and 
+networks. They are capable of tracking your browser across other sites 
+and building up a profile of your interests. This may impact the content
+ and messages you see on other websites you visit. If you do not allow 
+these cookies you may not be able to use or see these sharing tools.
+ Back Button Cookie List
+
+Search Icon Filter Icon Clear checkbox label label 
+ Apply Cancel Consent Leg.Interest checkbox label label checkbox label label checkbox label label Confirm My Choices Search this wiki Search all wikis
