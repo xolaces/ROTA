@@ -34,27 +34,35 @@ public class RaidServiceTests
         Mock<IEquipmentService> Equipment,
         Mock<IRaidMagicRepository> RaidMagics,
         Mock<IMagicDefinitionProvider> MagicDefs,
-        Mock<IMagicService> MagicService);
+        Mock<IMagicService> MagicService,
+        Mock<IPlayerLegionRepository> PlayerLegions,
+        Mock<IPlayerLegionSlotRepository> LegionSlots,
+        Mock<IUnitDefinitionProvider> UnitDefs,
+        Mock<ILegionDefinitionProvider> LegionDefs);
 
-    private static ServiceBundle BuildService(Random? random = null, MagicConfig? magicConfig = null)
+    private static ServiceBundle BuildService(Random? random = null, MagicConfig? magicConfig = null, LegionConfig? legionConfig = null)
     {
-        var raids        = new Mock<IActiveRaidRepository>();
-        var participants = new Mock<IRaidParticipantRepository>();
-        var players      = new Mock<IPlayerRepository>();
-        var resources    = new Mock<IPlayerResourceRepository>();
-        var energy       = new Mock<IEnergyService>();
-        var gems         = new Mock<IGemService>();
-        var stats        = new Mock<IStatService>();
-        var inventory    = new Mock<IPlayerInventoryRepository>();
-        var itemDefs     = new Mock<IItemDefinitionProvider>();
-        var lootTables   = new Mock<ILootTableProvider>();
-        var auditLog     = new Mock<IAuditLogRepository>();
-        var definitions  = new Mock<IRaidDefinitionProvider>();
-        var hitCache     = new Mock<IRaidHitCache>();
-        var equipment    = new Mock<IEquipmentService>();
-        var raidMagics   = new Mock<IRaidMagicRepository>();
-        var magicDefs    = new Mock<IMagicDefinitionProvider>();
-        var magicSvc     = new Mock<IMagicService>();
+        var raids         = new Mock<IActiveRaidRepository>();
+        var participants  = new Mock<IRaidParticipantRepository>();
+        var players       = new Mock<IPlayerRepository>();
+        var resources     = new Mock<IPlayerResourceRepository>();
+        var energy        = new Mock<IEnergyService>();
+        var gems          = new Mock<IGemService>();
+        var stats         = new Mock<IStatService>();
+        var inventory     = new Mock<IPlayerInventoryRepository>();
+        var itemDefs      = new Mock<IItemDefinitionProvider>();
+        var lootTables    = new Mock<ILootTableProvider>();
+        var auditLog      = new Mock<IAuditLogRepository>();
+        var definitions   = new Mock<IRaidDefinitionProvider>();
+        var hitCache      = new Mock<IRaidHitCache>();
+        var equipment     = new Mock<IEquipmentService>();
+        var raidMagics    = new Mock<IRaidMagicRepository>();
+        var magicDefs     = new Mock<IMagicDefinitionProvider>();
+        var magicSvc      = new Mock<IMagicService>();
+        var playerLegions = new Mock<IPlayerLegionRepository>();
+        var legionSlots   = new Mock<IPlayerLegionSlotRepository>();
+        var unitDefs      = new Mock<IUnitDefinitionProvider>();
+        var legionDefs    = new Mock<ILegionDefinitionProvider>();
 
         hitCache.Setup(c => c.TryAcquireSlotAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((true, (RaidHitResponse?)null));
@@ -82,19 +90,27 @@ public class RaidServiceTests
         // Default: GrantMagicAsync is a no-op (magic drops don't need a real repo in unit tests)
         magicSvc.Setup(m => m.GrantMagicAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        // Default: no active legion — existing tests unchanged
+        playerLegions.Setup(r => r.GetActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerLegion?)null);
+        legionSlots.Setup(r => r.GetForLegionAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerLegionSlot>());
 
-        var cfg = Options.Create(magicConfig ?? new MagicConfig());
+        var magicCfg  = Options.Create(magicConfig  ?? new MagicConfig());
+        var legionCfg = Options.Create(legionConfig ?? new LegionConfig());
 
         var service = new RaidService(
             raids.Object, participants.Object, players.Object, resources.Object,
             energy.Object, gems.Object, stats.Object, inventory.Object,
             itemDefs.Object, lootTables.Object, auditLog.Object,
             definitions.Object, hitCache.Object, equipment.Object,
-            raidMagics.Object, magicDefs.Object, magicSvc.Object, cfg, random);
+            raidMagics.Object, magicDefs.Object, magicSvc.Object, magicCfg,
+            playerLegions.Object, legionSlots.Object, unitDefs.Object, legionDefs.Object,
+            legionCfg, random);
 
         return new ServiceBundle(service, raids, participants, players, resources, energy, gems,
             stats, inventory, itemDefs, lootTables, auditLog, definitions, hitCache, equipment,
-            raidMagics, magicDefs, magicSvc);
+            raidMagics, magicDefs, magicSvc, playerLegions, legionSlots, unitDefs, legionDefs);
     }
 
     private static Player MakePlayer(long xp = 0)
@@ -1465,5 +1481,303 @@ public class RaidServiceTests
         result.Response!.IsDefeated.Should().BeTrue("the killing blow depletes the last HP");
         b.MagicService.Verify(m => m.GrantMagicAsync(player.Id, "magic_whetstone", It.IsAny<CancellationToken>()),
             Times.Once, "magic drop with chance=1.0 must call GrantMagicAsync for the eligible participant");
+    }
+
+    // -----------------------------------------------------------------------
+    // Slice 4 — Legion combat integration
+    // -----------------------------------------------------------------------
+
+    // Helpers for legion setup
+    private static PlayerLegion MakeActiveLegion(Guid playerId, string defId = "legion_warband")
+    {
+        var l = PlayerLegion.Create(playerId, defId);
+        l.SetActive(true);
+        return l;
+    }
+
+    private static UnitDefinition MakeUnitDef(
+        string id = "gen_ironward",
+        UnitType type = UnitType.General,
+        int atk = 80, int def = 60,
+        double legionBonus = 5,
+        UnitAbility? ability = null,
+        bool isPassive = false)
+        => new()
+        {
+            Id          = id,
+            Name        = id,
+            UnitType    = type,
+            Rarity      = ItemRarity.Green,
+            BaseAttack  = atk,
+            BaseDefense = def,
+            Race        = UnitRace.Human,
+            Role        = UnitRole.Melee,
+            Attribute   = UnitAttribute.Strength,
+            LegionBonus = legionBonus,
+            Ability     = ability,
+            IsPassive   = isPassive,
+        };
+
+    private static LegionDefinition MakeLegionDef(string id = "legion_warband", double powerBonus = 50)
+        => new()
+        {
+            Id           = id,
+            Name         = id,
+            Rarity       = ItemRarity.White,
+            PowerBonus   = powerBonus,
+            GeneralSlots = new() { new SlotSpec() },
+            TroopSlots   = new(),
+        };
+
+    private void SetupActiveLegion(ServiceBundle b, Guid playerId, PlayerLegion legion,
+        LegionDefinition legionDef, params (PlayerLegionSlot slot, UnitDefinition unit)[] slots)
+    {
+        b.PlayerLegions.Setup(r => r.GetActiveAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(legion);
+        b.LegionDefs.Setup(d => d.GetById(legion.LegionDefinitionId)).Returns(legionDef);
+        var slotList = slots.Select(s => s.slot).ToList();
+        b.LegionSlots.Setup(r => r.GetForLegionAsync(playerId, legion.LegionDefinitionId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(slotList);
+        foreach (var (_, unitDef) in slots)
+            b.UnitDefs.Setup(d => d.GetById(unitDef.Id)).Returns(unitDef);
+    }
+
+    [Fact]
+    public async Task Hit_NoActiveLegion_LegionPowerIsZero_DamageUnchanged()
+    {
+        // Default BuildService has no active legion → LegionPower=0.
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.LegionPower.Should().Be(0, "no active legion → zero legion contribution");
+        // base (ATK=10, DEF=10): (10*4+10)*1*[0.85,1.15] ∈ [42,58] — same as pre-legion range
+        result.Response.DamageDealt.Should().BeInRange(42, 58);
+    }
+
+    [Fact]
+    public async Task Hit_ActiveLegion_AddsExpectedLegionPower_ToPreProc()
+    {
+        // gen_ironward: ATK=80, DEF=60, type=General, legionBonus=5
+        // legion_warband: powerBonus=50
+        // UnitSum = 2.0*80 + 0.4*60 = 184
+        // LegionBonus% = 50 + 5 = 55 → bonusFraction = 0.55
+        // rawLegionPower = 184 * 1.55 = 285.2
+        // hitSize=1, multiplier∈[0.85,1.15], PowerScaling=1.0
+        // legionPowerTerm ∈ [floor(285.2*0.85), floor(285.2*1.15)] = [242, 327]
+        // After adding to charBase (ATK=10,DEF=10 → ∈[42,58]):
+        //   total ∈ [242+42, 327+58] = [284, 385]
+        var b      = BuildService(new Random(0)); // seed 0 multiplier≈0.726
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+
+        var legion  = MakeActiveLegion(player.Id);
+        var legDef  = MakeLegionDef(powerBonus: 50);
+        var unitDef = MakeUnitDef("gen_ironward", UnitType.General, 80, 60, 5);
+        var slot    = PlayerLegionSlot.Create(player.Id, "legion_warband", LegionSlotFamily.General, 0, "gen_ironward");
+        SetupActiveLegion(b, player.Id, legion, legDef, (slot, unitDef));
+
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.LegionPower.Should().BeGreaterThan(0, "active legion adds power");
+        // LegionPower must be within the expected range for this unit loadout and seed
+        result.Response.LegionPower.Should().BeInRange(200, 330,
+            "rawLegionPower≈285, multiplier[0.85,1.15] → term∈[242,327]");
+        // DamageDealt must include legion contribution
+        result.Response.DamageDealt.Should().BeGreaterThan(58,
+            "legion power pushes damage well above the no-legion ceiling of 58");
+    }
+
+    [Fact]
+    public async Task Hit_PowerScalingHalf_HalvesLegionContribution()
+    {
+        // PowerScaling=0.5 → legionPowerTerm is half of the PowerScaling=1.0 value.
+        var b      = BuildService(new Random(0), legionConfig: new LegionConfig { PowerScaling = 0.5 });
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+
+        var legion  = MakeActiveLegion(player.Id);
+        var legDef  = MakeLegionDef(powerBonus: 50);
+        var unitDef = MakeUnitDef("gen_ironward", UnitType.General, 80, 60, 5);
+        var slot    = PlayerLegionSlot.Create(player.Id, "legion_warband", LegionSlotFamily.General, 0, "gen_ironward");
+        SetupActiveLegion(b, player.Id, legion, legDef, (slot, unitDef));
+
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        // Also run the same hit with PowerScaling=1.0 for comparison
+        var bFull = BuildService(new Random(0));
+        SetupHitScaffolding(bFull, player, raid);
+        var legion2  = MakeActiveLegion(player.Id);
+        var slot2    = PlayerLegionSlot.Create(player.Id, "legion_warband", LegionSlotFamily.General, 0, "gen_ironward");
+        SetupActiveLegion(bFull, player.Id, legion2, legDef, (slot2, unitDef));
+        bFull.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        bFull.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var halfResult = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+        var fullResult = await bFull.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        halfResult.Success.Should().BeTrue();
+        fullResult.Success.Should().BeTrue();
+        // Half-scaling should give approximately half the legion term (within integer rounding)
+        halfResult.Response!.LegionPower.Should().BeLessThan(fullResult.Response!.LegionPower,
+            "PowerScaling=0.5 must reduce legion contribution compared to PowerScaling=1.0");
+        // The difference should be roughly 50% (allow ±2 for integer truncation)
+        long fullPower = fullResult.Response.LegionPower;
+        long halfPower = halfResult.Response.LegionPower;
+        halfPower.Should().BeCloseTo(fullPower / 2, delta: 2,
+            "PowerScaling=0.5 halves the term (with ±2 rounding tolerance)");
+    }
+
+    [Fact]
+    public async Task Hit_UnitAbilityProc_Fires_WhenChanceIsOne()
+    {
+        // Unit ability procChance=1.0 always fires; UnitProcBonus must be > 0.
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+
+        var unitAbility = new UnitAbility { ProcChance = 1.0, ProcAmount = 0.5, Conditions = new() };
+        var legion  = MakeActiveLegion(player.Id);
+        var legDef  = MakeLegionDef(powerBonus: 0);
+        var unitDef = MakeUnitDef("gen_ironward", UnitType.General, 80, 60, 0, unitAbility, isPassive: false);
+        var slot    = PlayerLegionSlot.Create(player.Id, "legion_warband", LegionSlotFamily.General, 0, "gen_ironward");
+        SetupActiveLegion(b, player.Id, legion, legDef, (slot, unitDef));
+
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.UnitProcBonus.Should().BeGreaterThan(0,
+            "unit ability procChance=1.0 always fires; 0.5 × preProc > 0");
+        result.Response.UnitProcs.Should().HaveCount(1);
+        result.Response.UnitProcs[0].Name.Should().Be("gen_ironward");
+    }
+
+    [Fact]
+    public async Task Hit_PassiveUnitAbility_DoesNotRoll_NoProcBonus()
+    {
+        // IsPassive=true → ability is folded into legionPower, must NOT roll in proc phase.
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+
+        var unitAbility = new UnitAbility { ProcChance = 1.0, ProcAmount = 0.5, Conditions = new() };
+        var legion  = MakeActiveLegion(player.Id);
+        var legDef  = MakeLegionDef(powerBonus: 0);
+        // IsPassive=true — should NOT add to unitProcs
+        var unitDef = MakeUnitDef("gen_passive", UnitType.General, 80, 60, 0, unitAbility, isPassive: true);
+        var slot    = PlayerLegionSlot.Create(player.Id, "legion_warband", LegionSlotFamily.General, 0, "gen_passive");
+        SetupActiveLegion(b, player.Id, legion, legDef, (slot, unitDef));
+
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.UnitProcBonus.Should().Be(0,
+            "passive ability must not roll in the proc phase (already in legionPower)");
+        result.Response.UnitProcs.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Hit_UnitProcBonus_Capped_WhenAboveMaxUnitProcBonus()
+    {
+        // procAmount=4.0 → raw = 4.0 × preProc; MaxUnitProcBonus=1.0 → cap = 1.0 × preProc.
+        var cfg    = new LegionConfig { PowerScaling = 1.0, MaxUnitProcBonus = 1.0 };
+        var b      = BuildService(new Random(0), legionConfig: cfg);
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+
+        var unitAbility = new UnitAbility { ProcChance = 1.0, ProcAmount = 4.0, Conditions = new() };
+        var legion  = MakeActiveLegion(player.Id);
+        var legDef  = MakeLegionDef(powerBonus: 0);
+        var unitDef = MakeUnitDef("gen_ironward", UnitType.General, 80, 60, 0, unitAbility, isPassive: false);
+        var slot    = PlayerLegionSlot.Create(player.Id, "legion_warband", LegionSlotFamily.General, 0, "gen_ironward");
+        SetupActiveLegion(b, player.Id, legion, legDef, (slot, unitDef));
+
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        long rawBonus = result.Response!.UnitProcs.Sum(p => p.Bonus);
+        result.Response.UnitProcBonus.Should().BeLessThan(rawBonus,
+            "cap=1.0×preProc clamps the 4.0×preProc raw sum");
+        result.Response.UnitProcBonus.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task Hit_LegionDamage_IncludedInDamageDealt_AndParticipantTotal()
+    {
+        // Legion power must land in damageFinal so it counts toward contribution.
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+
+        var legion  = MakeActiveLegion(player.Id);
+        var legDef  = MakeLegionDef(powerBonus: 0);
+        var unitDef = MakeUnitDef("gen_ironward", UnitType.General, 200, 100, 0);
+        var slot    = PlayerLegionSlot.Create(player.Id, "legion_warband", LegionSlotFamily.General, 0, "gen_ironward");
+        SetupActiveLegion(b, player.Id, legion, legDef, (slot, unitDef));
+
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        RaidParticipant? capturedParticipant = null;
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .Callback<RaidParticipant, CancellationToken>((p, _) => capturedParticipant = p)
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.LegionPower.Should().BeGreaterThan(0);
+        // DamageDealt must include legion contribution (large unit: ATK=200,DEF=100 → big hit)
+        result.Response.DamageDealt.Should().BeGreaterThan(100,
+            "legion unit with ATK=200,DEF=100 contributes significant power");
+        capturedParticipant.Should().NotBeNull();
+        capturedParticipant!.TotalDamageDealt.Should().Be(result.Response.DamageDealt,
+            "participant total includes legion damage (RecordHit called with damageFinal)");
     }
 }

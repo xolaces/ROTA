@@ -1,5 +1,5 @@
 # ROTA Function Reference
-Last updated: 2026-05-31 (v0.2.6-s6 — System 14 Slice 6 economy)
+Last updated: 2026-06-01 (v0.2.7-s4 — System 15 Legion Slices 1–4 + precursor v0.2.6.1)
 Update when adding public methods or entities.
 
 ---
@@ -765,6 +765,85 @@ Eval rule: `floor(owned / perCount) × bonusAmount`
 - **RaidHitFailureCode** — `RaidNotFound, RaidExpired, RaidAlreadyDefeated, InvalidHitSize, InsufficientStamina, AccessDenied, RaidFull`
 - **SummonRaidFailureCode** — `DefinitionNotFound, PlayerNotFound`
 - **UseItemFailureCode** — `ItemNotFound, InsufficientItems, ItemNotUsable`
+
+---
+
+---
+
+### ILegionService
+`src/ROTA.Application/Interfaces/ILegionService.cs`
+
+| Method | Description |
+|--------|-------------|
+| `Task<IReadOnlyList<OwnedUnitResponse>> GetOwnedUnitsAsync(Guid playerId, ct)` | Owned units hydrated with definitions |
+| `Task<IReadOnlyList<OwnedLegionResponse>> GetOwnedLegionsAsync(Guid playerId, ct)` | Owned legions hydrated with definitions |
+| `Task<SetActiveLegionResult> SetActiveLegionAsync(Guid playerId, string legionDefId, ct)` | Set active legion; clears IsActive on all others |
+| `Task<AssignSlotResult> AssignSlotAsync(Guid playerId, string legionDefId, string family, int slotIndex, string unitDefId, ct)` | Assign unit to slot — validates owns/type/constraint/dup |
+| `Task<ClearSlotResult> ClearSlotAsync(Guid playerId, string legionDefId, string family, int slotIndex, ct)` | Soft-delete slot (idempotent) |
+| `Task<LegionPowerResult> ComputeLegionPowerAsync(Guid playerId, string legionDefId, ct)` | Raw legion power (no PowerScaling — display only) |
+| `Task<LegionDetailResponse?> GetLegionDetailAsync(Guid playerId, string legionDefId, ct)` | Full slot layout + computed power |
+
+Implementation: `LegionService` (`src/ROTA.Application/Services/LegionService.cs`)
+Constructor: `(IPlayerUnitRepository, IPlayerLegionRepository, IPlayerLegionSlotRepository, IUnitDefinitionProvider, ILegionDefinitionProvider)`
+
+**Combat note (Slice 4):** `RaidService` does NOT call `ComputeLegionPowerAsync` in combat — it computes legionPower inline (same RNG multiplier+hitSize as charBase, applies `LegionConfig.PowerScaling`). `ComputeLegionPowerAsync` is for display only.
+
+---
+
+### IUnitDefinitionProvider / ILegionDefinitionProvider
+`src/ROTA.Application/Interfaces/I{Unit,Legion}DefinitionProvider.cs`
+Singletons; `content/units.json` and `content/legions.json` loaded at startup.
+
+| Method | Description |
+|--------|-------------|
+| `GetById(string id)` | Look up by id; null if not found |
+| `GetAll()` | All definitions |
+
+---
+
+### IPlayerUnitRepository / IPlayerLegionRepository / IPlayerLegionSlotRepository
+`src/ROTA.Application/Interfaces/`
+
+**IPlayerUnitRepository** — `GetOwnedAsync`, `FindAsync`, `UpsertAsync` (create or restore)
+**IPlayerLegionRepository** — `GetOwnedAsync`, `FindAsync`, `GetActiveAsync`, `UpsertAsync`, `UpdateAsync`
+**IPlayerLegionSlotRepository** — `GetForLegionAsync`, `FindAsync`, `UpsertAsync` (create or reassign), `SoftDeleteAsync`
+
+---
+
+### LegionController — `api/units` + `api/legions` [Authorize]
+`src/ROTA.Api/Controllers/LegionController.cs`
+
+| Endpoint | Service Method | Responses |
+|----------|---------------|-----------|
+| `GET /api/units` | `GetOwnedUnitsAsync` | 200 |
+| `GET /api/legions` | `GetOwnedLegionsAsync` | 200 |
+| `PUT /api/legions/{id}/active` | `SetActiveLegionAsync` | 200, 404 |
+| `PUT /api/legions/{id}/slots/{family}/{index}` | `AssignSlotAsync` | 200, 400, 404, 409, 422 |
+| `DELETE /api/legions/{id}/slots/{family}/{index}` | `ClearSlotAsync` | 200 |
+| `GET /api/legions/{id}` | `GetLegionDetailAsync` | 200, 404 |
+
+---
+
+### PlayerUnit / PlayerLegion / PlayerLegionSlot (Entities)
+`src/ROTA.Domain/Entities/`
+
+**PlayerUnit**: `Id, PlayerId, UnitDefinitionId, Quantity(=1), created/updated/IsDeleted`. `Create(playerId, unitDefId)`, `Restore()`.
+**PlayerLegion**: `Id, PlayerId, LegionDefinitionId, IsActive(bool), created/updated/IsDeleted`. `Create(...)`, `SetActive(bool)`, `Restore()`. One IsActive=true per player (service-enforced).
+**PlayerLegionSlot**: `Id, PlayerId, LegionDefinitionId, SlotFamily(LegionSlotFamily), SlotIndex(int), UnitDefinitionId, created/updated/IsDeleted`. `Create(...)`, `Reassign(unitDefId)`, `SoftDelete()`. Unique `(player_id, legion_def_id, slot_family, slot_index)`.
+
+---
+
+### Content Models (Slice 1)
+**UnitDefinition** (`content/units.json`): id, name, description, unitType, rarity, baseAttack, baseDefense, race, role, attribute, ability (UnitAbility?), isPassive, legionBonus, iconPath, acquisition.
+**UnitAbility**: procChance (0..1), procAmount, conditions (ConditionalBonus[]). Fires in proc phase only when isPassive=false.
+**LegionDefinition** (`content/legions.json`): id, name, description, rarity, powerBonus(%), generalSlots (SlotSpec[]), troopSlots (SlotSpec[]), iconPath, acquisition.
+**SlotSpec**: constraintType (SlotConstraintType), constraintValue (string?).
+**LegionConfig** (`appsettings.json`): PowerScaling (default 1.0), UnitCoefficients (General {2.0,0.4} Troop {1.44,0.36}), MaxUnitProcBonus (default 5.0).
+
+### RaidService — Slice 4 additions
+`RaidHitResponse` gains: `long LegionPower` (scaled legion term, 0 when no active legion), `long UnitProcBonus` (capped total unit-ability proc bonus, separate from MagicProcBonus), `List<MagicProcDTO> UnitProcs` (raw per-unit proc breakdown; reuses MagicProcDTO shape).
+New injected deps: `IPlayerLegionRepository, IPlayerLegionSlotRepository, IUnitDefinitionProvider, ILegionDefinitionProvider, IOptions<LegionConfig>`.
+Damage formula update: `preProc = charBase + legionPowerTerm` (then mount/magic/unit procs); `damageFinal` includes legion power → counts toward contribution.
 
 ---
 

@@ -9,8 +9,9 @@ Server-authoritative .NET 10 backend for a Dawn-of-the-Dragons-style async RPG. 
 Infrastructure,Shared}`. PostgreSQL 16 (EF Core 9), Redis, RS256 JWT.
 
 ## Build status (High — run this session)
-- **266 unit + 8 integration = 274 tests pass. 0 warnings, 0 errors.**
-- `main` @ tag **v0.2.6-s6** (System 14 Slice 6 — magic economy, GrantMagicAsync, gem shop, loot drops). Prior slices tagged.
+- **301 unit + 8 integration = 309 tests pass. 0 warnings, 0 errors.**
+- `main` @ tag **v0.2.7-s4** (System 15 Slice 4 — legion combat integration). Prior slices tagged.
+- Precursor v0.2.6.1: BuyMagicAsync ownership pre-check + idempotent referenceId. Tagged v0.2.6.1.
 
 ## Inventory (High)
 9 controllers · 14 services · 16 entities · 15 enums · 14 repositories · 3 middleware ·
@@ -48,11 +49,17 @@ tables. Loop works; thin.
 - SignalR registered, **no hubs mapped** (real-time inert).
 - Admin "panel" is API-only (no UI).
 
+## System 15 — Legion (v0.2.7, Slices 1–4 done)
+- **Slice 1**: 6 enums, UnitDefinition/LegionDefinition models, IUnitDefinitionProvider/ILegionDefinitionProvider, content/units.json (8 units) + content/legions.json (3 legions). Tag v0.2.7-s1.
+- **Slice 2**: PlayerUnit/PlayerLegion entities, EF configs, migration AddLegionOwnership, repos, LegionService (GetOwnedUnitsAsync/GetOwnedLegionsAsync), LegionController (GET /api/units, /api/legions). Tag v0.2.7-s2.
+- **Slice 3**: PlayerLegionSlot entity, EF config, migration AddLegionSlots, PlayerLegionSlotRepository, full LegionService (SetActiveLegionAsync, AssignSlotAsync, ClearSlotAsync, ComputeLegionPowerAsync, GetLegionDetailAsync). Slot constraint validation (Race/Role/Attribute). Tag v0.2.7-s3.
+- **Slice 4 (DEEP)**: LegionConfig (PowerScaling, UnitCoefficients, MaxUnitProcBonus), legion power integrated into HitRaidAsync preProc (same RNG multiplier+hitSize as charBase; inline from injected repos, NOT LegionService.ComputeLegionPowerAsync), unit-ability proc phase (separate cap from magic), RaidHitResponse gains LegionPower/UnitProcBonus/UnitProcs. Tag v0.2.7-s4.
+
 ## Not implemented (High)
 Game client (C# SDK = v0.3.0) · discernment quest-drop-quality (later) ·
 moderation (back-burnered) · world chat · guild · gauntlet · gacha/pity ·
 equipment crafting / consumables · gear set bonuses (Phase 2) ·
-structured log sink / monitoring · background jobs · legion system (next).
+structured log sink / monitoring · background jobs · Legion Slice 5 (commander) + Slice 6 (economy).
 
 ## Known issues / debt (High)
 - (Resolved v0.2.5: reward atomicity — stamina spend now inside advisory-lock tx.)

@@ -56,6 +56,13 @@ public class RaidHitResponse
     public List<MagicProcDTO> MagicProcs   { get; set; } = new();
     // Magic CritChanceFlat total for this hit (Slice 5); 0.0 when no CritChanceFlat magic applied
     public double MagicCritBonus { get; set; }
+    // Legion contribution for this hit (Slice 4).
+    // LegionPower = legionPower term after PowerScaling (0 when no active legion).
+    // UnitProcs = raw per-unit-ability bonuses BEFORE the aggregate cap; their sum may exceed
+    // UnitProcBonus when capped (same semantics as MagicProcs vs MagicProcBonus).
+    public long              LegionPower   { get; set; }
+    public long              UnitProcBonus { get; set; }
+    public List<MagicProcDTO> UnitProcs    { get; set; } = new();
 }
 
 public class MagicProcDTO
