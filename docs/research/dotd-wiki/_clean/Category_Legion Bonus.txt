@@ -1,0 +1,1419 @@
+﻿mw-parser-output" lang="en" dir="ltr"> This category contains those items which offer a general boost to legion bonus in all legions.
+
+Generals:
+
+| 
+ Name
+ | 
+ Legion Bonus
+ | 
+ Obtained
+ |
+
+| 
+ Arbiter 
+ | 
+ 50
+ | 
+ Limited Time Item Novermber 25th - December 4th 2015 for 150 
+ |
+
+| 
+ Archangel Cermarina 
+ | 
+ 30
+ | 
+ Limited Time Item 
+03/21/14 - 04/04/14 
+ |
+
+| 
+ Phoenix Lord Ah'kesh 
+ | 
+ 20
+ | 
+ Limited Time Item February 2017 
+ |
+
+| 
+ Garn Swiftpaw 
+ | 
+ 15
+ | 
+ Limited Time Item April 14th - April 21st 2017 for 50 
+ |
+
+| 
+ Inquisitor Marieth 
+ | 
+ 10
+ | 
+ Crafting 
+ |
+
+| 
+ Sharuum the Twisted 
+ | 
+ 5
+ | 
+ Crafting 
+ |
+
+| 
+ Chillfang 
+ | 
+ 5
+ | 
+ Tundra Invader (Event Raid) 
+ |
+
+| 
+ Vladimir 
+ | 
+ 30
+ | 
+ Expeditions December 2018 Relic Pack
+ |
+
+| 
+ Clythasia the Sky-Bolt II 
+ | 
+ 20
+ | 
+ Crafting 
+ |
+
+| 
+ Hrol the Siegeseer 
+ | 
+ 20
+ | 
+ Bloody Siege Chest 
+ |
+
+| 
+ Garath Ahearn 
+ | 
+ 75
+ | 
+ Limited Time Item December 21st 2018 - January 4th 2019 for 280 
+ |
+
+| 
+ Paul 
+ | 
+ 10
+ | 
+ Werereindeer ( Nightmare )
+ |
+
+| 
+ Gadrian 
+ | 
+ 20
+ | 
+ Lonely Hearts 
+ |
+
+| 
+ Dhalia Stonebraid 
+ | 
+ 20
+ | 
+ Limited Time Item July 19th - 26th 2019 for 50 
+ |
+
+| 
+ Panoptica the Infinite 
+ | 
+ 10
+ | 
+ Crafting 
+ |
+
+| 
+ Arwyth Titanstalker 
+ | 
+ 50
+ | 
+ Crafting 
+ |
+
+| 
+ Archmage Talbaster 
+ | 
+ 10
+ | 
+ Gauntlet Shop 
+ |
+
+| 
+ Palatea Deathshadow 
+ | 
+ 10
+ | 
+ Crafting 
+ |
+
+| 
+ Nichole Gravetreader 
+ | 
+ 5
+ | 
+ Rotflesh (Raid) 
+ |
+
+Troops:
+
+| 
+ Name
+ | 
+ Legion Bonus
+ | 
+ Obtained
+ |
+
+| 
+ Sergeant Kasimira 
+ | 
+ 10
+ | 
+ Limited Time Item December 23rd - 30th 2016 for 50 
+ |
+
+| 
+ Soldier of the Infinite Dawn 
+ | 
+ 5
+ | 
+ Crafting 
+ |
+
+| 
+ Krauloch 
+ | 
+ 10
+ | 
+ Crafting 
+ |
+
+| 
+ Dread Wraith 
+ | 
+ 5
+ | 
+ Expeditions New Item Pack October 2019 
+ |
+
+Relics:
+
+| 
+ Name
+ | 
+ Legion Bonus
+ | 
+ Obtained
+ |
+
+| 
+ Font of Elation 
+ | 
+ 40
+ | 
+ Reinforcement Chest 
+ |
+
+| 
+ Berserker's Horn 
+ | 
+ 15
+ | 
+ Reinforcement Chest 
+ |
+
+| 
+ Nightfall Orb 
+ | 
+ 25
+ | 
+ Paladin Chest 
+ |
+
+| 
+ Whisperdark Torch 
+ | 
+ 20
+ | 
+ Expeditions January 2016 
+ |
+
+| 
+ Saint's Chimes 
+ | 
+ 20
+ | 
+ Expeditions January 2016 
+ |
+
+| 
+ Portal Key 
+ | 
+ 10
+ | 
+ Crafting 
+ |
+
+| 
+ Standard of the 13th 
+ | 
+ 13
+ | 
+ Crafting 
+ |
+
+| 
+ Skyfire Launcher 
+ | 
+ 25
+ | 
+ Limited Time Item 
+ |
+
+| 
+ Extinction Seeds 
+ | 
+ 30
+ | 
+ AP Shop 
+ |
+
+| 
+ Cermarina's Blade 
+ | 
+ 15
+ | 
+ Crafting 
+ |
+
+| 
+ Sabirah's Ashes 
+ | 
+ 15
+ | 
+ Crafting 
+ |
+
+| 
+ Azar's Candle 
+ | 
+ 25
+ | 
+ Limited Time Item 
+ |
+
+| 
+ Anchor of the Grimval 
+ | 
+ 20
+ | 
+ Expeditions April 2016 
+ |
+
+| 
+ Conquest Drums 
+ | 
+ 10
+ | 
+ Guild Shop 
+ |
+
+| 
+ Callissa's Sail 
+ | 
+ 10
+ | 
+ Trench Golem (Campaign Raid) ( Hard )
+ |
+
+| 
+ The Shell of Solus 
+ | 
+ 30
+ | 
+ Crafting 
+ |
+
+| 
+ Magic Magnet 
+ | 
+ 20
+ | 
+ Expeditions June 2016 
+ |
+
+| 
+ The Pan Pipe of Liven 
+ | 
+ 20
+ | 
+ Expeditions June 2016 
+ |
+
+| 
+ Evelyn's Urn 
+ | 
+ 50
+ | 
+ Limited Time Item 
+ |
+
+| 
+ Swarmcaller Staff 
+ | 
+ 15
+ | 
+ Crafting 
+ |
+
+| 
+ Ramis' Retriever 
+ | 
+ 10
+ | 
+ Limited Time Item September 2016 for 20 
+ |
+
+| 
+ Amulet of Inversion 
+ | 
+ 25
+ | 
+ Limited Time Item 
+ |
+
+| 
+ Von Eldred's Notebook 
+ | 
+ 20
+ | 
+ Expeditions November 2016 New Item Pack 
+ |
+
+| 
+ Solstice Clock 
+ | 
+ 20
+ | 
+ Limited Time Item 
+ |
+
+| 
+ Scepter of Rassys 
+ | 
+ 40
+ | 
+ Limited Time Item February 10th - 17th 2017 for 50 
+ |
+
+| 
+ Ascendant Stones 
+ | 
+ 25
+ | 
+ Shadow Lord Hrakka'thon (Campaign Raid) 
+ |
+
+| 
+ Orb of Eventualities 
+ | 
+ 15
+ | 
+ Gauntlet Shop 
+ |
+
+| 
+ Ceremonial Veil-Dagger 
+ | 
+ 30
+ | 
+ Expeditions April 2017 New Item Pack 
+ |
+
+| 
+ Chalice of the Eternal Dawn 
+ | 
+ 50
+ | 
+ Crafting 
+ |
+
+| 
+ E.G.W.S 
+ | 
+ 30
+ | 
+ Expeditions August 2017 New Item Pack 
+ |
+
+| 
+ Horn of Krix'amon'tis 
+ | 
+ 30
+ | 
+ Crafting 
+ |
+
+| 
+ Tomb Censer 
+ | 
+ 30
+ | 
+ Bloody Battle Chest 
+ |
+
+| 
+ Prey Seeker's Prize 
+ | 
+ 40
+ | 
+ Expeditions November 2017 New Item Pack 
+ |
+
+| 
+ Root of Life 
+ | 
+ 15
+ | 
+ Rifts in Magic 
+ |
+
+| 
+ Conch of Courage 
+ | 
+ 10
+ | 
+ Limited Time Item June 2018 
+ |
+
+| 
+ Swamp Concoction 
+ | 
+ 5
+ | 
+ 300t+ damage on Sluriasma (World Raid) 
+ |
+
+| 
+ Enchanted Ice Shards 
+ | 
+ 5
+ | 
+ Ice Elemental (Guild Raid) 
+ |
+
+| 
+ Sphere of Splendor 
+ | 
+ 20
+ | 
+ Festival of Drifting Dreams : Magic Vortex
+ |
+
+| 
+ Honored Blade 
+ | 
+ 20
+ | 
+ Limited Time Item June 2018 
+ |
+
+| 
+ Battle Standard 
+ | 
+ 10
+ | 
+ Guild Shop 
+ |
+
+| 
+ Sacred Shackles 
+ | 
+ 20
+ | 
+ Crafting 
+ |
+
+| 
+ Plate of Absolution 
+ | 
+ 5
+ | 
+ Infernal Skeleton (Raid) 
+ |
+
+| 
+ Soul Reliquary 
+ | 
+ 5
+ | 
+ Crafting 
+ |
+
+| 
+ Haunted Jack-o'-Lantern 
+ | 
+ 5
+ | 
+ Crafting 
+ |
+
+| 
+ Nature's Kiss 
+ | 
+ 20
+ | 
+ Expeditions New Item Pack December 2018 
+ |
+
+| 
+ Living Flame 
+ | 
+ 20
+ | 
+ Limited Time Item December 2018 
+ |
+
+| 
+ Seer's Goblet 
+ | 
+ 10
+ | 
+ Bloody Siege Chest 
+ |
+
+| 
+ Angel's Incense 
+ | 
+ 30
+ | 
+ Bloody Siege Chest 
+ |
+
+| 
+ Power Core 
+ | 
+ 20
+ | 
+ Expeditions New Item Pack January 2019 
+ |
+
+| 
+ Skull of the First Magi 
+ | 
+ 10
+ | 
+ Citadel : Siege Workshop Level 1 
+ |
+
+| 
+ Moon Tears 
+ | 
+ 10
+ | 
+ Citadel : Siege Workshop Level 2 
+ |
+
+| 
+ Warwalker's Banner 
+ | 
+ 30
+ | 
+ Limited Time Item February 8th - 22nd 2019 for 90 
+ |
+
+| 
+ Enchanted Battlemap 
+ | 
+ 30
+ | 
+ Expeditions Warbringer Relic Pack 
+ |
+
+| 
+ Arch Djinn's Lamp 
+ | 
+ 30
+ | 
+ Limited Time Item March 2019 
+ |
+
+| 
+ Dusk Star 
+ | 
+ 25
+ | 
+ Gauntlet Shop 
+ |
+
+| 
+ Everburning Match 
+ | 
+ 30
+ | 
+ Expeditions New Item Pack April 2019 
+ |
+
+| 
+ The Continuum 
+ | 
+ 50
+ | 
+ Crafting 
+ |
+
+| 
+ Spell in a Bottle 
+ | 
+ 15
+ | 
+ Uazamu the Sorcerer (Campaign Raid) 
+ |
+
+| 
+ Quiver of Taming 
+ | 
+ 38
+ | 
+ Exotic Beasts Chest 
+ |
+
+| 
+ Dread Starfish 
+ | 
+ 40
+ | 
+ Expeditions New Item Pack June 2019 
+ |
+
+| 
+ Ring of Gha'muth 
+ | 
+ 40
+ | 
+ Crafting 
+ |
+
+| 
+ Tome of Oaths 
+ | 
+ 40
+ | 
+ Expeditions New Item Pack October 2019 
+ |
+
+| 
+ Xeurim's Phylactery 
+ | 
+ 25
+ | 
+ Xeurim the Corruptor (Raid) 
+ |
+
+Siege Items:
+
+| 
+ Name
+ | 
+ Legion Bonus
+ | 
+ Obtained
+ |
+
+| 
+ Black Powder 
+ | 
+ 20
+ | 
+ Bazaar : 75 
+ |
+
+| 
+ Supply Line 
+ | 
+ 15
+ | 
+ Limited Time Item December 2nd - 9th 2016 
+ |
+
+| 
+ Rainbow Cannon 
+ | 
+ 10
+ | 
+ Limited Time Item March 17th - 24th 2017 for 50 
+ |
+
+| 
+ Hymn Cannon of the Eternal Dawn 
+ | 
+ 2
+ | 
+ Crafting 
+ |
+
+| 
+ Accelerated Giant Scaler 
+ | 
+ 2
+ | 
+ Expeditions August 2017 New Item Pack 
+ |
+
+| 
+ Tigermaw Engine 
+ | 
+ 1
+ | 
+ Bloody Battle Chest 
+ |
+
+| 
+ Howling Mooncannon 
+ | 
+ 2
+ | 
+ Expeditions New Item Pack February 2018 
+ |
+
+| 
+ Party Cannon 
+ | 
+ 2
+ | 
+ Festival of Drifting Dreams : Magic Vortex
+ |
+
+| 
+ Volley Ballista 
+ | 
+ 1
+ | 
+ Limited Time Item June 2018 
+ |
+
+| 
+ Saint's Solution 
+ | 
+ 1
+ | 
+ Crafting 
+ |
+
+| 
+ Anvil Crasher 
+ | 
+ 3
+ | 
+ Bloody Siege Chest 
+ |
+
+| 
+ Death Trap 
+ | 
+ 3
+ | 
+ Bloody Siege Chest 
+ |
+
+| 
+ Rambelcher 
+ | 
+ 3
+ | 
+ Expeditions Warbringer Relic Pack 
+ |
+
+| 
+ Alchemist's Solution 
+ | 
+ 30
+ | 
+ Limited Time Item April 19th - 26th 2019 for 45 
+ |
+
+| 
+ Glass Cannon 
+ | 
+ 9
+ | 
+ Crafting 
+ |
+
+Support Items:
+
+| 
+ Name
+ | 
+ Legion Bonus
+ | 
+ Obtained
+ |
+
+| 
+ Lightfoot Charm 
+ | 
+ 10
+ | 
+ Crafting 
+ |
+
+| 
+ Withering Touch 
+ | 
+ 10
+ | 
+ AP Shop 
+ |
+
+| 
+ Waterbreathing Charm 
+ | 
+ 10
+ | 
+ Expeditions April 2016 
+ |
+
+| 
+ Lucian's Guide to Monsters 
+ | 
+ 30
+ | 
+ Limited Time Item May 5th - 19th 2017 for 75 
+ |
+
+| 
+ Book of Heroes 
+ | 
+ 10
+ | 
+ Crafting 
+ |
+
+| 
+ Performance Itinerary 
+ | 
+ 15
+ | 
+ Festival of Drifting Dreams : Magic Vortex
+ |
+
+| 
+ Exotic Tack 
+ | 
+ 4
+ | 
+ Exotic Beasts Chest 
+ |
+
+| 
+ Death's Whisper 
+ | 
+ 20
+ | 
+ Limited Time Item September 20th - 27th 2019 for 50 
+ |
+
+| 
+ Compiled Armament Tactics 
+ | 
+ 25
+ | 
+ Limited Time Item November 15th - 29th 2019 for 50 
+ |
+
+Trending pages
+
+Font of Elation
+
+Garath Ahearn
+
+Gadrian
+
+Clythasia the Sky-Bolt II
+
+Inquisitor Marieth
+
+Horn of Krix'amon'tis
+
+Phoenix Lord Ah'kesh
+
+Skyfire Launcher
+
+All items (110)
+
+#
+
+A
+
+B
+
+C
+
+D
+
+E
+
+F
+
+G
+
+H
+
+I
+
+J
+
+K
+
+L
+
+M
+
+N
+
+O
+
+P
+
+Q
+
+R
+
+S
+
+T
+
+U
+
+V
+
+W
+
+X
+
+Y
+
+Z
+
+Other
+
+A
+
+Accelerated Giant Scaler
+
+Alchemist's Solution
+
+Amulet of Inversion
+
+Anchor of the Grimval
+
+Angel's Incense
+
+Anvil Crasher
+
+Arbiter
+
+Arch Djinn's Lamp
+
+Archangel Cermarina
+
+Archmage Talbaster
+
+Arwyth Titanstalker
+
+Ascendant Stones
+
+Azar's Candle
+
+B
+
+Battle Standard
+
+Berserker's Horn
+
+Black Powder
+
+Book of Heroes
+
+C
+
+Callissa's Sail
+
+Ceremonial Veil-Dagger
+
+Cermarina's Blade
+
+Chalice of the Eternal Dawn
+
+Chillfang
+
+Clythasia the Sky-Bolt II
+
+Compiled Armament Tactics
+
+Conch of Courage
+
+Conquest Drums
+
+D
+
+Death Trap
+
+Death's Whisper
+
+Dhalia Stonebraid
+
+Dread Starfish
+
+Dread Wraith
+
+Dusk Star
+
+E
+
+E.G.W.S
+
+Enchanted Battlemap
+
+Enchanted Ice Shards
+
+Evelyn's Urn
+
+Everburning Match
+
+Exotic Tack
+
+Extinction Seeds
+
+F
+
+Font of Elation
+
+G
+
+Gadrian
+
+Garath Ahearn
+
+Garn Swiftpaw
+
+Glass Cannon
+
+H
+
+Haunted Jack-o'-Lantern
+
+Honored Blade
+
+Horn of Krix'amon'tis
+
+Howling Mooncannon
+
+Hrol the Siegeseer
+
+Hymn Cannon of the Eternal Dawn
+
+I
+
+Inquisitor Marieth
+
+K
+
+Krauloch
+
+L
+
+Lightfoot Charm
+
+Living Flame
+
+Lucian's Guide to Monsters
+
+M
+
+Magic Magnet
+
+Moon Tears
+
+N
+
+Nature's Kiss
+
+Nichole Gravetreader
+
+Nightfall Orb
+
+O
+
+Orb of Eventualities
+
+P
+
+Palatea Deathshadow
+
+Panoptica the Infinite
+
+Party Cannon
+
+Paul
+
+Performance Itinerary
+
+Phoenix Lord Ah'kesh
+
+Plate of Absolution
+
+Portal Key
+
+Power Core
+
+Prey Seeker's Prize
+
+Q
+
+Quiver of Taming
+
+R
+
+Rainbow Cannon
+
+Rambelcher
+
+Ramis' Retriever
+
+Ring of Gha'muth
+
+Root of Life
+
+S
+
+Sabirah's Ashes
+
+Sacred Shackles
+
+Saint's Chimes
+
+Saint's Solution
+
+Scepter of Rassys
+
+Seer's Goblet
+
+Sergeant Kasimira
+
+Sharuum the Twisted
+
+Skull of the First Magi
+
+Skyfire Launcher
+
+Soldier of the Infinite Dawn
+
+Solstice Clock
+
+Soul Reliquary
+
+Spell in a Bottle
+
+Sphere of Splendor
+
+Standard of the 13th
+
+Supply Line
+
+Swamp Concoction
+
+Swarmcaller Staff
+
+T
+
+The Continuum
+
+The Pan Pipe of Liven
+
+The Shell of Solus
+
+Tigermaw Engine
+
+Tomb Censer
+
+Tome of Oaths
+
+V
+
+Vladimir
+
+Volley Ballista
+
+Von Eldred's Notebook
+
+W
+
+Warwalker's Banner
+
+Waterbreathing Charm
+
+Whisperdark Torch
+
+Withering Touch
+
+X
+
+Xeurim's Phylactery
+
+Categories
+
+Categories :
+
+Pages using DynamicPageList3 parser tag
+
+Community content is available under CC-BY-SA unless otherwise noted.
+
+More Fandoms
+
+Fantasy
+
+Advertisement
+
+Advertisement
+
+Advertisement
+
+Advertisement
+
+Explore properties
+
+Fandom
+
+Fanatical
+
+GameSpot
+
+Metacritic
+
+TV Guide
+
+Honest Entertainment
+
+Follow Us
+
+Overview
+
+What is Fandom?
+
+Essentials
+
+About
+
+Careers
+
+Press
+
+Contact
+
+Terms of Use
+
+Privacy Policy
+
+Digital Services Act
+
+Global Sitemap
+
+Local Sitemap
+
+Do Not Sell My Personal Information
+
+Community
+
+Community Central
+
+Support
+
+Help
+
+Advertise
+
+Media Kit
+
+Contact
+
+Fandom Apps
+
+Take your favorite fandoms with you and never miss a beat.
+
+Dawn of the Dragons Wiki is a Fandom Games Community.
+
+View Mobile Site
+
+Do Not Sell My Personal Information
+ When
+ you visit our website, we store cookies on your browser to collect 
+information. The information collected might relate to you, your 
+preferences or your device, and is mostly used to make the site work as 
+you expect it to and to provide a more personalized web experience. 
+However, you can choose not to allow certain types of cookies, which may
+ impact your experience of the site and the services we are able to 
+offer. Click on the different category headings to find out more and 
+change our default settings according to your preference. You cannot 
+opt-out of our First Party Strictly Necessary Cookies as they are 
+deployed in order to ensure the proper functioning of our website (such 
+as prompting the cookie banner and remembering your settings, to log 
+into your account, to redirect you when you log out, etc.). For more 
+information about the First and Third Party Cookies used please follow 
+this link.
+
+Privacy Policy Allow All Manage Consent Preferences
+ Strictly Necessary Cookies
+ Always Active These
+ cookies are necessary for the website to function and cannot be 
+switched off in our systems. They are usually only set in response to 
+actions made by you which amount to a request for services, such as 
+setting your privacy preferences, logging in or filling in forms. You 
+can set your browser to block or alert you about these cookies, but some
+ parts of the site will not then work. These cookies do not store any 
+personally identifiable information.
+ Functional Cookies
+ Functional Cookies These
+ cookies enable the website to provide enhanced functionality and 
+personalisation. They may be set by us or by third party providers whose
+ services we have added to our pages. If you do not allow these cookies 
+then some or all of these services may not function properly.
+ Performance Cookies
+ Performance Cookies These
+ cookies allow us to count visits and traffic sources so we can measure 
+and improve the performance of our site. They help us to know which 
+pages are the most and least popular and see how visitors move around 
+the site. All information these cookies collect is aggregated and 
+therefore anonymous. If you do not allow these cookies we will not know 
+when you have visited our site, and will not be able to monitor its 
+performance.
+ Targeting Cookies
+ Targeting Cookies These
+ cookies may be set through our site by our advertising partners. They 
+may be used by those companies to build a profile of your interests and 
+show you relevant adverts on other sites. They do not store directly 
+personal information, but are based on uniquely identifying your browser
+ and internet device. If you do not allow these cookies, you will 
+experience less targeted advertising.
+ Social Media Cookies
+ Social Media Cookies These
+ cookies are set by a range of social media services that we have added 
+to the site to enable you to share our content with your friends and 
+networks. They are capable of tracking your browser across other sites 
+and building up a profile of your interests. This may impact the content
+ and messages you see on other websites you visit. If you do not allow 
+these cookies you may not be able to use or see these sharing tools.
+ Back Button Cookie List
+
+Search Icon Filter Icon Clear checkbox label label 
+ Apply Cancel Consent Leg.Interest checkbox label label checkbox label label checkbox label label Confirm My Choices
