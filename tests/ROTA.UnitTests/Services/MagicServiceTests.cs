@@ -362,7 +362,7 @@ public class MagicServiceTests
             .ReturnsAsync((PlayerMagic?)null);
         var expectedRef = $"magicbuy:{playerId}:magic_smite";
         svc.Gems.Setup(g => g.SpendGemsAsync(playerId, 25, GemTransactionType.MagicPurchase, expectedRef, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+            .ReturnsAsync(GemSpendOutcome.Charged);
         svc.MagicRepo.Setup(r => r.UpsertAsync(playerId, "magic_smite", It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
@@ -389,7 +389,7 @@ public class MagicServiceTests
         svc.MagicRepo.Setup(r => r.FindAsync(playerId, "magic_smite", It.IsAny<CancellationToken>()))
             .ReturnsAsync((PlayerMagic?)null);
         svc.Gems.Setup(g => g.SpendGemsAsync(playerId, 50, GemTransactionType.MagicPurchase, It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false);
+            .ReturnsAsync(GemSpendOutcome.InsufficientBalance);
 
         var result = await svc.Service.BuyMagicAsync(playerId, "magic_smite");
 
@@ -439,11 +439,11 @@ public class MagicServiceTests
         });
         var expectedRef = $"magicbuy:{playerId}:magic_smite";
 
-        // First call: not owned yet.
+        // First call: not owned yet → Charged.
         svc.MagicRepo.Setup(r => r.FindAsync(playerId, "magic_smite", It.IsAny<CancellationToken>()))
             .ReturnsAsync((PlayerMagic?)null);
         svc.Gems.Setup(g => g.SpendGemsAsync(playerId, 25, GemTransactionType.MagicPurchase, expectedRef, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+            .ReturnsAsync(GemSpendOutcome.Charged);
         svc.MagicRepo.Setup(r => r.UpsertAsync(playerId, "magic_smite", It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
@@ -464,6 +464,38 @@ public class MagicServiceTests
     }
 
     [Fact]
+    public async Task BuyMagicAsync_AlreadyProcessed_GrantsMagicAfterCrashRecovery()
+    {
+        // Crash-recovery scenario: gem-spend ledger row was committed but the server crashed
+        // before GrantMagicAsync ran. On retry:
+        //   - ownership pre-check passes (magic still missing from player_magic)
+        //   - SpendGemsAsync returns AlreadyProcessed (ledger row already exists)
+        //   - MagicService must still call GrantMagicAsync (UpsertAsync) and return Success
+        var svc      = BuildService();
+        var playerId = Guid.NewGuid();
+
+        svc.Defs.Setup(d => d.GetById("magic_smite")).Returns(new MagicDefinition
+        {
+            Id = "magic_smite", GemPrice = 25,
+        });
+        // Magic not yet owned — crash happened before the grant.
+        svc.MagicRepo.Setup(r => r.FindAsync(playerId, "magic_smite", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerMagic?)null);
+        svc.Gems.Setup(g => g.SpendGemsAsync(playerId, 25, GemTransactionType.MagicPurchase,
+                $"magicbuy:{playerId}:magic_smite", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GemSpendOutcome.AlreadyProcessed);
+        svc.MagicRepo.Setup(r => r.UpsertAsync(playerId, "magic_smite", It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var result = await svc.Service.BuyMagicAsync(playerId, "magic_smite");
+
+        result.Success.Should().BeTrue(
+            "AlreadyProcessed means the charge committed — MagicService must proceed with the grant");
+        svc.MagicRepo.Verify(r => r.UpsertAsync(playerId, "magic_smite", It.IsAny<CancellationToken>()), Times.Once,
+            "grant (UpsertAsync) must be called on retry so the player receives their magic");
+    }
+
+    [Fact]
     public async Task BuyMagicAsync_SpendCalledWithExpectedReferenceIdFormat()
     {
         var svc      = BuildService();
@@ -478,7 +510,7 @@ public class MagicServiceTests
         svc.Gems.Setup(g => g.SpendGemsAsync(
                 playerId, 25, GemTransactionType.MagicPurchase,
                 It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+            .ReturnsAsync(GemSpendOutcome.Charged);
         svc.MagicRepo.Setup(r => r.UpsertAsync(playerId, "magic_smite", It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 

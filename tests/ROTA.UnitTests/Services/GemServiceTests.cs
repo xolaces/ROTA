@@ -85,7 +85,7 @@ public class GemServiceTests
     // -----------------------------------------------------------------------
 
     [Fact]
-    public async Task SpendGems_ReturnsFalse_WhenBalanceInsufficient()
+    public async Task SpendGems_ReturnsInsufficientBalance_WhenBalanceTooLow()
     {
         var (service, repo, _) = BuildService();
         var playerId = Guid.NewGuid();
@@ -97,8 +97,52 @@ public class GemServiceTests
 
         var result = await service.SpendGemsAsync(playerId, 10, GemTransactionType.EnergyRefill, "refill:001");
 
-        result.Should().BeFalse("cannot spend more gems than the current balance");
+        result.Should().Be(GemSpendOutcome.InsufficientBalance,
+            "cannot spend more gems than the current balance");
         repo.Verify(r => r.CreateAsync(It.IsAny<GemTransaction>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SpendGems_ReturnsAlreadyProcessed_WhenReferenceIdAlreadyExists()
+    {
+        // Simulates crash-recovery: the ledger row was committed on the first call but the
+        // grant step was lost.  The retry must get AlreadyProcessed (not InsufficientBalance)
+        // so callers can re-run the idempotent grant without double-charging the player.
+        var (service, repo, _) = BuildService();
+        var playerId = Guid.NewGuid();
+        const string refId = "unitbuy:player1:gen_ironward";
+
+        repo.Setup(r => r.ReferenceExistsAsync(playerId, GemTransactionType.UnitPurchase, refId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true); // ledger row already exists
+
+        var result = await service.SpendGemsAsync(playerId, 50, GemTransactionType.UnitPurchase, refId);
+
+        result.Should().Be(GemSpendOutcome.AlreadyProcessed,
+            "an existing referenceId indicates the charge already committed — return AlreadyProcessed for idempotent replay");
+        repo.Verify(r => r.CreateAsync(It.IsAny<GemTransaction>(), It.IsAny<CancellationToken>()), Times.Never,
+            "no second ledger row may be written on replay");
+        repo.Verify(r => r.GetBalanceAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never,
+            "balance check is skipped entirely when the referenceId already exists");
+    }
+
+    [Fact]
+    public async Task SpendGems_ReturnsCharged_WhenSuccessful()
+    {
+        var (service, repo, _) = BuildService();
+        var playerId = Guid.NewGuid();
+        const string refId = "unitbuy:player1:gen_ironward";
+
+        repo.Setup(r => r.ReferenceExistsAsync(playerId, GemTransactionType.UnitPurchase, refId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        repo.Setup(r => r.GetBalanceAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(200);
+        repo.Setup(r => r.CreateAsync(It.IsAny<GemTransaction>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var result = await service.SpendGemsAsync(playerId, 50, GemTransactionType.UnitPurchase, refId);
+
+        result.Should().Be(GemSpendOutcome.Charged, "successful spend returns Charged");
+        repo.Verify(r => r.CreateAsync(It.IsAny<GemTransaction>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     // -----------------------------------------------------------------------

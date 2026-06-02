@@ -543,7 +543,7 @@ public class LegionServiceTests
             .ReturnsAsync((PlayerUnit?)null);
         b.Gems.Setup(g => g.SpendGemsAsync(playerId, 50, GemTransactionType.UnitPurchase,
                 $"unitbuy:{playerId}:gen_ironward", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+            .ReturnsAsync(GemSpendOutcome.Charged);
         b.Units.Setup(r => r.UpsertAsync(playerId, "gen_ironward", It.IsAny<CancellationToken>()))
             .ReturnsAsync(PlayerUnit.Create(playerId, "gen_ironward"));
 
@@ -569,7 +569,7 @@ public class LegionServiceTests
             .ReturnsAsync((PlayerUnit?)null);
         b.Gems.Setup(g => g.SpendGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(),
                 It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false); // insufficient balance
+            .ReturnsAsync(GemSpendOutcome.InsufficientBalance);
 
         var result = await b.Service.BuyUnitAsync(playerId, "gen_ironward");
 
@@ -603,39 +603,39 @@ public class LegionServiceTests
     }
 
     [Fact]
-    public async Task BuyUnit_Twice_ChargesOnce_ViaIdempotentReferenceId()
+    public async Task BuyUnit_Retry_AlreadyProcessed_GrantsUnitAndSucceeds()
     {
-        // Simulates a retry: first call charges successfully, second call's SpendGemsAsync
-        // returns true again (idempotent dedup) but UpsertAsync is called both times.
-        // The key assertion: the referenceId is the same, so the DB unique index prevents
-        // double-charging (modelled here via SpendGemsAsync returning true on both calls
-        // — the idempotency lives in GemService, not LegionService).
+        // Crash-recovery scenario: the gem-spend ledger row was committed on the first call,
+        // but the server crashed before UpsertAsync ran. On retry:
+        //   - ownership pre-check passes (unit is still missing from player_units)
+        //   - SpendGemsAsync returns AlreadyProcessed (ledger row already exists)
+        //   - LegionService must still call UpsertAsync and return Success
+        // This closes the lost-purchase hole: the player is never stuck in a "gems gone,
+        // unit not received" state.
         var b        = Build();
         var playerId = Guid.NewGuid();
         var def      = MakeUnitDef("gen_ironward");
         def.GemPrice = 50;
 
         b.UnitDefs.Setup(d => d.GetById("gen_ironward")).Returns(def);
-        // First call: not owned; second call: not owned (to reach gem spend again)
+        // Unit is still missing (crash happened before the grant).
         b.Units.Setup(r => r.FindAsync(playerId, "gen_ironward", It.IsAny<CancellationToken>()))
             .ReturnsAsync((PlayerUnit?)null);
-        // SpendGemsAsync is idempotent via referenceId — returns true on both calls
+        // GemService sees the existing ledger row and returns AlreadyProcessed (not InsufficientBalance).
         b.Gems.Setup(g => g.SpendGemsAsync(playerId, 50, GemTransactionType.UnitPurchase,
                 $"unitbuy:{playerId}:gen_ironward", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+            .ReturnsAsync(GemSpendOutcome.AlreadyProcessed);
         b.Units.Setup(r => r.UpsertAsync(playerId, "gen_ironward", It.IsAny<CancellationToken>()))
             .ReturnsAsync(PlayerUnit.Create(playerId, "gen_ironward"));
 
-        var r1 = await b.Service.BuyUnitAsync(playerId, "gen_ironward");
-        var r2 = await b.Service.BuyUnitAsync(playerId, "gen_ironward");
+        var result = await b.Service.BuyUnitAsync(playerId, "gen_ironward");
 
-        r1.Success.Should().BeTrue();
-        r2.Success.Should().BeTrue();
-        // The same referenceId is passed both times — GemService's unique-index constraint
-        // prevents the second ledger row from being inserted. We verify the same refId is used.
+        result.Success.Should().BeTrue(
+            "AlreadyProcessed means the charge already committed — LegionService must proceed with the grant");
+        b.Units.Verify(r => r.UpsertAsync(playerId, "gen_ironward", It.IsAny<CancellationToken>()), Times.Once,
+            "grant (UpsertAsync) must be called on retry so the player receives their unit");
         b.Gems.Verify(g => g.SpendGemsAsync(playerId, 50, GemTransactionType.UnitPurchase,
-            $"unitbuy:{playerId}:gen_ironward", It.IsAny<CancellationToken>()), Times.Exactly(2),
-            "LegionService always passes the same idempotent referenceId");
+            $"unitbuy:{playerId}:gen_ironward", It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

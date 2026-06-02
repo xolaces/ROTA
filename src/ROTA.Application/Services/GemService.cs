@@ -38,16 +38,21 @@ public sealed class GemService : IGemService
         return true;
     }
 
-    public async Task<bool> SpendGemsAsync(
+    public async Task<GemSpendOutcome> SpendGemsAsync(
         Guid playerId, int amount, GemTransactionType type, string? referenceId,
         CancellationToken ct = default)
     {
+        // referenceId already in ledger → the original charge committed; no second row written.
+        // This is an idempotent replay: caller must proceed with the grant step (AlreadyProcessed
+        // is SUCCESS, not failure). This closes the lost-purchase hole: if a crash happened
+        // between gem spend and grant, the retry arrives here, gets AlreadyProcessed, and
+        // re-runs the (idempotent) grant.
         if (referenceId is not null
             && await _transactions.ReferenceExistsAsync(playerId, type, referenceId, ct))
-            return false;
+            return GemSpendOutcome.AlreadyProcessed;
 
         var balance = await _transactions.GetBalanceAsync(playerId, ct);
-        if (balance < amount) return false;
+        if (balance < amount) return GemSpendOutcome.InsufficientBalance;
 
         await _transactions.CreateAsync(GemTransaction.Create(playerId, -amount, type, referenceId), ct);
 
@@ -55,7 +60,7 @@ public sealed class GemService : IGemService
             playerId, $"GemSpend:{type}", null,
             $"Spent {amount} gems (ref={referenceId})", null), ct);
 
-        return true;
+        return GemSpendOutcome.Charged;
     }
 
     public Task<bool> DailyRefillAsync(Guid playerId, CancellationToken ct = default)
