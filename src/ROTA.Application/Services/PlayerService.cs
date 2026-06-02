@@ -29,16 +29,20 @@ public sealed class PlayerService : IPlayerService
         var player = await _players.FindByIdWithResourcesAsync(playerId, ct);
         if (player is null) return null;
 
+        var now = DateTimeOffset.UtcNow;
         var resources = new List<ResourceValueResponse>();
         foreach (var resource in player.Resources)
         {
             var liveValue = await _energy.GetCurrentEnergyAsync(playerId, resource.ResourceType, ct);
+            var regenMinutesPerPoint = _energy.GetRegenMinutesPerPoint(player.Class, resource.ResourceType);
             resources.Add(new ResourceValueResponse
             {
-                Type = resource.ResourceType.ToString(),
-                LiveValue = liveValue,
-                MaxValue = resource.MaxValue,
-                RegenPerMinute = resource.RegenPerMinute
+                Type                 = resource.ResourceType.ToString(),
+                LiveValue            = liveValue,
+                MaxValue             = resource.MaxValue,
+                RegenPerMinute       = resource.RegenPerMinute,
+                RegenMinutesPerPoint = regenMinutesPerPoint,
+                SecondsToNextPoint   = ComputeSecondsToNextPoint(liveValue, resource.MaxValue, resource.LastRegenAt, regenMinutesPerPoint, now),
             });
         }
 
@@ -90,5 +94,25 @@ public sealed class PlayerService : IPlayerService
             $"Username changed to {request.Username}", null), ct);
 
         return new UpdateUsernameResult(PlayerUpdateStatus.Success, player.Username, player.UpdatedAt);
+    }
+
+    // -------------------------------------------------------------------
+    // HELPERS
+    // -------------------------------------------------------------------
+
+    private static int ComputeSecondsToNextPoint(
+        int liveValue,
+        int maxValue,
+        DateTimeOffset lastRegenAt,
+        double regenMinutesPerPoint,
+        DateTimeOffset now)
+    {
+        if (liveValue >= maxValue || regenMinutesPerPoint <= 0)
+            return 0;
+
+        var elapsedMinutes = (now - lastRegenAt).TotalMinutes;
+        var progressIntoCurrentCycle = elapsedMinutes % regenMinutesPerPoint;
+        var secondsRemaining = (regenMinutesPerPoint - progressIntoCurrentCycle) * 60.0;
+        return Math.Max(0, (int)Math.Ceiling(secondsRemaining));
     }
 }

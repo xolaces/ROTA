@@ -70,6 +70,102 @@ public class PlayerServiceTests
     }
 
     [Fact]
+    public async Task GetProfile_RegenMinutesPerPoint_ComesFromClassConfig_NotStoredField()
+    {
+        // Arrange — Conscript defaults: Energy=5.0, Stamina=5.0, GuildStamina=2.0
+        // The stored PlayerResource.RegenPerMinute is vestigial (int=2 for Energy, 1 for Stamina, 0 for GuildStamina).
+        // RegenMinutesPerPoint must NOT equal those stored values.
+        var (service, players, energy, _) = BuildService();
+        var player = MakePlayer(); // Class = Conscript
+
+        players.Setup(p => p.FindByIdWithResourcesAsync(player.Id, It.IsAny<CancellationToken>()))
+               .ReturnsAsync(player);
+
+        energy.Setup(e => e.GetCurrentEnergyAsync(player.Id, It.IsAny<ResourceType>(), It.IsAny<CancellationToken>()))
+              .ReturnsAsync(1); // below max so SecondsToNextPoint is non-trivial
+
+        // Conscript regen rates per ClassConfig defaults
+        energy.Setup(e => e.GetRegenMinutesPerPoint(PlayerClass.Conscript, ResourceType.Energy))
+              .Returns(5.0);
+        energy.Setup(e => e.GetRegenMinutesPerPoint(PlayerClass.Conscript, ResourceType.Stamina))
+              .Returns(5.0);
+        energy.Setup(e => e.GetRegenMinutesPerPoint(PlayerClass.Conscript, ResourceType.GuildStamina))
+              .Returns(2.0);
+
+        // Act
+        var result = await service.GetProfileAsync(player.Id);
+
+        // Assert — class-based rates returned
+        result.Should().NotBeNull();
+        var e2 = result!.Resources.Single(r => r.Type == nameof(ResourceType.Energy));
+        var s  = result.Resources.Single(r => r.Type == nameof(ResourceType.Stamina));
+        var gs = result.Resources.Single(r => r.Type == nameof(ResourceType.GuildStamina));
+
+        e2.RegenMinutesPerPoint.Should().Be(5.0, "Conscript Energy regen is 5.0 min/point from ClassConfig");
+        s.RegenMinutesPerPoint.Should().Be(5.0, "Conscript Stamina regen is 5.0 min/point from ClassConfig");
+        gs.RegenMinutesPerPoint.Should().Be(2.0, "GuildStamina regen is 2.0 min/point from ClassConfig");
+
+        // Assert — stored vestigial field is NOT accidentally promoted to RegenMinutesPerPoint
+        e2.RegenMinutesPerPoint.Should().NotBe(e2.RegenPerMinute,
+            "RegenMinutesPerPoint must be the class-based rate (5.0), not the stored int RegenPerMinute (2)");
+    }
+
+    [Fact]
+    public async Task GetProfile_SecondsToNextPoint_IsZero_WhenResourceFull()
+    {
+        var (service, players, energy, _) = BuildService();
+        var player = MakePlayer();
+
+        players.Setup(p => p.FindByIdWithResourcesAsync(player.Id, It.IsAny<CancellationToken>()))
+               .ReturnsAsync(player);
+
+        // Energy at max (25), Stamina at max (5), GuildStamina at max (1)
+        energy.Setup(e => e.GetCurrentEnergyAsync(player.Id, ResourceType.Energy, It.IsAny<CancellationToken>()))
+              .ReturnsAsync(25);
+        energy.Setup(e => e.GetCurrentEnergyAsync(player.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
+              .ReturnsAsync(5);
+        energy.Setup(e => e.GetCurrentEnergyAsync(player.Id, ResourceType.GuildStamina, It.IsAny<CancellationToken>()))
+              .ReturnsAsync(1);
+
+        energy.Setup(e => e.GetRegenMinutesPerPoint(It.IsAny<PlayerClass>(), It.IsAny<ResourceType>()))
+              .Returns(5.0);
+
+        var result = await service.GetProfileAsync(player.Id);
+
+        result.Should().NotBeNull();
+        foreach (var r in result!.Resources)
+            r.SecondsToNextPoint.Should().Be(0, $"{r.Type} is full — SecondsToNextPoint must be 0");
+    }
+
+    [Fact]
+    public async Task GetProfile_SecondsToNextPoint_IsPositive_WhenResourceNotFull()
+    {
+        var (service, players, energy, _) = BuildService();
+        var player = MakePlayer();
+
+        players.Setup(p => p.FindByIdWithResourcesAsync(player.Id, It.IsAny<CancellationToken>()))
+               .ReturnsAsync(player);
+
+        // Energy below max
+        energy.Setup(e => e.GetCurrentEnergyAsync(player.Id, ResourceType.Energy, It.IsAny<CancellationToken>()))
+              .ReturnsAsync(10); // 10 of 25 — not full
+        energy.Setup(e => e.GetCurrentEnergyAsync(player.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
+              .ReturnsAsync(5);
+        energy.Setup(e => e.GetCurrentEnergyAsync(player.Id, ResourceType.GuildStamina, It.IsAny<CancellationToken>()))
+              .ReturnsAsync(1);
+
+        energy.Setup(e => e.GetRegenMinutesPerPoint(It.IsAny<PlayerClass>(), It.IsAny<ResourceType>()))
+              .Returns(5.0);
+
+        var result = await service.GetProfileAsync(player.Id);
+
+        result.Should().NotBeNull();
+        var energyResource = result!.Resources.Single(r => r.Type == nameof(ResourceType.Energy));
+        energyResource.SecondsToNextPoint.Should().BeInRange(1, 300,
+            "Energy is not full — SecondsToNextPoint must be between 1 and 300 (5-min regen cycle = 300 s)");
+    }
+
+    [Fact]
     public async Task GetProfile_ReturnsNull_WhenPlayerNotFoundOrDeleted()
     {
         var (service, players, _, _) = BuildService();
