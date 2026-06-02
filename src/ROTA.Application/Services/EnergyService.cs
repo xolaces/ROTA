@@ -103,12 +103,9 @@ public sealed class EnergyService : IEnergyService
         return Math.Min(resource.CurrentValue + regenerated, resource.MaxValue);
     }
 
-    private async Task<double> ResolveMinutesPerPointAsync(Guid playerId, ResourceType type, CancellationToken ct)
+    public double GetRegenMinutesPerPoint(PlayerClass playerClass, ResourceType type)
     {
-        var player = await _players.FindByIdAsync(playerId, ct);
-        if (player is null) return 0; // no regen if player not found
-
-        var rates = _classService.GetRegenRates(player.Class);
+        var rates = _classService.GetRegenRates(playerClass);
         return type switch
         {
             ResourceType.Energy       => rates.EnergyRegenMinutesPerPoint,
@@ -116,5 +113,13 @@ public sealed class EnergyService : IEnergyService
             ResourceType.GuildStamina => rates.GuildStaminaRegenMinutesPerPoint,
             _                         => 0,
         };
+    }
+
+    private async Task<double> ResolveMinutesPerPointAsync(Guid playerId, ResourceType type, CancellationToken ct)
+    {
+        var player = await _players.FindByIdAsync(playerId, ct);
+        if (player is null) return 0; // no regen if player not found
+
+        return GetRegenMinutesPerPoint(player.Class, type);
     }
 }
