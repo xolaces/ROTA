@@ -10,7 +10,7 @@ Infrastructure,Shared}`. PostgreSQL 16 (EF Core 9), Redis, RS256 JWT.
 
 ## Build status (High — run this session)
 - **315 unit + 8 integration = 323 tests pass. 0 warnings, 0 errors.**
-- `main` @ tag **v0.2.7-s5** (System 15 Slice 5 — commander slot). Branch s6 ready to merge → **v0.2.7-s6**.
+- `main` @ tag **v0.2.7-s6** (System 15 Slice 6 — economy/acquisition). Slices 1–6 merged, tagged, pushed to origin.
 
 ## Inventory (High)
 10 controllers · 15 services · 19 entities · 21 enums · 18 repositories · 3 middleware ·
@@ -51,7 +51,7 @@ tables. Loop works; thin.
 - SignalR registered, **no hubs mapped** (real-time inert).
 - Admin "panel" is API-only (no UI).
 
-## System 15 — Legion (v0.2.7, Slices 1–4 done)
+## System 15 — Legion (v0.2.7, Slices 1–6 — COMPLETE)
 - **Slice 1**: 6 enums, UnitDefinition/LegionDefinition models, IUnitDefinitionProvider/ILegionDefinitionProvider, content/units.json (8 units) + content/legions.json (3 legions). Tag v0.2.7-s1.
 - **Slice 2**: PlayerUnit/PlayerLegion entities, EF configs, migration AddLegionOwnership, repos, LegionService (GetOwnedUnitsAsync/GetOwnedLegionsAsync), LegionController (GET /api/units, /api/legions). Tag v0.2.7-s2.
 - **Slice 3**: PlayerLegionSlot entity, EF config, migration AddLegionSlots, PlayerLegionSlotRepository, full LegionService (SetActiveLegionAsync, AssignSlotAsync, ClearSlotAsync, ComputeLegionPowerAsync, GetLegionDetailAsync). Slot constraint validation (Race/Role/Attribute). Tag v0.2.7-s3.
@@ -68,6 +68,18 @@ structured log sink / monitoring · background jobs.
 ## Known issues / debt (High)
 - (Resolved v0.2.5: reward atomicity — stamina spend now inside advisory-lock tx.)
 - (Resolved v0.2.5: ProcBonus type — now `long`.)
+- **Gem-buy partial-failure recovery (magic/unit/legion shops):** `GemService.SpendGemsAsync` returns
+  `false` for BOTH insufficient-balance AND an already-seen referenceId. So a buy whose gem spend
+  committed but whose grant then failed will, on retry, report "Insufficient gems" and never deliver the
+  item — gems lost, item not granted. **Double-charge is NOT possible** (ownership pre-check + the unique
+  partial index on `gem_transactions(player_id, transaction_type, reference_id)`); this is a *lost-purchase*
+  hole, not a double-charge. Spend+grant are also not wrapped in one tx. Shared by `BuyMagicAsync`
+  (v0.2.6.1) and `BuyUnit/BuyLegionAsync` (v0.2.7-s6) — same pattern, faithfully mirrored. Fix (to spec):
+  tri-state spend result (Charged/AlreadyProcessed/Insufficient) so the caller re-runs the idempotent grant
+  on AlreadyProcessed, wrap spend+grant together, and add a real buy-twice *integration* test (the current
+  unit test is mock-intent-only — it stubs SpendGemsAsync→true on the retry, which the real service never does).
+- (Documented Phase-2, pre-existing: `GemService` concurrent balance-overspend — non-atomic balance check
+  + insert can drive balance negative under contention across *different* referenceIds; advisory lock deferred.)
 
 ## Balance values (accepted per CURRENT_TASK; tunable in appsettings)
 - **Regen pacing — accepted:** Conscript = 5.0 min/point for BOTH energy and stamina (~2 h for full
