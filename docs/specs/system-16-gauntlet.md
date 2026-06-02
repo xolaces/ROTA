@@ -41,11 +41,17 @@ commit/merge/tag independently, never bundle. Auditor reviews after a batch.*
 >
 > **Wrath / Blessing (rank magics)** — (18) **Per-event consumables** (DotD-exact): event-scoped grant that
 > **expires at each event reset** — must re-place to keep. (19) **Off-cap raid aura** (applied to the Gauntlet
-> raid, OUTSIDE the System-14 five-magic slot cap). (20) **Keep the self-ownership bonus** (Wrath +150% /
-> Blessing +100% when owned, via a `Conditions` scalar). (21) The **+3 loot-rarity rider is DROPPED**.
-> Numbers (locked): **Wrath of the Ancients** `procChance 0.24, procAmount 5.00` (rank 1); **Blessing of the
-> Ancients** `procChance 0.13, procAmount 8.50` (ranks 2–10). **Slice-4 landmine:** the 850% proc must be
-> **exempt from / above the shared `MaxAggregateProcBonus` magic cap** or it silently clamps — handle explicitly.
+> raid, OUTSIDE the System-14 five-magic slot cap). (20) **Owned/honor bonus REDEFINED** (supersedes the old
+> +150%/+100%): a **multiplier on the magic's effective rate** — **current owner ×1.25**, **former owner ×1.10**
+> (a permanent "honor echo" that persists after the per-event consumable expires, recognizing past competition;
+> "for the time being"). Excluded from the <100% base-rate target; may push an owner's effective over 100%.
+> (21) The **+3 loot-rarity rider is DROPPED**.
+> **Numbers (locked 2026-06-02 — damage halved & toned down; `effective = procChance × procAmount`; buff toward
+> a <100% effective ceiling as the game matures; rank-1 Wrath is the more beneficial at every tier):**
+> **Wrath of the Ancients** (rank 1): `procChance 0.27, procAmount 2.50` → base **67.5%** (owner 84.4% / former 74.3%).
+> **Blessing of the Ancients** (ranks 2–10): `procChance 0.15, procAmount 4.25` → base **63.75%** (owner 79.7% / former 70.1%).
+> Both are **off-cap auras** (19), so they do NOT interact with the shared `MaxAggregateProcBonus` magic cap.
+> The former-owner "honor echo" combat mechanic (a persistent reduced proc after the consumable expires) is a Slice-4 detail to finalize.
 >
 > **Trophies** — (22) **Permanent**, **highest-only** stacking (own several → only the best applies; **+25%
 > cap**, NOT additive). (23) Attach as a multiplier on `rawLegionPower` (`× (1 + highestTrophyPct)`) **before**
