@@ -29,4 +29,10 @@ public class PlayerUnit
         IsDeleted = false;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
+
+    public void SoftDelete()
+    {
+        IsDeleted = true;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
 }

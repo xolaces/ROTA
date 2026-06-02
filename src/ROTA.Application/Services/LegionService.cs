@@ -366,15 +366,24 @@ public sealed class LegionService : ILegionService
         if (existing is not null && !existing.IsDeleted)
             return BuyUnitFail(BuyFailureCode.AlreadyOwned, "You already own this unit.");
 
-        // Idempotent gem spend: if this purchase was already completed (e.g. retry after crash),
-        // SpendGemsAsync returns true without deducting again (unique referenceId in ledger).
+        // Tri-state gem spend: Charged = first-time purchase; AlreadyProcessed = ledger row
+        // already exists (crash-recovery replay — the charge committed but the grant was lost).
+        // Both outcomes proceed with UpsertAsync (idempotent) so the player receives the unit
+        // on retry without being double-charged. InsufficientBalance → reject.
+        //
+        // PHASE-2: wrap SpendGemsAsync + UpsertAsync in a single DB transaction so a mid-air
+        // crash cannot produce the AlreadyProcessed state at all. Requires an
+        // ITransactionScope or similar abstraction to share a transaction across repos without
+        // leaking DbContext into Application. The current AlreadyProcessed path already handles
+        // crash recovery correctly; atomicity is a hardening step, not a correctness fix.
         var refId   = $"unitbuy:{playerId}:{unitDefinitionId}";
-        var charged = await _gems.SpendGemsAsync(
+        var outcome = await _gems.SpendGemsAsync(
             playerId, def.GemPrice, GemTransactionType.UnitPurchase, refId, ct);
-        if (!charged)
+        if (outcome == GemSpendOutcome.InsufficientBalance)
             return BuyUnitFail(BuyFailureCode.InsufficientGems,
                 $"Insufficient gems. Required: {def.GemPrice}.");
 
+        // outcome is Charged or AlreadyProcessed — proceed with (idempotent) grant.
         await _units.UpsertAsync(playerId, unitDefinitionId, ct);
 
         return new BuyUnitResult
@@ -401,13 +410,20 @@ public sealed class LegionService : ILegionService
         if (existing is not null && !existing.IsDeleted)
             return BuyLegionFail(BuyFailureCode.AlreadyOwned, "You already own this legion.");
 
+        // Tri-state gem spend: Charged = first-time purchase; AlreadyProcessed = ledger row
+        // already exists (crash-recovery replay — the charge committed but the grant was lost).
+        // Both outcomes proceed with UpsertAsync (idempotent) so the player receives the legion
+        // on retry without being double-charged. InsufficientBalance → reject.
+        //
+        // PHASE-2: wrap SpendGemsAsync + UpsertAsync in a single DB transaction (see BuyUnitAsync).
         var refId   = $"legionbuy:{playerId}:{legionDefinitionId}";
-        var charged = await _gems.SpendGemsAsync(
+        var outcome = await _gems.SpendGemsAsync(
             playerId, def.GemPrice, GemTransactionType.LegionPurchase, refId, ct);
-        if (!charged)
+        if (outcome == GemSpendOutcome.InsufficientBalance)
             return BuyLegionFail(BuyFailureCode.InsufficientGems,
                 $"Insufficient gems. Required: {def.GemPrice}.");
 
+        // outcome is Charged or AlreadyProcessed — proceed with (idempotent) grant.
         await _legions.UpsertAsync(playerId, legionDefinitionId, ct);
 
         return new BuyLegionResult

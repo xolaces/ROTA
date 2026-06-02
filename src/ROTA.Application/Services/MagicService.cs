@@ -232,17 +232,21 @@ public sealed class MagicService : IMagicService
             return BuyFail(BuyMagicFailureCode.AlreadyOwned,
                 "You already own this magic.", def.GemPrice);
 
-        // Idempotent referenceId: if spend commits but grant throws, a retry lands on
-        // the AlreadyOwned pre-check above (not on this SpendGemsAsync path), so
-        // double-charging is closed by the ownership check. The referenceId is an
-        // additional safety net for concurrent duplicate submissions.
+        // Tri-state gem spend: Charged = first-time purchase; AlreadyProcessed = the ledger
+        // row already exists (crash-recovery replay — the charge committed but the grant did
+        // not). Both outcomes must proceed with GrantMagicAsync (idempotent upsert) so the
+        // player receives their magic on retry. InsufficientBalance → reject.
+        //
+        // PHASE-2: wrap SpendGemsAsync + GrantMagicAsync in a single DB transaction (see
+        // LegionService.BuyUnitAsync for the same PHASE-2 note and the required abstraction).
         var referenceId = $"magicbuy:{playerId}:{magicDefinitionId}";
-        var spent = await _gems.SpendGemsAsync(
+        var outcome = await _gems.SpendGemsAsync(
             playerId, def.GemPrice, GemTransactionType.MagicPurchase, referenceId, ct);
-        if (!spent)
+        if (outcome == GemSpendOutcome.InsufficientBalance)
             return BuyFail(BuyMagicFailureCode.InsufficientBalance,
                 $"Insufficient gems. Required: {def.GemPrice}.", def.GemPrice);
 
+        // outcome is Charged or AlreadyProcessed — proceed with (idempotent) grant.
         await GrantMagicAsync(playerId, magicDefinitionId, ct);
 
         await _auditLog.AppendAsync(AuditLog.Create(
