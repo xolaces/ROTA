@@ -14,4 +14,6 @@ public class LegionDefinition
     public List<SlotSpec> TroopSlots   { get; set; } = new();
     public string         IconPath     { get; set; } = string.Empty;
     public string         Acquisition  { get; set; } = string.Empty;
+    // 0 = not for sale in the gem shop; >0 = gem cost to purchase.
+    public int            GemPrice     { get; set; }
 }

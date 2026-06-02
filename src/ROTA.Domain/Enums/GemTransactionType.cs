@@ -9,4 +9,6 @@ public enum GemTransactionType
     RaidReward   = 5,
     LevelUpReward   = 6,
     MagicPurchase   = 7,
+    UnitPurchase    = 8,
+    LegionPurchase  = 9,
 }

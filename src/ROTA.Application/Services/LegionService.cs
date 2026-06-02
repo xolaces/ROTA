@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Models;
 using ROTA.Domain.Entities;
@@ -16,6 +17,8 @@ public sealed class LegionService : ILegionService
     private readonly ILegionDefinitionProvider      _legionDefs;
     private readonly IPlayerCommanderGearRepository _commanderGear;
     private readonly IGearDefinitionProvider        _gearDefs;
+    private readonly IGemService                    _gems;
+    private readonly LegionConfig                   _legionConfig;
 
     public LegionService(
         IPlayerUnitRepository          units,
@@ -24,7 +27,9 @@ public sealed class LegionService : ILegionService
         IUnitDefinitionProvider        unitDefs,
         ILegionDefinitionProvider      legionDefs,
         IPlayerCommanderGearRepository commanderGear,
-        IGearDefinitionProvider        gearDefs)
+        IGearDefinitionProvider        gearDefs,
+        IGemService                    gems,
+        IOptions<LegionConfig>         legionConfig)
     {
         _units         = units;
         _legions       = legions;
@@ -33,6 +38,8 @@ public sealed class LegionService : ILegionService
         _legionDefs    = legionDefs;
         _commanderGear = commanderGear;
         _gearDefs      = gearDefs;
+        _gems          = gems;
+        _legionConfig  = legionConfig.Value;
     }
 
     // ----------------------------------------------------------------
@@ -152,7 +159,8 @@ public sealed class LegionService : ILegionService
             return SlotFail(AssignSlotFailureCode.UnitNotOwned, "Unit definition not found.");
 
         var unitOwned = await _units.FindAsync(playerId, unitDefinitionId, ct);
-        if (unitOwned is null || unitOwned.IsDeleted)
+        // Fold-in (auditor Slice 3 review): verify both ownership and non-zero quantity.
+        if (unitOwned is null || unitOwned.IsDeleted || unitOwned.Quantity < 1)
             return SlotFail(AssignSlotFailureCode.UnitNotOwned, "You do not own this unit.");
 
         var expectedUnitType = slotFamily == LegionSlotFamily.General ? UnitType.General : UnitType.Troop;
@@ -209,10 +217,13 @@ public sealed class LegionService : ILegionService
             var unitDef = _unitDefs.GetById(slot.UnitDefinitionId);
             if (unitDef is null) continue;
 
-            // DotD coefficients: General 2.0×ATK + 0.4×DEF; Troop 1.44×ATK + 0.36×DEF
-            double atkCoeff = unitDef.UnitType == UnitType.General ? 2.0  : 1.44;
-            double defCoeff = unitDef.UnitType == UnitType.General ? 0.4  : 0.36;
-            unitSum += atkCoeff * unitDef.BaseAttack + defCoeff * unitDef.BaseDefense;
+            // Fold-in (auditor Slice 3 review): use LegionConfig.UnitCoefficients instead of
+            // hardcoded values so display power cannot drift from combat power (RaidService
+            // already reads from config). Fall back to Troop defaults if key missing.
+            var coeffKey = unitDef.UnitType == UnitType.General ? "General" : "Troop";
+            var coeffs   = _legionConfig.UnitCoefficients.TryGetValue(coeffKey, out var c)
+                ? c : new UnitCoefficients { Atk = 1.44, Def = 0.36 };
+            unitSum += coeffs.Atk * unitDef.BaseAttack + coeffs.Def * unitDef.BaseDefense;
 
             if (unitDef.UnitType == UnitType.General)
                 totalLegionBonus += unitDef.LegionBonus;
@@ -329,6 +340,86 @@ public sealed class LegionService : ILegionService
     }
 
     // ----------------------------------------------------------------
+    // Slice 6 — Economy / acquisition
+    // ----------------------------------------------------------------
+
+    /// <summary>Idempotent unit grant — re-grant of an already-owned unit is a silent no-op.</summary>
+    public async Task GrantUnitAsync(Guid playerId, string unitDefinitionId, CancellationToken ct = default)
+        => await _units.UpsertAsync(playerId, unitDefinitionId, ct);
+
+    /// <summary>Idempotent legion grant — re-grant of an already-owned legion is a silent no-op.</summary>
+    public async Task GrantLegionAsync(Guid playerId, string legionDefinitionId, CancellationToken ct = default)
+        => await _legions.UpsertAsync(playerId, legionDefinitionId, ct);
+
+    public async Task<BuyUnitResult> BuyUnitAsync(
+        Guid playerId, string unitDefinitionId, CancellationToken ct = default)
+    {
+        var def = _unitDefs.GetById(unitDefinitionId);
+        if (def is null)
+            return BuyUnitFail(BuyFailureCode.DefinitionNotFound, "Unit definition not found.");
+
+        if (def.GemPrice <= 0)
+            return BuyUnitFail(BuyFailureCode.NotForSale, "This unit is not available in the gem shop.");
+
+        // Ownership pre-check: reject without charging (mirrors v0.2.6.1 BuyMagic fix).
+        var existing = await _units.FindAsync(playerId, unitDefinitionId, ct);
+        if (existing is not null && !existing.IsDeleted)
+            return BuyUnitFail(BuyFailureCode.AlreadyOwned, "You already own this unit.");
+
+        // Idempotent gem spend: if this purchase was already completed (e.g. retry after crash),
+        // SpendGemsAsync returns true without deducting again (unique referenceId in ledger).
+        var refId   = $"unitbuy:{playerId}:{unitDefinitionId}";
+        var charged = await _gems.SpendGemsAsync(
+            playerId, def.GemPrice, GemTransactionType.UnitPurchase, refId, ct);
+        if (!charged)
+            return BuyUnitFail(BuyFailureCode.InsufficientGems,
+                $"Insufficient gems. Required: {def.GemPrice}.");
+
+        await _units.UpsertAsync(playerId, unitDefinitionId, ct);
+
+        return new BuyUnitResult
+        {
+            Success          = true,
+            UnitDefinitionId = def.Id,
+            UnitName         = def.Name,
+            GemsSpent        = def.GemPrice,
+        };
+    }
+
+    public async Task<BuyLegionResult> BuyLegionAsync(
+        Guid playerId, string legionDefinitionId, CancellationToken ct = default)
+    {
+        var def = _legionDefs.GetById(legionDefinitionId);
+        if (def is null)
+            return BuyLegionFail(BuyFailureCode.DefinitionNotFound, "Legion definition not found.");
+
+        if (def.GemPrice <= 0)
+            return BuyLegionFail(BuyFailureCode.NotForSale, "This legion is not available in the gem shop.");
+
+        // Ownership pre-check: reject without charging.
+        var existing = await _legions.FindAsync(playerId, legionDefinitionId, ct);
+        if (existing is not null && !existing.IsDeleted)
+            return BuyLegionFail(BuyFailureCode.AlreadyOwned, "You already own this legion.");
+
+        var refId   = $"legionbuy:{playerId}:{legionDefinitionId}";
+        var charged = await _gems.SpendGemsAsync(
+            playerId, def.GemPrice, GemTransactionType.LegionPurchase, refId, ct);
+        if (!charged)
+            return BuyLegionFail(BuyFailureCode.InsufficientGems,
+                $"Insufficient gems. Required: {def.GemPrice}.");
+
+        await _legions.UpsertAsync(playerId, legionDefinitionId, ct);
+
+        return new BuyLegionResult
+        {
+            Success            = true,
+            LegionDefinitionId = def.Id,
+            LegionName         = def.Name,
+            GemsSpent          = def.GemPrice,
+        };
+    }
+
+    // ----------------------------------------------------------------
     // HELPERS
     // ----------------------------------------------------------------
 
@@ -388,5 +479,11 @@ public sealed class LegionService : ILegionService
     }
 
     private static AssignSlotResult SlotFail(AssignSlotFailureCode code, string reason)
+        => new() { FailureCode = code, FailureReason = reason };
+
+    private static BuyUnitResult BuyUnitFail(BuyFailureCode code, string reason)
+        => new() { FailureCode = code, FailureReason = reason };
+
+    private static BuyLegionResult BuyLegionFail(BuyFailureCode code, string reason)
         => new() { FailureCode = code, FailureReason = reason };
 }

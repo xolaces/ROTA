@@ -1,5 +1,5 @@
 # ROTA Function Reference
-Last updated: 2026-06-01 (v0.2.7-s4 — System 15 Legion Slices 1–4 + precursor v0.2.6.1)
+Last updated: 2026-06-02 (v0.2.7-s6 — System 15 Legion Slices 1–6 complete)
 Update when adding public methods or entities.
 
 ---
@@ -785,9 +785,13 @@ Eval rule: `floor(owned / perCount) × bonusAmount`
 | `Task<CommanderEquipResult> EquipCommanderAsync(Guid playerId, string gearDefinitionId, ct)` | Equip gear in commander slot (upsert in place); validates gear def exists |
 | `Task<CommanderUnequipResult> UnequipCommanderAsync(Guid playerId, ct)` | Remove commander gear (soft-delete, idempotent) |
 | `Task<CommanderGearResponse?> GetCommanderAsync(Guid playerId, ct)` | Current commander gear; null if empty |
+| `Task GrantUnitAsync(Guid playerId, string unitDefinitionId, ct)` | Idempotent unit grant — re-grant of already-owned unit is a silent no-op |
+| `Task GrantLegionAsync(Guid playerId, string legionDefinitionId, ct)` | Idempotent legion grant — re-grant is a silent no-op |
+| `Task<BuyUnitResult> BuyUnitAsync(Guid playerId, string unitDefinitionId, ct)` | Ownership pre-check (→ AlreadyOwned 409 no charge) → SpendGems (idempotent refId) → GrantUnit |
+| `Task<BuyLegionResult> BuyLegionAsync(Guid playerId, string legionDefinitionId, ct)` | Same pattern as BuyUnit; refId = `legionbuy:{playerId}:{legionId}` |
 
 Implementation: `LegionService` (`src/ROTA.Application/Services/LegionService.cs`)
-Constructor: `(IPlayerUnitRepository, IPlayerLegionRepository, IPlayerLegionSlotRepository, IUnitDefinitionProvider, ILegionDefinitionProvider, IPlayerCommanderGearRepository, IGearDefinitionProvider)`
+Constructor: `(IPlayerUnitRepository, IPlayerLegionRepository, IPlayerLegionSlotRepository, IUnitDefinitionProvider, ILegionDefinitionProvider, IPlayerCommanderGearRepository, IGearDefinitionProvider, IGemService, IOptions<LegionConfig>)`
 
 **Combat note (Slice 4):** `RaidService` does NOT call `ComputeLegionPowerAsync` in combat — it computes legionPower inline (same RNG multiplier+hitSize as charBase, applies `LegionConfig.PowerScaling`). `ComputeLegionPowerAsync` is for display only.
 
@@ -828,6 +832,8 @@ Singletons; `content/units.json` and `content/legions.json` loaded at startup.
 | `PUT /api/legions/commander` | `EquipCommanderAsync` | 200, 404 |
 | `DELETE /api/legions/commander` | `UnequipCommanderAsync` | 200 |
 | `GET /api/legions/commander` | `GetCommanderAsync` | 200, 404 |
+| `POST /api/units/buy` | `BuyUnitAsync` | 200, 400, 404, 409, 422 |
+| `POST /api/legions/buy` | `BuyLegionAsync` | 200, 400, 404, 409, 422 |
 
 ---
 

@@ -19,4 +19,10 @@ public interface ILegionService
     Task<CommanderEquipResult>   EquipCommanderAsync(Guid playerId, string gearDefinitionId, CancellationToken ct = default);
     Task<CommanderUnequipResult> UnequipCommanderAsync(Guid playerId, CancellationToken ct = default);
     Task<CommanderGearResponse?> GetCommanderAsync(Guid playerId, CancellationToken ct = default);
+
+    // Slice 6 — economy / acquisition
+    Task GrantUnitAsync(Guid playerId, string unitDefinitionId, CancellationToken ct = default);
+    Task GrantLegionAsync(Guid playerId, string legionDefinitionId, CancellationToken ct = default);
+    Task<BuyUnitResult>   BuyUnitAsync(Guid playerId, string unitDefinitionId, CancellationToken ct = default);
+    Task<BuyLegionResult> BuyLegionAsync(Guid playerId, string legionDefinitionId, CancellationToken ct = default);
 }

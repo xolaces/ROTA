@@ -10,9 +10,11 @@ public class LootTableDefinition
 public class LootTableDifficulty
 {
     // Quest loot table fields
-    public List<ItemDropChance>?  GuaranteedDrops { get; set; }
-    public List<ItemDropChance>?  ChanceDrops     { get; set; }
-    public List<MagicDropChance>? MagicDrops      { get; set; }  // quest magic drops
+    public List<ItemDropChance>?   GuaranteedDrops { get; set; }
+    public List<ItemDropChance>?   ChanceDrops     { get; set; }
+    public List<MagicDropChance>?  MagicDrops      { get; set; }  // quest magic drops
+    public List<UnitDropChance>?   UnitDrops       { get; set; }  // quest unit drops
+    public List<LegionDropChance>? LegionDrops     { get; set; }  // quest legion drops
 
     // Raid loot table fields
     public double MinContributionPercent { get; set; }
@@ -27,8 +29,10 @@ public class ThresholdReward
     public int AttackPoints { get; set; }
     public int DefensePoints { get; set; }
     public int DiscernmentPoints { get; set; }
-    public List<ItemDropChance>  ItemDrops  { get; set; } = new();
-    public List<MagicDropChance> MagicDrops { get; set; } = new();
+    public List<ItemDropChance>   ItemDrops   { get; set; } = new();
+    public List<MagicDropChance>  MagicDrops  { get; set; } = new();
+    public List<UnitDropChance>   UnitDrops   { get; set; } = new();
+    public List<LegionDropChance> LegionDrops { get; set; } = new();
 }
 
 public class ItemDropChance
@@ -42,4 +46,16 @@ public class MagicDropChance
 {
     public string MagicId { get; set; } = string.Empty;
     public double Chance  { get; set; } = 1.0;
+}
+
+public class UnitDropChance
+{
+    public string UnitId { get; set; } = string.Empty;
+    public double Chance { get; set; } = 1.0;
+}
+
+public class LegionDropChance
+{
+    public string LegionId { get; set; } = string.Empty;
+    public double Chance   { get; set; } = 1.0;
 }
