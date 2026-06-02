@@ -26,13 +26,18 @@ trophies/vs-raid-type bonuses, multi-copy troop stacking, Auto-Assign.
   `SecondsToNextPoint`; legacy `RegenPerMinute` kept for back-compat. **Unblocks the Unity header timer** at go-live.
 
 ## Then (in order)
-- **Gauntlet epic** (competitive leaderboard event; tightly coupled to Legion). **Draft spec written:
-  `docs/specs/system-16-gauntlet.md` — BLOCKED on 28 owner OPEN QUESTIONS** (league boundaries, event
-  cadence, score metric, Strikes-vs-Stamina, Wrath/Blessing permanent-vs-consumable, trophy stacking,
-  token ledger…). Locked: 3 leagues, top-500, Gauntlet Tokens; **Wrath of the Ancients** (rank 1, 24%→500%)
-  + **Blessing of the Ancients** (ranks 2–10, 13%→850%); Trophies (rank 1/10/500) +25/10/5% to all legion
-  power. Combat: trophies multiply `rawLegionPower` before PowerScaling; Wrath/Blessing are capped
-  `DamageProc` magics (the 850%-vs-magic-cap clamp is the Slice-4 landmine). Answer the Qs → I finalize → 6-slice build.
+- **Gauntlet epic** (competitive leaderboard event; tightly coupled to Legion). **Spec DECISION-COMPLETE +
+  READY TO BUILD: `docs/specs/system-16-gauntlet.md`** — all 28 owner questions answered (canonical locked
+  block at the top of the spec). Key calls: leagues by convergence tier (≤Ascendant / Luminary–Archon /
+  Ancient+, floor L20, locked at entry); fixed-duration **admin-run** events, **auto-settle (idempotent)**;
+  score = **cumulative damage**, ~60s Postgres snapshot, view top-200 / prizes top-500, per-event;
+  **Strikes = persistent earned-first *ledger*** (no regen, carry over forever, uncapped gem buy, cost 1/5/20);
+  **escalating-ladder personal** raids (`gauntlet_event_id` scoped); **Wrath/Blessing = per-event consumable
+  OFF-CAP auras** (24%→500% / 13%→850%, +self-bonus, must sit ABOVE the magic cap — Slice-4 landmine);
+  **trophies permanent, highest-only +25% cap**, multiply `rawLegionPower` before PowerScaling on ALL raids;
+  **two currencies** (Gauntlet Tokens + Pitchfork) in one separate `gauntlet_currency_transactions` ledger;
+  **power-focused** token shop. NEXT: 6-slice build (content → state/ledgers → leaderboard → combat [DEEP] →
+  settlement → shop). A spec-body prose-integration pass is still pending (the locked block is authoritative meanwhile).
 - **v0.3.0 — C# API client SDK** (HTTP + DTOs) = the Unity client's layer. Owner wires Unity scenes.
 
 ## Deferred / back-burnered

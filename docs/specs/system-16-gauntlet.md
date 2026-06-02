@@ -7,16 +7,67 @@ Gauntlet's signature magics + trophies fold into the EXISTING legion-power / pro
 parallel combat path. Build against this exactly. LARGE epic — one slice per branch, build+test green,
 commit/merge/tag independently, never bundle. Auditor reviews after a batch.*
 
-> **STATUS: BLOCKED on OPEN QUESTIONS below.** The locked notes from `CURRENT_TASK.md` /
-> `DESIGN_NORTHSTAR.md` pin the headline mechanics (3 leagues, top-500, Tokens, Wrath/Blessing/Trophy
-> numbers) but leave several build-critical decisions unspecified. Do **not** start Slice 1 until the
-> owner answers the OPEN QUESTIONS — several of them change the data model (league boundaries, event
-> lifecycle, whether Tokens are a new ledger, whether Wrath/Blessing are per-event consumables). Numbers
-> in the LOCKED section are fixed; everything in OPEN QUESTIONS is a real decision, not a guess to fill in.
+> **STATUS: DECISIONS LOCKED (2026-06-02) — READY TO BUILD.** All 28 open questions answered by the owner.
+> This block is the canonical decision record; the "OPEN QUESTIONS" section below is retained as rationale.
+> Where a decision changes the data model, the modeling call is stated here and supersedes any earlier
+> option-sketch in the body.
+>
+> **Leagues & eligibility** — (1) 3 leagues by **convergence tier**: ≤Ascendant `L1–1999` / Luminary–Archon
+> `L2000–9999` / Ancient+ `L10000+` (band edges stored on each entry). (2) Entry floor **L20**;
+> banned/soft-deleted excluded. (3) League **locked at first entry** for the cycle.
+>
+> **Event lifecycle** — (4) **Fixed-duration** event windows. (5) **Admin-triggered** open/close (CLI +
+> admin endpoint); auto-scheduler deferred. (6) **One** active event at a time. (7) **Auto-settle on close**,
+> but settlement MUST be **internally idempotent** — a unique `referenceId` on every prize grant (the
+> gem-buy lesson) so a re-triggered/retried close cannot double-pay.
+>
+> **Scoring & ranking** — (8) Score = **cumulative damage to event raids** (Σ `RaidParticipant.TotalDamageDealt`
+> over the event's raids). (9) Tie-break = **earliest to reach the score** (timestamp of last score-changing
+> hit; stored). (10) **Persist all** entries; leaderboard **returns top 200 + caller's rank**. (11) Ranking =
+> **~60s Postgres snapshot** (`ORDER BY`); no Redis sorted-set in v1.
+>
+> **Strikes (Gauntlet action currency — IN)** — (12) Strikes are a dedicated currency. (13) **Earned-first &
+> persistent**: NO passive regen; earned by defeating Gauntlet raids (+N) and (later) low-rate drops from
+> special raids; **carry over across events, never reset/deplete**. → Model as a **`strike_transactions`
+> ledger** (balance = SUM, idempotent referenceId) — NOT an Energy-style `ResourceType` pool. Per-hit cost
+> **scales with hit size (1/5/20)**. (14) **Buyable with gems, UNCAPPED** (balanced by competitive earning +
+> drops, not solely purchasable power).
+>
+> **Gauntlet raids** — (15) **Dedicated** event raids (`Tier="Event"`; a `gauntlet_event_id` stamped on the
+> `active_raid` scopes scoring). (16) **Personal** instances (solo damage). (17) **Escalating ladder**: a
+> sequence of rising-HP stages; the player climbs as far as Strikes + legion power allow; defeating a stage
+> unlocks the next (tankier) one; cumulative damage across stages = score. (Roster = a tuned HP curve, not
+> per-league content.)
+>
+> **Wrath / Blessing (rank magics)** — (18) **Per-event consumables** (DotD-exact): event-scoped grant that
+> **expires at each event reset** — must re-place to keep. (19) **Off-cap raid aura** (applied to the Gauntlet
+> raid, OUTSIDE the System-14 five-magic slot cap). (20) **Keep the self-ownership bonus** (Wrath +150% /
+> Blessing +100% when owned, via a `Conditions` scalar). (21) The **+3 loot-rarity rider is DROPPED**.
+> Numbers (locked): **Wrath of the Ancients** `procChance 0.24, procAmount 5.00` (rank 1); **Blessing of the
+> Ancients** `procChance 0.13, procAmount 8.50` (ranks 2–10). **Slice-4 landmine:** the 850% proc must be
+> **exempt from / above the shared `MaxAggregateProcBonus` magic cap** or it silently clamps — handle explicitly.
+>
+> **Trophies** — (22) **Permanent**, **highest-only** stacking (own several → only the best applies; **+25%
+> cap**, NOT additive). (23) Attach as a multiplier on `rawLegionPower` (`× (1 + highestTrophyPct)`) **before**
+> `PowerScaling`; applies to **ALL** legion power (every raid, per "boosts ALL your legions"), not just Gauntlet.
+>
+> **Currencies & shop** — (24) Token shop is **power-focused** (units/legions/gear are the main draw) — accept
+> some snowball risk; mitigated by competitive earning + Pitchfork being top-rank-only. (25) **Separate token
+> ledger** (NOT the gem ledger). (26) **Pitchfork Tokens are IN** — a second currency. → Model both via one
+> **`gauntlet_currency_transactions`** ledger with a `GauntletCurrency { Token, Pitchfork }` discriminator
+> (balance = SUM per currency, idempotent referenceId); this is "separate from gems" per Q25 and carries both
+> currencies cleanly.
+>
+> **Prizes** — (27) **Prizes reach top 500** (leaderboard *view* shows top 200; 201–500 see their own rank via
+> the caller slice). **Gauntlet Tokens** earned **per raid defeat + a rank-band bonus** at settlement;
+> **Pitchfork Tokens** awarded to top ranks at settlement only. Bands: rank 1 → **Wrath** + Trophy(+25%);
+> ranks 2–10 → **Blessing**; rank 10 → Trophy(+10%); rank 500 → Trophy(+5%); ranks 11–500 → tiered Tokens
+> (+ Pitchfork for the top bands). (28) **Per-event** settlement; ladder resets each event (no season
+> aggregation in v1).
 
 ---
 
-## OPEN QUESTIONS (owner to confirm before any slice is built)
+## OPEN QUESTIONS — ALL RESOLVED 2026-06-02 (answers locked in the STATUS block above; prose retained as rationale)
 
 These are the decisions the locked notes do **not** pin down. I have deliberately **not invented
 answers** — each one changes the schema or the scoring. Where I sketch options it is only to frame the
