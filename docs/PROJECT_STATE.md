@@ -14,9 +14,10 @@ Infrastructure,Shared}`. PostgreSQL 16 (EF Core 9), Redis, RS256 JWT.
 - Precursor v0.2.6.1: BuyMagicAsync ownership pre-check + idempotent referenceId. Tagged v0.2.6.1.
 
 ## Inventory (High)
-9 controllers · 14 services · 16 entities · 15 enums · 14 repositories · 3 middleware ·
-16 EF migrations (InitialCreate→AddRaidMagics) · 6 content JSON files · GitHub Actions CI.
-(Slice 4 adds 3 more RaidService injected deps: IRaidMagicRepository, IMagicDefinitionProvider, IOptions<MagicConfig>; no new migrations)
+10 controllers · 15 services · 18 entities · 19 enums · 17 repositories · 3 middleware ·
+18 EF migrations (InitialCreate→AddLegionSlots) · 8 content JSON files · GitHub Actions CI.
+(Legion Slice 4 adds 5 RaidService injected deps: IPlayerLegionRepository, IPlayerLegionSlotRepository,
+IUnitDefinitionProvider, ILegionDefinitionProvider, IOptions<LegionConfig>; legion schema came in Slices 2–3, no new migration in Slice 4.)
 
 ## Implemented & tested (High)
 Auth · Rate limiting · Audit · Energy/resources · Player profile · Gem ledger · Quests+difficulty ·
