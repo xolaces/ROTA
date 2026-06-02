@@ -1,38 +1,31 @@
 # ROTA — Current Task
 
-*Updated 2026-05-31 (System 15 Legion epic queued). Short by design — answers "what now?" so a fresh session bootstraps cheaply.*
+*Updated 2026-06-02 (System 15 Legion epic COMPLETE + audited). Short by design — answers "what now?" so a fresh session bootstraps cheaply.*
 
 ## Just completed
-- **v0.2.0–v0.2.4** (beta access → character gear) · **v0.2.5** conditional/stacking bonuses ·
-  **v0.2.5.1** hardening · **v0.2.6** System 14 Raid Magic (6 slices, s1–s6).
+- **v0.2.0–v0.2.5.1** (beta access → stacking bonuses + hardening) · **v0.2.6** System 14 Raid Magic
+  (6 slices) · **v0.2.6.1** magic money-bug fix · **v0.2.7 System 15 Legion epic — COMPLETE (6 slices)**.
   All merged, tagged, pushed to origin.
-- Current: 266 unit + 8 integration = 274 tests green, 0 warnings. `main` @ v0.2.6-s6 synced with origin.
+- Current: **315 unit + 8 integration = 323 tests green, 0 warnings.** `main` @ **v0.2.7-s6**, synced with origin.
 
-## v0.2.6 summary (System 14 — Raid Magic, just shipped)
-Shared raid-scoped proc magics (reuse the v0.2.5 `ConditionalBonusEvaluator`). Per-size slots 1/2/3/4/5;
-**World raids Admin-only** (anti-grief); one-per-player (race closed under advisory lock); permanent
-ownership. DamageProc + utility (crit/gold/xp) effects fold into `HitRaidAsync` with an aggregate cap.
-Economy: loot drops + gem shop. **Audited — one money bug pending fix (see precursor below).**
+## v0.2.7 summary (System 15 — Legion, shipped + auditor-verified)
+Units + legions with Race/Role/Attribute slot-typing. Legion power = a SEPARATE additive damage term folded
+into `HitRaidAsync` preProc (crit-multiplied, counts toward contribution); `LegionConfig.PowerScaling` is the
+master dominance dial; unit-ability procs reuse the proc pipeline with their own cap. Commander slot = a
+procs-only gear slot (stat bonuses structurally excluded — lives in `player_commander_gear`, never reaches
+`GetEffectiveCombatDataAsync`). Economy: idempotent `GrantUnit/GrantLegion`, gem shop (`/api/units/buy`,
+`/api/legions/buy` — ownership pre-check + idempotent referenceId), unit/legion loot drops in raid+quest.
+Deferred per spec (do NOT build): Armaments (Relic/Support/Siege), unit leveling, gorgets, Gauntlet
+trophies/vs-raid-type bonuses, multi-copy troop stacking, Auto-Assign.
 
-## PENDING precursor: v0.2.6.1 magic fixes (small — do first)
-Close the System 14 audit's money bug before Legion: `MagicService.BuyMagicAsync` (1) charges gems for a
-magic you already own (no ownership pre-check → currency for nothing), and (2) passes `referenceId=null`
-so a retry double-charges. Fix: add `BuyMagicFailureCode.AlreadyOwned` + ownership pre-check (reject w/o
-charging) + idempotent `referenceId="magicbuy:{playerId}:{magicId}"`; map AlreadyOwned→409. Also minor:
-`MagicProcs` (raw) vs `MagicProcBonus` (capped) display. Branch `v0.2.6.1-magic-fixes`. Tests incl.
-buy-twice-charges-once.
-
-## NEXT (large epic): System 15 — Legion
-Full spec + sliced task queue: **`docs/specs/system-15-legion.md`**. Build the 6 slices IN ORDER —
-one branch + build/test green + merge per slice, committed independently (never bundled). Auditor reviews
-after a batch. Decisions LOCKED with owner (grounded in DotD wiki, saved in `docs/research/dotd-wiki`):
-- **Legion power = a SEPARATE additive damage term** (DotD coefficients: General 2.0×ATK+0.4×DEF, Troop
-  1.44×/0.36×); crit multiplies the combined total. Unit/legion abilities reuse the proc pipeline.
-- **Primary but tuned below Dawn's ~90%** via `LegionConfig.PowerScaling`; mount procs stay significant
-  (they scale off the combined base). Generals+Troops at launch (Armaments config-ready for later).
-  Race/Role/Attribute slot-typing engine now; starter legions mostly-open + a few specialists.
-- Slices: (1) content → (2) ownership → (3) assembly+power → (4) combat integration **[DEEP]** →
-  (5) commander slot → (6) economy. Data model, damage formula, per-slice acceptance criteria in the spec.
+## Open backend items (small — auditor-owned; clear before the next epic or as warm-ups)
+- **Gem-buy partial-failure hardening** (PROJECT_STATE debt): `GemService.SpendGemsAsync` returns `false`
+  for BOTH "insufficient" and "already-charged" → a charged-but-not-granted retry loses the purchase
+  (no double-charge, but the item never arrives). Affects all 3 shops (magic/unit/legion). Fix = tri-state
+  spend result + wrap spend+grant in one tx + a real buy-twice *integration* test. Spec as a focused task.
+- **RegenPerMinute DTO** (Unity go-live blocker): `GET /api/players/me` returns the vestigial stored value,
+  so the Unity header refill timer breaks against the live server. Return the class-based effective rate
+  (or add a `SecondsToNextPoint` field).
 
 ## Then (in order)
 - **Gauntlet epic** (competitive leaderboard event; tightly coupled to Legion). 3 level-leagues, top-500
