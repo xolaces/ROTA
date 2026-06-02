@@ -40,7 +40,8 @@ public class RaidServiceTests
         Mock<IUnitDefinitionProvider> UnitDefs,
         Mock<ILegionDefinitionProvider> LegionDefs,
         Mock<IPlayerCommanderGearRepository> CommanderGear,
-        Mock<IGearDefinitionProvider> GearDefs);
+        Mock<IGearDefinitionProvider> GearDefs,
+        Mock<ILegionService> LegionService);
 
     private static ServiceBundle BuildService(Random? random = null, MagicConfig? magicConfig = null, LegionConfig? legionConfig = null)
     {
@@ -67,6 +68,7 @@ public class RaidServiceTests
         var legionDefs     = new Mock<ILegionDefinitionProvider>();
         var commanderGear  = new Mock<IPlayerCommanderGearRepository>();
         var gearDefs       = new Mock<IGearDefinitionProvider>();
+        var legionSvc      = new Mock<ILegionService>();
 
         hitCache.Setup(c => c.TryAcquireSlotAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((true, (RaidHitResponse?)null));
@@ -102,6 +104,11 @@ public class RaidServiceTests
         // Default: no commander gear — existing tests unchanged
         commanderGear.Setup(r => r.FindAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((PlayerCommanderGear?)null);
+        // Default: no-op for unit/legion grant drops
+        legionSvc.Setup(l => l.GrantUnitAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        legionSvc.Setup(l => l.GrantLegionAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
 
         var magicCfg  = Options.Create(magicConfig  ?? new MagicConfig());
         var legionCfg = Options.Create(legionConfig ?? new LegionConfig());
@@ -113,12 +120,12 @@ public class RaidServiceTests
             definitions.Object, hitCache.Object, equipment.Object,
             raidMagics.Object, magicDefs.Object, magicSvc.Object, magicCfg,
             playerLegions.Object, legionSlots.Object, unitDefs.Object, legionDefs.Object,
-            legionCfg, commanderGear.Object, gearDefs.Object, random);
+            legionCfg, commanderGear.Object, gearDefs.Object, legionSvc.Object, random);
 
         return new ServiceBundle(service, raids, participants, players, resources, energy, gems,
             stats, inventory, itemDefs, lootTables, auditLog, definitions, hitCache, equipment,
             raidMagics, magicDefs, magicSvc, playerLegions, legionSlots, unitDefs, legionDefs,
-            commanderGear, gearDefs);
+            commanderGear, gearDefs, legionSvc);
     }
 
     private static Player MakePlayer(long xp = 0)

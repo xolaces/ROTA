@@ -28,7 +28,8 @@ public class QuestServiceTests
         Mock<IItemDefinitionProvider> ItemDefs,
         Mock<IPlayerInventoryRepository> Inventory,
         Mock<IAuditLogRepository> AuditLog,
-        Mock<IMagicService> MagicService);
+        Mock<IMagicService> MagicService,
+        Mock<ILegionService> LegionService);
 
     private static ServiceBundle BuildService(Random? random = null)
     {
@@ -44,6 +45,7 @@ public class QuestServiceTests
         var inventory         = new Mock<IPlayerInventoryRepository>();
         var auditLog          = new Mock<IAuditLogRepository>();
         var magicService      = new Mock<IMagicService>();
+        var legionService     = new Mock<ILegionService>();
 
         // Sane defaults to avoid null-ref in happy-path tests
         difficultyProgress.Setup(r => r.GetAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<QuestDifficulty>(), It.IsAny<CancellationToken>()))
@@ -67,15 +69,21 @@ public class QuestServiceTests
             .Returns(Task.CompletedTask);
         magicService.Setup(m => m.GrantMagicAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        // Default: no-op for unit/legion grant drops
+        legionService.Setup(l => l.GrantUnitAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        legionService.Setup(l => l.GrantLegionAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
 
         var service = new QuestService(
             definitions.Object, questProgress.Object, difficultyProgress.Object,
             players.Object, energy.Object, gems.Object,
             stats.Object, lootTables.Object, itemDefs.Object, inventory.Object,
-            auditLog.Object, magicService.Object, random);
+            auditLog.Object, magicService.Object, legionService.Object, random);
 
         return new ServiceBundle(service, definitions, questProgress, difficultyProgress,
-            players, energy, gems, stats, lootTables, itemDefs, inventory, auditLog, magicService);
+            players, energy, gems, stats, lootTables, itemDefs, inventory, auditLog, magicService,
+            legionService);
     }
 
     private static IReadOnlyList<QuestDefinition> TwoQuestChain() => new List<QuestDefinition>

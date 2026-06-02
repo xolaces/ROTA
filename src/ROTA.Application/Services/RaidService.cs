@@ -79,6 +79,8 @@ public sealed class RaidService : IRaidService
     // Slice 5 — commander gear
     private readonly IPlayerCommanderGearRepository _commanderGear;
     private readonly IGearDefinitionProvider        _gearDefs;
+    // Slice 6 — unit/legion drop grants
+    private readonly ILegionService _legionService;
     private readonly Random _random;
 
     public RaidService(
@@ -107,6 +109,7 @@ public sealed class RaidService : IRaidService
         IOptions<LegionConfig> legionConfig,
         IPlayerCommanderGearRepository commanderGear,
         IGearDefinitionProvider gearDefs,
+        ILegionService legionService,
         Random? random = null)
     {
         _raids           = raids;
@@ -134,6 +137,7 @@ public sealed class RaidService : IRaidService
         _legionConfig    = legionConfig.Value;
         _commanderGear   = commanderGear;
         _gearDefs        = gearDefs;
+        _legionService   = legionService;
         _random          = random ?? Random.Shared;
     }
 
@@ -816,6 +820,20 @@ public sealed class RaidService : IRaidService
                         {
                             if (_random.NextDouble() < drop.Chance)
                                 await _magicService.GrantMagicAsync(p.PlayerId, drop.MagicId, ct);
+                        }
+
+                        // Unit drops per threshold — idempotent grant.
+                        foreach (var drop in threshold.UnitDrops)
+                        {
+                            if (_random.NextDouble() < drop.Chance)
+                                await _legionService.GrantUnitAsync(p.PlayerId, drop.UnitId, ct);
+                        }
+
+                        // Legion drops per threshold — idempotent grant.
+                        foreach (var drop in threshold.LegionDrops)
+                        {
+                            if (_random.NextDouble() < drop.Chance)
+                                await _legionService.GrantLegionAsync(p.PlayerId, drop.LegionId, ct);
                         }
                     }
                 }

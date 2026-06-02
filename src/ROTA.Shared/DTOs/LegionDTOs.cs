@@ -128,3 +128,45 @@ public class CommanderGearResponse
     public double? ProcPercent     { get; set; }
     public string Note             { get; set; } = "Stat bonuses are ignored in combat; only the proc applies.";
 }
+
+// ----------------------------------------------------------------
+// Slice 6 — Economy / acquisition
+// ----------------------------------------------------------------
+
+public enum BuyFailureCode
+{
+    DefinitionNotFound,
+    NotForSale,
+    InsufficientGems,
+    AlreadyOwned,
+}
+
+public class BuyUnitRequest
+{
+    public string UnitDefinitionId { get; set; } = string.Empty;
+}
+
+public class BuyLegionRequest
+{
+    public string LegionDefinitionId { get; set; } = string.Empty;
+}
+
+public class BuyUnitResult
+{
+    public bool           Success       { get; set; }
+    public BuyFailureCode FailureCode   { get; set; }
+    public string?        FailureReason { get; set; }
+    public string?        UnitDefinitionId { get; set; }
+    public string?        UnitName      { get; set; }
+    public int            GemsSpent     { get; set; }
+}
+
+public class BuyLegionResult
+{
+    public bool           Success       { get; set; }
+    public BuyFailureCode FailureCode   { get; set; }
+    public string?        FailureReason { get; set; }
+    public string?        LegionDefinitionId { get; set; }
+    public string?        LegionName    { get; set; }
+    public int            GemsSpent     { get; set; }
+}

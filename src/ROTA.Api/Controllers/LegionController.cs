@@ -86,6 +86,50 @@ public class LegionController : ControllerBase
     }
 
     // ----------------------------------------------------------------
+    // Slice 6 — Economy / acquisition
+    // ----------------------------------------------------------------
+
+    [HttpPost("api/units/buy")]
+    [ProducesResponseType(typeof(BuyUnitResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(BuyUnitResult), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(BuyUnitResult), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(BuyUnitResult), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(BuyUnitResult), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> BuyUnit([FromBody] BuyUnitRequest request)
+    {
+        var result = await _legions.BuyUnitAsync(GetPlayerId(), request.UnitDefinitionId);
+        if (result.Success) return Ok(result);
+        return result.FailureCode switch
+        {
+            BuyFailureCode.DefinitionNotFound => NotFound(result),
+            BuyFailureCode.NotForSale         => BadRequest(result),
+            BuyFailureCode.InsufficientGems   => UnprocessableEntity(result),
+            BuyFailureCode.AlreadyOwned       => Conflict(result),
+            _ => BadRequest(result),
+        };
+    }
+
+    [HttpPost("api/legions/buy")]
+    [ProducesResponseType(typeof(BuyLegionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(BuyLegionResult), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(BuyLegionResult), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(BuyLegionResult), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(BuyLegionResult), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> BuyLegion([FromBody] BuyLegionRequest request)
+    {
+        var result = await _legions.BuyLegionAsync(GetPlayerId(), request.LegionDefinitionId);
+        if (result.Success) return Ok(result);
+        return result.FailureCode switch
+        {
+            BuyFailureCode.DefinitionNotFound => NotFound(result),
+            BuyFailureCode.NotForSale         => BadRequest(result),
+            BuyFailureCode.InsufficientGems   => UnprocessableEntity(result),
+            BuyFailureCode.AlreadyOwned       => Conflict(result),
+            _ => BadRequest(result),
+        };
+    }
+
+    // ----------------------------------------------------------------
     // Slice 5 — Commander slot
     // ----------------------------------------------------------------
 
