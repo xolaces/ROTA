@@ -9,15 +9,17 @@ Server-authoritative .NET 10 backend for a Dawn-of-the-Dragons-style async RPG. 
 Infrastructure,Shared}`. PostgreSQL 16 (EF Core 9), Redis, RS256 JWT.
 
 ## Build status (High — run this session)
-- **301 unit + 8 integration = 309 tests pass. 0 warnings, 0 errors.**
+- **308 unit + 8 integration = 316 tests pass. 0 warnings, 0 errors.**
 - `main` @ tag **v0.2.7-s4** (System 15 Slice 4 — legion combat integration). Prior slices tagged.
-- Precursor v0.2.6.1: BuyMagicAsync ownership pre-check + idempotent referenceId. Tagged v0.2.6.1.
+- Branch `v0.2.7-legion-s5-commander` ready to merge → **v0.2.7-s5**.
 
 ## Inventory (High)
-10 controllers · 15 services · 18 entities · 19 enums · 17 repositories · 3 middleware ·
-18 EF migrations (InitialCreate→AddLegionSlots) · 8 content JSON files · GitHub Actions CI.
-(Legion Slice 4 adds 5 RaidService injected deps: IPlayerLegionRepository, IPlayerLegionSlotRepository,
-IUnitDefinitionProvider, ILegionDefinitionProvider, IOptions<LegionConfig>; legion schema came in Slices 2–3, no new migration in Slice 4.)
+10 controllers · 15 services · 19 entities · 19 enums · 18 repositories · 3 middleware ·
+19 EF migrations (InitialCreate→AddCommanderGear) · 8 content JSON files · GitHub Actions CI.
+(Slice 5 adds: PlayerCommanderGear entity, IPlayerCommanderGearRepository, PlayerCommanderGearRepository,
+PlayerCommanderGearConfiguration, migration AddCommanderGear. ILegionService gains 3 methods.
+RaidService gains 2 deps (IPlayerCommanderGearRepository, IGearDefinitionProvider).
+RaidHitResponse gains CommanderProcFired/CommanderProcBonus.)
 
 ## Implemented & tested (High)
 Auth · Rate limiting · Audit · Energy/resources · Player profile · Gem ledger · Quests+difficulty ·
@@ -55,12 +57,13 @@ tables. Loop works; thin.
 - **Slice 2**: PlayerUnit/PlayerLegion entities, EF configs, migration AddLegionOwnership, repos, LegionService (GetOwnedUnitsAsync/GetOwnedLegionsAsync), LegionController (GET /api/units, /api/legions). Tag v0.2.7-s2.
 - **Slice 3**: PlayerLegionSlot entity, EF config, migration AddLegionSlots, PlayerLegionSlotRepository, full LegionService (SetActiveLegionAsync, AssignSlotAsync, ClearSlotAsync, ComputeLegionPowerAsync, GetLegionDetailAsync). Slot constraint validation (Race/Role/Attribute). Tag v0.2.7-s3.
 - **Slice 4 (DEEP)**: LegionConfig (PowerScaling, UnitCoefficients, MaxUnitProcBonus), legion power integrated into HitRaidAsync preProc (same RNG multiplier+hitSize as charBase; inline from injected repos, NOT LegionService.ComputeLegionPowerAsync), unit-ability proc phase (separate cap from magic), RaidHitResponse gains LegionPower/UnitProcBonus/UnitProcs. Tag v0.2.7-s4.
+- **Slice 5 (MODERATE)**: Commander slot — PlayerCommanderGear entity (one row per player, upsert in place), IPlayerCommanderGearRepository, EF config + migration AddCommanderGear. ILegionService: EquipCommanderAsync/UnequipCommanderAsync/GetCommanderAsync. LegionController: PUT/DELETE/GET /api/legions/commander. Combat: commander gear proc fires in proc phase off preProc (stats deliberately excluded — PlayerCommanderGear never reaches GetEffectiveCombatDataAsync path). RaidHitResponse: CommanderProcFired/CommanderProcBonus. Tag v0.2.7-s5.
 
 ## Not implemented (High)
 Game client (C# SDK = v0.3.0) · discernment quest-drop-quality (later) ·
 moderation (back-burnered) · world chat · guild · gauntlet · gacha/pity ·
 equipment crafting / consumables · gear set bonuses (Phase 2) ·
-structured log sink / monitoring · background jobs · Legion Slice 5 (commander) + Slice 6 (economy).
+structured log sink / monitoring · background jobs · Legion Slice 6 (economy).
 
 ## Known issues / debt (High)
 - (Resolved v0.2.5: reward atomicity — stamina spend now inside advisory-lock tx.)

@@ -782,9 +782,12 @@ Eval rule: `floor(owned / perCount) × bonusAmount`
 | `Task<ClearSlotResult> ClearSlotAsync(Guid playerId, string legionDefId, string family, int slotIndex, ct)` | Soft-delete slot (idempotent) |
 | `Task<LegionPowerResult> ComputeLegionPowerAsync(Guid playerId, string legionDefId, ct)` | Raw legion power (no PowerScaling — display only) |
 | `Task<LegionDetailResponse?> GetLegionDetailAsync(Guid playerId, string legionDefId, ct)` | Full slot layout + computed power |
+| `Task<CommanderEquipResult> EquipCommanderAsync(Guid playerId, string gearDefinitionId, ct)` | Equip gear in commander slot (upsert in place); validates gear def exists |
+| `Task<CommanderUnequipResult> UnequipCommanderAsync(Guid playerId, ct)` | Remove commander gear (soft-delete, idempotent) |
+| `Task<CommanderGearResponse?> GetCommanderAsync(Guid playerId, ct)` | Current commander gear; null if empty |
 
 Implementation: `LegionService` (`src/ROTA.Application/Services/LegionService.cs`)
-Constructor: `(IPlayerUnitRepository, IPlayerLegionRepository, IPlayerLegionSlotRepository, IUnitDefinitionProvider, ILegionDefinitionProvider)`
+Constructor: `(IPlayerUnitRepository, IPlayerLegionRepository, IPlayerLegionSlotRepository, IUnitDefinitionProvider, ILegionDefinitionProvider, IPlayerCommanderGearRepository, IGearDefinitionProvider)`
 
 **Combat note (Slice 4):** `RaidService` does NOT call `ComputeLegionPowerAsync` in combat — it computes legionPower inline (same RNG multiplier+hitSize as charBase, applies `LegionConfig.PowerScaling`). `ComputeLegionPowerAsync` is for display only.
 
@@ -801,12 +804,13 @@ Singletons; `content/units.json` and `content/legions.json` loaded at startup.
 
 ---
 
-### IPlayerUnitRepository / IPlayerLegionRepository / IPlayerLegionSlotRepository
+### IPlayerUnitRepository / IPlayerLegionRepository / IPlayerLegionSlotRepository / IPlayerCommanderGearRepository
 `src/ROTA.Application/Interfaces/`
 
 **IPlayerUnitRepository** — `GetOwnedAsync`, `FindAsync`, `UpsertAsync` (create or restore)
 **IPlayerLegionRepository** — `GetOwnedAsync`, `FindAsync`, `GetActiveAsync`, `UpsertAsync`, `UpdateAsync`
 **IPlayerLegionSlotRepository** — `GetForLegionAsync`, `FindAsync`, `UpsertAsync` (create or reassign), `SoftDeleteAsync`
+**IPlayerCommanderGearRepository** — `FindAsync(playerId)` (returns any row incl. soft-deleted, since one row per player), `CreateAsync`, `UpdateAsync`
 
 ---
 
@@ -821,6 +825,9 @@ Singletons; `content/units.json` and `content/legions.json` loaded at startup.
 | `PUT /api/legions/{id}/slots/{family}/{index}` | `AssignSlotAsync` | 200, 400, 404, 409, 422 |
 | `DELETE /api/legions/{id}/slots/{family}/{index}` | `ClearSlotAsync` | 200 |
 | `GET /api/legions/{id}` | `GetLegionDetailAsync` | 200, 404 |
+| `PUT /api/legions/commander` | `EquipCommanderAsync` | 200, 404 |
+| `DELETE /api/legions/commander` | `UnequipCommanderAsync` | 200 |
+| `GET /api/legions/commander` | `GetCommanderAsync` | 200, 404 |
 
 ---
 
@@ -830,6 +837,7 @@ Singletons; `content/units.json` and `content/legions.json` loaded at startup.
 **PlayerUnit**: `Id, PlayerId, UnitDefinitionId, Quantity(=1), created/updated/IsDeleted`. `Create(playerId, unitDefId)`, `Restore()`.
 **PlayerLegion**: `Id, PlayerId, LegionDefinitionId, IsActive(bool), created/updated/IsDeleted`. `Create(...)`, `SetActive(bool)`, `Restore()`. One IsActive=true per player (service-enforced).
 **PlayerLegionSlot**: `Id, PlayerId, LegionDefinitionId, SlotFamily(LegionSlotFamily), SlotIndex(int), UnitDefinitionId, created/updated/IsDeleted`. `Create(...)`, `Reassign(unitDefId)`, `SoftDelete()`. Unique `(player_id, legion_def_id, slot_family, slot_index)`.
+**PlayerCommanderGear**: `Id, PlayerId, GearDefinitionId, created/updated/IsDeleted`. `Create(playerId, gearDefId)`, `Equip(gearDefId)` (also restores soft-deleted row), `Unequip()`. Unique index on `player_id` — at most one row per player (upsert in place). In combat: only `ProcChance`/`ProcPercent` read; `BonusAttack`/`BonusDefense` never reach `EffectiveCombatData`.
 
 ---
 

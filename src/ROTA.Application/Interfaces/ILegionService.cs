@@ -14,4 +14,9 @@ public interface ILegionService
     Task<ClearSlotResult>       ClearSlotAsync(Guid playerId, string legionDefinitionId, string family, int slotIndex, CancellationToken ct = default);
     Task<LegionPowerResult>     ComputeLegionPowerAsync(Guid playerId, string legionDefinitionId, CancellationToken ct = default);
     Task<LegionDetailResponse?> GetLegionDetailAsync(Guid playerId, string legionDefinitionId, CancellationToken ct = default);
+
+    // Slice 5 — commander slot
+    Task<CommanderEquipResult>   EquipCommanderAsync(Guid playerId, string gearDefinitionId, CancellationToken ct = default);
+    Task<CommanderUnequipResult> UnequipCommanderAsync(Guid playerId, CancellationToken ct = default);
+    Task<CommanderGearResponse?> GetCommanderAsync(Guid playerId, CancellationToken ct = default);
 }

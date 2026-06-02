@@ -85,6 +85,35 @@ public class LegionController : ControllerBase
         return Ok(result);
     }
 
+    // ----------------------------------------------------------------
+    // Slice 5 — Commander slot
+    // ----------------------------------------------------------------
+
+    [HttpPut("api/legions/commander")]
+    [ProducesResponseType(typeof(CommanderEquipResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CommanderEquipResult), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> EquipCommander([FromBody] EquipCommanderRequest request)
+    {
+        var result = await _legions.EquipCommanderAsync(GetPlayerId(), request.GearDefinitionId);
+        if (!result.Success) return NotFound(result);
+        return Ok(result);
+    }
+
+    [HttpDelete("api/legions/commander")]
+    [ProducesResponseType(typeof(CommanderUnequipResult), StatusCodes.Status200OK)]
+    public async Task<IActionResult> UnequipCommander()
+        => Ok(await _legions.UnequipCommanderAsync(GetPlayerId()));
+
+    [HttpGet("api/legions/commander")]
+    [ProducesResponseType(typeof(CommanderGearResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetCommander()
+    {
+        var result = await _legions.GetCommanderAsync(GetPlayerId());
+        if (result is null) return NotFound();
+        return Ok(result);
+    }
+
     private Guid GetPlayerId()
         => Guid.Parse(User.FindFirst(JwtRegisteredClaimNames.Sub)!.Value);
 }
@@ -92,4 +121,9 @@ public class LegionController : ControllerBase
 public class AssignSlotRequest
 {
     public string UnitDefinitionId { get; set; } = string.Empty;
+}
+
+public class EquipCommanderRequest
+{
+    public string GearDefinitionId { get; set; } = string.Empty;
 }
