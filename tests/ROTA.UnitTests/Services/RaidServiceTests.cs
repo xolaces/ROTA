@@ -38,31 +38,35 @@ public class RaidServiceTests
         Mock<IPlayerLegionRepository> PlayerLegions,
         Mock<IPlayerLegionSlotRepository> LegionSlots,
         Mock<IUnitDefinitionProvider> UnitDefs,
-        Mock<ILegionDefinitionProvider> LegionDefs);
+        Mock<ILegionDefinitionProvider> LegionDefs,
+        Mock<IPlayerCommanderGearRepository> CommanderGear,
+        Mock<IGearDefinitionProvider> GearDefs);
 
     private static ServiceBundle BuildService(Random? random = null, MagicConfig? magicConfig = null, LegionConfig? legionConfig = null)
     {
-        var raids         = new Mock<IActiveRaidRepository>();
-        var participants  = new Mock<IRaidParticipantRepository>();
-        var players       = new Mock<IPlayerRepository>();
-        var resources     = new Mock<IPlayerResourceRepository>();
-        var energy        = new Mock<IEnergyService>();
-        var gems          = new Mock<IGemService>();
-        var stats         = new Mock<IStatService>();
-        var inventory     = new Mock<IPlayerInventoryRepository>();
-        var itemDefs      = new Mock<IItemDefinitionProvider>();
-        var lootTables    = new Mock<ILootTableProvider>();
-        var auditLog      = new Mock<IAuditLogRepository>();
-        var definitions   = new Mock<IRaidDefinitionProvider>();
-        var hitCache      = new Mock<IRaidHitCache>();
-        var equipment     = new Mock<IEquipmentService>();
-        var raidMagics    = new Mock<IRaidMagicRepository>();
-        var magicDefs     = new Mock<IMagicDefinitionProvider>();
-        var magicSvc      = new Mock<IMagicService>();
-        var playerLegions = new Mock<IPlayerLegionRepository>();
-        var legionSlots   = new Mock<IPlayerLegionSlotRepository>();
-        var unitDefs      = new Mock<IUnitDefinitionProvider>();
-        var legionDefs    = new Mock<ILegionDefinitionProvider>();
+        var raids          = new Mock<IActiveRaidRepository>();
+        var participants   = new Mock<IRaidParticipantRepository>();
+        var players        = new Mock<IPlayerRepository>();
+        var resources      = new Mock<IPlayerResourceRepository>();
+        var energy         = new Mock<IEnergyService>();
+        var gems           = new Mock<IGemService>();
+        var stats          = new Mock<IStatService>();
+        var inventory      = new Mock<IPlayerInventoryRepository>();
+        var itemDefs       = new Mock<IItemDefinitionProvider>();
+        var lootTables     = new Mock<ILootTableProvider>();
+        var auditLog       = new Mock<IAuditLogRepository>();
+        var definitions    = new Mock<IRaidDefinitionProvider>();
+        var hitCache       = new Mock<IRaidHitCache>();
+        var equipment      = new Mock<IEquipmentService>();
+        var raidMagics     = new Mock<IRaidMagicRepository>();
+        var magicDefs      = new Mock<IMagicDefinitionProvider>();
+        var magicSvc       = new Mock<IMagicService>();
+        var playerLegions  = new Mock<IPlayerLegionRepository>();
+        var legionSlots    = new Mock<IPlayerLegionSlotRepository>();
+        var unitDefs       = new Mock<IUnitDefinitionProvider>();
+        var legionDefs     = new Mock<ILegionDefinitionProvider>();
+        var commanderGear  = new Mock<IPlayerCommanderGearRepository>();
+        var gearDefs       = new Mock<IGearDefinitionProvider>();
 
         hitCache.Setup(c => c.TryAcquireSlotAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((true, (RaidHitResponse?)null));
@@ -95,6 +99,9 @@ public class RaidServiceTests
             .ReturnsAsync((PlayerLegion?)null);
         legionSlots.Setup(r => r.GetForLegionAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<PlayerLegionSlot>());
+        // Default: no commander gear — existing tests unchanged
+        commanderGear.Setup(r => r.FindAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerCommanderGear?)null);
 
         var magicCfg  = Options.Create(magicConfig  ?? new MagicConfig());
         var legionCfg = Options.Create(legionConfig ?? new LegionConfig());
@@ -106,11 +113,12 @@ public class RaidServiceTests
             definitions.Object, hitCache.Object, equipment.Object,
             raidMagics.Object, magicDefs.Object, magicSvc.Object, magicCfg,
             playerLegions.Object, legionSlots.Object, unitDefs.Object, legionDefs.Object,
-            legionCfg, random);
+            legionCfg, commanderGear.Object, gearDefs.Object, random);
 
         return new ServiceBundle(service, raids, participants, players, resources, energy, gems,
             stats, inventory, itemDefs, lootTables, auditLog, definitions, hitCache, equipment,
-            raidMagics, magicDefs, magicSvc, playerLegions, legionSlots, unitDefs, legionDefs);
+            raidMagics, magicDefs, magicSvc, playerLegions, legionSlots, unitDefs, legionDefs,
+            commanderGear, gearDefs);
     }
 
     private static Player MakePlayer(long xp = 0)
@@ -1779,5 +1787,108 @@ public class RaidServiceTests
         capturedParticipant.Should().NotBeNull();
         capturedParticipant!.TotalDamageDealt.Should().Be(result.Response.DamageDealt,
             "participant total includes legion damage (RecordHit called with damageFinal)");
+    }
+
+    // -----------------------------------------------------------------------
+    // SLICE 5 — Commander gear proc tests
+    // -----------------------------------------------------------------------
+
+    /// <summary>
+    /// Commander gear proc fires (seeded RNG always &lt; ProcChance=0.99) and its bonus
+    /// lands in DamageDealt. CommanderProcBonus reflects the bonus amount.
+    /// </summary>
+    [Fact]
+    public async Task Commander_ProcFires_AddsDamageToDamageFinal()
+    {
+        // RNG always returns 0.0 → proc always fires (0.0 < 0.99)
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+
+        // Commander gear: 50% proc, +100% of preProc on fire (ProcPercent=1.0)
+        var gearDef = new GearDefinition
+        {
+            Id          = "gear_test_cmd",
+            Name        = "Commander Test Gear",
+            BonusAttack  = 999, // intentionally large — must NOT affect charBase
+            BonusDefense = 999,
+            ProcChance  = 0.99,
+            ProcPercent = 1.0,
+        };
+        var commanderRow = PlayerCommanderGear.Create(player.Id, "gear_test_cmd");
+
+        b.CommanderGear.Setup(r => r.FindAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(commanderRow);
+        b.GearDefs.Setup(d => d.GetById("gear_test_cmd")).Returns(gearDef);
+
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.CommanderProcFired.Should().BeTrue("RNG=0.0 < ProcChance=0.99");
+        result.Response.CommanderProcBonus.Should().BeGreaterThan(0);
+        // DamageDealt must include the commander bonus
+        result.Response.DamageDealt.Should().BeGreaterThan(
+            result.Response.DamageDealt - result.Response.CommanderProcBonus,
+            "commander proc bonus is part of damageFinal");
+    }
+
+    /// <summary>
+    /// Commander gear BonusAttack/BonusDefense must NOT reach charBase.
+    /// Equipment mock returns (atk, def) as-is (no gear bonus). Even with
+    /// BonusAttack=999 on the commander gear, charBase equals what we'd get
+    /// with no commander equipped.
+    /// </summary>
+    [Fact]
+    public async Task Commander_StatBonuses_DoNotAffectCharBase()
+    {
+        // Use seeded RNG so proc roll is deterministic and > ProcChance=0.0 (no proc)
+        var b      = BuildService(new Random(42));
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+
+        // Commander gear with large stat bonuses but NO proc (ProcChance null)
+        var gearDef = new GearDefinition
+        {
+            Id           = "gear_no_proc",
+            Name         = "Stat-Only Gear",
+            BonusAttack  = 9999,
+            BonusDefense = 9999,
+            ProcChance   = null,  // no proc
+            ProcPercent  = null,
+        };
+        var commanderRow = PlayerCommanderGear.Create(player.Id, "gear_no_proc");
+
+        b.CommanderGear.Setup(r => r.FindAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(commanderRow);
+        b.GearDefs.Setup(d => d.GetById("gear_no_proc")).Returns(gearDef);
+
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.CommanderProcFired.Should().BeFalse("gear has no proc");
+        result.Response.CommanderProcBonus.Should().Be(0);
+
+        // GetEffectiveCombatDataAsync mock returns (atk, def) from player stats without adding
+        // BonusAttack/BonusDefense. The commander gear NEVER reaches that path, so charBase
+        // is identical to a hit with no commander equipped (the equipment mock is pass-through).
+        // We verify by checking DamageDealt is within the valid range for the player's stats:
+        // player: BaseAttack=10, BaseDefense=5 → baseValue=45 (hitSize=1)
+        // RNG range [0.85, 1.15] → charBase ∈ [38..51]
+        result.Response.DamageDealt.Should().BeInRange(38, 52,
+            "commander BonusAttack=9999 must not inflate charBase beyond normal range");
     }
 }

@@ -16,29 +16,37 @@ public class LegionServiceTests
     // ----------------------------------------------------------------
 
     private record Bundle(
-        LegionService               Service,
-        Mock<IPlayerUnitRepository>       Units,
-        Mock<IPlayerLegionRepository>     Legions,
-        Mock<IPlayerLegionSlotRepository> Slots,
-        Mock<IUnitDefinitionProvider>     UnitDefs,
-        Mock<ILegionDefinitionProvider>   LegionDefs);
+        LegionService                            Service,
+        Mock<IPlayerUnitRepository>              Units,
+        Mock<IPlayerLegionRepository>            Legions,
+        Mock<IPlayerLegionSlotRepository>        Slots,
+        Mock<IUnitDefinitionProvider>            UnitDefs,
+        Mock<ILegionDefinitionProvider>          LegionDefs,
+        Mock<IPlayerCommanderGearRepository>     CommanderGear,
+        Mock<IGearDefinitionProvider>            GearDefs);
 
     private static Bundle Build()
     {
-        var units      = new Mock<IPlayerUnitRepository>();
-        var legions    = new Mock<IPlayerLegionRepository>();
-        var slots      = new Mock<IPlayerLegionSlotRepository>();
-        var unitDefs   = new Mock<IUnitDefinitionProvider>();
-        var legionDefs = new Mock<ILegionDefinitionProvider>();
+        var units         = new Mock<IPlayerUnitRepository>();
+        var legions       = new Mock<IPlayerLegionRepository>();
+        var slots         = new Mock<IPlayerLegionSlotRepository>();
+        var unitDefs      = new Mock<IUnitDefinitionProvider>();
+        var legionDefs    = new Mock<ILegionDefinitionProvider>();
+        var commanderGear = new Mock<IPlayerCommanderGearRepository>();
+        var gearDefs      = new Mock<IGearDefinitionProvider>();
 
         // Default: empty slots
         slots.Setup(s => s.GetForLegionAsync(
                 It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<PlayerLegionSlot>());
+        // Default: no commander gear row
+        commanderGear.Setup(r => r.FindAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerCommanderGear?)null);
 
         var svc = new LegionService(units.Object, legions.Object, slots.Object,
-                                    unitDefs.Object, legionDefs.Object);
-        return new Bundle(svc, units, legions, slots, unitDefs, legionDefs);
+                                    unitDefs.Object, legionDefs.Object,
+                                    commanderGear.Object, gearDefs.Object);
+        return new Bundle(svc, units, legions, slots, unitDefs, legionDefs, commanderGear, gearDefs);
     }
 
     private static PlayerUnit MakeUnit(Guid playerId, string defId)
@@ -391,5 +399,105 @@ public class LegionServiceTests
             "(50 + 5) / 100 = 0.55");
         result.RawPower.Should().BeApproximately(285.2, 0.01,
             "184 * (1 + 0.55) = 285.2");
+    }
+
+    // ----------------------------------------------------------------
+    // Slice 5 — Commander slot
+    // ----------------------------------------------------------------
+
+    [Fact]
+    public async Task EquipCommander_Success_NoExistingRow_CreatesRow()
+    {
+        var b        = Build();
+        var playerId = Guid.NewGuid();
+        var gearDef  = new GearDefinition
+        {
+            Id          = "gear_mount_wolf",
+            Name        = "Wolf Mount",
+            ProcChance  = 0.2,
+            ProcPercent = 0.5,
+        };
+
+        b.GearDefs.Setup(d => d.GetById("gear_mount_wolf")).Returns(gearDef);
+        b.CommanderGear.Setup(r => r.FindAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerCommanderGear?)null);
+        b.CommanderGear.Setup(r => r.CreateAsync(It.IsAny<PlayerCommanderGear>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerCommanderGear row, CancellationToken _) => row);
+
+        var result = await b.Service.EquipCommanderAsync(playerId, "gear_mount_wolf");
+
+        result.Success.Should().BeTrue();
+        result.GearDefinitionId.Should().Be("gear_mount_wolf");
+        result.GearName.Should().Be("Wolf Mount");
+        b.CommanderGear.Verify(r => r.CreateAsync(
+            It.Is<PlayerCommanderGear>(g => g.PlayerId == playerId && g.GearDefinitionId == "gear_mount_wolf"),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task EquipCommander_ExistingRow_UpdatesInPlace()
+    {
+        var b        = Build();
+        var playerId = Guid.NewGuid();
+        var existing = PlayerCommanderGear.Create(playerId, "gear_old");
+        var gearDef  = new GearDefinition { Id = "gear_new", Name = "New Gear" };
+
+        b.GearDefs.Setup(d => d.GetById("gear_new")).Returns(gearDef);
+        b.CommanderGear.Setup(r => r.FindAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existing);
+        b.CommanderGear.Setup(r => r.UpdateAsync(It.IsAny<PlayerCommanderGear>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var result = await b.Service.EquipCommanderAsync(playerId, "gear_new");
+
+        result.Success.Should().BeTrue();
+        existing.GearDefinitionId.Should().Be("gear_new");
+        existing.IsDeleted.Should().BeFalse();
+        b.CommanderGear.Verify(r => r.UpdateAsync(existing, It.IsAny<CancellationToken>()), Times.Once);
+        b.CommanderGear.Verify(r => r.CreateAsync(It.IsAny<PlayerCommanderGear>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task EquipCommander_UnknownGearDef_ReturnsNotFound()
+    {
+        var b = Build();
+        b.GearDefs.Setup(d => d.GetById(It.IsAny<string>())).Returns((GearDefinition?)null);
+
+        var result = await b.Service.EquipCommanderAsync(Guid.NewGuid(), "gear_unknown");
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(CommanderEquipFailureCode.GearDefinitionNotFound);
+    }
+
+    [Fact]
+    public async Task UnequipCommander_WithActiveRow_SoftDeletes()
+    {
+        var b        = Build();
+        var playerId = Guid.NewGuid();
+        var existing = PlayerCommanderGear.Create(playerId, "gear_mount_wolf");
+
+        b.CommanderGear.Setup(r => r.FindAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existing);
+        b.CommanderGear.Setup(r => r.UpdateAsync(It.IsAny<PlayerCommanderGear>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var result = await b.Service.UnequipCommanderAsync(playerId);
+
+        result.Success.Should().BeTrue();
+        existing.IsDeleted.Should().BeTrue();
+        b.CommanderGear.Verify(r => r.UpdateAsync(existing, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UnequipCommander_NoRow_ReturnsSuccessIdempotent()
+    {
+        var b        = Build();
+        var playerId = Guid.NewGuid();
+        // Default mock: FindAsync returns null
+
+        var result = await b.Service.UnequipCommanderAsync(playerId);
+
+        result.Success.Should().BeTrue("unequip when no commander equipped is a no-op");
+        b.CommanderGear.Verify(r => r.UpdateAsync(It.IsAny<PlayerCommanderGear>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }

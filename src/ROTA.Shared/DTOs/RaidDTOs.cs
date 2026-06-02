@@ -63,6 +63,9 @@ public class RaidHitResponse
     public long              LegionPower   { get; set; }
     public long              UnitProcBonus { get; set; }
     public List<MagicProcDTO> UnitProcs    { get; set; } = new();
+    // Commander gear proc (Slice 5 — procs-only; stat bonuses are never applied to charBase).
+    public bool CommanderProcFired  { get; set; }
+    public long CommanderProcBonus  { get; set; }
 }
 
 public class MagicProcDTO

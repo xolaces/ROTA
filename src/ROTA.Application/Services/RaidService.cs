@@ -71,11 +71,14 @@ public sealed class RaidService : IRaidService
     private readonly IMagicService _magicService;
     private readonly MagicConfig _magicConfig;
     // Slice 4 — legion combat deps
-    private readonly IPlayerLegionRepository     _playerLegions;
-    private readonly IPlayerLegionSlotRepository _legionSlots;
-    private readonly IUnitDefinitionProvider     _unitDefs;
-    private readonly ILegionDefinitionProvider   _legionDefs;
-    private readonly LegionConfig                _legionConfig;
+    private readonly IPlayerLegionRepository        _playerLegions;
+    private readonly IPlayerLegionSlotRepository    _legionSlots;
+    private readonly IUnitDefinitionProvider        _unitDefs;
+    private readonly ILegionDefinitionProvider      _legionDefs;
+    private readonly LegionConfig                   _legionConfig;
+    // Slice 5 — commander gear
+    private readonly IPlayerCommanderGearRepository _commanderGear;
+    private readonly IGearDefinitionProvider        _gearDefs;
     private readonly Random _random;
 
     public RaidService(
@@ -102,6 +105,8 @@ public sealed class RaidService : IRaidService
         IUnitDefinitionProvider unitDefs,
         ILegionDefinitionProvider legionDefs,
         IOptions<LegionConfig> legionConfig,
+        IPlayerCommanderGearRepository commanderGear,
+        IGearDefinitionProvider gearDefs,
         Random? random = null)
     {
         _raids           = raids;
@@ -127,6 +132,8 @@ public sealed class RaidService : IRaidService
         _unitDefs        = unitDefs;
         _legionDefs      = legionDefs;
         _legionConfig    = legionConfig.Value;
+        _commanderGear   = commanderGear;
+        _gearDefs        = gearDefs;
         _random          = random ?? Random.Shared;
     }
 
@@ -301,9 +308,11 @@ public sealed class RaidService : IRaidService
         long magicProcBonus      = 0;
         var  magicProcs          = new List<MagicProcDTO>();
         double magicCritBonus    = 0.0; // flat crit-chance addition from CritChanceFlat magics
-        long legionPowerTerm     = 0;   // scaled legion contribution added to preProc
-        long unitProcBonus       = 0;   // capped total unit-ability proc bonus
-        var  unitProcs           = new List<MagicProcDTO>();
+        long legionPowerTerm        = 0;   // scaled legion contribution added to preProc
+        long unitProcBonus          = 0;   // capped total unit-ability proc bonus
+        var  unitProcs              = new List<MagicProcDTO>();
+        bool commanderProcFired     = false;
+        long commanderProcBonus     = 0;   // damage bonus from commander gear proc
         RaidParticipant? participantFinal = null;
         RaidRewards? rewards = null;
         int xpGained         = 0;
@@ -491,6 +500,24 @@ public sealed class RaidService : IRaidService
                 damageFinal  += unitProcBonus;
             }
 
+            // Commander gear proc (Slice 5 — procs-only).
+            // The commander's BonusAttack/BonusDefense are NOT added to charBase — they never
+            // reach EffectiveCombatData because the row is in player_commander_gear, not
+            // player_equipment. Only the ProcChance/ProcPercent are read here.
+            // The proc fires off preProc (same as the mount proc) and is added to damageFinal.
+            var commanderRow = await _commanderGear.FindAsync(playerId, ct);
+            if (commanderRow is not null && !commanderRow.IsDeleted)
+            {
+                var gearDef = _gearDefs.GetById(commanderRow.GearDefinitionId);
+                if (gearDef?.ProcChance is not null && gearDef.ProcPercent is not null
+                    && _random.NextDouble() < gearDef.ProcChance.Value)
+                {
+                    commanderProcBonus  = Math.Max(0, (long)(preProc * gearDef.ProcPercent.Value));
+                    damageFinal        += commanderProcBonus;
+                    commanderProcFired  = true;
+                }
+            }
+
             // CritChanceFlat magics — always-on (ProcChance is ignored); sum all applied.
             foreach (var rm in appliedMagics)
             {
@@ -615,14 +642,15 @@ public sealed class RaidService : IRaidService
         }
 
         // 9. Audit the successful hit.
-        string critSuffix   = isCrit ? $" CRIT x{appliedCritMult:F2}" : string.Empty;
-        string procSuffix   = procFired ? $" PROC +{procBonus}" : string.Empty;
-        string magicSuffix  = magicProcBonus > 0 ? $" MAGIC +{magicProcBonus}({magicProcs.Count})" : string.Empty;
-        string legionSuffix = legionPowerTerm > 0 ? $" LEGION +{legionPowerTerm}" : string.Empty;
-        string unitSuffix   = unitProcBonus  > 0 ? $" UNITPROC +{unitProcBonus}({unitProcs.Count})" : string.Empty;
+        string critSuffix      = isCrit ? $" CRIT x{appliedCritMult:F2}" : string.Empty;
+        string procSuffix      = procFired ? $" PROC +{procBonus}" : string.Empty;
+        string magicSuffix     = magicProcBonus > 0 ? $" MAGIC +{magicProcBonus}({magicProcs.Count})" : string.Empty;
+        string legionSuffix    = legionPowerTerm > 0 ? $" LEGION +{legionPowerTerm}" : string.Empty;
+        string unitSuffix      = unitProcBonus  > 0 ? $" UNITPROC +{unitProcBonus}({unitProcs.Count})" : string.Empty;
+        string commanderSuffix = commanderProcFired ? $" CMDR +{commanderProcBonus}" : string.Empty;
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, "RaidHit", null,
-            $"Hit raid {activeRaidId} ({definition.Name}) [{raid.Difficulty}] for {damageFinal} dmg (x{hitSize}){critSuffix}{procSuffix}{magicSuffix}{legionSuffix}{unitSuffix}. " +
+            $"Hit raid {activeRaidId} ({definition.Name}) [{raid.Difficulty}] for {damageFinal} dmg (x{hitSize}){critSuffix}{procSuffix}{magicSuffix}{legionSuffix}{unitSuffix}{commanderSuffix}. " +
             $"HP: {finalHp}/{raid.MaxHp}. Kill: {finalDefeated}",
             null), ct);
 
@@ -657,9 +685,11 @@ public sealed class RaidService : IRaidService
             MagicProcBonus  = magicProcBonus,
             MagicProcs      = magicProcs,
             MagicCritBonus  = magicCritBonus,
-            LegionPower     = legionPowerTerm,
-            UnitProcBonus   = unitProcBonus,
-            UnitProcs       = unitProcs,
+            LegionPower          = legionPowerTerm,
+            UnitProcBonus        = unitProcBonus,
+            UnitProcs            = unitProcs,
+            CommanderProcFired   = commanderProcFired,
+            CommanderProcBonus   = commanderProcBonus,
         };
 
         // 10. Store the completed response — replaces the "pending" placeholder.

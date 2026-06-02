@@ -36,9 +36,10 @@ public class RotaDbContext : DbContext
     public DbSet<RaidMagic>   RaidMagics   => Set<RaidMagic>();
 
     // ----- System 15 — Legion -----
-    public DbSet<PlayerUnit>        PlayerUnits        => Set<PlayerUnit>();
-    public DbSet<PlayerLegion>      PlayerLegions      => Set<PlayerLegion>();
-    public DbSet<PlayerLegionSlot>  PlayerLegionSlots  => Set<PlayerLegionSlot>();
+    public DbSet<PlayerUnit>             PlayerUnits          => Set<PlayerUnit>();
+    public DbSet<PlayerLegion>           PlayerLegions        => Set<PlayerLegion>();
+    public DbSet<PlayerLegionSlot>       PlayerLegionSlots    => Set<PlayerLegionSlot>();
+    public DbSet<PlayerCommanderGear>    PlayerCommanderGear  => Set<PlayerCommanderGear>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

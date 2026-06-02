@@ -1,5 +1,6 @@
 using ROTA.Application.Interfaces;
 using ROTA.Application.Models;
+using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
 using ROTA.Shared.DTOs;
 
@@ -8,24 +9,30 @@ namespace ROTA.Application.Services;
 // BETA
 public sealed class LegionService : ILegionService
 {
-    private readonly IPlayerUnitRepository       _units;
-    private readonly IPlayerLegionRepository     _legions;
-    private readonly IPlayerLegionSlotRepository _slots;
-    private readonly IUnitDefinitionProvider     _unitDefs;
-    private readonly ILegionDefinitionProvider   _legionDefs;
+    private readonly IPlayerUnitRepository          _units;
+    private readonly IPlayerLegionRepository        _legions;
+    private readonly IPlayerLegionSlotRepository    _slots;
+    private readonly IUnitDefinitionProvider        _unitDefs;
+    private readonly ILegionDefinitionProvider      _legionDefs;
+    private readonly IPlayerCommanderGearRepository _commanderGear;
+    private readonly IGearDefinitionProvider        _gearDefs;
 
     public LegionService(
-        IPlayerUnitRepository       units,
-        IPlayerLegionRepository     legions,
-        IPlayerLegionSlotRepository slots,
-        IUnitDefinitionProvider     unitDefs,
-        ILegionDefinitionProvider   legionDefs)
+        IPlayerUnitRepository          units,
+        IPlayerLegionRepository        legions,
+        IPlayerLegionSlotRepository    slots,
+        IUnitDefinitionProvider        unitDefs,
+        ILegionDefinitionProvider      legionDefs,
+        IPlayerCommanderGearRepository commanderGear,
+        IGearDefinitionProvider        gearDefs)
     {
-        _units      = units;
-        _legions    = legions;
-        _slots      = slots;
-        _unitDefs   = unitDefs;
-        _legionDefs = legionDefs;
+        _units         = units;
+        _legions       = legions;
+        _slots         = slots;
+        _unitDefs      = unitDefs;
+        _legionDefs    = legionDefs;
+        _commanderGear = commanderGear;
+        _gearDefs      = gearDefs;
     }
 
     // ----------------------------------------------------------------
@@ -250,6 +257,74 @@ public sealed class LegionService : ILegionService
             PowerBonus         = def.PowerBonus,
             Slots              = slotResponses,
             ComputedPower      = power,
+        };
+    }
+
+    // ----------------------------------------------------------------
+    // Slice 5 — Commander slot
+    // ----------------------------------------------------------------
+
+    public async Task<CommanderEquipResult> EquipCommanderAsync(
+        Guid playerId, string gearDefinitionId, CancellationToken ct = default)
+    {
+        var def = _gearDefs.GetById(gearDefinitionId);
+        if (def is null)
+            return new CommanderEquipResult
+            {
+                FailureCode   = CommanderEquipFailureCode.GearDefinitionNotFound,
+                FailureReason = $"Gear definition '{gearDefinitionId}' not found.",
+            };
+
+        var existing = await _commanderGear.FindAsync(playerId, ct);
+        if (existing is null)
+        {
+            var row = PlayerCommanderGear.Create(playerId, gearDefinitionId);
+            await _commanderGear.CreateAsync(row, ct);
+        }
+        else
+        {
+            // Equip() restores a soft-deleted row and updates the gear def.
+            existing.Equip(gearDefinitionId);
+            await _commanderGear.UpdateAsync(existing, ct);
+        }
+
+        return new CommanderEquipResult
+        {
+            Success          = true,
+            GearDefinitionId = gearDefinitionId,
+            GearName         = def.Name,
+        };
+    }
+
+    public async Task<CommanderUnequipResult> UnequipCommanderAsync(
+        Guid playerId, CancellationToken ct = default)
+    {
+        var existing = await _commanderGear.FindAsync(playerId, ct);
+        if (existing is null || existing.IsDeleted)
+            return new CommanderUnequipResult { Success = true }; // idempotent
+
+        existing.Unequip();
+        await _commanderGear.UpdateAsync(existing, ct);
+        return new CommanderUnequipResult { Success = true };
+    }
+
+    public async Task<CommanderGearResponse?> GetCommanderAsync(
+        Guid playerId, CancellationToken ct = default)
+    {
+        var row = await _commanderGear.FindAsync(playerId, ct);
+        if (row is null || row.IsDeleted) return null;
+
+        var def = _gearDefs.GetById(row.GearDefinitionId);
+        if (def is null) return null;
+
+        return new CommanderGearResponse
+        {
+            GearDefinitionId = def.Id,
+            GearName         = def.Name,
+            GearDescription  = def.Description,
+            Rarity           = def.Rarity.ToString(),
+            ProcChance       = def.ProcChance,
+            ProcPercent      = def.ProcPercent,
         };
     }
 

@@ -93,3 +93,38 @@ public class LegionDetailResponse
     public List<SlotAssignmentResponse> Slots { get; set; } = new();
     public LegionPowerResult ComputedPower    { get; set; } = new();
 }
+
+// ----------------------------------------------------------------
+// Slice 5 — Commander slot
+// ----------------------------------------------------------------
+
+public enum CommanderEquipFailureCode
+{
+    GearDefinitionNotFound,
+}
+
+public class CommanderEquipResult
+{
+    public bool                      Success       { get; set; }
+    public CommanderEquipFailureCode FailureCode   { get; set; }
+    public string?                   FailureReason { get; set; }
+    public string?                   GearDefinitionId { get; set; }
+    public string?                   GearName      { get; set; }
+}
+
+public class CommanderUnequipResult
+{
+    public bool   Success       { get; set; }
+    public string? FailureReason { get; set; }
+}
+
+public class CommanderGearResponse
+{
+    public string GearDefinitionId { get; set; } = string.Empty;
+    public string GearName         { get; set; } = string.Empty;
+    public string GearDescription  { get; set; } = string.Empty;
+    public string Rarity           { get; set; } = string.Empty;
+    public double? ProcChance      { get; set; }
+    public double? ProcPercent     { get; set; }
+    public string Note             { get; set; } = "Stat bonuses are ignored in combat; only the proc applies.";
+}
