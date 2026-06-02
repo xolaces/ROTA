@@ -27,6 +27,7 @@ Update when adding public methods or entities.
 | `Task<bool> SpendEnergyAsync(Guid playerId, ResourceType, int amount, CancellationToken)` | Deduct with row lock (participates in ambient tx when inside advisory-lock callback) |
 | `Task RefillEnergyAsync(Guid playerId, ResourceType, int amount, CancellationToken)` | Add up to max |
 | `Task UpdateMaxAsync(Guid playerId, ResourceType, int newMax, CancellationToken)` | Update pool max value |
+| `double GetRegenMinutesPerPoint(PlayerClass, ResourceType)` | Class-based regen rate (minutes/point) from ClassConfig; pure, no DB. Backs the profile DTO's `RegenMinutesPerPoint`. |
 
 ---
 
@@ -37,7 +38,7 @@ Update when adding public methods or entities.
 |--------|-------------|
 | `Task<int> GetBalanceAsync(Guid playerId, CancellationToken)` | Balance from ledger sum |
 | `Task<bool> GrantGemsAsync(Guid, int, GemTransactionType, string? referenceId, CancellationToken)` | Credit gems idempotently |
-| `Task<bool> SpendGemsAsync(Guid, int, GemTransactionType, string? referenceId, CancellationToken)` | Debit gems idempotently |
+| `Task<GemSpendOutcome> SpendGemsAsync(Guid, int, GemTransactionType, string? referenceId, CancellationToken)` | Debit gems; tri-state: `Charged` / `AlreadyProcessed` (refId already in ledger → idempotent replay, caller re-runs grant) / `InsufficientBalance`. Closes the lost-purchase hole across all 3 shops. |
 | `Task<bool> DailyRefillAsync(Guid playerId, CancellationToken)` | Once-per-day 5 gems |
 
 ---
@@ -47,7 +48,7 @@ Update when adding public methods or entities.
 
 | Method | Description |
 |--------|-------------|
-| `Task<PlayerProfileResponse?> GetProfileAsync(Guid playerId, CancellationToken)` | Full profile live values |
+| `Task<PlayerProfileResponse?> GetProfileAsync(Guid playerId, CancellationToken)` | Full profile, live values. Each resource carries class-based `RegenMinutesPerPoint` (double) + `SecondsToNextPoint` (int) for client refill timers; legacy `RegenPerMinute` (int) is vestigial. |
 | `Task<UpdateUsernameResult> UpdateUsernameAsync(Guid, UpdateUsernameRequest, CancellationToken)` | Username update |
 
 ---

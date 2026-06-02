@@ -9,11 +9,12 @@ Server-authoritative .NET 10 backend for a Dawn-of-the-Dragons-style async RPG. 
 Infrastructure,Shared}`. PostgreSQL 16 (EF Core 9), Redis, RS256 JWT.
 
 ## Build status (High — run this session)
-- **315 unit + 8 integration = 323 tests pass. 0 warnings, 0 errors.**
-- `main` @ tag **v0.2.7-s6** (System 15 Slice 6 — economy/acquisition). Slices 1–6 merged, tagged, pushed to origin.
+- **321 unit + 9 integration = 330 tests pass. 0 warnings, 0 errors.**
+- `main` past tag **v0.2.7-s6** (Legion epic complete) + 3 post-fixes merged & pushed (untagged hardening):
+  gem-buy lost-purchase recovery, class-based regen DTO field, System 16 Gauntlet **draft** spec.
 
 ## Inventory (High)
-10 controllers · 15 services · 19 entities · 21 enums · 18 repositories · 3 middleware ·
+10 controllers · 15 services · 19 entities · 22 enums · 18 repositories · 3 middleware ·
 19 EF migrations (InitialCreate→AddCommanderGear) · 8 content JSON files · GitHub Actions CI.
 (Slice 6 adds: GemPrice to UnitDefinition/LegionDefinition, GemTransactionType.UnitPurchase/LegionPurchase,
 UnitDropChance/LegionDropChance loot drop models, GrantUnitAsync/GrantLegionAsync/BuyUnitAsync/BuyLegionAsync
@@ -68,16 +69,14 @@ structured log sink / monitoring · background jobs.
 ## Known issues / debt (High)
 - (Resolved v0.2.5: reward atomicity — stamina spend now inside advisory-lock tx.)
 - (Resolved v0.2.5: ProcBonus type — now `long`.)
-- **Gem-buy partial-failure recovery (magic/unit/legion shops):** `GemService.SpendGemsAsync` returns
-  `false` for BOTH insufficient-balance AND an already-seen referenceId. So a buy whose gem spend
-  committed but whose grant then failed will, on retry, report "Insufficient gems" and never deliver the
-  item — gems lost, item not granted. **Double-charge is NOT possible** (ownership pre-check + the unique
-  partial index on `gem_transactions(player_id, transaction_type, reference_id)`); this is a *lost-purchase*
-  hole, not a double-charge. Spend+grant are also not wrapped in one tx. Shared by `BuyMagicAsync`
-  (v0.2.6.1) and `BuyUnit/BuyLegionAsync` (v0.2.7-s6) — same pattern, faithfully mirrored. Fix (to spec):
-  tri-state spend result (Charged/AlreadyProcessed/Insufficient) so the caller re-runs the idempotent grant
-  on AlreadyProcessed, wrap spend+grant together, and add a real buy-twice *integration* test (the current
-  unit test is mock-intent-only — it stubs SpendGemsAsync→true on the retry, which the real service never does).
+- **(Resolved 2026-06-02: gem-buy lost-purchase recovery.)** `GemService.SpendGemsAsync` now returns a
+  tri-state `GemSpendOutcome` (Charged / AlreadyProcessed / InsufficientBalance). All 3 shops
+  (magic/unit/legion) treat AlreadyProcessed as success and re-run the idempotent grant, so a
+  charged-but-not-granted retry recovers the item with no double-charge. A real Testcontainers integration
+  test (`BuyUnitIdempotencyTests`) proves single-charge + re-grant against the live ledger + unique index.
+  **Still PHASE-2:** wrapping spend+grant in one DB transaction (needs a cross-repo transaction-scope
+  abstraction) — the recovery path makes this a hardening step, not a correctness fix; `// PHASE-2` notes
+  are in all 3 buy methods.
 - (Documented Phase-2, pre-existing: `GemService` concurrent balance-overspend — non-atomic balance check
   + insert can drive balance negative under contention across *different* referenceIds; advisory lock deferred.)
 
