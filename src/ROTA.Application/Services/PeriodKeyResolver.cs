@@ -69,5 +69,12 @@ public sealed class PeriodKeyResolver : IPeriodKeyResolver
             throw new InvalidOperationException(
                 $"LeaderboardConfig.WeekStartsOn has an unrecognised value: {cfg.WeekStartsOn}. " +
                 "Valid values are Monday or Sunday.");
+
+        // v1 emits ISO (Monday-start) week keys only. Reject Sunday loudly rather than
+        // silently ignoring it — Sunday week-start is deferred (no silent no-op stubs).
+        if (cfg.WeekStartsOn != LeaderboardWeekStart.Monday)
+            throw new InvalidOperationException(
+                $"LeaderboardConfig.WeekStartsOn only supports Monday in v1 (ISO week numbering). " +
+                $"Got: {cfg.WeekStartsOn}. Sunday week-start is deferred.");
     }
 }

@@ -256,6 +256,15 @@ public class PeriodKeyResolverTests
     }
 
     [Fact]
+    public void Config_SundayWeekStart_ThrowsAtConstruction()
+    {
+        // v1 supports ISO/Monday weeks only; Sunday must fail loudly, not silently no-op.
+        var act = () => Build(c => c.WeekStartsOn = LeaderboardWeekStart.Sunday);
+        act.Should().Throw<InvalidOperationException>()
+           .WithMessage("*Monday*");
+    }
+
+    [Fact]
     public void Config_ValidDefaults_DoNotThrow()
     {
         var act = () => Build();
