@@ -255,17 +255,32 @@ public sealed class AuthService : IAuthService
         };
     }
 
-    private string GenerateAccessToken(Player player, DateTimeOffset expiry)
+    // SECURITY/CORRECTNESS: signing credentials are created once per private key and reused for
+    // the process lifetime. Microsoft.IdentityModel caches signature providers that hold a
+    // reference to the RSA key, so the key must NOT be disposed per call — a previous
+    // `using var rsa = RSA.Create()` disposed it at method exit, and the cached provider then hit
+    // the disposed key on the 2nd+ token signed, throwing ObjectDisposedException (intermittent
+    // 500 on login/register/refresh). Keyed by PEM so unit tests with per-test keys stay isolated.
+    // Mirrors the long-lived public verification key built once in Program.cs.
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, SigningCredentials>
+        SigningCredentialsByPem = new();
+
+    private SigningCredentials GetSigningCredentials()
     {
         var privateKeyPem = _config["Jwt:PrivateKey"]
             ?? throw new InvalidOperationException("Jwt:PrivateKey is not configured.");
 
-        using var rsa = RSA.Create();
-        rsa.ImportFromPem(privateKeyPem);
+        return SigningCredentialsByPem.GetOrAdd(privateKeyPem, static pem =>
+        {
+            var rsa = RSA.Create();
+            rsa.ImportFromPem(pem);  // intentionally not disposed — long-lived signing key
+            return new SigningCredentials(new RsaSecurityKey(rsa), SecurityAlgorithms.RsaSha256);
+        });
+    }
 
-        var credentials = new SigningCredentials(
-            new RsaSecurityKey(rsa),
-            SecurityAlgorithms.RsaSha256);
+    private string GenerateAccessToken(Player player, DateTimeOffset expiry)
+    {
+        var credentials = GetSigningCredentials();
 
         // Build base claims
         var claims = new List<Claim>

@@ -1,6 +1,8 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using Moq;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Services;
@@ -110,6 +112,58 @@ public class AuthServiceTests
         result.Should().NotBeNull();
         result!.AccessToken.Should().NotBeNullOrEmpty();
         result.RefreshToken.Should().NotBeNullOrEmpty();
+    }
+
+    // -----------------------------------------------------------------------
+    // TOKEN SIGNING — repeated issuance must not dispose the signing key
+    // Regression: a prior `using var rsa = RSA.Create()` disposed the RSA after the first
+    // token, and the cached signature provider then threw ObjectDisposedException on later
+    // tokens (intermittent 500 on login/register/refresh). Two consecutive logins must both
+    // succeed and produce tokens that verify against the matching public key.
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task LoginAsync_IssuesValidTokens_OnRepeatedCalls()
+    {
+        var key = GenerateTestRsaPrivateKey();
+        var (service, players, tokens, _, _) = BuildService(key);
+
+        var player = MakePlayer();
+        players.Setup(r => r.FindByEmailAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+               .ReturnsAsync(player);
+        tokens.Setup(r => r.CountActiveSessionsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+              .ReturnsAsync(0);
+        tokens.Setup(r => r.CreateAsync(It.IsAny<RefreshToken>(), It.IsAny<CancellationToken>()))
+              .ReturnsAsync((RefreshToken t, CancellationToken _) => t);
+
+        var req = new LoginRequest { Email = "test@rota.test", Password = "Correct1" };
+
+        var first  = await service.LoginAsync(req, "127.0.0.1");
+        var second = await service.LoginAsync(req, "127.0.0.1");
+
+        first.Should().NotBeNull();
+        second.Should().NotBeNull();
+
+        // Both tokens must verify against the public half of the signing key.
+        using var rsa = RSA.Create();
+        rsa.ImportFromPem(key);
+        using var pub = RSA.Create(rsa.ExportParameters(includePrivateParameters: false));
+
+        var validationParams = new TokenValidationParameters
+        {
+            ValidIssuer      = "rota-test",
+            ValidAudience    = "rota-client",
+            IssuerSigningKey = new RsaSecurityKey(pub),
+            ValidAlgorithms  = new[] { SecurityAlgorithms.RsaSha256 },
+            ValidateLifetime = false,
+            ClockSkew        = TimeSpan.Zero,
+        };
+        var handler = new JwtSecurityTokenHandler();
+
+        handler.Invoking(h => h.ValidateToken(first!.AccessToken, validationParams, out _))
+               .Should().NotThrow();
+        handler.Invoking(h => h.ValidateToken(second!.AccessToken, validationParams, out _))
+               .Should().NotThrow();
     }
 
     // -----------------------------------------------------------------------

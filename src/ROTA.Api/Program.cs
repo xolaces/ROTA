@@ -80,6 +80,13 @@ rsaPublicKey.ImportFromPem(builder.Configuration["Jwt:PublicKey"]
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        // SECURITY/CORRECTNESS: keep JWT claim types verbatim. By default the handler remaps
+        // short standard claims (e.g. "sub" -> ClaimTypes.NameIdentifier), which would make
+        // every controller's User.FindFirst("sub") return null -> NullReferenceException on
+        // GetPlayerId for all authenticated endpoints. Roles are emitted as ClaimTypes.Role
+        // already, so role/policy checks are unaffected.
+        options.MapInboundClaims = false;
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
