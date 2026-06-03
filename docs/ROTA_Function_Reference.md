@@ -1,5 +1,5 @@
 # ROTA Function Reference
-Last updated: 2026-06-02 (System 17 Leaderboards Slice 1 — enums + config + IPeriodKeyResolver)
+Last updated: 2026-06-03 (System 17 Leaderboards Slice 2 — LeaderboardEntry entity + repository + migration)
 Update when adding public methods or entities.
 
 ---
@@ -30,6 +30,61 @@ Bound from `appsettings.json` section `"LeaderboardConfig"` via `IOptions<Leader
 | `string Resolve(DateTimeOffset utcNow, LeaderboardPeriod period)` | Returns deterministic `period_key` string. `Live`→`"live"`, `Daily`→`"day:yyyy-MM-dd"`, `Weekly`→`"week:yyyy-Www"` (ISO), `Monthly`→`"month:yyyy-MM"`. Always converts input to UTC first. |
 
 Implementation: `PeriodKeyResolver` (`src/ROTA.Application/Services/PeriodKeyResolver.cs`). Registered as singleton. Validates config in constructor. Uses `System.Globalization.ISOWeek` for year-boundary-correct ISO week numbers.
+
+---
+
+## System 17 — Global Leaderboards (Slice 2)
+
+### LeaderboardEntry (Entity)
+`src/ROTA.Domain/Entities/LeaderboardEntry.cs`
+
+One aggregate row per `player × board × period_key`. Sum boards call `AddValue`; Max boards call `MaxValue`. Stat boards (Period=Live) overwrite via repository upsert.
+
+| Property | Type | Notes |
+|----------|------|-------|
+| `Id` | `Guid` | PK |
+| `PlayerId` | `Guid` | FK → players |
+| `Board` | `LeaderboardBoard` | Stored as `int`, no HasDefaultValue |
+| `Period` | `LeaderboardPeriod` | Stored as `int`, no HasDefaultValue |
+| `PeriodKey` | `string` | Deterministic calendar bucket — "day:yyyy-MM-dd", "week:yyyy-Www", "month:yyyy-MM", "live" |
+| `Value` | `long` | Accumulated sum or best-max |
+| `LastProgressAt` | `DateTimeOffset` | Tiebreak: earliest-to-reach wins on equal value |
+| `Rank` | `int?` | Denormalized snapshot rank; null in v1 (RankRefresh=OnRead) |
+| `CreatedAt` | `DateTimeOffset` | |
+| `UpdatedAt` | `DateTimeOffset` | |
+| `IsDeleted` | `bool` | |
+
+Domain methods:
+
+| Method | Description |
+|--------|-------------|
+| `Create(playerId, board, period, periodKey, initialValue, at)` | Factory — sets all fields, `LastProgressAt = at` |
+| `AddValue(long delta, DateTimeOffset at)` | Sum board: `Value += delta`; moves `LastProgressAt` and `UpdatedAt`. Zero/negative delta is a no-op (guarded). |
+| `MaxValue(long candidate, DateTimeOffset at) → bool` | Max board: updates `Value` only when `candidate > Value`; `LastProgressAt` only moves when it actually raised. Returns `true` if raised. |
+| `SetRank(int)` | Stores denormalized rank (snapshot mode, reserved for future use). |
+
+EF config: table `leaderboard_entry`; snake_case; enums stored as `int` with NO `HasDefaultValue` (no sentinel required — see note below); three indexes:
+- `ix_leaderboard_entry_player_id` (FK index, required by arch rules)
+- `ix_leaderboard_entry_upsert_key` UNIQUE on `(player_id, board, period_key)` — the ON CONFLICT target
+- `ix_leaderboard_entry_board_period_value` on `(board, period_key, value)` — drives ranked reads
+
+Migration: `AddLeaderboardEntry` (applied by owner).
+
+**EF enum / HasDefaultValue note:** `Board` and `Period` columns have NO `HasDefaultValue` in the Fluent config. The `HasSentinel` rule applies only when `HasDefaultValue` assigns a non-zero default that could collide with the CLR zero-default (the RaidSize/PlayerRoles bug). Here both zero-values (`StatAttack=0`, `Live=0`) are legitimate written values, and the `Create` factory always sets them explicitly — no store default exists to fight.
+
+---
+
+### ILeaderboardEntryRepository
+`src/ROTA.Application/Interfaces/ILeaderboardEntryRepository.cs`
+
+| Method | Description |
+|--------|-------------|
+| `Task IncrementAsync(playerId, board, period, periodKey, delta, at, ct)` | Race-safe upsert+add for Sum boards. `INSERT … ON CONFLICT (player_id, board, period_key) DO UPDATE SET value = value + EXCLUDED.value`. Concurrent increments serialised at the DB row level — no lost updates. |
+| `Task MaxUpdateAsync(playerId, board, period, periodKey, candidate, at, ct)` | Race-safe upsert+max for Max boards. `GREATEST(stored, candidate)` on conflict; `last_progress_at` only moves when value actually raised (CASE expression). |
+| `Task<IReadOnlyList<LeaderboardEntry>> GetPageAsync(board, periodKey, page, pageSize, ct)` | Ordered `value DESC, last_progress_at ASC`; excludes `is_deleted`; offset/limit paged. |
+| `Task<LeaderboardEntry?> GetPlayerEntryAsync(playerId, board, periodKey, ct)` | Single row via the unique index; `null` if absent. |
+
+Implementation: `LeaderboardEntryRepository` (`src/ROTA.Infrastructure/Persistence/Repositories/LeaderboardEntryRepository.cs`). Uses raw `NpgsqlCommand` for the upsert paths (same pattern as `BetaKeyRepository.TryRedeemAsync`). Participates in ambient EF transactions when one is open (advisory-lock path from `AtomicApplyHitAsync`).
 
 ---
 
