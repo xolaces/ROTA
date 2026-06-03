@@ -6,8 +6,8 @@
 - **v0.2.0–v0.2.5.1** (beta access → stacking bonuses + hardening) · **v0.2.6** System 14 Raid Magic
   (6 slices) · **v0.2.6.1** magic money-bug fix · **v0.2.7 System 15 Legion epic — COMPLETE (6 slices)**.
   All merged, tagged, pushed to origin.
-- Current: **391 unit + 26 integration = 417 tests green, 0 warnings.** `main` at **v0.2.8-lb-s4**
-  (System 17 Leaderboards Slices 1–4 merged), **pushed — origin synced (0/0).**
+- Current: **400 unit + 34 integration = 434 tests green, 0 warnings.** `main` at **v0.2.8-lb-s5**
+  (**System 17 Leaderboards COMPLETE — all 5 slices** merged + auditor-verified), pushed/origin-synced.
   Pending-apply migration batch includes `AddLeaderboardEntry` (+ legion, commander).
 
 ## v0.2.7 summary (System 15 — Legion, shipped + auditor-verified)
@@ -46,15 +46,16 @@ trophies/vs-raid-type bonuses, multi-copy troop stacking, Auto-Assign.
   6 boards (3 per-stat live snapshots ATK/DEF/Disc · questing energy wk+mo · raiders damage wk+mo · max-hit daily).
   **DECISION-COMPLETE (all Qs locked 2026-06-03)** — STATUS block canonical (retention=keep-forever ·
   global-only · L20 floor + exclude Admin (mods appear) · earliest-to-reach ties · on-read ranking · page 200 +
-  caller rank; #1-reward CONTENT deferred to a later slice). **IN PROGRESS — Slices 1–4 DONE + auditor-merged**
-  (tags `v0.2.8-lb-s1..s4`): S1 config/enums/`IPeriodKeyResolver` (ISO-week keys); S2 `LeaderboardEntry`
+  caller rank; #1-reward CONTENT deferred to a later slice). **COMPLETE — all 5 slices DONE + auditor-merged + pushed**
+  (tags `v0.2.8-lb-s1..s5`): S1 config/enums/`IPeriodKeyResolver` (ISO-week keys); S2 `LeaderboardEntry`
   aggregate table + race-safe `ON CONFLICT` repo (20-way concurrency test) + migration `AddLeaderboardEntry`
   (PENDING APPLY); S3 read service + `LeaderboardController` (`GET /api/leaderboards[/{board}]`) with
-  eligibility enforced in SQL; **S4 write hooks** — `RecordEnergySpendAsync` (EnergyService, best-effort
-  swallow) + `RecordRaidHitAsync` (RaidService, INSIDE the advisory-lock tx next to `RecordHit`, atomic, NOT on
-  the Redis cached-replay path → no double-count). **REMAINING: Slice 5 ONLY — Stat-board snapshot**
-  (`SnapshotStatBoardAsync` over ATK/DEF/Disc into `Period=Live` rows; `POST /api/admin/leaderboards/stat/refresh`
-  `[AdminOnly]` + CLI `leaderboard-refresh-stat`; idempotent overwrite). Then #1-reward CONTENT (deferred).
+  eligibility enforced in SQL; S4 write hooks — `RecordEnergySpendAsync` (EnergyService, best-effort swallow) +
+  `RecordRaidHitAsync` (RaidService, INSIDE the advisory-lock tx next to `RecordHit`, atomic, NOT on the Redis
+  cached-replay path → no double-count); S5 Stat-board snapshot — `SnapshotStatBoardAsync` overwrites `Period=Live`
+  rows for ATK/DEF/Disc from raw `PlayerStats.BaseAttack/BaseDefense/DiscernmentInvestment` (repo `SetValueAsync`,
+  idempotent, `last_progress_at` preserved when unchanged) + `POST /api/admin/leaderboards/stat/refresh`
+  `[AdminOnly]` + CLI `leaderboard-refresh-stat`. **Only deferred: #1-reward CONTENT** (additive, non-blocking).
 - **Unity client — systems UI scaffolded (Agent B, 2026-06-02)**, `C:\Dev\ROTA.Client6`: 8 screens
   (Profile/Stats/Items/Equipment/Magic/Legion/Raid + Leaderboards-mock), full IRotaApi/Mock/Http, 0 compile errors.
   Pending: go-live (`useMock=false`, consume `RegenMinutesPerPoint`) · DTO-fidelity/JWT spot-check · commit the new `.cs.meta` files. Owner drives Play-mode.
