@@ -1,5 +1,5 @@
 # ROTA Function Reference
-Last updated: 2026-06-03 (System 17 Leaderboards Slice 2 — LeaderboardEntry entity + repository + migration)
+Last updated: 2026-06-03 (System 17 Leaderboards Slice 4 — write hooks on EnergyService + RaidService)
 Update when adding public methods or entities.
 
 ---
@@ -85,6 +85,69 @@ Migration: `AddLeaderboardEntry` (applied by owner).
 | `Task<LeaderboardEntry?> GetPlayerEntryAsync(playerId, board, periodKey, ct)` | Single row via the unique index; `null` if absent. |
 
 Implementation: `LeaderboardEntryRepository` (`src/ROTA.Infrastructure/Persistence/Repositories/LeaderboardEntryRepository.cs`). Uses raw `NpgsqlCommand` for the upsert paths (same pattern as `BetaKeyRepository.TryRedeemAsync`). Participates in ambient EF transactions when one is open (advisory-lock path from `AtomicApplyHitAsync`).
+
+**Slice 3 additions to `ILeaderboardEntryRepository`:**
+
+| Method | Description |
+|--------|-------------|
+| `Task<IReadOnlyList<EligibleLeaderboardEntry>> GetEligiblePageAsync(board, periodKey, page, pageSize, minLevel, excludeAdmins, ct)` | Eligibility-aware ranked page. JOINs players; applies `is_deleted=false AND is_banned=false AND level>=minLevel AND (excludeAdmins? roles&4=0)`. Ordered `value DESC, last_progress_at ASC`. |
+| `Task<int> CountEligibleAsync(board, periodKey, minLevel, excludeAdmins, ct)` | Count of eligible entries for a board+period (for `TotalRanked`). Same eligibility predicate. |
+| `Task<CallerRankEntry?> GetCallerRankAsync(callerId, board, periodKey, minLevel, excludeAdmins, ct)` | Returns the caller's value + rank (1-based, counting eligible entries strictly above). `null` if caller has no entry or is ineligible. |
+
+---
+
+## System 17 — Global Leaderboards (Slice 3)
+
+### ILeaderboardService
+`src/ROTA.Application/Interfaces/ILeaderboardService.cs`
+
+| Method | Description |
+|--------|-------------|
+| `Task<List<LeaderboardSummary>> GetBoardsAsync(ct)` | Discovery list: all boards with supported periods and current period_key. |
+| `Task<LeaderboardPageResult> GetPageAsync(board, period, periodKey?, page, callerId, ct)` | Ranked page + caller rank. Validates board/period combo; resolves current period_key if none supplied. Returns `LeaderboardPageResult.Fail(msg)` on bad input (caller maps to 400). |
+
+Implementation: `LeaderboardService` (`src/ROTA.Application/Services/LeaderboardService.cs`). Delegates to `ILeaderboardEntryRepository` for eligible paged reads and caller rank. `PlayerId` from JWT sub.
+
+### DTOs (added Slice 3)
+`src/ROTA.Shared/DTOs/LeaderboardDTOs.cs`
+
+- `LeaderboardEntryDto` — `Rank`, `PlayerId`, `DisplayName`, `Value`
+- `LeaderboardPageResponse` — `Board`, `Period`, `PeriodKey`, `Page`, `PageSize`, `TotalRanked`, `Entries`, `You`
+- `LeaderboardSummary` — `Board`, `Title`, `Periods`, `CurrentPeriodKey`
+
+### LeaderboardController
+`src/ROTA.Api/Controllers/LeaderboardController.cs`
+
+| Endpoint | Auth | Description |
+|----------|------|-------------|
+| `GET /api/leaderboards` | Bearer | Returns discovery list of all boards. |
+| `GET /api/leaderboards/{board}?period=&periodKey=&page=` | Bearer | Returns ranked page for board+period. 400 on bad combo or malformed periodKey. |
+
+---
+
+## System 17 — Global Leaderboards (Slice 4)
+
+### ILeaderboardService — write hooks
+`src/ROTA.Application/Interfaces/ILeaderboardService.cs`
+
+| Method | Description |
+|--------|-------------|
+| `Task RecordEnergySpendAsync(playerId, amount, at, ct)` | Increments `EnergySpent/Weekly` and `EnergySpent/Monthly` boards by `amount`. Called by `EnergyService.SpendEnergyAsync` after successful atomic spend, `ResourceType.Energy` only (Q6 — Stamina/GuildStamina excluded). Best-effort: failure swallowed+logged, spend never rolls back. |
+| `Task RecordRaidHitAsync(playerId, damageFinal, at, ct)` | Increments `DamageDealt/Weekly` + `DamageDealt/Monthly` by `damageFinal`, and max-updates `LargestHit/Daily` with `damageFinal`. Called by `RaidService.HitRaidAsync` inside the advisory-lock callback immediately after `participant.RecordHit(damageFinal)`. Rides the ambient transaction — atomic with the hit. Never reached on the Redis cached-replay early-return path. |
+
+**Hook placement in EnergyService:**
+- File: `src/ROTA.Application/Services/EnergyService.cs`
+- Location: `SpendEnergyAsync`, after `await _auditLog.AppendAsync(...)`, inside `if (success)` block, guarded by `if (type == ResourceType.Energy)`
+- Adjacent code: `_logger.LogWarning(ex, "Leaderboard write failed …")` in the catch block
+- Transaction context: NO ambient tx at this point (atomic spend is a self-contained FOR UPDATE, already committed)
+- Failure discipline: try/catch swallows any exception from `RecordEnergySpendAsync`, mirroring `AuditLogMiddleware`
+
+**Hook placement in RaidService:**
+- File: `src/ROTA.Application/Services/RaidService.cs`
+- Location: `HitRaidAsync`, inside `AtomicApplyHitAsync` callback, immediately after `participantFinal!.RecordHit(damageFinal)`
+- Adjacent code: `await _leaderboards.RecordRaidHitAsync(playerId, damageFinal, DateTimeOffset.UtcNow, ct);`
+- Transaction context: INSIDE the advisory-lock transaction — ambient `_db.Database.CurrentTransaction` is picked up by `LeaderboardEntryRepository.IncrementAsync/MaxUpdateAsync`, so the board increments are atomic with the hit commit
+- Idempotency: the Redis idempotency early-return (step 4 in `HitRaidAsync`) fires BEFORE `AtomicApplyHitAsync` is entered, so the hook is never reached on a cached-replay duplicate
 
 ---
 
