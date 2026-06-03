@@ -17,7 +17,10 @@ public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest
             .MaximumLength(32)
             // SECURITY: restrict charset to reduce homoglyph-confusion and injection surface.
             .Matches(@"^[a-zA-Z0-9_\-]+$")
-            .WithMessage("Username may only contain letters, numbers, underscores, and hyphens.");
+            .WithMessage("Username may only contain letters, numbers, underscores, and hyphens.")
+            // SECURITY: staff/system handles are reserved — created only via admin CLI / seeding.
+            .Must(u => !ReservedUsernames.IsReserved(u))
+            .WithMessage("That username is reserved. Please choose another.");
 
         RuleFor(x => x.Email)
             .NotEmpty()
