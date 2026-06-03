@@ -8,7 +8,8 @@
   All merged, tagged, pushed to origin.
 - Current: **400 unit + 34 integration = 434 tests green, 0 warnings.** `main` at **v0.2.8-lb-s5**
   (**System 17 Leaderboards COMPLETE — all 5 slices** merged + auditor-verified), pushed/origin-synced.
-  Pending-apply migration batch includes `AddLeaderboardEntry` (+ legion, commander).
+  **All migrations applied to the dev DB (2026-06-03)** — 7-migration batch through `AddLeaderboardEntry`
+  (Equipment/Magic/Legion/Commander/Leaderboard); `dotnet ef migrations list` shows none pending.
 
 ## v0.2.7 summary (System 15 — Legion, shipped + auditor-verified)
 Units + legions with Race/Role/Attribute slot-typing. Legion power = a SEPARATE additive damage term folded
