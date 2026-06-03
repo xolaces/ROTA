@@ -6,7 +6,9 @@
 - **v0.2.0–v0.2.5.1** (beta access → stacking bonuses + hardening) · **v0.2.6** System 14 Raid Magic
   (6 slices) · **v0.2.6.1** magic money-bug fix · **v0.2.7 System 15 Legion epic — COMPLETE (6 slices)**.
   All merged, tagged, pushed to origin.
-- Current: **321 unit + 9 integration = 330 tests green, 0 warnings.** `main` past **v0.2.7-s6** + 3 post-fixes (gem-buy recovery · regen DTO · Gauntlet draft spec), synced with origin.
+- Current: **379 unit + 26 integration = 405 tests green, 0 warnings.** `main` at **v0.2.8-lb-s3**
+  (System 17 Leaderboards Slices 1–3 merged). **8 commits ahead of origin — UNPUSHED** (awaiting owner go-ahead).
+  Pending-apply migration batch now includes `AddLeaderboardEntry` (+ legion, commander).
 
 ## v0.2.7 summary (System 15 — Legion, shipped + auditor-verified)
 Units + legions with Race/Role/Attribute slot-typing. Legion power = a SEPARATE additive damage term folded
@@ -40,11 +42,17 @@ trophies/vs-raid-type bonuses, multi-copy troop stacking, Auto-Assign.
   **power-focused** token shop. **Spec body FULLY INTEGRATED (Agent A, 2026-06-02)** — entities (StrikeTransaction,
   GauntletCurrencyTransaction, GauntletEvent/Entry, PlayerEventMagic, PlayerMagicHonor, PlayerGauntletTrophy),
   6 detailed slices (content → state/ledgers+lifecycle → leaderboard → combat [DEEP] → settlement → shop). **READY TO BUILD.**
-- **System 17 — Global Leaderboards** (NEW, owner-introduced): `docs/specs/system-17-leaderboards.md` —
-  5 boards (3 per-stat live snapshots ATK/DEF/Disc · questing energy wk+mo · raiders damage wk+mo · max-hit daily).
-  **PARTIAL decisions locked (rounds 1–2)** in the spec STATUS block; **~6 open Qs remain** (retention, per-league,
-  eligibility, ties, refresh cadence, paging, reward content) — finish the Q&A before building. Capture needs NEW
-  write-paths: per-hit damage + energy-spend aren't persisted today.
+- **System 17 — Global Leaderboards** (owner-introduced): `docs/specs/system-17-leaderboards.md` —
+  6 boards (3 per-stat live snapshots ATK/DEF/Disc · questing energy wk+mo · raiders damage wk+mo · max-hit daily).
+  **DECISION-COMPLETE (all Qs locked 2026-06-03)** — STATUS block canonical (retention=keep-forever ·
+  global-only · L20 floor + exclude Admin (mods appear) · earliest-to-reach ties · on-read ranking · page 200 +
+  caller rank; #1-reward CONTENT deferred to a later slice). **IN PROGRESS — Slices 1–3 DONE + auditor-merged**
+  (tags `v0.2.8-lb-s1/s2/s3`): S1 config/enums/`IPeriodKeyResolver` (ISO-week keys); S2 `LeaderboardEntry`
+  aggregate table + race-safe `ON CONFLICT` repo (20-way concurrency test) + migration `AddLeaderboardEntry`
+  (PENDING APPLY); S3 read service + `LeaderboardController` (`GET /api/leaderboards[/{board}]`) with
+  eligibility enforced in SQL. **REMAINING: Slice 4 (write hooks — energy-spend + raid-hit, DEEP money path)
+  · Slice 5 (Stat-board snapshot, admin/CLI refresh).** Capture = aggregate-increment at signal time (no event
+  tables); the raid-hit increment rides INSIDE the existing advisory-lock tx (repo already picks up the ambient tx).
 - **Unity client — systems UI scaffolded (Agent B, 2026-06-02)**, `C:\Dev\ROTA.Client6`: 8 screens
   (Profile/Stats/Items/Equipment/Magic/Legion/Raid + Leaderboards-mock), full IRotaApi/Mock/Http, 0 compile errors.
   Pending: go-live (`useMock=false`, consume `RegenMinutesPerPoint`) · DTO-fidelity/JWT spot-check · commit the new `.cs.meta` files. Owner drives Play-mode.
