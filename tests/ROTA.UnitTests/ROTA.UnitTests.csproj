@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\ROTA.Api\ROTA.Api.csproj" />
     <ProjectReference Include="..\..\src\ROTA.Application\ROTA.Application.csproj" />
     <ProjectReference Include="..\..\src\ROTA.Domain\ROTA.Domain.csproj" />
     <ProjectReference Include="..\..\src\ROTA.Infrastructure\ROTA.Infrastructure.csproj" />

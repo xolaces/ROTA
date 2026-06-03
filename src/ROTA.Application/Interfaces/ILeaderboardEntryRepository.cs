@@ -64,4 +64,76 @@ public interface ILeaderboardEntryRepository
         LeaderboardBoard board,
         string periodKey,
         CancellationToken ct = default);
+
+    // ── Slice 3: eligibility-aware ranked reads ──────────────────────────────
+    //
+    // The Slice-2 GetPageAsync filters only leaderboard_entry.is_deleted.  The methods below
+    // JOIN players and apply the full eligibility predicate IN SQL so that paging offsets and
+    // rank counts are correct — post-filtering in memory would corrupt both.
+    //
+    // Eligibility predicate (applied server-side in every query below):
+    //   p.is_deleted = false
+    //   AND p.is_banned = false
+    //   AND p.level >= @minLevel
+    //   AND (@excludeAdmins = false OR (p.roles & @adminBit) = 0)
+    // Moderator bit is not excluded — Moderators appear as regular players.
+
+    /// <summary>
+    /// Returns a page of ELIGIBLE entries ordered value DESC, last_progress_at ASC.
+    /// Eligibility is enforced in SQL via a JOIN on the players table.
+    /// </summary>
+    Task<IReadOnlyList<EligibleLeaderboardEntry>> GetEligiblePageAsync(
+        LeaderboardBoard board,
+        string periodKey,
+        int page,
+        int pageSize,
+        int minLevel,
+        bool excludeAdmins,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns the total count of ELIGIBLE entries for a board+period_key.
+    /// Used to populate <c>TotalRanked</c> in the page response.
+    /// </summary>
+    Task<int> CountEligibleAsync(
+        LeaderboardBoard board,
+        string periodKey,
+        int minLevel,
+        bool excludeAdmins,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns the caller's own entry (value + rank) on a board+period_key.
+    /// Rank is computed as (count of eligible entries ranked strictly above the caller) + 1,
+    /// where "above" = value &gt; callerValue OR (value = callerValue AND last_progress_at &lt; callerLastProgressAt).
+    /// Returns <c>null</c> if the caller has no entry or is themselves ineligible.
+    /// </summary>
+    Task<CallerRankEntry?> GetCallerRankAsync(
+        Guid callerId,
+        LeaderboardBoard board,
+        string periodKey,
+        int minLevel,
+        bool excludeAdmins,
+        CancellationToken ct = default);
+}
+
+/// <summary>
+/// A leaderboard entry hydrated with the player's display name for a ranked page.
+/// Produced by the eligibility-aware SQL join.
+/// </summary>
+public sealed class EligibleLeaderboardEntry
+{
+    public Guid PlayerId { get; init; }
+    public long Value { get; init; }
+    public DateTimeOffset LastProgressAt { get; init; }
+    public string DisplayName { get; init; } = string.Empty;
+    public string Username { get; init; } = string.Empty;
+}
+
+/// <summary>The caller's own rank and value on a specific board+period.</summary>
+public sealed class CallerRankEntry
+{
+    public Guid PlayerId { get; init; }
+    public long Value { get; init; }
+    public int Rank { get; init; }
 }

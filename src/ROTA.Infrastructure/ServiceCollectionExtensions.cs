@@ -75,6 +75,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEquipmentService, EquipmentService>();
         services.AddScoped<IMagicService, MagicService>();
         services.AddScoped<ILegionService, LegionService>();
+        services.AddScoped<ILeaderboardService, LeaderboardService>();
 
         // FluentValidation — scan Application assembly for all IValidator<T> implementations
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();

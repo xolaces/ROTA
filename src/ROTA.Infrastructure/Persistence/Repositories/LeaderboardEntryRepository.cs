@@ -154,6 +154,173 @@ public sealed class LeaderboardEntryRepository : ILeaderboardEntryRepository
                      && !e.IsDeleted)
             .FirstOrDefaultAsync(ct);
 
+    // ── GetEligiblePageAsync ─────────────────────────────────────────────────
+
+    public async Task<IReadOnlyList<EligibleLeaderboardEntry>> GetEligiblePageAsync(
+        LeaderboardBoard board,
+        string periodKey,
+        int page,
+        int pageSize,
+        int minLevel,
+        bool excludeAdmins,
+        CancellationToken ct = default)
+    {
+        var conn = (NpgsqlConnection)_db.Database.GetDbConnection();
+        await EnsureOpenAsync(conn, ct);
+
+        // Admin bit = 4 (PlayerRoles.Admin).
+        // The predicate uses bitwise AND: (p.roles & 4) = 0 means no Admin flag set.
+        // Moderator bit (2) is deliberately NOT filtered — Moderators appear as regular players.
+        const string sql = """
+            SELECT le.player_id,
+                   le.value,
+                   le.last_progress_at,
+                   p.display_name,
+                   p.username
+            FROM leaderboard_entry le
+            JOIN players p ON p.id = le.player_id
+            WHERE le.board      = @board
+              AND le.period_key = @periodKey
+              AND le.is_deleted = false
+              AND p.is_deleted  = false
+              AND p.is_banned   = false
+              AND p.level       >= @minLevel
+              AND (@excludeAdmins = false OR (p.roles & 4) = 0)
+            ORDER BY le.value DESC,
+                     le.last_progress_at ASC
+            LIMIT @pageSize OFFSET @offset
+            """;
+
+        var offset = (page - 1) * pageSize;
+        await using var cmd = new NpgsqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("board",          NpgsqlDbType.Integer,  (int)board);
+        cmd.Parameters.AddWithValue("periodKey",      NpgsqlDbType.Varchar,  periodKey);
+        cmd.Parameters.AddWithValue("minLevel",       NpgsqlDbType.Integer,  minLevel);
+        cmd.Parameters.AddWithValue("excludeAdmins",  NpgsqlDbType.Boolean,  excludeAdmins);
+        cmd.Parameters.AddWithValue("pageSize",       NpgsqlDbType.Integer,  pageSize);
+        cmd.Parameters.AddWithValue("offset",         NpgsqlDbType.Integer,  offset);
+
+        var results = new List<EligibleLeaderboardEntry>();
+        await using var reader = await cmd.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct))
+        {
+            var displayName = reader.GetString(3);
+            var username    = reader.GetString(4);
+            results.Add(new EligibleLeaderboardEntry
+            {
+                PlayerId       = reader.GetGuid(0),
+                Value          = reader.GetInt64(1),
+                LastProgressAt = reader.GetFieldValue<DateTimeOffset>(2),
+                DisplayName    = string.IsNullOrWhiteSpace(displayName) ? username : displayName,
+                Username       = username,
+            });
+        }
+
+        return results;
+    }
+
+    // ── CountEligibleAsync ───────────────────────────────────────────────────
+
+    public async Task<int> CountEligibleAsync(
+        LeaderboardBoard board,
+        string periodKey,
+        int minLevel,
+        bool excludeAdmins,
+        CancellationToken ct = default)
+    {
+        var conn = (NpgsqlConnection)_db.Database.GetDbConnection();
+        await EnsureOpenAsync(conn, ct);
+
+        const string sql = """
+            SELECT COUNT(*)::int
+            FROM leaderboard_entry le
+            JOIN players p ON p.id = le.player_id
+            WHERE le.board      = @board
+              AND le.period_key = @periodKey
+              AND le.is_deleted = false
+              AND p.is_deleted  = false
+              AND p.is_banned   = false
+              AND p.level       >= @minLevel
+              AND (@excludeAdmins = false OR (p.roles & 4) = 0)
+            """;
+
+        await using var cmd = new NpgsqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("board",         NpgsqlDbType.Integer, (int)board);
+        cmd.Parameters.AddWithValue("periodKey",     NpgsqlDbType.Varchar, periodKey);
+        cmd.Parameters.AddWithValue("minLevel",      NpgsqlDbType.Integer, minLevel);
+        cmd.Parameters.AddWithValue("excludeAdmins", NpgsqlDbType.Boolean, excludeAdmins);
+
+        var result = await cmd.ExecuteScalarAsync(ct);
+        return result is int i ? i : Convert.ToInt32(result);
+    }
+
+    // ── GetCallerRankAsync ───────────────────────────────────────────────────
+
+    public async Task<CallerRankEntry?> GetCallerRankAsync(
+        Guid callerId,
+        LeaderboardBoard board,
+        string periodKey,
+        int minLevel,
+        bool excludeAdmins,
+        CancellationToken ct = default)
+    {
+        var conn = (NpgsqlConnection)_db.Database.GetDbConnection();
+        await EnsureOpenAsync(conn, ct);
+
+        // First verify the caller is eligible and has an entry.
+        // Then compute rank as (count of eligible entries strictly ranked above them) + 1.
+        // "Strictly above" = value > callerValue OR (value = callerValue AND last_progress_at < callerLastProgressAt).
+        const string sql = """
+            WITH caller AS (
+                SELECT le.value, le.last_progress_at
+                FROM leaderboard_entry le
+                JOIN players p ON p.id = le.player_id
+                WHERE le.player_id  = @callerId
+                  AND le.board      = @board
+                  AND le.period_key = @periodKey
+                  AND le.is_deleted = false
+                  AND p.is_deleted  = false
+                  AND p.is_banned   = false
+                  AND p.level       >= @minLevel
+                  AND (@excludeAdmins = false OR (p.roles & 4) = 0)
+            )
+            SELECT
+                c.value,
+                (SELECT COUNT(*)::int
+                 FROM leaderboard_entry le2
+                 JOIN players p2 ON p2.id = le2.player_id
+                 WHERE le2.board      = @board
+                   AND le2.period_key = @periodKey
+                   AND le2.is_deleted = false
+                   AND p2.is_deleted  = false
+                   AND p2.is_banned   = false
+                   AND p2.level       >= @minLevel
+                   AND (@excludeAdmins = false OR (p2.roles & 4) = 0)
+                   AND (le2.value > c.value
+                        OR (le2.value = c.value AND le2.last_progress_at < c.last_progress_at))
+                ) + 1 AS rank
+            FROM caller c
+            """;
+
+        await using var cmd = new NpgsqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("callerId",      NpgsqlDbType.Uuid,    callerId);
+        cmd.Parameters.AddWithValue("board",         NpgsqlDbType.Integer, (int)board);
+        cmd.Parameters.AddWithValue("periodKey",     NpgsqlDbType.Varchar, periodKey);
+        cmd.Parameters.AddWithValue("minLevel",      NpgsqlDbType.Integer, minLevel);
+        cmd.Parameters.AddWithValue("excludeAdmins", NpgsqlDbType.Boolean, excludeAdmins);
+
+        await using var reader = await cmd.ExecuteReaderAsync(ct);
+        if (!await reader.ReadAsync(ct))
+            return null; // no entry or ineligible
+
+        return new CallerRankEntry
+        {
+            PlayerId = callerId,
+            Value    = reader.GetInt64(0),
+            Rank     = reader.GetInt32(1),
+        };
+    }
+
     // ── Private helpers ──────────────────────────────────────────────────────
 
     private static void AddCommonParams(
