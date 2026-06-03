@@ -220,7 +220,7 @@ Build: 0 errors, 0 warnings. Tests: 232 unit + 7 integration = 239 total, all pa
 - EquipmentService: loads inventory per-hit, evaluates all equipped gear's conditional bonuses
 - Reward atomicity: stamina spend moved inside advisory-lock tx (atomic with hit; no refund path)
 - ProcBonus type: double → long in RaidHitResponse
-- Function Reference fully refreshed; spec in docs/specs/system-13-stacking-bonuses.md
+- Function Reference fully refreshed; spec in docs/specs/shipped/system-13-stacking-bonuses.md
 
 ## PHASE-2 Deferred Items
 - DiscernmentInvestment effect: quest drop quality (raid crit shipped v0.2.3)
@@ -337,10 +337,11 @@ Orange is the permanent ceiling. Never add above it.
 ---
 
 ## Documentation Index
+- [Docs index](docs/README.md) — what every `.md` in the repo is for (start here)
 - [Game Design & Unity UI Reference](docs/ui/ROTA_GameDesign_UI_Reference.md) — DotD mechanics analysis, screen-by-screen UI blueprints, Unity implementation prompt, content pipeline guide
 - [Operations & Tooling Runbook](docs/OPERATIONS.md) — every dotnet command, the admin CLI, admin REST API, config flags, secrets, migrations, deployment order, beta onboarding
 - [Design North Star](docs/DESIGN_NORTHSTAR.md) — durable design vision; research-paper divergences recorded as amendments (no resets, capped scaling, Gauntlet as core spine)
-- [System specs](docs/specs/) — per-system build specs (System 12 + 13 done)
+- [System specs](docs/specs/README.md) — per-system build specs, organized `shipped/` · `active/` · `backlog/` (index resolves the "System 13" naming collision)
 
 ## Function Reference
 Full method signatures, entity fields, endpoint map:

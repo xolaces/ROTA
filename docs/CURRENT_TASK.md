@@ -29,7 +29,7 @@ trophies/vs-raid-type bonuses, multi-copy troop stacking, Auto-Assign.
 
 ## Then (in order)
 - **Gauntlet epic** (competitive leaderboard event; tightly coupled to Legion). **Spec DECISION-COMPLETE +
-  READY TO BUILD: `docs/specs/system-16-gauntlet.md`** — all 28 owner questions answered (canonical locked
+  READY TO BUILD: `docs/specs/active/system-16-gauntlet.md`** — all 28 owner questions answered (canonical locked
   block at the top of the spec). Key calls: leagues by convergence tier (≤Ascendant / Luminary–Archon /
   Ancient+, floor L20, locked at entry); fixed-duration **admin-run** events, **auto-settle (idempotent)**;
   score = **cumulative damage**, ~60s Postgres snapshot, view top-200 / prizes top-500, per-event;
@@ -42,7 +42,7 @@ trophies/vs-raid-type bonuses, multi-copy troop stacking, Auto-Assign.
   **power-focused** token shop. **Spec body FULLY INTEGRATED (Agent A, 2026-06-02)** — entities (StrikeTransaction,
   GauntletCurrencyTransaction, GauntletEvent/Entry, PlayerEventMagic, PlayerMagicHonor, PlayerGauntletTrophy),
   6 detailed slices (content → state/ledgers+lifecycle → leaderboard → combat [DEEP] → settlement → shop). **READY TO BUILD.**
-- **System 17 — Global Leaderboards** (owner-introduced): `docs/specs/system-17-leaderboards.md` —
+- **System 17 — Global Leaderboards** (owner-introduced): `docs/specs/shipped/system-17-leaderboards.md` —
   6 boards (3 per-stat live snapshots ATK/DEF/Disc · questing energy wk+mo · raiders damage wk+mo · max-hit daily).
   **DECISION-COMPLETE (all Qs locked 2026-06-03)** — STATUS block canonical (retention=keep-forever ·
   global-only · L20 floor + exclude Admin (mods appear) · earliest-to-reach ties · on-read ranking · page 200 +
