@@ -9,31 +9,46 @@ It is a set of always-on, periodically-refreshed global boards over **normal pla
 MEDIUM epic — one slice per branch, build+test green, commit/merge/tag independently, never bundle.
 Auditor reviews after a batch.*
 
-> **STATUS: DRAFT — PARTIAL DECISIONS (2026-06-02, rounds 1–2 of the owner Q&A). Remaining Qs below — do
-> NOT start Slice 2+ until they're answered.** The five boards are fixed (Stat ATK/DEF/Disc, Questing
-> energy wk+mo, Raiders damage wk+mo, Largest single hit/day).
+> **STATUS: DECISION-COMPLETE — READY TO BUILD (2026-06-02, rounds 1–3 of the owner Q&A resolved).**
+> The five boards are fixed (Stat ATK/DEF/Disc, Questing energy wk+mo, Raiders damage wk+mo, Largest single hit/day).
 >
-> **DECIDED (rounds 1–2):**
-> - **Windows = CALENDAR buckets**, UTC; **week starts Monday** (ISO; day = UTC midnight; month = calendar).
-> - **Stat board = three per-stat LIVE-SNAPSHOT ladders** (ATK / DEF / Discernment) over stored investments — no window.
-> - **Questing board = ENERGY spent only** (energy is the quest currency).
-> - **Largest-hit board = ALL raid hits** (biggest single `damageFinal` by anyone that day, any raid).
-> - **Refresh:** damage + max-hit boards near-live (**~15 min**); stat (snapshot) + questing can refresh less often.
-> - **Rewards: #1 only** on the periodic boards (questing wk/mo, raiders wk/mo, max-hit daily). Reward CONTENT = TBD.
-> - **Capture (auditor engineering call):** increment a per-period aggregate row INSIDE the raid-hit advisory-lock
->   transaction (damage + max-hit) and at energy-spend time (questing) — exact, no compute-on-read scan. Max-hit =
->   conditional max-update of the player's daily row.
+> **LOCKED DECISIONS (canonical — build against this exactly):**
+> - **Windows = CALENDAR buckets**, UTC; **week starts Monday** (ISO; day = UTC midnight; month = calendar). *(Q1/Q2)*
+> - **Stat board = three per-stat LIVE-SNAPSHOT ladders** (ATK / DEF / Discernment) over stored investments — no window. *(Q4/Q5)*
+> - **Questing board = ENERGY spent only** (energy is the quest currency; Stamina/GuildStamina excluded). *(Q6)*
+> - **Largest-hit board = ALL raid hits** (biggest single `damageFinal` by anyone that day, any raid type). *(Q7)*
+> - **Capture = aggregate-increment** inside the raid-hit advisory-lock transaction (damage + max-hit) and at
+>   energy-spend time (questing) — exact, no compute-on-read scan. Max-hit = conditional max-update of the
+>   player's daily row. **No event-row tables** (option (a), not (b)). *(Q6/Q7/Q8/Q9)*
+> - **Storage = single `leaderboard_entry` aggregate table** (one row per player × board × period_key). *(Q9)*
+> - **Retention = KEEP CLOSED PERIODS FOREVER** — queryable history via `periodKey` selector; table grows
+>   ~1 row/player/board/period (acceptable at beta scale). `RetainClosedPeriods = true`. *(Q3)*
+> - **Scope = GLOBAL ONLY** — one worldwide ranking per board+window; no per-league split (that's the Gauntlet). *(Q10)*
+> - **Eligibility = MinLevel 20 + exclude Admin accounts; banned & soft-deleted always excluded; MODERATORS
+>   appear as regular players.** *(Q11)*
+> - **Tie-break = EARLIEST-TO-REACH** — `LastProgressAt ASC` on equal value (stored on the row). *(Q12)*
+> - **Ranking = on-read `ORDER BY value DESC, LastProgressAt ASC`** (no precomputed rank column needed for v1;
+>   consistent with the System 16 ~60 s Postgres-snapshot posture). `RankRefresh = OnRead`. *(Q13)*
+> - **Stat-board refresh = admin/CLI/interval-triggered** snapshot (no scheduler exists; same posture as
+>   System 16). Exposed as `POST /api/admin/leaderboards/stat/refresh` `[AdminOnly]` + CLI `leaderboard-refresh-stat`. *(Q13)*
+> - **Page size = 200; every board read also returns the caller's own rank+value** even when off-page. *(Q14)*
+> - **Rewards: #1 only** on the periodic boards — reward CONTENT + delivery mechanic **deferred to a later slice**
+>   (System 17 v1 ships the boards prize-free; the #1 reward economy is additive and non-blocking).
 >
-> **STILL OPEN (resolve before building):** Q3 retention/history of closed periods · Q10 global vs per-league ·
-> Q11 eligibility (exclude banned/soft-deleted/admin? minimum level?) · Q12 tie-breaks · Q13 exact refresh cadence
-> for the non-live boards · Q14 page size + always-return-caller-rank · reward CONTENT per board (gems/tokens/cosmetic).
+> **Three per-stat Stat ladders note:** the Stat board resolves to **three** live boards (ATK / DEF / Disc).
+> In the `LeaderboardBoard` enum this is either one `Stat` board discriminated by a stat axis, or three flat
+> entries (`StatAttack / StatDefense / StatDiscernment`) — Slice 1 picks the representation (flat is simpler).
 
 ---
 
-## OPEN QUESTIONS (owner to confirm)
+## OPEN QUESTIONS — ALL RESOLVED (kept for rationale; see the STATUS block above for the canonical locked answers)
 
-These are deliberately **not answered here** — each changes the schema, a write path, or the ranking.
-Where options are sketched it is only to frame the choice; pick one.
+> **All questions below are CLOSED as of 2026-06-02 (rounds 1–3).** The answers live in the STATUS block at
+> the top of this file — that block is canonical. This section is retained only for the *reasoning* behind
+> each choice. Q1/Q2 → calendar/UTC/Mon. Q3 → keep forever. Q4/Q5 → three per-stat live snapshots. Q6 →
+> Energy only. Q7 → all raids. Q8/Q9 → aggregate-increment, one table. Q10 → global only. Q11 → MinLevel 20 +
+> exclude Admin (mods appear). Q12 → earliest-to-reach. Q13 → on-read ranking, admin/CLI Stat refresh. Q14 →
+> page 200 + caller rank.
 
 **Windows, boundaries & timezone**
 1. **Rolling vs calendar windows.** Are "day / week / month" **calendar buckets** (e.g. the week of
@@ -247,19 +262,20 @@ not finalize a migration for a gated entity until the question is answered.*
 
 ### Config: `LeaderboardConfig` (appsettings, `IOptions`; safe C# defaults)
 ```
-WindowMode        enum    // Q1 — Calendar | Rolling (default Calendar)
-WeekStartsOn      enum    // Q2 — Monday | Sunday (default Monday)
-Timezone          string  // Q2 — default "UTC"
-StatMetric        enum    // Q4 — Level | RawAttack | RawDefense | Discernment | EffectiveCombatPower
-StatBoardEnabled  bool    // Q5 — whether the Stat board is a stored live snapshot or compute-on-read
-EnergyCounts      enum[]  // Q6 — which ResourceTypes count (default [Energy])
-MaxHitRaidScope   enum    // Q7 — AllRaids | WorldEventOnly (default AllRaids)
-PageSize          int     default 200                       // Q14
-TieBreak          enum    // Q12 — EarliestToReach | LowerLevel | PlayerId
-RankRefresh       enum    // Q13 — OnRead | Snapshot | Redis (default OnRead)
-RetainClosedPeriods bool? // Q3 — keep history vs current-only
-Global            bool    default true                      // Q10 — global vs per-league
-MinLevel          int     default 1                         // Q11
+WindowMode        enum    default Calendar                  // Q1 — LOCKED Calendar
+WeekStartsOn      enum    default Monday                    // Q2 — LOCKED Monday (ISO)
+Timezone          string  default "UTC"                     // Q2 — LOCKED UTC
+StatMetric        enum[]  default [RawAttack,RawDefense,Discernment]  // Q4 — three per-stat live ladders
+StatBoardEnabled  bool    default true                      // Q5 — stored live snapshot (Period=Live rows)
+EnergyCounts      enum[]  default [Energy]                  // Q6 — LOCKED Energy only
+MaxHitRaidScope   enum    default AllRaids                  // Q7 — LOCKED all raids
+PageSize          int     default 200                       // Q14 — LOCKED
+TieBreak          enum    default EarliestToReach           // Q12 — LOCKED earliest-to-reach
+RankRefresh       enum    default OnRead                    // Q13 — LOCKED on-read ORDER BY
+RetainClosedPeriods bool  default true                      // Q3 — LOCKED keep history forever
+Global            bool    default true                      // Q10 — LOCKED global only
+MinLevel          int     default 20                        // Q11 — LOCKED L20 floor
+ExcludeAdmins     bool    default true                      // Q11 — LOCKED exclude Admin (mods appear)
 ```
 
 ---
