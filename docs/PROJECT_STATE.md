@@ -9,10 +9,11 @@ Server-authoritative .NET 10 backend for a Dawn-of-the-Dragons-style async RPG. 
 Infrastructure,Shared}`. PostgreSQL 16 (EF Core 9), Redis, RS256 JWT.
 
 ## Build status (High — run this session)
-- **345 unit + 9 integration = 354 tests pass. 0 warnings, 0 errors.**
+- **356 unit + 17 integration = 373 tests pass. 0 warnings, 0 errors.**
 - `main` past tag **v0.2.7-s6** (Legion epic complete) + 3 post-fixes merged & pushed (untagged hardening):
   gem-buy lost-purchase recovery, class-based regen DTO field, System 16 Gauntlet **draft** spec.
-- Branch `slice/leaderboards-s1` (System 17 Slice 1): +24 unit tests — period-key resolver edges + bad-config guards.
+- Branch `slice/leaderboards-s1` (System 17 Slice 1): +24 unit tests — period-key resolver edges + bad-config guards. Awaiting auditor merge.
+- Branch `slice/leaderboards-s2` (System 17 Slice 2): `LeaderboardEntry` entity + EF Fluent config + migration `AddLeaderboardEntry` + `ILeaderboardEntryRepository` / `LeaderboardEntryRepository` + 8 unit (domain methods) + 6 integration (increment/max/concurrency/page-order/lookup) tests.
 
 ## Inventory (High)
 10 controllers · 16 services · 19 entities · 25 enums · 18 repositories · 3 middleware ·
@@ -62,8 +63,9 @@ tables. Loop works; thin.
 - **Slice 5 (MODERATE)**: Commander slot — PlayerCommanderGear entity (one row per player, upsert in place), IPlayerCommanderGearRepository, EF config + migration AddCommanderGear. ILegionService: EquipCommanderAsync/UnequipCommanderAsync/GetCommanderAsync. LegionController: PUT/DELETE/GET /api/legions/commander. Combat: commander gear proc fires in proc phase off preProc (stats deliberately excluded — PlayerCommanderGear never reaches GetEffectiveCombatDataAsync path). RaidHitResponse: CommanderProcFired/CommanderProcBonus. Tag v0.2.7-s5.
 - **Slice 6 (MODERATE)**: Economy/acquisition — GemPrice on unit/legion defs. GrantUnitAsync/GrantLegionAsync (idempotent upsert). BuyUnitAsync/BuyLegionAsync: ownership pre-check → AlreadyOwned 409 without charge, idempotent referenceId (unitbuy:{playerId}:{id} / legionbuy:{…}). GemTransactionType.UnitPurchase/LegionPurchase. LootTable: UnitDropChance/LegionDropChance added to ThresholdReward (raid) and LootTableDifficulty (quest); wired in RaidService.DistributeKillRewardsAsync and QuestService.ApplyLootAsync. Auditor fold-ins: AssignSlotAsync Quantity>0 guard; ComputeLegionPowerAsync reads LegionConfig.UnitCoefficients (no hardcoded values). LegionService gains IGemService + IOptions<LegionConfig>; QuestService+RaidService gain ILegionService dep. POST /api/units/buy + POST /api/legions/buy. Tag v0.2.7-s6.
 
-## System 17 — Global Leaderboards (branch slice/leaderboards-s1 — Slice 1 COMPLETE)
-- **Slice 1**: `LeaderboardBoard` / `LeaderboardPeriod` / `LeaderboardAggregation` enums (Domain). `LeaderboardConfig` (IOptions, appsettings-bound, startup-validated — Timezone/MinLevel/PageSize/WeekStartsOn). `IPeriodKeyResolver` interface + `PeriodKeyResolver` singleton (ISOWeek-correct weekly keys, UTC-normalised, config validation at ctor). 24 unit tests covering all period-key boundaries + ISO year-edge cases + bad-config guards. Build 0 warnings. Awaiting auditor merge.
+## System 17 — Global Leaderboards
+- **Slice 1** (branch `slice/leaderboards-s1` — awaiting auditor merge): `LeaderboardBoard` / `LeaderboardPeriod` / `LeaderboardAggregation` enums (Domain). `LeaderboardConfig` (IOptions, appsettings-bound, startup-validated — Timezone/MinLevel/PageSize/WeekStartsOn). `IPeriodKeyResolver` interface + `PeriodKeyResolver` singleton (ISOWeek-correct weekly keys, UTC-normalised, config validation at ctor). 24 unit tests covering all period-key boundaries + ISO year-edge cases + bad-config guards.
+- **Slice 2** (branch `slice/leaderboards-s2` — awaiting auditor merge): `LeaderboardEntry` entity (private setters, no EF attributes; `Create`/`AddValue`/`MaxValue`/`SetRank` methods). Fluent EF config: table `leaderboard_entry`, snake_case, enum columns stored as `int` with NO `HasDefaultValue` (no sentinel needed), unique index `ix_leaderboard_entry_upsert_key` on `(player_id, board, period_key)`, read index `ix_leaderboard_entry_board_period_value` on `(board, period_key, value)`, FK index `ix_leaderboard_entry_player_id`. Migration `AddLeaderboardEntry`. `DbSet<LeaderboardEntry>`. `ILeaderboardEntryRepository` + `LeaderboardEntryRepository` (raw Npgsql ON CONFLICT upsert — race-safe increment and max-update). 8 unit tests (domain methods) + 6 integration tests (Testcontainers Postgres: create+accumulate, 20-concurrent no-lost-updates, max-only-raises, page-order tiebreak, lookup present/absent, soft-delete filter).
 
 ## Not implemented (High)
 Game client (C# SDK = v0.3.0) · discernment quest-drop-quality (later) ·

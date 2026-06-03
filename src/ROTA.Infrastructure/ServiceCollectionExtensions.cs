@@ -33,6 +33,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPlayerLegionRepository, PlayerLegionRepository>();
         services.AddScoped<IPlayerLegionSlotRepository, PlayerLegionSlotRepository>();
         services.AddScoped<IPlayerCommanderGearRepository, PlayerCommanderGearRepository>();
+        services.AddScoped<ILeaderboardEntryRepository, LeaderboardEntryRepository>();
 
         // Infrastructure services
         services.AddScoped<IAuthLockoutService, AuthLockoutService>();
