@@ -115,6 +115,56 @@ public interface ILeaderboardEntryRepository
         int minLevel,
         bool excludeAdmins,
         CancellationToken ct = default);
+
+    // ── Slice 5: overwrite-upsert for Stat board snapshot ───────────────────
+    //
+    // Stat boards (Period=Live) are refreshed by an admin/CLI snapshot that overwrites
+    // each player's row with their current raw stat value.  This is distinct from:
+    //   - IncrementAsync  (Sum boards — accumulates delta)
+    //   - MaxUpdateAsync  (Max boards — only raises)
+    // SetValueAsync overwrites unconditionally, but preserves last_progress_at when the
+    // value has NOT changed (so the earliest-to-reach tiebreak survives repeated snapshots).
+
+    /// <summary>
+    /// Overwrite-upsert for Stat boards (Period=Live, period_key="live").
+    /// <para>On first call: inserts a row with Value = <paramref name="value"/>.</para>
+    /// <para>On conflict: overwrites Value unconditionally (snapshot semantics).
+    /// <c>last_progress_at</c> is bumped to <paramref name="at"/> ONLY when the value actually
+    /// changed; if the value is unchanged the existing <c>last_progress_at</c> is kept so the
+    /// earliest-to-reach tiebreak survives repeated snapshots of the same stat score.</para>
+    /// </summary>
+    Task SetValueAsync(
+        Guid playerId,
+        LeaderboardBoard board,
+        LeaderboardPeriod period,
+        string periodKey,
+        long value,
+        DateTimeOffset at,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns every eligible player's Id, BaseAttack, BaseDefense, and DiscernmentInvestment
+    /// in a single SQL projection — used by <c>SnapshotStatBoardAsync</c> to avoid
+    /// loading full entity graphs.
+    /// Eligibility predicate is identical to <see cref="GetEligiblePageAsync"/>:
+    /// not banned, not soft-deleted, level >= <paramref name="minLevel"/>,
+    /// and (when <paramref name="excludeAdmins"/> is true) Admin role bit not set.
+    /// </summary>
+    Task<IReadOnlyList<EligibleStatSnapshot>> GetEligibleStatSnapshotAsync(
+        int minLevel,
+        bool excludeAdmins,
+        CancellationToken ct = default);
+}
+
+/// <summary>
+/// A lightweight projection of one eligible player's raw stat values for the Stat-board snapshot.
+/// </summary>
+public sealed class EligibleStatSnapshot
+{
+    public Guid PlayerId             { get; init; }
+    public int  BaseAttack           { get; init; }
+    public int  BaseDefense          { get; init; }
+    public int  DiscernmentInvestment { get; init; }
 }
 
 /// <summary>

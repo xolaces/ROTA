@@ -19,6 +19,7 @@ namespace ROTA.Api;
 ///   dotnet run --project src/ROTA.Api -- gen-beta-key [count]
 ///   dotnet run --project src/ROTA.Api -- promote {user|guid} {Role}
 ///   dotnet run --project src/ROTA.Api -- demote {user|guid} {Role}
+///   dotnet run --project src/ROTA.Api -- leaderboard-refresh-stat
 /// </code>
 /// </remarks>
 public static class AdminCli
@@ -30,6 +31,7 @@ public static class AdminCli
             "gen-beta-key",
             "promote",
             "demote",
+            "leaderboard-refresh-stat",
         };
 
     /// <summary>Returns true if <paramref name="firstArg"/> is a recognised CLI command.</summary>
@@ -57,11 +59,12 @@ public static class AdminCli
         {
             return command switch
             {
-                "seed-admin"    => await RunSeedAdmin(app.Services),
-                "gen-beta-key"  => await RunGenBetaKey(app.Services, args),
-                "promote"       => await RunRoleChange(app.Services, args, grant: true),
-                "demote"        => await RunRoleChange(app.Services, args, grant: false),
-                _               => UnknownCommand(command),
+                "seed-admin"               => await RunSeedAdmin(app.Services),
+                "gen-beta-key"             => await RunGenBetaKey(app.Services, args),
+                "promote"                  => await RunRoleChange(app.Services, args, grant: true),
+                "demote"                   => await RunRoleChange(app.Services, args, grant: false),
+                "leaderboard-refresh-stat" => await RunLeaderboardRefreshStat(app.Services),
+                _                          => UnknownCommand(command),
             };
         }
         catch (Exception ex)
@@ -146,9 +149,20 @@ public static class AdminCli
         return 0;
     }
 
+    private static async Task<int> RunLeaderboardRefreshStat(IServiceProvider services)
+    {
+        using var scope = services.CreateScope();
+        var leaderboardService = scope.ServiceProvider.GetRequiredService<ILeaderboardService>();
+
+        var count = await leaderboardService.SnapshotStatBoardAsync();
+
+        Console.WriteLine($"leaderboard-refresh-stat: complete. {count} player(s) snapshotted across StatAttack, StatDefense, StatDiscernment boards.");
+        return 0;
+    }
+
     private static int UnknownCommand(string command)
     {
-        Console.Error.WriteLine($"Unknown command '{command}'. Valid commands: seed-admin, gen-beta-key, promote, demote.");
+        Console.Error.WriteLine($"Unknown command '{command}'. Valid commands: seed-admin, gen-beta-key, promote, demote, leaderboard-refresh-stat.");
         return 1;
     }
 }

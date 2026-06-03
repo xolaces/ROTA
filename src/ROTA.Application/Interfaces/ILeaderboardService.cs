@@ -67,6 +67,24 @@ public interface ILeaderboardService
     /// <param name="damageFinal">The final computed damage — reused directly, never recomputed.</param>
     /// <param name="at">UTC timestamp of the hit — used to resolve the correct period keys.</param>
     Task RecordRaidHitAsync(Guid playerId, long damageFinal, DateTimeOffset at, CancellationToken ct = default);
+
+    // ── Slice 5: Stat board snapshot ─────────────────────────────────────────
+
+    /// <summary>
+    /// Recomputes the three Stat boards (StatAttack / StatDefense / StatDiscernment,
+    /// Period=Live, period_key="live") for all currently-eligible players.
+    /// <para>Metric: raw stored values — <c>PlayerStats.BaseAttack</c> for StatAttack,
+    /// <c>PlayerStats.BaseDefense</c> for StatDefense,
+    /// <c>PlayerStats.DiscernmentInvestment</c> for StatDiscernment.</para>
+    /// <para>Idempotent: re-running overwrites the same rows (unique index on
+    /// (player_id, board, period_key) guarantees one row per player per board).
+    /// <c>last_progress_at</c> is bumped only when the value actually changed,
+    /// so the earliest-to-reach tiebreak survives repeated snapshots of the same score.</para>
+    /// <para>Newly-ineligible players: their stale Live rows are already filtered out by the
+    /// Slice-3 read join — no purge is needed.</para>
+    /// </summary>
+    /// <returns>The number of eligible players snapshotted (3× SetValueAsync calls per player).</returns>
+    Task<int> SnapshotStatBoardAsync(CancellationToken ct = default);
 }
 
 /// <summary>Discriminated result from <see cref="ILeaderboardService.GetPageAsync"/>.</summary>

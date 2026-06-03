@@ -42,3 +42,13 @@ public class BetaKeyDto
     public DateTimeOffset? RedeemedAt { get; init; }
     public DateTimeOffset CreatedAt { get; init; }
 }
+
+/// <summary>Response from POST /api/admin/leaderboards/stat/refresh.</summary>
+public class StatBoardRefreshResponse
+{
+    /// <summary>Number of eligible players whose Stat board rows were upserted.</summary>
+    public int PlayersSnapshotted { get; init; }
+
+    /// <summary>UTC timestamp when the snapshot was taken.</summary>
+    public DateTimeOffset SnapshotAt { get; init; }
+}

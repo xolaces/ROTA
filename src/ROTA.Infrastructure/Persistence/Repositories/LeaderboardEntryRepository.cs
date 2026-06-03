@@ -321,6 +321,95 @@ public sealed class LeaderboardEntryRepository : ILeaderboardEntryRepository
         };
     }
 
+    // ── SetValueAsync ────────────────────────────────────────────────────────
+
+    public async Task SetValueAsync(
+        Guid playerId,
+        LeaderboardBoard board,
+        LeaderboardPeriod period,
+        string periodKey,
+        long value,
+        DateTimeOffset at,
+        CancellationToken ct = default)
+    {
+        var conn = (NpgsqlConnection)_db.Database.GetDbConnection();
+        await EnsureOpenAsync(conn, ct);
+
+        var dbTx = _db.Database.CurrentTransaction?.GetDbTransaction() as NpgsqlTransaction;
+
+        // ON CONFLICT branch (snapshot semantics):
+        //   value            ← EXCLUDED.value (always overwrite — Stat board refresh)
+        //   last_progress_at ← @at only when the value actually CHANGED; otherwise keep the
+        //                      existing timestamp so the earliest-to-reach tiebreak survives
+        //                      repeated snapshots where the stat score has not moved.
+        const string sql = """
+            INSERT INTO leaderboard_entry
+                (id, player_id, board, period, period_key, value, last_progress_at, rank,
+                 created_at, updated_at, is_deleted)
+            VALUES
+                (gen_random_uuid(), @playerId, @board, @period, @periodKey, @value, @at, NULL,
+                 @at, @at, false)
+            ON CONFLICT (player_id, board, period_key) DO UPDATE
+                SET value            = EXCLUDED.value,
+                    last_progress_at = CASE
+                                           WHEN leaderboard_entry.value <> EXCLUDED.value
+                                           THEN @at
+                                           ELSE leaderboard_entry.last_progress_at
+                                       END,
+                    updated_at       = NOW()
+            """;
+
+        await using var cmd = new NpgsqlCommand(sql, conn, dbTx);
+        AddCommonParams(cmd, playerId, board, period, periodKey, at);
+        cmd.Parameters.AddWithValue("value", NpgsqlDbType.Bigint, value);
+        await cmd.ExecuteNonQueryAsync(ct);
+    }
+
+    // ── GetEligibleStatSnapshotAsync ─────────────────────────────────────────
+
+    public async Task<IReadOnlyList<EligibleStatSnapshot>> GetEligibleStatSnapshotAsync(
+        int minLevel,
+        bool excludeAdmins,
+        CancellationToken ct = default)
+    {
+        var conn = (NpgsqlConnection)_db.Database.GetDbConnection();
+        await EnsureOpenAsync(conn, ct);
+
+        // Single-pass projection: join players + player_stats, apply eligibility predicate.
+        // Admin bit = 4 (PlayerRoles.Admin). Moderator bit (2) is NOT excluded.
+        const string sql = """
+            SELECT p.id,
+                   ps.base_attack,
+                   ps.base_defense,
+                   ps.discernment_investment
+            FROM players p
+            JOIN player_stats ps ON ps.player_id = p.id
+            WHERE p.is_deleted  = false
+              AND p.is_banned   = false
+              AND p.level       >= @minLevel
+              AND (@excludeAdmins = false OR (p.roles & 4) = 0)
+            """;
+
+        await using var cmd = new NpgsqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("minLevel",      NpgsqlDbType.Integer, minLevel);
+        cmd.Parameters.AddWithValue("excludeAdmins", NpgsqlDbType.Boolean, excludeAdmins);
+
+        var results = new List<EligibleStatSnapshot>();
+        await using var reader = await cmd.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct))
+        {
+            results.Add(new EligibleStatSnapshot
+            {
+                PlayerId              = reader.GetGuid(0),
+                BaseAttack            = reader.GetInt32(1),
+                BaseDefense           = reader.GetInt32(2),
+                DiscernmentInvestment = reader.GetInt32(3),
+            });
+        }
+
+        return results;
+    }
+
     // ── Private helpers ──────────────────────────────────────────────────────
 
     private static void AddCommonParams(

@@ -362,3 +362,4 @@ dotnet run --project src/ROTA.Api -- seed-admin                    ← create Xo
 dotnet run --project src/ROTA.Api -- gen-beta-key [count]          ← generate 1..100 ROTA-XXXX-XXXX-XXXX keys
 dotnet run --project src/ROTA.Api -- promote <user|guid> <Role>    ← grant Admin or Moderator role
 dotnet run --project src/ROTA.Api -- demote  <user|guid> <Role>    ← revoke Admin or Moderator role
+dotnet run --project src/ROTA.Api -- leaderboard-refresh-stat      ← refresh StatAttack/StatDefense/StatDiscernment Live boards
