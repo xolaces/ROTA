@@ -9,13 +9,24 @@ It is a set of always-on, periodically-refreshed global boards over **normal pla
 MEDIUM epic — one slice per branch, build+test green, commit/merge/tag independently, never bundle.
 Auditor reviews after a batch.*
 
-> **STATUS: DRAFT — BLOCKED on owner open questions.** The five boards the owner specified are fixed
-> (Stat, Questing energy/week+month, Raiders damage/week+month, Largest single hit/day). What is **not**
-> settled is *how the windows are cut, what the Stat board ranks, and — critically — what new
-> per-event persistence each board needs, because two of the four signals are not queryable today.*
-> Do **not** start Slice 2+ until OPEN QUESTIONS Q1–Q14 are answered; each one changes the schema or a
-> write path. This block will become the canonical decision record once the owner answers (mirroring the
-> System 16 pattern).
+> **STATUS: DRAFT — PARTIAL DECISIONS (2026-06-02, rounds 1–2 of the owner Q&A). Remaining Qs below — do
+> NOT start Slice 2+ until they're answered.** The five boards are fixed (Stat ATK/DEF/Disc, Questing
+> energy wk+mo, Raiders damage wk+mo, Largest single hit/day).
+>
+> **DECIDED (rounds 1–2):**
+> - **Windows = CALENDAR buckets**, UTC; **week starts Monday** (ISO; day = UTC midnight; month = calendar).
+> - **Stat board = three per-stat LIVE-SNAPSHOT ladders** (ATK / DEF / Discernment) over stored investments — no window.
+> - **Questing board = ENERGY spent only** (energy is the quest currency).
+> - **Largest-hit board = ALL raid hits** (biggest single `damageFinal` by anyone that day, any raid).
+> - **Refresh:** damage + max-hit boards near-live (**~15 min**); stat (snapshot) + questing can refresh less often.
+> - **Rewards: #1 only** on the periodic boards (questing wk/mo, raiders wk/mo, max-hit daily). Reward CONTENT = TBD.
+> - **Capture (auditor engineering call):** increment a per-period aggregate row INSIDE the raid-hit advisory-lock
+>   transaction (damage + max-hit) and at energy-spend time (questing) — exact, no compute-on-read scan. Max-hit =
+>   conditional max-update of the player's daily row.
+>
+> **STILL OPEN (resolve before building):** Q3 retention/history of closed periods · Q10 global vs per-league ·
+> Q11 eligibility (exclude banned/soft-deleted/admin? minimum level?) · Q12 tie-breaks · Q13 exact refresh cadence
+> for the non-live boards · Q14 page size + always-return-caller-rank · reward CONTENT per board (gems/tokens/cosmetic).
 
 ---
 

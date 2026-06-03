@@ -33,11 +33,21 @@ trophies/vs-raid-type bonuses, multi-copy troop stacking, Auto-Assign.
   score = **cumulative damage**, ~60s Postgres snapshot, view top-200 / prizes top-500, per-event;
   **Strikes = persistent earned-first *ledger*** (no regen, carry over forever, uncapped gem buy, cost 1/5/20);
   **escalating-ladder personal** raids (`gauntlet_event_id` scoped); **Wrath/Blessing = per-event consumable
-  OFF-CAP auras** (24%→500% / 13%→850%, +self-bonus, must sit ABOVE the magic cap — Slice-4 landmine);
+  OFF-CAP auras**, RETUNED to <100% base effective (Wrath 0.27×2.50=67.5%, Blessing 0.15×4.25=63.75%; owner ×1.25,
+  former-owner ×1.10 honor-echo via `PlayerMagicHonor`; off-cap → NO magic-cap interaction);
   **trophies permanent, highest-only +25% cap**, multiply `rawLegionPower` before PowerScaling on ALL raids;
   **two currencies** (Gauntlet Tokens + Pitchfork) in one separate `gauntlet_currency_transactions` ledger;
-  **power-focused** token shop. NEXT: 6-slice build (content → state/ledgers → leaderboard → combat [DEEP] →
-  settlement → shop). A spec-body prose-integration pass is still pending (the locked block is authoritative meanwhile).
+  **power-focused** token shop. **Spec body FULLY INTEGRATED (Agent A, 2026-06-02)** — entities (StrikeTransaction,
+  GauntletCurrencyTransaction, GauntletEvent/Entry, PlayerEventMagic, PlayerMagicHonor, PlayerGauntletTrophy),
+  6 detailed slices (content → state/ledgers+lifecycle → leaderboard → combat [DEEP] → settlement → shop). **READY TO BUILD.**
+- **System 17 — Global Leaderboards** (NEW, owner-introduced): `docs/specs/system-17-leaderboards.md` —
+  5 boards (3 per-stat live snapshots ATK/DEF/Disc · questing energy wk+mo · raiders damage wk+mo · max-hit daily).
+  **PARTIAL decisions locked (rounds 1–2)** in the spec STATUS block; **~6 open Qs remain** (retention, per-league,
+  eligibility, ties, refresh cadence, paging, reward content) — finish the Q&A before building. Capture needs NEW
+  write-paths: per-hit damage + energy-spend aren't persisted today.
+- **Unity client — systems UI scaffolded (Agent B, 2026-06-02)**, `C:\Dev\ROTA.Client6`: 8 screens
+  (Profile/Stats/Items/Equipment/Magic/Legion/Raid + Leaderboards-mock), full IRotaApi/Mock/Http, 0 compile errors.
+  Pending: go-live (`useMock=false`, consume `RegenMinutesPerPoint`) · DTO-fidelity/JWT spot-check · commit the new `.cs.meta` files. Owner drives Play-mode.
 - **v0.3.0 — C# API client SDK** (HTTP + DTOs) = the Unity client's layer. Owner wires Unity scenes.
 
 ## Deferred / back-burnered
