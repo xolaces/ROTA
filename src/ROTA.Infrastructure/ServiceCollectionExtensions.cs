@@ -56,6 +56,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ILegionDefinitionProvider>(
             _ => new LegionDefinitionProvider(contentRootPath));
 
+        // Leaderboard infrastructure — singleton because PeriodKeyResolver is stateless + validates config at ctor
+        services.AddSingleton<IPeriodKeyResolver, PeriodKeyResolver>();
+
         // Application services
         services.AddScoped<IClassService, ClassService>();
         services.AddScoped<IAuthService, AuthService>();

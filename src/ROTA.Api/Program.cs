@@ -144,6 +144,9 @@ builder.Services.AddDbContext<RotaDbContext>(options =>
 builder.Services.Configure<LevelingConfig>(
     builder.Configuration.GetSection("LevelingConfig"));
 
+builder.Services.Configure<LeaderboardConfig>(
+    builder.Configuration.GetSection("LeaderboardConfig"));
+
 builder.Services.Configure<ClassConfig>(
     builder.Configuration.GetSection("ClassConfig"));
 
