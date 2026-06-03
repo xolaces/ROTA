@@ -3,13 +3,14 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ROTA.Application.Interfaces;
+using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
 using ROTA.Shared.DTOs;
 
 namespace ROTA.Api.Controllers;
 
 /// <summary>
-/// Admin-only REST endpoints: role management and beta key tooling.
+/// Admin-only REST endpoints: role management, beta key tooling, and leaderboard operations.
 /// All requests require the AdminOnly policy (Admin role claim OR break-glass config allowlist).
 /// </summary>
 [ApiController]
@@ -22,19 +23,28 @@ public sealed class AdminController : ControllerBase
     private readonly IBetaKeyRepository _betaKeyRepo;
     private readonly IValidator<RoleChangeRequest> _roleValidator;
     private readonly IValidator<GenerateBetaKeysRequest> _genKeysValidator;
+    private readonly ILeaderboardService _leaderboards;
+    private readonly IPlayerRepository _players;
+    private readonly IAuditLogRepository _auditLog;
 
     public AdminController(
         IAdminService admin,
         IBetaKeyService betaKeys,
         IBetaKeyRepository betaKeyRepo,
         IValidator<RoleChangeRequest> roleValidator,
-        IValidator<GenerateBetaKeysRequest> genKeysValidator)
+        IValidator<GenerateBetaKeysRequest> genKeysValidator,
+        ILeaderboardService leaderboards,
+        IPlayerRepository players,
+        IAuditLogRepository auditLog)
     {
         _admin            = admin;
         _betaKeys         = betaKeys;
         _betaKeyRepo      = betaKeyRepo;
         _roleValidator    = roleValidator;
         _genKeysValidator = genKeysValidator;
+        _leaderboards     = leaderboards;
+        _players          = players;
+        _auditLog         = auditLog;
     }
 
     /// <summary>Grants a role to a player.</summary>
@@ -122,6 +132,40 @@ public sealed class AdminController : ControllerBase
             CreatedAt         = k.CreatedAt,
         }).ToList();
         return Ok(dtos);
+    }
+
+    /// <summary>
+    /// Triggers a full refresh of the three Stat leaderboard boards
+    /// (StatAttack / StatDefense / StatDiscernment, Period=Live).
+    /// Re-verifies actor from DB, runs the snapshot, writes an audit row.
+    /// </summary>
+    [HttpPost("leaderboards/stat/refresh")]
+    [ProducesResponseType(typeof(StatBoardRefreshResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> RefreshStatBoards()
+    {
+        var actorId = GetActorId();
+
+        // Re-verify actor from DB (same pattern as AdminService.GrantRoleAsync).
+        var actor = await _players.FindByIdAsync(actorId);
+        if (actor is null || !actor.HasRole(PlayerRoles.Admin))
+            return Forbid();
+
+        var snapshotAt = DateTimeOffset.UtcNow;
+        var count      = await _leaderboards.SnapshotStatBoardAsync();
+
+        await _auditLog.AppendAsync(AuditLog.Create(
+            actorId,
+            "StatBoardRefreshed",
+            inputHash: null,
+            resultSummary: $"actor={actorId} players_snapshotted={count} snapshot_at={snapshotAt:O}",
+            ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString()));
+
+        return Ok(new StatBoardRefreshResponse
+        {
+            PlayersSnapshotted = count,
+            SnapshotAt         = snapshotAt,
+        });
     }
 
     // -----------------------------------------------------------------------

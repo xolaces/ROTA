@@ -1,5 +1,5 @@
 # ROTA Function Reference
-Last updated: 2026-06-03 (System 17 Leaderboards Slice 4 — write hooks on EnergyService + RaidService)
+Last updated: 2026-06-03 (System 17 Leaderboards Slice 5 — Stat board snapshot)
 Update when adding public methods or entities.
 
 ---
@@ -148,6 +148,55 @@ Implementation: `LeaderboardService` (`src/ROTA.Application/Services/Leaderboard
 - Adjacent code: `await _leaderboards.RecordRaidHitAsync(playerId, damageFinal, DateTimeOffset.UtcNow, ct);`
 - Transaction context: INSIDE the advisory-lock transaction — ambient `_db.Database.CurrentTransaction` is picked up by `LeaderboardEntryRepository.IncrementAsync/MaxUpdateAsync`, so the board increments are atomic with the hit commit
 - Idempotency: the Redis idempotency early-return (step 4 in `HitRaidAsync`) fires BEFORE `AtomicApplyHitAsync` is entered, so the hook is never reached on a cached-replay duplicate
+
+---
+
+## System 17 — Global Leaderboards (Slice 5)
+
+### ILeaderboardEntryRepository — Stat snapshot methods
+`src/ROTA.Application/Interfaces/ILeaderboardEntryRepository.cs`
+
+| Method | Description |
+|--------|-------------|
+| `Task SetValueAsync(playerId, board, period, periodKey, value, at, ct)` | Overwrite-upsert. Inserts on first call; on conflict overwrites Value unconditionally (snapshot semantics). `last_progress_at` bumped to `at` ONLY when the value changed — preserves earliest-to-reach tiebreak across repeated snapshots of the same score. SQL: `INSERT … ON CONFLICT DO UPDATE SET value = EXCLUDED.value, last_progress_at = CASE WHEN leaderboard_entry.value <> EXCLUDED.value THEN @at ELSE leaderboard_entry.last_progress_at END`. Picks up ambient transaction via `_db.Database.CurrentTransaction`. |
+| `Task<IReadOnlyList<EligibleStatSnapshot>> GetEligibleStatSnapshotAsync(minLevel, excludeAdmins, ct)` | Single SQL projection: JOIN players + player_stats, applies full eligibility predicate (not banned, not deleted, level >= minLevel, Admin role bit excluded when excludeAdmins=true). Returns `{PlayerId, BaseAttack, BaseDefense, DiscernmentInvestment}` per eligible player. |
+
+**`EligibleStatSnapshot`** (record in `ILeaderboardEntryRepository.cs`):
+- `PlayerId Guid`
+- `BaseAttack int` — raw stored; maps to StatAttack board
+- `BaseDefense int` — raw stored; maps to StatDefense board
+- `DiscernmentInvestment int` — raw stored; maps to StatDiscernment board
+
+### ILeaderboardService — snapshot method
+`src/ROTA.Application/Interfaces/ILeaderboardService.cs`
+
+| Method | Description |
+|--------|-------------|
+| `Task<int> SnapshotStatBoardAsync(ct)` | Queries eligible players via `GetEligibleStatSnapshotAsync`, then calls `SetValueAsync` × 3 per player (StatAttack=BaseAttack, StatDefense=BaseDefense, StatDiscernment=DiscernmentInvestment; Period=Live, period_key="live"). Idempotent. Newly-ineligible players' stale rows filtered by the read-path join — no purge needed. Returns count of eligible players snapshotted. |
+
+### AdminController — Stat refresh endpoint
+`src/ROTA.Api/Controllers/AdminController.cs`
+
+| Endpoint | Auth | Description |
+|----------|------|-------------|
+| `POST /api/admin/leaderboards/stat/refresh` | `[AdminOnly]` | DB actor re-verify (FindByIdAsync + HasRole(Admin)); calls `SnapshotStatBoardAsync`; writes `AuditLog(action="StatBoardRefreshed", resultSummary includes actorId + count + timestamp)`. Returns `200 StatBoardRefreshResponse{PlayersSnapshotted, SnapshotAt}`. Non-admin actor → 403. |
+
+**`StatBoardRefreshResponse`** (`src/ROTA.Shared/DTOs/AdminDTOs.cs`):
+- `int PlayersSnapshotted` — count of eligible players whose Stat board rows were upserted
+- `DateTimeOffset SnapshotAt` — UTC timestamp of the snapshot
+
+### CLI command
+`src/ROTA.Api/AdminCli.cs`
+
+| Command | Description |
+|---------|-------------|
+| `leaderboard-refresh-stat` | Resolves `ILeaderboardService` from DI, calls `SnapshotStatBoardAsync()`, prints count. No DB actor check (CLI/system bypass). |
+
+**Stat board metric mapping (locked):**
+- `StatAttack` board → `PlayerStats.BaseAttack` (raw stored, includes SkillPoint investments)
+- `StatDefense` board → `PlayerStats.BaseDefense` (raw stored)
+- `StatDiscernment` board → `PlayerStats.DiscernmentInvestment` (raw stored)
+- Effective combat power (gear/legion multipliers) is PHASE-2 for this board.
 
 ---
 

@@ -181,6 +181,40 @@ public sealed class LeaderboardService : ILeaderboardService
         await _repo.MaxUpdateAsync(playerId,   LeaderboardBoard.LargestHit,  LeaderboardPeriod.Daily,   dayKey,   damageFinal, at, ct);
     }
 
+    // ── Slice 5: Stat board snapshot ─────────────────────────────────────────
+
+    public async Task<int> SnapshotStatBoardAsync(CancellationToken ct = default)
+    {
+        var cfg = _cfg.Value;
+        var now = DateTimeOffset.UtcNow;
+
+        // Retrieve every eligible player's raw stat values in one SQL round-trip.
+        var snapshots = await _repo.GetEligibleStatSnapshotAsync(
+            cfg.MinLevel, cfg.ExcludeAdmins, ct);
+
+        // Overwrite all three Stat board rows for every eligible player.
+        // period = Live, period_key = "live" for all three.
+        const string liveKey = "live";
+        foreach (var snap in snapshots)
+        {
+            await _repo.SetValueAsync(
+                snap.PlayerId, LeaderboardBoard.StatAttack, LeaderboardPeriod.Live,
+                liveKey, snap.BaseAttack, now, ct);
+
+            await _repo.SetValueAsync(
+                snap.PlayerId, LeaderboardBoard.StatDefense, LeaderboardPeriod.Live,
+                liveKey, snap.BaseDefense, now, ct);
+
+            await _repo.SetValueAsync(
+                snap.PlayerId, LeaderboardBoard.StatDiscernment, LeaderboardPeriod.Live,
+                liveKey, snap.DiscernmentInvestment, now, ct);
+        }
+
+        // Newly-ineligible players: their stale Live rows are filtered out by the read join
+        // (GetEligiblePageAsync) — no purge is necessary.
+        return snapshots.Count;
+    }
+
     // ── Private helpers ───────────────────────────────────────────────────────
 
     /// <summary>
