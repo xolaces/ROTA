@@ -1,6 +1,35 @@
 # ROTA Function Reference
-Last updated: 2026-06-02 (v0.2.7-s6 — System 15 Legion Slices 1–6 complete)
+Last updated: 2026-06-02 (System 17 Leaderboards Slice 1 — enums + config + IPeriodKeyResolver)
 Update when adding public methods or entities.
+
+---
+
+## System 17 — Global Leaderboards (Slice 1)
+
+### Enums (`src/ROTA.Domain/Enums/`)
+
+| Enum | Values | Notes |
+|------|--------|-------|
+| `LeaderboardBoard` | `StatAttack(0), StatDefense(1), StatDiscernment(2), EnergySpent(3), DamageDealt(4), LargestHit(5)` | Flat: three per-stat live ladders + three accumulation boards. |
+| `LeaderboardPeriod` | `Live(0), Daily(1), Weekly(2), Monthly(3)` | Window granularity. `Live` = Stat snapshot. |
+| `LeaderboardAggregation` | `Sum(0), Max(1)` | How contributions fold into entry value. Stat boards overwrite (neither). |
+
+### Config (`src/ROTA.Application/Configuration/LeaderboardConfig.cs`)
+
+Bound from `appsettings.json` section `"LeaderboardConfig"` via `IOptions<LeaderboardConfig>`. All defaults are the LOCKED spec values. Startup validation throws `InvalidOperationException` on:
+- `Timezone != "UTC"`
+- `MinLevel < 1`
+- `PageSize < 1`
+- Unrecognised `WeekStartsOn` value
+
+### IPeriodKeyResolver
+`src/ROTA.Application/Interfaces/IPeriodKeyResolver.cs`
+
+| Method | Description |
+|--------|-------------|
+| `string Resolve(DateTimeOffset utcNow, LeaderboardPeriod period)` | Returns deterministic `period_key` string. `Live`→`"live"`, `Daily`→`"day:yyyy-MM-dd"`, `Weekly`→`"week:yyyy-Www"` (ISO), `Monthly`→`"month:yyyy-MM"`. Always converts input to UTC first. |
+
+Implementation: `PeriodKeyResolver` (`src/ROTA.Application/Services/PeriodKeyResolver.cs`). Registered as singleton. Validates config in constructor. Uses `System.Globalization.ISOWeek` for year-boundary-correct ISO week numbers.
 
 ---
 
