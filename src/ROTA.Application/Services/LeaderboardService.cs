@@ -159,6 +159,28 @@ public sealed class LeaderboardService : ILeaderboardService
         });
     }
 
+    // ── Slice 4: write hooks ──────────────────────────────────────────────────
+
+    public async Task RecordEnergySpendAsync(Guid playerId, long amount, DateTimeOffset at, CancellationToken ct = default)
+    {
+        var weekKey  = _keyResolver.Resolve(at, LeaderboardPeriod.Weekly);
+        var monthKey = _keyResolver.Resolve(at, LeaderboardPeriod.Monthly);
+
+        await _repo.IncrementAsync(playerId, LeaderboardBoard.EnergySpent, LeaderboardPeriod.Weekly,  weekKey,  amount, at, ct);
+        await _repo.IncrementAsync(playerId, LeaderboardBoard.EnergySpent, LeaderboardPeriod.Monthly, monthKey, amount, at, ct);
+    }
+
+    public async Task RecordRaidHitAsync(Guid playerId, long damageFinal, DateTimeOffset at, CancellationToken ct = default)
+    {
+        var weekKey  = _keyResolver.Resolve(at, LeaderboardPeriod.Weekly);
+        var monthKey = _keyResolver.Resolve(at, LeaderboardPeriod.Monthly);
+        var dayKey   = _keyResolver.Resolve(at, LeaderboardPeriod.Daily);
+
+        await _repo.IncrementAsync(playerId,   LeaderboardBoard.DamageDealt, LeaderboardPeriod.Weekly,  weekKey,  damageFinal, at, ct);
+        await _repo.IncrementAsync(playerId,   LeaderboardBoard.DamageDealt, LeaderboardPeriod.Monthly, monthKey, damageFinal, at, ct);
+        await _repo.MaxUpdateAsync(playerId,   LeaderboardBoard.LargestHit,  LeaderboardPeriod.Daily,   dayKey,   damageFinal, at, ct);
+    }
+
     // ── Private helpers ───────────────────────────────────────────────────────
 
     /// <summary>

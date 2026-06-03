@@ -81,6 +81,8 @@ public sealed class RaidService : IRaidService
     private readonly IGearDefinitionProvider        _gearDefs;
     // Slice 6 — unit/legion drop grants
     private readonly ILegionService _legionService;
+    // System 17 Slice 4 — leaderboard write hooks
+    private readonly ILeaderboardService _leaderboards;
     private readonly Random _random;
 
     public RaidService(
@@ -110,6 +112,7 @@ public sealed class RaidService : IRaidService
         IPlayerCommanderGearRepository commanderGear,
         IGearDefinitionProvider gearDefs,
         ILegionService legionService,
+        ILeaderboardService leaderboards,
         Random? random = null)
     {
         _raids           = raids;
@@ -138,6 +141,7 @@ public sealed class RaidService : IRaidService
         _commanderGear   = commanderGear;
         _gearDefs        = gearDefs;
         _legionService   = legionService;
+        _leaderboards    = leaderboards;
         _random          = random ?? Random.Shared;
     }
 
@@ -564,6 +568,13 @@ public sealed class RaidService : IRaidService
                 participantFinal = existingPart;
             }
             participantFinal!.RecordHit(damageFinal);
+
+            // System 17 Slice 4 — leaderboard write hook (inside advisory-lock tx).
+            // Rides the same ambient transaction as RecordHit: the board increments and the
+            // damage commit are atomic.  NOT reached on the Redis cached-replay path (the early-
+            // return at step 4 fires before AtomicApplyHitAsync is entered).  No second damage
+            // computation — damageFinal is the authoritative value already computed above.
+            await _leaderboards.RecordRaidHitAsync(playerId, damageFinal, DateTimeOffset.UtcNow, ct);
 
             if (isNew)
                 await _participants.CreateAsync(participantFinal, ct);

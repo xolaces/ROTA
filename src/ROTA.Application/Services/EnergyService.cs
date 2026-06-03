@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using ROTA.Application.Interfaces;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
@@ -10,17 +11,23 @@ public sealed class EnergyService : IEnergyService
     private readonly IAuditLogRepository _auditLog;
     private readonly IPlayerRepository _players;
     private readonly IClassService _classService;
+    private readonly ILeaderboardService _leaderboards;
+    private readonly ILogger<EnergyService> _logger;
 
     public EnergyService(
         IPlayerResourceRepository resources,
         IAuditLogRepository auditLog,
         IPlayerRepository players,
-        IClassService classService)
+        IClassService classService,
+        ILeaderboardService leaderboards,
+        ILogger<EnergyService> logger)
     {
         _resources    = resources;
         _auditLog     = auditLog;
         _players      = players;
         _classService = classService;
+        _leaderboards = leaderboards;
+        _logger       = logger;
     }
 
     public async Task<int> GetCurrentEnergyAsync(Guid playerId, ResourceType type, CancellationToken ct = default)
@@ -54,6 +61,26 @@ public sealed class EnergyService : IEnergyService
                 null,
                 $"Spent {amount} {type}",
                 null), ct);
+
+            // Slice 4 — leaderboard write hook (EnergySpent boards).
+            // Only Energy counts toward the Questing leaderboard (Q6 — Stamina/GuildStamina excluded).
+            // The spend has no ambient DB transaction at this point (AtomicUpdateAsync is its own
+            // self-contained PostgreSQL FOR UPDATE, already committed).  Any leaderboard failure must
+            // never roll back or fail the spend — swallow + log, mirroring the audit-log discipline
+            // in AuditLogMiddleware.
+            if (type == ResourceType.Energy)
+            {
+                try
+                {
+                    await _leaderboards.RecordEnergySpendAsync(playerId, amount, now, ct);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex,
+                        "Leaderboard write failed for EnergySpent (player {PlayerId}, amount {Amount}). " +
+                        "Energy spend committed; board update skipped.", playerId, amount);
+                }
+            }
         }
 
         return success;

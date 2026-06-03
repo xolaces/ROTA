@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Services;
@@ -22,7 +23,8 @@ public class EnergyServiceTests
                     Mock<IPlayerResourceRepository> resources,
                     Mock<IAuditLogRepository> auditLog,
                     Mock<IPlayerRepository> players,
-                    Mock<IClassService> classService)
+                    Mock<IClassService> classService,
+                    Mock<ILeaderboardService> leaderboards)
         BuildService(double energyMinutesPerPoint = 0.5, double staminaMinutesPerPoint = 0.5,
                      double guildStaminaMinutesPerPoint = 2.0, PlayerClass playerClass = PlayerClass.Conscript)
     {
@@ -30,6 +32,7 @@ public class EnergyServiceTests
         var auditLog     = new Mock<IAuditLogRepository>();
         var players      = new Mock<IPlayerRepository>();
         var classService = new Mock<IClassService>();
+        var leaderboards = new Mock<ILeaderboardService>();
 
         var regenRates = new ClassRegenRates
         {
@@ -42,14 +45,21 @@ public class EnergyServiceTests
 
         classService.Setup(c => c.GetRegenRates(It.IsAny<PlayerClass>())).Returns(regenRates);
 
+        // Default: leaderboard writes are no-ops; tests that care override this.
+        leaderboards.Setup(l => l.RecordEnergySpendAsync(
+                It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
         var player = Player.Create("testuser", "test@test.com", "hash");
         if (playerClass != PlayerClass.Conscript)
             player.SetClass(playerClass);
         players.Setup(p => p.FindByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                .ReturnsAsync(player);
 
-        var service = new EnergyService(resources.Object, auditLog.Object, players.Object, classService.Object);
-        return (service, resources, auditLog, players, classService);
+        var service = new EnergyService(
+            resources.Object, auditLog.Object, players.Object, classService.Object,
+            leaderboards.Object, NullLogger<EnergyService>.Instance);
+        return (service, resources, auditLog, players, classService, leaderboards);
     }
 
     /// <summary>Creates a resource using the public factory — private setters are set inside the domain.</summary>
@@ -89,7 +99,7 @@ public class EnergyServiceTests
         // Class rate: 0.5 min/point = 2 points/min.
         // Stored RegenPerMinute = 0 — must be IGNORED.
         // 10 minutes elapsed, checkpoint = 0 → live = floor(10 / 0.5) = 20.
-        var (service, resources, _, players, classService) = BuildService(energyMinutesPerPoint: 0.5);
+        var (service, resources, _, players, classService, _) = BuildService(energyMinutesPerPoint: 0.5);
         var playerId = Guid.NewGuid();
 
         var knownPlayer = Player.Create("u", "u@t.com", "h");
@@ -110,7 +120,7 @@ public class EnergyServiceTests
     [Fact]
     public async Task GetCurrentEnergy_CapsAtMaxValue()
     {
-        var (service, resources, _, players, _) = BuildService(energyMinutesPerPoint: 0.5);
+        var (service, resources, _, players, _, _) = BuildService(energyMinutesPerPoint: 0.5);
         var playerId = Guid.NewGuid();
 
         var knownPlayer = Player.Create("u", "u@t.com", "h");
@@ -132,7 +142,7 @@ public class EnergyServiceTests
     public async Task GetCurrentEnergy_ZeroRegen_ReturnsSameCheckpointValue()
     {
         // minutesPerPoint = 0 means no regen — value stays at checkpoint.
-        var (service, resources, _, players, _) = BuildService(energyMinutesPerPoint: 0);
+        var (service, resources, _, players, _, _) = BuildService(energyMinutesPerPoint: 0);
         var playerId = Guid.NewGuid();
 
         var knownPlayer = Player.Create("u", "u@t.com", "h");
@@ -160,7 +170,7 @@ public class EnergyServiceTests
         // BEHAVIOR CHANGE (v0.2.2): GuildStamina was previously stored with RegenPerMinute=0.
         // It now regenerates at the class GuildStamina rate (2.0 min/point = 0.5 point/min).
         // After 10 minutes at 2.0 min/point: floor(10 / 2.0) = 5 points regenerated.
-        var (service, resources, _, players, _) = BuildService(guildStaminaMinutesPerPoint: 2.0);
+        var (service, resources, _, players, _, _) = BuildService(guildStaminaMinutesPerPoint: 2.0);
         var playerId = Guid.NewGuid();
 
         var knownPlayer = Player.Create("u", "u@t.com", "h");
@@ -189,7 +199,7 @@ public class EnergyServiceTests
     {
         // Energy rate: 1.0 min/point; Stamina rate: 10.0 min/point (deliberately different).
         // After 5 minutes with Energy: floor(5 / 1.0) = 5 points.
-        var (service, resources, _, players, _) = BuildService(
+        var (service, resources, _, players, _, _) = BuildService(
             energyMinutesPerPoint: 1.0, staminaMinutesPerPoint: 10.0);
         var playerId = Guid.NewGuid();
 
@@ -213,7 +223,7 @@ public class EnergyServiceTests
     {
         // Stamina rate: 2.0 min/point; Energy rate: 0.1 min/point (deliberately different).
         // After 10 minutes with Stamina: floor(10 / 2.0) = 5 points.
-        var (service, resources, _, players, _) = BuildService(
+        var (service, resources, _, players, _, _) = BuildService(
             energyMinutesPerPoint: 0.1, staminaMinutesPerPoint: 2.0);
         var playerId = Guid.NewGuid();
 
@@ -240,7 +250,7 @@ public class EnergyServiceTests
     [Fact]
     public async Task SpendEnergy_Succeeds_WithSufficientEnergy()
     {
-        var (service, resources, auditLog, players, _) = BuildService(energyMinutesPerPoint: 0);
+        var (service, resources, auditLog, players, _, _) = BuildService(energyMinutesPerPoint: 0);
         var playerId = Guid.NewGuid();
 
         var knownPlayer = Player.Create("u", "u@t.com", "h");
@@ -267,7 +277,7 @@ public class EnergyServiceTests
     [Fact]
     public async Task SpendEnergy_Fails_WithInsufficientEnergy()
     {
-        var (service, resources, auditLog, players, _) = BuildService(energyMinutesPerPoint: 0);
+        var (service, resources, auditLog, players, _, _) = BuildService(energyMinutesPerPoint: 0);
         var playerId = Guid.NewGuid();
 
         var knownPlayer = Player.Create("u", "u@t.com", "h");
@@ -298,7 +308,7 @@ public class EnergyServiceTests
         // Simulates the race condition guard: the updateFn is called with the live value
         // at lock acquisition time. If energy was already spent, the live value will be
         // below the requested amount.
-        var (service, resources, _, players, _) = BuildService(energyMinutesPerPoint: 0);
+        var (service, resources, _, players, _, _) = BuildService(energyMinutesPerPoint: 0);
         var playerId = Guid.NewGuid();
 
         var knownPlayer = Player.Create("u", "u@t.com", "h");
