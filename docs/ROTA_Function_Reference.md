@@ -245,7 +245,7 @@ Implementation: `LeaderboardService` (`src/ROTA.Application/Services/Leaderboard
 
 | Method | Description |
 |--------|-------------|
-| `Task<PlayerProfileResponse?> GetProfileAsync(Guid playerId, CancellationToken)` | Full profile, live values. Each resource carries class-based `RegenMinutesPerPoint` (double) + `SecondsToNextPoint` (int) for client refill timers; legacy `RegenPerMinute` (int) is vestigial. |
+| `Task<PlayerProfileResponse?> GetProfileAsync(Guid playerId, CancellationToken)` | Full profile (incl. DisplayName + Class), live values. Each resource carries class-based `RegenMinutesPerPoint` (double) + `SecondsToNextPoint` (int) for client refill timers; legacy `RegenPerMinute` (int) is vestigial. |
 | `Task<UpdateUsernameResult> UpdateUsernameAsync(Guid, UpdateUsernameRequest, CancellationToken)` | Username update |
 | `Task<UpdateDisplayNameResult> UpdateDisplayNameAsync(Guid, UpdateDisplayNameRequest, CancellationToken)` | Change player's DisplayName; audited |
 
