@@ -610,6 +610,7 @@ public class RaidServiceTests
         var b = BuildService();
         var playerId = Guid.NewGuid();
         var raid = MakeRaid();
+        raid.Share(); // shared (public) so it lists for any caller under System 19 semantics
 
         var participation = RaidParticipant.Create(raid.Id, playerId);
         participation.RecordHit(12400);
@@ -939,7 +940,7 @@ public class RaidServiceTests
     }
 
     // -----------------------------------------------------------------------
-    // RaidSize — Personal raid visibility in GetActiveRaidsAsync
+    // System 19 — visibility in GetActiveRaidsAsync (private-until-shared)
     // -----------------------------------------------------------------------
 
     [Fact]
@@ -952,24 +953,299 @@ public class RaidServiceTests
         var personalRaid = ActiveRaid.Create(
             "raid_ironcolossus", summonerId, 100000,
             DateTimeOffset.UtcNow.AddHours(48), RaidDifficulty.Normal, RaidSize.Personal);
-        var largeRaid = MakeRaid(); // RaidSize.Large — visible to all
+        // A SHARED (public) Large raid — visible to everyone under System 19 semantics.
+        var sharedLargeRaid = ActiveRaid.Create(
+            "raid_ironcolossus", Guid.NewGuid(), 100000,
+            DateTimeOffset.UtcNow.AddHours(48), RaidDifficulty.Normal, RaidSize.Large);
+        sharedLargeRaid.Share();
 
         b.Raids.Setup(r => r.GetAllActiveAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<ActiveRaid> { personalRaid, largeRaid });
+            .ReturnsAsync(new List<ActiveRaid> { personalRaid, sharedLargeRaid });
         b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((RaidParticipant?)null);
         b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
 
-        // Non-summoner: only sees the Large world raid
+        // Non-summoner: sees only the shared Large raid, never the Personal raid.
         var otherResult = await b.Service.GetActiveRaidsAsync(otherPlayer);
         otherResult.Should().HaveCount(1, "Personal raid is hidden from non-summoner");
         otherResult[0].Size.Should().Be("Large");
 
-        // Summoner: sees both their Personal raid and the Large raid
+        // Summoner: sees their own Personal raid (private) plus the shared Large raid.
         var summonerResult = await b.Service.GetActiveRaidsAsync(summonerId);
-        summonerResult.Should().HaveCount(2, "Summoner can see their own Personal raid alongside Large raids");
+        summonerResult.Should().HaveCount(2, "Summoner sees their own Personal raid alongside shared raids");
         summonerResult.Should().ContainSingle(r => r.Size == "Personal");
         summonerResult.Should().ContainSingle(r => r.Size == "Large");
+    }
+
+    [Fact]
+    public async Task GetActiveRaids_PrivateNonPersonalRaid_HiddenFromOthers_VisibleToSummoner()
+    {
+        var b = BuildService();
+        var summonerId  = Guid.NewGuid();
+        var otherPlayer = Guid.NewGuid();
+
+        // A private (un-shared) Large raid — IsPublic defaults to false.
+        var privateLargeRaid = ActiveRaid.Create(
+            "raid_ironcolossus", summonerId, 100000,
+            DateTimeOffset.UtcNow.AddHours(48), RaidDifficulty.Normal, RaidSize.Large);
+        privateLargeRaid.IsPublic.Should().BeFalse("new summons start private");
+
+        b.Raids.Setup(r => r.GetAllActiveAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ActiveRaid> { privateLargeRaid });
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        // Other player does NOT see the private raid in the list (must use the UID to join).
+        var otherResult = await b.Service.GetActiveRaidsAsync(otherPlayer);
+        otherResult.Should().BeEmpty("a private non-Personal raid is not listed to other players");
+
+        // The summoner still sees their own private raid so they can re-open and share it.
+        var summonerResult = await b.Service.GetActiveRaidsAsync(summonerId);
+        summonerResult.Should().ContainSingle(r => r.ActiveRaidId == privateLargeRaid.Id);
+        summonerResult[0].IsPublic.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetActiveRaids_SharedNonPersonalRaid_VisibleToEveryone()
+    {
+        var b = BuildService();
+        var otherPlayer = Guid.NewGuid();
+
+        var sharedRaid = ActiveRaid.Create(
+            "raid_ironcolossus", Guid.NewGuid(), 100000,
+            DateTimeOffset.UtcNow.AddHours(48), RaidDifficulty.Normal, RaidSize.Medium);
+        sharedRaid.Share();
+
+        b.Raids.Setup(r => r.GetAllActiveAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ActiveRaid> { sharedRaid });
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.GetActiveRaidsAsync(otherPlayer);
+        result.Should().ContainSingle(r => r.ActiveRaidId == sharedRaid.Id,
+            "a shared (IsPublic) non-Personal raid is listed to everyone");
+        result[0].IsPublic.Should().BeTrue();
+    }
+
+    // -----------------------------------------------------------------------
+    // System 19 — GetRaidByIdAsync (join by UID)
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task GetRaidById_ReturnsPrivateNonPersonalRaid_ToNonSummoner()
+    {
+        // The raid GUID is the invite token: a private (un-shared) non-Personal raid resolves
+        // for any caller who has the id, even if they are not the summoner.
+        var b = BuildService();
+        var summonerId  = Guid.NewGuid();
+        var otherPlayer = Guid.NewGuid();
+
+        var privateRaid = ActiveRaid.Create(
+            "raid_ironcolossus", summonerId, 100000,
+            DateTimeOffset.UtcNow.AddHours(48), RaidDifficulty.Normal, RaidSize.Large);
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(privateRaid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(privateRaid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.GetRaidByIdAsync(privateRaid.Id, otherPlayer);
+
+        result.Should().NotBeNull("the GUID grants access regardless of IsPublic");
+        result!.ActiveRaidId.Should().Be(privateRaid.Id);
+        result.IsPublic.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(true,  false)]  // defeated
+    [InlineData(false, true)]   // expired
+    public async Task GetRaidById_ReturnsNull_ForDefeatedOrExpired(bool defeated, bool expired)
+    {
+        var b = BuildService();
+        var caller = Guid.NewGuid();
+
+        var raid = ActiveRaid.Create(
+            "raid_ironcolossus", caller, 100000,
+            DateTimeOffset.UtcNow.AddHours(expired ? -1 : 48), RaidDifficulty.Normal, RaidSize.Large);
+        if (defeated) raid.MarkDefeated();
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(raid);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.GetRaidByIdAsync(raid.Id, caller);
+
+        result.Should().BeNull("defeated or expired raids are not joinable");
+    }
+
+    [Fact]
+    public async Task GetRaidById_ReturnsNull_ForSomeoneElsesPersonalRaid()
+    {
+        var b = BuildService();
+        var summonerId  = Guid.NewGuid();
+        var otherPlayer = Guid.NewGuid();
+
+        var personalRaid = ActiveRaid.Create(
+            "raid_ironcolossus", summonerId, 100000,
+            DateTimeOffset.UtcNow.AddHours(48), RaidDifficulty.Normal, RaidSize.Personal);
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(personalRaid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(personalRaid);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.GetRaidByIdAsync(personalRaid.Id, otherPlayer);
+
+        result.Should().BeNull("another player's Personal raid must not be leaked");
+    }
+
+    [Fact]
+    public async Task GetRaidById_ReturnsOwnPersonalRaid_ToSummoner()
+    {
+        var b = BuildService();
+        var summonerId = Guid.NewGuid();
+
+        var personalRaid = ActiveRaid.Create(
+            "raid_ironcolossus", summonerId, 100000,
+            DateTimeOffset.UtcNow.AddHours(48), RaidDifficulty.Normal, RaidSize.Personal);
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(personalRaid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(personalRaid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.GetRaidByIdAsync(personalRaid.Id, summonerId);
+
+        result.Should().NotBeNull("the summoner may always resolve their own Personal raid");
+        result!.ActiveRaidId.Should().Be(personalRaid.Id);
+    }
+
+    [Fact]
+    public async Task GetRaidById_ReturnsNull_WhenNotFound()
+    {
+        var b = BuildService();
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ActiveRaid?)null);
+
+        var result = await b.Service.GetRaidByIdAsync(Guid.NewGuid(), Guid.NewGuid());
+
+        result.Should().BeNull();
+    }
+
+    // -----------------------------------------------------------------------
+    // System 19 — ShareRaidAsync
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task ShareRaid_BySummoner_FlipsIsPublic_WritesAudit_ReturnsUpdatedRaid()
+    {
+        var b = BuildService();
+        var summonerId = Guid.NewGuid();
+
+        var raid = ActiveRaid.Create(
+            "raid_ironcolossus", summonerId, 100000,
+            DateTimeOffset.UtcNow.AddHours(48), RaidDifficulty.Normal, RaidSize.Large);
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(raid);
+        b.Raids.Setup(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.ShareRaidAsync(summonerId, raid.Id);
+
+        result.Success.Should().BeTrue();
+        result.Raid.Should().NotBeNull();
+        result.Raid!.IsPublic.Should().BeTrue("sharing flips the visibility flag");
+        raid.IsPublic.Should().BeTrue("the domain entity is mutated via Share()");
+
+        b.Raids.Verify(r => r.UpdateAsync(It.Is<ActiveRaid>(x => x.Id == raid.Id && x.IsPublic),
+            It.IsAny<CancellationToken>()), Times.Once, "the shared state must be persisted");
+        b.AuditLog.Verify(a => a.AppendAsync(
+            It.Is<AuditLog>(l => l.Action == "RaidShared"), It.IsAny<CancellationToken>()),
+            Times.Once, "every state change writes to audit_log");
+    }
+
+    [Fact]
+    public async Task ShareRaid_ByNonSummoner_ReturnsNotSummoner_NoStateChange()
+    {
+        var b = BuildService();
+        var summonerId  = Guid.NewGuid();
+        var otherPlayer = Guid.NewGuid();
+
+        var raid = ActiveRaid.Create(
+            "raid_ironcolossus", summonerId, 100000,
+            DateTimeOffset.UtcNow.AddHours(48), RaidDifficulty.Normal, RaidSize.Large);
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(raid);
+
+        var result = await b.Service.ShareRaidAsync(otherPlayer, raid.Id);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(ShareRaidFailureCode.NotSummoner);
+        raid.IsPublic.Should().BeFalse("a non-summoner cannot change visibility");
+        b.Raids.Verify(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ShareRaid_PersonalRaid_ReturnsCannotSharePersonal()
+    {
+        var b = BuildService();
+        var summonerId = Guid.NewGuid();
+
+        var personalRaid = ActiveRaid.Create(
+            "raid_ironcolossus", summonerId, 100000,
+            DateTimeOffset.UtcNow.AddHours(48), RaidDifficulty.Normal, RaidSize.Personal);
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(personalRaid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(personalRaid);
+
+        var result = await b.Service.ShareRaidAsync(summonerId, personalRaid.Id);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(ShareRaidFailureCode.CannotSharePersonal,
+            "a solo (Personal) raid cannot be shared");
+        personalRaid.IsPublic.Should().BeFalse();
+        b.Raids.Verify(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ShareRaid_ExpiredRaid_ReturnsNotFound()
+    {
+        var b = BuildService();
+        var summonerId = Guid.NewGuid();
+
+        var expiredRaid = ActiveRaid.Create(
+            "raid_ironcolossus", summonerId, 100000,
+            DateTimeOffset.UtcNow.AddHours(-1), RaidDifficulty.Normal, RaidSize.Large);
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(expiredRaid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expiredRaid);
+
+        var result = await b.Service.ShareRaidAsync(summonerId, expiredRaid.Id);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(ShareRaidFailureCode.NotFound);
+        b.Raids.Verify(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ShareRaid_NotFound_ReturnsNotFound()
+    {
+        var b = BuildService();
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ActiveRaid?)null);
+
+        var result = await b.Service.ShareRaidAsync(Guid.NewGuid(), Guid.NewGuid());
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(ShareRaidFailureCode.NotFound);
     }
 
     // -----------------------------------------------------------------------

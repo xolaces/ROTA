@@ -150,42 +150,52 @@ public sealed class RaidService : IRaidService
         Guid playerId, CancellationToken ct = default)
     {
         var allRaids = await _raids.GetAllActiveAsync(ct);
-        // Personal raids are private — only visible to their summoner.
+        // Visibility (System 19): list public shared non-Personal raids to everyone, plus the
+        // caller's own raids (so they can re-open and share their still-private summons).
+        // Private non-Personal raids stay hidden until shared; the raid id remains the invite token.
         var activeRaids = allRaids
-            .Where(r => r.Size != RaidSize.Personal || r.SummonedByPlayerId == playerId)
+            .Where(r => (r.IsPublic && r.Size != RaidSize.Personal) || r.SummonedByPlayerId == playerId)
             .ToList();
         var result = new List<ActiveRaidResponse>(activeRaids.Count);
         var now = DateTimeOffset.UtcNow;
 
         foreach (var raid in activeRaids)
-        {
-            var definition = _raidDefinitions.GetById(raid.RaidDefinitionId);
-            var participant = await _participants.FindByRaidAndPlayerAsync(raid.Id, playerId, ct);
-
-            result.Add(new ActiveRaidResponse
-            {
-                ActiveRaidId          = raid.Id,
-                RaidDefinitionId      = raid.RaidDefinitionId,
-                Name                  = definition?.Name ?? raid.RaidDefinitionId,
-                CurrentHp             = raid.CurrentHp,
-                MaxHp                 = raid.MaxHp,
-                HpPercent             = raid.MaxHp > 0 ? (double)raid.CurrentHp / raid.MaxHp * 100.0 : 0,
-                IsDefeated            = raid.IsDefeated,
-                ExpiresAt             = raid.ExpiresAt,
-                TimerRemainingSeconds = (long)Math.Max(0, (raid.ExpiresAt - now).TotalSeconds),
-                SummonedByUsername    = raid.SummonedByPlayer?.Username ?? string.Empty,
-                ParticipantCount      = raid.ParticipantCount,
-                YourTotalDamage       = participant?.TotalDamageDealt ?? 0,
-                YourHitCount          = participant?.HitCount ?? 0,
-                Tier                  = definition?.Tier ?? "Standard",
-                Difficulty            = raid.Difficulty.ToString(),
-                DifficultyColor       = DifficultyColors[raid.Difficulty],
-                Size                  = raid.Size.ToString(),
-                YourCurrentTier       = ComputeTier(participant?.TotalDamageDealt ?? 0, activeRaids.Count, participant, null),
-            });
-        }
+            result.Add(await MapToResponseAsync(raid, playerId, activeRaids.Count, now, ct));
 
         return result;
+    }
+
+    // Shared ActiveRaidResponse projection — used by the list, get-by-id, and share paths so the
+    // caller-stat mapping (YourTotalDamage/YourHitCount/YourCurrentTier) stays identical everywhere.
+    // totalParticipants only feeds the (placeholder) live-tier computation.
+    private async Task<ActiveRaidResponse> MapToResponseAsync(
+        ActiveRaid raid, Guid callerId, int totalParticipants, DateTimeOffset now, CancellationToken ct)
+    {
+        var definition = _raidDefinitions.GetById(raid.RaidDefinitionId);
+        var participant = await _participants.FindByRaidAndPlayerAsync(raid.Id, callerId, ct);
+
+        return new ActiveRaidResponse
+        {
+            ActiveRaidId          = raid.Id,
+            RaidDefinitionId      = raid.RaidDefinitionId,
+            Name                  = definition?.Name ?? raid.RaidDefinitionId,
+            CurrentHp             = raid.CurrentHp,
+            MaxHp                 = raid.MaxHp,
+            HpPercent             = raid.MaxHp > 0 ? (double)raid.CurrentHp / raid.MaxHp * 100.0 : 0,
+            IsDefeated            = raid.IsDefeated,
+            ExpiresAt             = raid.ExpiresAt,
+            TimerRemainingSeconds = (long)Math.Max(0, (raid.ExpiresAt - now).TotalSeconds),
+            SummonedByUsername    = raid.SummonedByPlayer?.Username ?? string.Empty,
+            ParticipantCount      = raid.ParticipantCount,
+            YourTotalDamage       = participant?.TotalDamageDealt ?? 0,
+            YourHitCount          = participant?.HitCount ?? 0,
+            Tier                  = definition?.Tier ?? "Standard",
+            Difficulty            = raid.Difficulty.ToString(),
+            DifficultyColor       = DifficultyColors[raid.Difficulty],
+            Size                  = raid.Size.ToString(),
+            YourCurrentTier       = ComputeTier(participant?.TotalDamageDealt ?? 0, totalParticipants, participant, null),
+            IsPublic              = raid.IsPublic,
+        };
     }
 
     public async Task<IReadOnlyList<CompletedRaidResponse>> GetCompletedRaidsAsync(
@@ -274,6 +284,62 @@ public sealed class RaidService : IRaidService
                 Size                  = size.ToString(),
             },
         };
+    }
+
+    public async Task<ActiveRaidResponse?> GetRaidByIdAsync(
+        Guid activeRaidId, Guid callerId, CancellationToken ct = default)
+    {
+        // Join-by-UID: the GUID is the access token, so visibility (IsPublic) is NOT checked here.
+        var raid = await _raids.FindByIdWithSummonerAsync(activeRaidId, ct);
+
+        // Not joinable: missing / deleted (repo already filters IsDeleted) / defeated / expired.
+        if (raid is null || raid.IsDeleted || raid.IsDefeated || raid.ExpiresAt <= DateTimeOffset.UtcNow)
+            return null;
+
+        // Don't leak someone else's Personal (solo) raid — only the summoner may resolve it.
+        if (raid.Size == RaidSize.Personal && raid.SummonedByPlayerId != callerId)
+            return null;
+
+        return await MapToResponseAsync(raid, callerId, totalParticipants: 1, DateTimeOffset.UtcNow, ct);
+    }
+
+    public async Task<ShareRaidResult> ShareRaidAsync(
+        Guid callerId, Guid activeRaidId, CancellationToken ct = default)
+    {
+        var raid = await _raids.FindByIdWithSummonerAsync(activeRaidId, ct);
+
+        // Treat missing / deleted / defeated / expired uniformly as NotFound.
+        if (raid is null || raid.IsDeleted || raid.IsDefeated || raid.ExpiresAt <= DateTimeOffset.UtcNow)
+            return new ShareRaidResult
+            {
+                FailureCode   = ShareRaidFailureCode.NotFound,
+                FailureReason = "Raid not found.",
+            };
+
+        if (raid.SummonedByPlayerId != callerId)
+            return new ShareRaidResult
+            {
+                FailureCode   = ShareRaidFailureCode.NotSummoner,
+                FailureReason = "Only the summoner can share this raid.",
+            };
+
+        if (raid.Size == RaidSize.Personal)
+            return new ShareRaidResult
+            {
+                FailureCode   = ShareRaidFailureCode.CannotSharePersonal,
+                FailureReason = "Personal raids are solo and cannot be shared.",
+            };
+
+        raid.Share();
+        await _raids.UpdateAsync(raid, ct);
+
+        await _auditLog.AppendAsync(AuditLog.Create(
+            callerId, "RaidShared", null,
+            $"Shared raid {raid.Id} ({raid.RaidDefinitionId}) [{raid.Size}] to the public list.",
+            null), ct);
+
+        var response = await MapToResponseAsync(raid, callerId, totalParticipants: 1, DateTimeOffset.UtcNow, ct);
+        return new ShareRaidResult { Success = true, Raid = response };
     }
 
     public async Task<IReadOnlyList<RaidParticipantRankDto>> GetParticipantsAsync(

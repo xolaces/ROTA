@@ -20,6 +20,8 @@ public class ActiveRaidResponse
     public string DifficultyColor { get; set; } = string.Empty;
     public string Size { get; set; } = string.Empty;
     public string YourCurrentTier { get; set; } = string.Empty;
+    // Visibility — false until the summoner shares the raid to the public list.
+    public bool IsPublic { get; set; }
 }
 
 public class RaidHitResponse
@@ -154,6 +156,14 @@ public class RaidHitResult
     public RaidHitResponse? Response { get; set; }
 }
 
+public class ShareRaidResult
+{
+    public bool Success { get; set; }
+    public ShareRaidFailureCode FailureCode { get; set; }
+    public string? FailureReason { get; set; }
+    public ActiveRaidResponse? Raid { get; set; }
+}
+
 public enum SummonRaidFailureCode
 {
     None                = 0,
@@ -171,6 +181,14 @@ public enum RaidHitFailureCode
     InsufficientStamina = 5,
     AccessDenied        = 6,  // Personal raid — only the summoner may strike
     RaidFull            = 7,  // Participant cap reached for this raid size
+}
+
+public enum ShareRaidFailureCode
+{
+    None                = 0,
+    NotFound            = 1,  // raid missing / deleted / expired
+    NotSummoner         = 2,  // caller did not summon this raid
+    CannotSharePersonal = 3,  // Personal (solo) raids can't be shared
 }
 
 public class RaidParticipantRankDto

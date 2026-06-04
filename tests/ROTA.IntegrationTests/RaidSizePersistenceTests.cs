@@ -74,4 +74,49 @@ public class RaidSizePersistenceTests : IAsyncLifetime
             }
         }
     }
+
+    // System 19 — is_public round-trip. New summons start private (false). Share() flips the
+    // column and the change persists. Guards the AddRaidVisibility migration + EF mapping.
+    [Fact]
+    public async Task ActiveRaid_IsPublic_DefaultsFalse_AndShare_Persists()
+    {
+        Guid raidId;
+        await using (var db = NewDbContext())
+        {
+            var summoner = Player.Create("sum_pub", "pub@persist.test", "hash");
+            db.Players.Add(summoner);
+
+            var raid = ActiveRaid.Create(
+                "raid_ironcolossus",
+                summoner.Id,
+                maxHp: 500L,
+                expiresAt: DateTimeOffset.UtcNow.AddHours(1),
+                difficulty: RaidDifficulty.Normal,
+                size: RaidSize.Small);
+            db.ActiveRaids.Add(raid);
+            await db.SaveChangesAsync();
+            raidId = raid.Id;
+        }
+
+        // Newly summoned raids must be private.
+        await using (var db = NewDbContext())
+        {
+            var stored = await db.ActiveRaids.AsNoTracking().FirstAsync(r => r.Id == raidId);
+            stored.IsPublic.Should().BeFalse("new summons start private");
+        }
+
+        // Share() flips the flag; the update must persist.
+        await using (var db = NewDbContext())
+        {
+            var raid = await db.ActiveRaids.FirstAsync(r => r.Id == raidId);
+            raid.Share();
+            await db.SaveChangesAsync();
+        }
+
+        await using (var db = NewDbContext())
+        {
+            var stored = await db.ActiveRaids.AsNoTracking().FirstAsync(r => r.Id == raidId);
+            stored.IsPublic.Should().BeTrue("Share() must persist IsPublic=true");
+        }
+    }
 }
