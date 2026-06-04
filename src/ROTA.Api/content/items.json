@@ -62,7 +62,7 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_ironcolossus",
     "summonDifficulty": "Normal",
-    "summonSize": "Personal"
+    "summonSize": "Small"
   },
   {
     "id": "sigil_ironcolossus_hard",
@@ -75,7 +75,7 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_ironcolossus",
     "summonDifficulty": "Hard",
-    "summonSize": "Personal"
+    "summonSize": "Small"
   },
   {
     "id": "sigil_ironcolossus_legendary",
@@ -88,7 +88,7 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_ironcolossus",
     "summonDifficulty": "Legendary",
-    "summonSize": "Personal"
+    "summonSize": "Small"
   },
   {
     "id": "sigil_ironcolossus_nightmare",
@@ -101,7 +101,7 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_ironcolossus",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Personal"
+    "summonSize": "Small"
   },
   {
     "id": "sigil_malachar_normal",
@@ -114,7 +114,7 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_malachar",
     "summonDifficulty": "Normal",
-    "summonSize": "Personal"
+    "summonSize": "Small"
   },
   {
     "id": "sigil_malachar_hard",
@@ -127,7 +127,7 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_malachar",
     "summonDifficulty": "Hard",
-    "summonSize": "Personal"
+    "summonSize": "Small"
   },
   {
     "id": "sigil_malachar_legendary",
@@ -140,7 +140,7 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_malachar",
     "summonDifficulty": "Legendary",
-    "summonSize": "Personal"
+    "summonSize": "Small"
   },
   {
     "id": "sigil_malachar_nightmare",
@@ -153,6 +153,6 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_malachar",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Personal"
+    "summonSize": "Small"
   }
 ]
