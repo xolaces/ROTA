@@ -96,6 +96,23 @@ public sealed class PlayerService : IPlayerService
         return new UpdateUsernameResult(PlayerUpdateStatus.Success, player.Username, player.UpdatedAt);
     }
 
+    public async Task<UpdateDisplayNameResult> UpdateDisplayNameAsync(
+        Guid playerId, UpdateDisplayNameRequest request, CancellationToken ct = default)
+    {
+        var player = await _players.FindByIdAsync(playerId, ct);
+        if (player is null || player.IsDeleted)
+            return new UpdateDisplayNameResult(DisplayNameUpdateStatus.NotFound);
+
+        player.UpdateDisplayName(request.DisplayName);
+        await _players.UpdateAsync(player, ct);
+
+        await _auditLog.AppendAsync(AuditLog.Create(
+            playerId, "DisplayNameUpdated", null,
+            $"DisplayName changed to '{request.DisplayName}'.", null), ct);
+
+        return new UpdateDisplayNameResult(DisplayNameUpdateStatus.Success, player.DisplayName, player.UpdatedAt);
+    }
+
     // -------------------------------------------------------------------
     // HELPERS
     // -------------------------------------------------------------------

@@ -247,6 +247,7 @@ Implementation: `LeaderboardService` (`src/ROTA.Application/Services/Leaderboard
 |--------|-------------|
 | `Task<PlayerProfileResponse?> GetProfileAsync(Guid playerId, CancellationToken)` | Full profile, live values. Each resource carries class-based `RegenMinutesPerPoint` (double) + `SecondsToNextPoint` (int) for client refill timers; legacy `RegenPerMinute` (int) is vestigial. |
 | `Task<UpdateUsernameResult> UpdateUsernameAsync(Guid, UpdateUsernameRequest, CancellationToken)` | Username update |
+| `Task<UpdateDisplayNameResult> UpdateDisplayNameAsync(Guid, UpdateDisplayNameRequest, CancellationToken)` | Change player's DisplayName; audited |
 
 ---
 
@@ -548,6 +549,7 @@ EnsureAdminAsync: idempotent bootstrap. Reads Seed:AdminPassword (required, no d
 |----------|---------------|-----------|
 | `GET /api/players/me` | `GetProfileAsync` | 200, 404 |
 | `PUT /api/players/me` | `UpdateUsernameAsync` | 200, 400, 404, 409 |
+| `PUT /api/players/me/display-name` | `UpdateDisplayNameAsync` | 200, 400, 404 |
 
 ### QuestController — `api/quests` [Authorize]
 `src/ROTA.Api/Controllers/QuestController.cs`

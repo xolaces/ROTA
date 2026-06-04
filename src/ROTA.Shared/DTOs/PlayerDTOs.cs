@@ -47,3 +47,7 @@ public class UpdateUsernameResponse
     public string Username { get; set; } = string.Empty;
     public DateTimeOffset UpdatedAt { get; set; }
 }
+
+public record UpdateDisplayNameRequest(string DisplayName);
+
+public record UpdateDisplayNameResponse(string NewDisplayName, DateTimeOffset UpdatedAt);

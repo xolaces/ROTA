@@ -14,11 +14,16 @@ public sealed class PlayerController : ControllerBase
 {
     private readonly IPlayerService _players;
     private readonly IValidator<UpdateUsernameRequest> _usernameValidator;
+    private readonly IValidator<UpdateDisplayNameRequest> _displayNameValidator;
 
-    public PlayerController(IPlayerService players, IValidator<UpdateUsernameRequest> usernameValidator)
+    public PlayerController(
+        IPlayerService players,
+        IValidator<UpdateUsernameRequest> usernameValidator,
+        IValidator<UpdateDisplayNameRequest> displayNameValidator)
     {
         _players = players;
         _usernameValidator = usernameValidator;
+        _displayNameValidator = displayNameValidator;
     }
 
     [HttpGet("me")]
@@ -53,6 +58,27 @@ public sealed class PlayerController : ControllerBase
             PlayerUpdateStatus.NotFound => NotFound(),
             PlayerUpdateStatus.UsernameTaken => Conflict(new { message = "Username is already taken." }),
             _ => StatusCode(500)
+        };
+    }
+
+    [HttpPut("me/display-name")]
+    [ProducesResponseType(typeof(UpdateDisplayNameResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateDisplayName(
+        [FromBody] UpdateDisplayNameRequest request,
+        CancellationToken ct)
+    {
+        var v = await _displayNameValidator.ValidateAsync(request, ct);
+        if (!v.IsValid) return InvalidRequest(v);
+
+        var result = await _players.UpdateDisplayNameAsync(GetPlayerId(), request, ct);
+
+        return result.Status switch
+        {
+            DisplayNameUpdateStatus.Success  => Ok(new UpdateDisplayNameResponse(result.NewDisplayName!, result.UpdatedAt)),
+            DisplayNameUpdateStatus.NotFound => NotFound(),
+            _                               => StatusCode(500)
         };
     }
 
