@@ -14,19 +14,22 @@ public sealed class EquipmentService : IEquipmentService
     private readonly IAuditLogRepository        _auditLog;
     private readonly IPlayerInventoryRepository _inventory;
     private readonly IItemDefinitionProvider    _itemDefs;
+    private readonly IPlayerGearRepository      _gearRepo;
 
     public EquipmentService(
         IPlayerEquipmentRepository repo,
         IGearDefinitionProvider    gearDefs,
         IAuditLogRepository        auditLog,
         IPlayerInventoryRepository inventory,
-        IItemDefinitionProvider    itemDefs)
+        IItemDefinitionProvider    itemDefs,
+        IPlayerGearRepository      gearRepo)
     {
         _repo      = repo;
         _gearDefs  = gearDefs;
         _auditLog  = auditLog;
         _inventory = inventory;
         _itemDefs  = itemDefs;
+        _gearRepo  = gearRepo;
     }
 
     public async Task<EquipResult> EquipAsync(
@@ -99,6 +102,47 @@ public sealed class EquipmentService : IEquipmentService
             var def = _gearDefs.GetById(row.GearDefinitionId);
             if (def is null) continue;
             result.Add(MapResponse(row.Slot, def, row.EquippedAt));
+        }
+        return result;
+    }
+
+    public async Task<IReadOnlyList<OwnedGearResponse>> GetOwnedGearAsync(
+        Guid playerId, CancellationToken ct = default)
+    {
+        var owned    = await _gearRepo.GetOwnedAsync(playerId, ct);
+        var equipped = await _repo.GetEquippedAsync(playerId, ct);
+
+        // How many copies of each def are currently equipped (across all slots).
+        var equippedCount = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var e in equipped)
+        {
+            equippedCount.TryGetValue(e.GearDefinitionId, out var c);
+            equippedCount[e.GearDefinitionId] = c + 1;
+        }
+
+        var result = new List<OwnedGearResponse>(owned.Count);
+        foreach (var row in owned)
+        {
+            var def = _gearDefs.GetById(row.GearDefinitionId);
+            if (def is null) continue;  // owned a def that no longer exists in content
+
+            equippedCount.TryGetValue(row.GearDefinitionId, out var eq);
+            result.Add(new OwnedGearResponse
+            {
+                GearDefinitionId  = def.Id,
+                Name              = def.Name,
+                Description       = def.Description,
+                Rarity            = def.Rarity.ToString(),
+                Slot              = def.Slot,
+                BonusAttack       = def.BonusAttack,
+                BonusDefense      = def.BonusDefense,
+                ProcChance        = def.ProcChance,
+                ProcPercent       = def.ProcPercent,
+                IconPath          = def.IconPath,
+                OwnedQuantity     = row.Quantity,
+                EquippedQuantity  = eq,
+                AvailableQuantity = Math.Max(0, row.Quantity - eq),
+            });
         }
         return result;
     }

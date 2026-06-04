@@ -7,6 +7,7 @@ public interface IEquipmentService
     Task<EquipResult>   EquipAsync(Guid playerId, string slotName, string gearDefinitionId, CancellationToken ct = default);
     Task<UnequipResult> UnequipAsync(Guid playerId, string slotName, CancellationToken ct = default);
     Task<IReadOnlyList<EquippedItemResponse>> GetEquipmentAsync(Guid playerId, CancellationToken ct = default);
+    Task<IReadOnlyList<OwnedGearResponse>>    GetOwnedGearAsync(Guid playerId, CancellationToken ct = default);
 
     // Called by RaidService on every hit. baseAtk/baseDef are from PlayerStats.
     Task<EffectiveCombatData> GetEffectiveCombatDataAsync(Guid playerId, int baseAtk, int baseDef, CancellationToken ct = default);

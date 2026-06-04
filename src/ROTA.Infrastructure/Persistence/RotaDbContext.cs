@@ -44,6 +44,9 @@ public class RotaDbContext : DbContext
     // ----- System 17 — Global Leaderboards -----
     public DbSet<LeaderboardEntry> LeaderboardEntries => Set<LeaderboardEntry>();
 
+    // ----- System 18 — Gear Ownership -----
+    public DbSet<PlayerGear> PlayerGear => Set<PlayerGear>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

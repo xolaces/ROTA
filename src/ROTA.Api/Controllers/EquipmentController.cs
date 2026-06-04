@@ -24,6 +24,14 @@ public sealed class EquipmentController : ControllerBase
         return Ok(items);
     }
 
+    // GET /api/equipment/owned
+    [HttpGet("owned")]
+    public async Task<IActionResult> GetOwnedGear(CancellationToken ct)
+    {
+        var gear = await _equipment.GetOwnedGearAsync(PlayerId, ct);
+        return Ok(gear);
+    }
+
     // PUT /api/equipment/{slot}
     [HttpPut("{slot}")]
     public async Task<IActionResult> Equip(string slot, [FromBody] EquipRequest request, CancellationToken ct)

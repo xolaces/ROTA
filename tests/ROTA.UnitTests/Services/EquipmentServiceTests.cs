@@ -28,6 +28,7 @@ public class EquipmentServiceTests
         var auditLog  = new Mock<IAuditLogRepository>();
         var inventory = new Mock<IPlayerInventoryRepository>();
         var itemDefs  = new Mock<IItemDefinitionProvider>();
+        var gearRepo  = new Mock<IPlayerGearRepository>();
 
         auditLog.Setup(a => a.AppendAsync(It.IsAny<AuditLog>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -38,9 +39,12 @@ public class EquipmentServiceTests
         // Default: empty inventory — no conditional bonuses will fire
         inventory.Setup(i => i.GetAllForPlayerAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<PlayerInventoryItem>());
+        // Default: empty gear bag
+        gearRepo.Setup(g => g.GetOwnedAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerGear>());
 
         var service = new EquipmentService(
-            repo.Object, gearDefs.Object, auditLog.Object, inventory.Object, itemDefs.Object);
+            repo.Object, gearDefs.Object, auditLog.Object, inventory.Object, itemDefs.Object, gearRepo.Object);
         return (service, repo, gearDefs, auditLog, inventory, itemDefs);
     }
 
@@ -449,5 +453,105 @@ public class EquipmentServiceTests
 
         result.EffectiveAttack.Should().Be(12,
             "base 10 + floor(7/5)=1 stack × 2 ATK = 12");
+    }
+
+    // -----------------------------------------------------------------------
+    // GetOwnedGearAsync — owned gear bag with available = owned − equipped
+    // -----------------------------------------------------------------------
+
+    private static (EquipmentService service,
+                    Mock<IPlayerGearRepository> gearRepo,
+                    Mock<IPlayerEquipmentRepository> equipRepo,
+                    Mock<IGearDefinitionProvider> gearDefs)
+        BuildServiceForOwnedGear()
+    {
+        var equipRepo = new Mock<IPlayerEquipmentRepository>();
+        var gearDefs  = new Mock<IGearDefinitionProvider>();
+        var auditLog  = new Mock<IAuditLogRepository>();
+        var inventory = new Mock<IPlayerInventoryRepository>();
+        var itemDefs  = new Mock<IItemDefinitionProvider>();
+        var gearRepo  = new Mock<IPlayerGearRepository>();
+
+        // Default: nothing equipped
+        equipRepo.Setup(r => r.GetEquippedAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerEquipment>());
+
+        var service = new EquipmentService(
+            equipRepo.Object, gearDefs.Object, auditLog.Object, inventory.Object, itemDefs.Object, gearRepo.Object);
+        return (service, gearRepo, equipRepo, gearDefs);
+    }
+
+    [Fact]
+    public async Task GetOwnedGear_NoneEquipped_AvailableEqualsOwned()
+    {
+        var (service, gearRepo, _, gearDefs) = BuildServiceForOwnedGear();
+        var playerId = Guid.NewGuid();
+
+        gearRepo.Setup(g => g.GetOwnedAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerGear> { PlayerGear.Create(playerId, "gear_conscript_helm", 2) });
+        gearDefs.Setup(g => g.GetById("gear_conscript_helm")).Returns(HelmDef());
+
+        var owned = await service.GetOwnedGearAsync(playerId);
+
+        owned.Should().HaveCount(1);
+        owned[0].GearDefinitionId.Should().Be("gear_conscript_helm");
+        owned[0].Slot.Should().Be("Head");
+        owned[0].OwnedQuantity.Should().Be(2);
+        owned[0].EquippedQuantity.Should().Be(0);
+        owned[0].AvailableQuantity.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task GetOwnedGear_SomeEquipped_AvailableIsOwnedMinusEquipped()
+    {
+        var (service, gearRepo, equipRepo, gearDefs) = BuildServiceForOwnedGear();
+        var playerId = Guid.NewGuid();
+
+        // Owns 2 rings; one is equipped in Ring1 → available 1.
+        gearRepo.Setup(g => g.GetOwnedAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerGear> { PlayerGear.Create(playerId, "gear_iron_ring", 2) });
+        equipRepo.Setup(r => r.GetEquippedAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerEquipment>
+            {
+                PlayerEquipment.Create(playerId, EquipmentSlot.Ring1, "gear_iron_ring"),
+            });
+        gearDefs.Setup(g => g.GetById("gear_iron_ring")).Returns(new GearDefinition
+            { Id = "gear_iron_ring", Name = "Iron Ring", Slot = "Ring1", BonusAttack = 1 });
+
+        var owned = await service.GetOwnedGearAsync(playerId);
+
+        owned.Should().HaveCount(1);
+        owned[0].OwnedQuantity.Should().Be(2);
+        owned[0].EquippedQuantity.Should().Be(1);
+        owned[0].AvailableQuantity.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetOwnedGear_EmptyBag_ReturnsEmpty()
+    {
+        var (service, gearRepo, _, _) = BuildServiceForOwnedGear();
+        var playerId = Guid.NewGuid();
+
+        gearRepo.Setup(g => g.GetOwnedAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerGear>());
+
+        var owned = await service.GetOwnedGearAsync(playerId);
+
+        owned.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetOwnedGear_UnknownDefinition_SkipsRow()
+    {
+        var (service, gearRepo, _, gearDefs) = BuildServiceForOwnedGear();
+        var playerId = Guid.NewGuid();
+
+        gearRepo.Setup(g => g.GetOwnedAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerGear> { PlayerGear.Create(playerId, "gear_removed", 1) });
+        gearDefs.Setup(g => g.GetById("gear_removed")).Returns((GearDefinition?)null);
+
+        var owned = await service.GetOwnedGearAsync(playerId);
+
+        owned.Should().BeEmpty("a gear def no longer present in content is skipped");
     }
 }

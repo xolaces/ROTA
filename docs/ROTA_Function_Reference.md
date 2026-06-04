@@ -315,6 +315,7 @@ Implementation: `LeaderboardService` (`src/ROTA.Application/Services/Leaderboard
 | `Task<EquipResult> EquipAsync(Guid, string slotName, string gearDefinitionId, CancellationToken)` | Equip or swap gear in a slot |
 | `Task<UnequipResult> UnequipAsync(Guid, string slotName, CancellationToken)` | Remove gear from a slot |
 | `Task<IReadOnlyList<EquippedItemResponse>> GetEquipmentAsync(Guid, CancellationToken)` | All equipped items |
+| `Task<IReadOnlyList<OwnedGearResponse>> GetOwnedGearAsync(Guid, CancellationToken)` | Owned gear bag — qty per def with equipped + available counts (System 18) |
 | `Task<EffectiveCombatData> GetEffectiveCombatDataAsync(Guid, int baseAtk, int baseDef, CancellationToken)` | Effective stats + proc + conditional bonuses for combat |
 
 **Records (same file):**
@@ -395,6 +396,8 @@ record GearProcData(double ProcChance, double ProcPercent)
 
 **IPlayerEquipmentRepository** — `FindBySlotAsync`, `GetEquippedAsync`, `CreateAsync`, `UpdateAsync`
 
+**IPlayerGearRepository** — `GetOwnedAsync`, `GetAsync`, `CreateAsync`, `UpdateAsync` (gear ownership stacks; System 18)
+
 ---
 
 ## Services
@@ -441,8 +444,8 @@ Path tiers L5-1000. Convergence L2000+. Strip Legendary/Ascendant prefix for reg
 
 ### EquipmentService → IEquipmentService
 `src/ROTA.Application/Services/EquipmentService.cs`
-Equip/unequip/list gear. `GetEffectiveCombatDataAsync`: sums base gear stats, evaluates all `ConditionalBonuses` from equipped gear against player inventory (per-hit, indexed), folds results into effective ATK/DEF/proc/FlatDamagePercent. ProcChanceFlat clamped to 1.0 after accumulation.
-Constructor: `(IPlayerEquipmentRepository, IGearDefinitionProvider, IAuditLogRepository, IPlayerInventoryRepository, IItemDefinitionProvider)`
+Equip/unequip/list gear. `GetOwnedGearAsync`: owned gear stacks hydrated with definitions; `Available = Owned − Equipped` (equipped count derived from `PlayerEquipment`; ownership is permanent, never consumed by equip/unequip). `GetEffectiveCombatDataAsync`: sums base gear stats, evaluates all `ConditionalBonuses` from equipped gear against player inventory (per-hit, indexed), folds results into effective ATK/DEF/proc/FlatDamagePercent. ProcChanceFlat clamped to 1.0 after accumulation.
+Constructor: `(IPlayerEquipmentRepository, IGearDefinitionProvider, IAuditLogRepository, IPlayerInventoryRepository, IItemDefinitionProvider, IPlayerGearRepository)`
 
 ### IMagicService
 `src/ROTA.Application/Interfaces/IMagicService.cs`
@@ -596,6 +599,7 @@ EnsureAdminAsync: idempotent bootstrap. Reads Seed:AdminPassword (required, no d
 | Endpoint | Service Method | Responses |
 |----------|---------------|-----------|
 | `GET /api/equipment` | `GetEquipmentAsync` | 200 |
+| `GET /api/equipment/owned` | `GetOwnedGearAsync` | 200 |
 | `PUT /api/equipment/{slot}` | `EquipAsync` | 200, 400, 404 |
 | `DELETE /api/equipment/{slot}` | `UnequipAsync` | 200, 400, 404 |
 
@@ -723,6 +727,19 @@ Domain methods: `Create(...)`, `SaveCheckpoint(int, DateTimeOffset)`, `SetMaxVal
 | `IsDeleted` | `bool` |
 
 Domain methods: `Create(Guid, EquipmentSlot, string)`, `Equip(string)`, `Unequip()`
+
+### PlayerGear
+`src/ROTA.Domain/Entities/PlayerGear.cs` — System 18 gear ownership (stacks).
+
+| Property | Type |
+|----------|------|
+| `Id` | `Guid` |
+| `PlayerId` | `Guid` |
+| `GearDefinitionId` | `string` |
+| `Quantity` | `int` |
+| `IsDeleted` | `bool` |
+
+Domain methods: `Create(Guid, string, int=1)`, `AddQuantity(int)`. One row per `(player_id, gear_definition_id)`; ownership is permanent (equip/unequip never changes quantity). Table `player_gear` (migration `AddPlayerGear`).
 
 ---
 
