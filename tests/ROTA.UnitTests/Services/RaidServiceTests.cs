@@ -111,6 +111,9 @@ public class RaidServiceTests
             .Returns(Task.CompletedTask);
         legionSvc.Setup(l => l.GrantLegionAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        // Default: no-op for gear drops
+        equipment.Setup(e => e.GrantGearAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
         // Default: leaderboard writes are no-ops; Slice 4 tests override/assert as needed.
         leaderboards.Setup(l => l.RecordRaidHitAsync(
                 It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
@@ -1904,5 +1907,70 @@ public class RaidServiceTests
         // RNG range [0.85, 1.15] → charBase ∈ [38..51]
         result.Response.DamageDealt.Should().BeInRange(38, 52,
             "commander BonusAttack=9999 must not inflate charBase beyond normal range");
+    }
+
+    // -----------------------------------------------------------------------
+    // G2: RaidService threshold gear drop wiring
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task Hit_Kill_GrantsGearDrop_WhenThresholdRewardHasGearDrops()
+    {
+        var b      = BuildService();
+        var player = MakePlayer();
+        var raid   = MakeRaid(currentHp: 1); // killing blow
+
+        SetupHitScaffolding(b, player, raid);
+
+        // Loot table with a gear drop at 0.0 contribution (all participants qualify).
+        var lootTable = new LootTableDefinition
+        {
+            Id   = "lt_raid_ironcolossus",
+            Type = "Raid",
+            Difficulties = new Dictionary<string, LootTableDifficulty>
+            {
+                ["Normal"] = new LootTableDifficulty
+                {
+                    MinContributionPercent = 0.0,
+                    ThresholdRewards = new List<ThresholdReward>
+                    {
+                        new ThresholdReward
+                        {
+                            ContributionPercent = 0.0,  // everyone qualifies
+                            GearDrops = new List<GearDropChance>
+                            {
+                                new GearDropChance
+                                {
+                                    GearDefinitionId = "gear_conscript_helm",
+                                    Quantity         = 1,
+                                    Chance           = 1.0,  // guaranteed
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        };
+        b.LootTables.Setup(lt => lt.GetById("lt_raid_ironcolossus")).Returns(lootTable);
+
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+        b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipant>
+            {
+                RaidParticipant.Create(raid.Id, player.Id),
+            });
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.IsDefeated.Should().BeTrue();
+        b.Equipment.Verify(e => e.GrantGearAsync(
+            player.Id, "gear_conscript_helm", 1, It.IsAny<CancellationToken>()),
+            Times.Once, "gear drop with chance=1.0 must call GrantGearAsync for the eligible participant");
     }
 }

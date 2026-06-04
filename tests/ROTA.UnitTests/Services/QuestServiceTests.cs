@@ -29,7 +29,8 @@ public class QuestServiceTests
         Mock<IPlayerInventoryRepository> Inventory,
         Mock<IAuditLogRepository> AuditLog,
         Mock<IMagicService> MagicService,
-        Mock<ILegionService> LegionService);
+        Mock<ILegionService> LegionService,
+        Mock<IEquipmentService> Equipment);
 
     private static ServiceBundle BuildService(Random? random = null)
     {
@@ -46,6 +47,7 @@ public class QuestServiceTests
         var auditLog          = new Mock<IAuditLogRepository>();
         var magicService      = new Mock<IMagicService>();
         var legionService     = new Mock<ILegionService>();
+        var equipment         = new Mock<IEquipmentService>();
 
         // Sane defaults to avoid null-ref in happy-path tests
         difficultyProgress.Setup(r => r.GetAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<QuestDifficulty>(), It.IsAny<CancellationToken>()))
@@ -74,16 +76,19 @@ public class QuestServiceTests
             .Returns(Task.CompletedTask);
         legionService.Setup(l => l.GrantLegionAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        // Default: no-op for gear drops
+        equipment.Setup(e => e.GrantGearAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
 
         var service = new QuestService(
             definitions.Object, questProgress.Object, difficultyProgress.Object,
             players.Object, energy.Object, gems.Object,
             stats.Object, lootTables.Object, itemDefs.Object, inventory.Object,
-            auditLog.Object, magicService.Object, legionService.Object, random);
+            auditLog.Object, magicService.Object, legionService.Object, equipment.Object, random);
 
         return new ServiceBundle(service, definitions, questProgress, difficultyProgress,
             players, energy, gems, stats, lootTables, itemDefs, inventory, auditLog, magicService,
-            legionService);
+            legionService, equipment);
     }
 
     private static IReadOnlyList<QuestDefinition> TwoQuestChain() => new List<QuestDefinition>
@@ -614,5 +619,46 @@ public class QuestServiceTests
         b.Gems.Verify(g => g.GrantGemsAsync(
             player.Id, 2, GemTransactionType.QuestReward, expectedRef,
             It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    // -----------------------------------------------------------------------
+    // G2: QuestService gear drop wiring
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task AttemptQuest_GrantsGearDrop_WhenLootTableHasGearDropWithChanceOne()
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+
+        var quest = new QuestDefinition
+        {
+            Id = "q_gear_loot", Name = "Gear Loot Quest", Chapter = 1, BaseEnergyCost = 5,
+            GoldReward = 100, ExperienceReward = 50, LootTableId = "lt_q_gear",
+        };
+        b.Definitions.Setup(d => d.GetById("q_gear_loot")).Returns(quest);
+        SetupPlayerAndEnergy(b, player);
+
+        var lootTable = new LootTableDefinition
+        {
+            Id = "lt_q_gear", Type = "QuestBoss",
+            Difficulties = new Dictionary<string, LootTableDifficulty>
+            {
+                ["Normal"] = new()
+                {
+                    GearDrops = new List<GearDropChance>
+                    {
+                        new() { GearDefinitionId = "gear_conscript_helm", Quantity = 1, Chance = 1.0 },
+                    },
+                },
+            },
+        };
+        b.LootTables.Setup(l => l.GetById("lt_q_gear")).Returns(lootTable);
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q_gear_loot", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue();
+        b.Equipment.Verify(e => e.GrantGearAsync(
+            player.Id, "gear_conscript_helm", 1, It.IsAny<CancellationToken>()), Times.Once);
     }
 }

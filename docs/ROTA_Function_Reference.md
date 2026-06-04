@@ -191,6 +191,7 @@ Implementation: `LeaderboardService` (`src/ROTA.Application/Services/Leaderboard
 | Command | Description |
 |---------|-------------|
 | `leaderboard-refresh-stat` | Resolves `ILeaderboardService` from DI, calls `SnapshotStatBoardAsync()`, prints count. No DB actor check (CLI/system bypass). |
+| `grant-gear` | Grant gear to a player by username or GUID: `grant-gear <user\|guid> <gearDefId> [qty]`. |
 
 **Stat board metric mapping (locked):**
 - `StatAttack` board → `PlayerStats.BaseAttack` (raw stored, includes SkillPoint investments)
@@ -317,6 +318,7 @@ Implementation: `LeaderboardService` (`src/ROTA.Application/Services/Leaderboard
 | `Task<IReadOnlyList<EquippedItemResponse>> GetEquipmentAsync(Guid, CancellationToken)` | All equipped items |
 | `Task<IReadOnlyList<OwnedGearResponse>> GetOwnedGearAsync(Guid, CancellationToken)` | Owned gear bag — qty per def with equipped + available counts (System 18) |
 | `Task<EffectiveCombatData> GetEffectiveCombatDataAsync(Guid, int baseAtk, int baseDef, CancellationToken)` | Effective stats + proc + conditional bonuses for combat |
+| `Task GrantGearAsync(Guid playerId, string gearDefinitionId, int quantity, ct)` | Idempotent upsert: stacks onto existing PlayerGear row or creates one. Safe for loot distribution. |
 
 **Records (same file):**
 

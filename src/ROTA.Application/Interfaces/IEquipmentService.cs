@@ -11,6 +11,12 @@ public interface IEquipmentService
 
     // Called by RaidService on every hit. baseAtk/baseDef are from PlayerStats.
     Task<EffectiveCombatData> GetEffectiveCombatDataAsync(Guid playerId, int baseAtk, int baseDef, CancellationToken ct = default);
+
+    /// <summary>
+    /// Idempotent gear grant — upsert: adds to existing stack or creates a new row.
+    /// Safe to call from loot reward distribution (duplicate = quantity increase, never error).
+    /// </summary>
+    Task GrantGearAsync(Guid playerId, string gearDefinitionId, int quantity, CancellationToken ct = default);
 }
 
 // Lives in this file alongside the interface.

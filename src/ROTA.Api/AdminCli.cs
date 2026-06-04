@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ROTA.Application.Interfaces;
+using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
 using ROTA.Infrastructure.Persistence;
 using ROTA.Infrastructure.Seeding;
@@ -20,6 +21,7 @@ namespace ROTA.Api;
 ///   dotnet run --project src/ROTA.Api -- promote {user|guid} {Role}
 ///   dotnet run --project src/ROTA.Api -- demote {user|guid} {Role}
 ///   dotnet run --project src/ROTA.Api -- leaderboard-refresh-stat
+///   dotnet run --project src/ROTA.Api -- grant-gear {user|guid} {gearDefId} [qty]
 /// </code>
 /// </remarks>
 public static class AdminCli
@@ -32,6 +34,7 @@ public static class AdminCli
             "promote",
             "demote",
             "leaderboard-refresh-stat",
+            "grant-gear",
         };
 
     /// <summary>Returns true if <paramref name="firstArg"/> is a recognised CLI command.</summary>
@@ -64,6 +67,7 @@ public static class AdminCli
                 "promote"                  => await RunRoleChange(app.Services, args, grant: true),
                 "demote"                   => await RunRoleChange(app.Services, args, grant: false),
                 "leaderboard-refresh-stat" => await RunLeaderboardRefreshStat(app.Services),
+                "grant-gear"               => await RunGrantGear(app.Services, args),
                 _                          => UnknownCommand(command),
             };
         }
@@ -160,9 +164,40 @@ public static class AdminCli
         return 0;
     }
 
+    private static async Task<int> RunGrantGear(IServiceProvider services, string[] args)
+    {
+        if (args.Length < 3)
+        {
+            Console.Error.WriteLine("grant-gear: usage: grant-gear <username|guid> <gearDefinitionId> [quantity]");
+            return 1;
+        }
+        var userArg  = args[1];
+        var gearId   = args[2];
+        var qty      = args.Length >= 4 && int.TryParse(args[3], out var q) ? q : 1;
+        if (qty < 1) { Console.Error.WriteLine("grant-gear: quantity must be >= 1"); return 1; }
+
+        using var scope = services.CreateScope();
+        var playerRepo = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
+        var equipment  = scope.ServiceProvider.GetRequiredService<IEquipmentService>();
+
+        Player? player = Guid.TryParse(userArg, out var id)
+            ? await playerRepo.FindByIdAsync(id)
+            : await playerRepo.FindByUsernameAsync(userArg);
+
+        if (player is null)
+        {
+            Console.Error.WriteLine($"grant-gear: player '{userArg}' not found.");
+            return 1;
+        }
+
+        await equipment.GrantGearAsync(player.Id, gearId, qty);
+        Console.WriteLine($"grant-gear: granted {qty}× '{gearId}' to player '{player.Username}' ({player.Id}).");
+        return 0;
+    }
+
     private static int UnknownCommand(string command)
     {
-        Console.Error.WriteLine($"Unknown command '{command}'. Valid commands: seed-admin, gen-beta-key, promote, demote, leaderboard-refresh-stat.");
+        Console.Error.WriteLine($"Unknown command '{command}'. Valid commands: seed-admin, gen-beta-key, promote, demote, leaderboard-refresh-stat, grant-gear.");
         return 1;
     }
 }

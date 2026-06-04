@@ -58,6 +58,7 @@ public sealed class QuestService : IQuestService
     private readonly IAuditLogRepository _auditLog;
     private readonly IMagicService _magicService;
     private readonly ILegionService _legionService;
+    private readonly IEquipmentService _equipment;
     private readonly Random _random;
 
     public QuestService(
@@ -74,6 +75,7 @@ public sealed class QuestService : IQuestService
         IAuditLogRepository auditLog,
         IMagicService magicService,
         ILegionService legionService,
+        IEquipmentService equipment,
         Random? random = null)
     {
         _definitions       = definitions;
@@ -89,6 +91,7 @@ public sealed class QuestService : IQuestService
         _auditLog          = auditLog;
         _magicService      = magicService;
         _legionService     = legionService;
+        _equipment         = equipment;
         _random            = random ?? Random.Shared;
     }
 
@@ -333,6 +336,14 @@ public sealed class QuestService : IQuestService
                 if (_random.NextDouble() < drop.Chance)
                     await _legionService.GrantLegionAsync(playerId, drop.LegionId, ct);
             }
+        }
+
+        // Gear drops — idempotent upsert.
+        if (loot.GearDrops is not null)
+        {
+            foreach (var drop in loot.GearDrops)
+                if (_random.NextDouble() < drop.Chance)
+                    await _equipment.GrantGearAsync(playerId, drop.GearDefinitionId, drop.Quantity, ct);
         }
     }
 

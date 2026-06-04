@@ -846,6 +846,10 @@ public sealed class RaidService : IRaidService
                             if (_random.NextDouble() < drop.Chance)
                                 await _legionService.GrantLegionAsync(p.PlayerId, drop.LegionId, ct);
                         }
+
+                        // Gear drops per threshold — idempotent upsert.
+                        foreach (var drop in threshold.GearDrops)
+                            await _equipment.GrantGearAsync(p.PlayerId, drop.GearDefinitionId, drop.Quantity, ct);
                     }
                 }
             }

@@ -224,6 +224,21 @@ public sealed class EquipmentService : IEquipmentService
         return new EffectiveCombatData(baseAtk + bonusAtk, baseDef + bonusDef, mountProc, flatDmgPct);
     }
 
+    public async Task GrantGearAsync(
+        Guid playerId, string gearDefinitionId, int quantity, CancellationToken ct = default)
+    {
+        var existing = await _gearRepo.GetAsync(playerId, gearDefinitionId, ct);
+        if (existing is not null)
+        {
+            existing.AddQuantity(quantity);
+            await _gearRepo.UpdateAsync(existing, ct);
+        }
+        else
+        {
+            await _gearRepo.CreateAsync(PlayerGear.Create(playerId, gearDefinitionId, quantity), ct);
+        }
+    }
+
     private static EquippedItemResponse MapResponse(
         EquipmentSlot slot, GearDefinition def, DateTimeOffset equippedAt)
         => new()

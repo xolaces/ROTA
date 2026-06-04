@@ -554,4 +554,61 @@ public class EquipmentServiceTests
 
         owned.Should().BeEmpty("a gear def no longer present in content is skipped");
     }
+
+    // -----------------------------------------------------------------------
+    // G2: GrantGearAsync — new row creates, existing row stacks
+    // -----------------------------------------------------------------------
+
+    private static (EquipmentService service, Mock<IPlayerGearRepository> gearRepo)
+        BuildServiceForGrant()
+    {
+        var equipRepo = new Mock<IPlayerEquipmentRepository>();
+        var gearDefs  = new Mock<IGearDefinitionProvider>();
+        var auditLog  = new Mock<IAuditLogRepository>();
+        var inventory = new Mock<IPlayerInventoryRepository>();
+        var itemDefs  = new Mock<IItemDefinitionProvider>();
+        var gearRepo  = new Mock<IPlayerGearRepository>();
+
+        var service = new EquipmentService(
+            equipRepo.Object, gearDefs.Object, auditLog.Object, inventory.Object, itemDefs.Object, gearRepo.Object);
+        return (service, gearRepo);
+    }
+
+    [Fact]
+    public async Task GrantGearAsync_NewGear_CreatesRow()
+    {
+        var (service, gearRepo) = BuildServiceForGrant();
+        var playerId = Guid.NewGuid();
+
+        gearRepo.Setup(g => g.GetAsync(playerId, "gear_conscript_helm", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerGear?)null);
+        gearRepo.Setup(g => g.CreateAsync(It.IsAny<PlayerGear>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        await service.GrantGearAsync(playerId, "gear_conscript_helm", 1);
+
+        gearRepo.Verify(g => g.CreateAsync(
+            It.Is<PlayerGear>(pg => pg.GearDefinitionId == "gear_conscript_helm" && pg.Quantity == 1),
+            It.IsAny<CancellationToken>()), Times.Once);
+        gearRepo.Verify(g => g.UpdateAsync(It.IsAny<PlayerGear>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GrantGearAsync_ExistingGear_StacksQuantity()
+    {
+        var (service, gearRepo) = BuildServiceForGrant();
+        var playerId = Guid.NewGuid();
+
+        var existing = PlayerGear.Create(playerId, "gear_iron_ring", 2);
+        gearRepo.Setup(g => g.GetAsync(playerId, "gear_iron_ring", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existing);
+        gearRepo.Setup(g => g.UpdateAsync(It.IsAny<PlayerGear>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        await service.GrantGearAsync(playerId, "gear_iron_ring", 3);
+
+        existing.Quantity.Should().Be(5, "2 existing + 3 granted = 5");
+        gearRepo.Verify(g => g.UpdateAsync(existing, It.IsAny<CancellationToken>()), Times.Once);
+        gearRepo.Verify(g => g.CreateAsync(It.IsAny<PlayerGear>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
 }
