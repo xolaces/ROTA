@@ -48,6 +48,18 @@ public sealed class EquipmentService : IEquipmentService
                 FailureReason = $"Item '{def.Name}' belongs to slot '{def.Slot}', not '{slotName}'.",
             };
 
+        // Ownership gate — require a spare: owned_qty − currently_equipped_count ≥ 1.
+        var owned = await _gearRepo.GetAsync(playerId, gearDefinitionId, ct);
+        if (owned is null || owned.IsDeleted || owned.Quantity < 1)
+            return new EquipResult { FailureReason = $"You do not own '{def.Name}'." };
+
+        var equippedRows  = await _repo.GetEquippedAsync(playerId, ct);
+        var equippedCount = equippedRows.Count(e =>
+            string.Equals(e.GearDefinitionId, gearDefinitionId, StringComparison.OrdinalIgnoreCase));
+
+        if (owned.Quantity - equippedCount < 1)
+            return new EquipResult { FailureReason = $"No available copy of '{def.Name}' to equip (all copies already equipped)." };
+
         // Upsert — one row per (player, slot) due to DB unique constraint.
         var existing = await _repo.FindBySlotAsync(playerId, slot, ct);
         if (existing is not null)

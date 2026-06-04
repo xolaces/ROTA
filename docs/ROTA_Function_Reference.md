@@ -446,7 +446,7 @@ Path tiers L5-1000. Convergence L2000+. Strip Legendary/Ascendant prefix for reg
 
 ### EquipmentService → IEquipmentService
 `src/ROTA.Application/Services/EquipmentService.cs`
-Equip/unequip/list gear. `GetOwnedGearAsync`: owned gear stacks hydrated with definitions; `Available = Owned − Equipped` (equipped count derived from `PlayerEquipment`; ownership is permanent, never consumed by equip/unequip). `GetEffectiveCombatDataAsync`: sums base gear stats, evaluates all `ConditionalBonuses` from equipped gear against player inventory (per-hit, indexed), folds results into effective ATK/DEF/proc/FlatDamagePercent. ProcChanceFlat clamped to 1.0 after accumulation.
+Equip/unequip/list gear. `EquipAsync` is ownership-gated (System 18 G3): requires owned_qty − equipped_count ≥ 1. `GetOwnedGearAsync`: owned gear stacks hydrated with definitions; `Available = Owned − Equipped` (equipped count derived from `PlayerEquipment`; ownership is permanent, never consumed by equip/unequip). `GetEffectiveCombatDataAsync`: sums base gear stats, evaluates all `ConditionalBonuses` from equipped gear against player inventory (per-hit, indexed), folds results into effective ATK/DEF/proc/FlatDamagePercent. ProcChanceFlat clamped to 1.0 after accumulation.
 Constructor: `(IPlayerEquipmentRepository, IGearDefinitionProvider, IAuditLogRepository, IPlayerInventoryRepository, IItemDefinitionProvider, IPlayerGearRepository)`
 
 ### IMagicService

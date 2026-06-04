@@ -20,7 +20,8 @@ public class EquipmentServiceTests
                     Mock<IGearDefinitionProvider> gearDefs,
                     Mock<IAuditLogRepository> auditLog,
                     Mock<IPlayerInventoryRepository> inventory,
-                    Mock<IItemDefinitionProvider> itemDefs)
+                    Mock<IItemDefinitionProvider> itemDefs,
+                    Mock<IPlayerGearRepository> gearRepo)
         BuildService()
     {
         var repo      = new Mock<IPlayerEquipmentRepository>();
@@ -39,13 +40,16 @@ public class EquipmentServiceTests
         // Default: empty inventory — no conditional bonuses will fire
         inventory.Setup(i => i.GetAllForPlayerAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<PlayerInventoryItem>());
-        // Default: empty gear bag
+        // Default: empty gear bag (ownership)
         gearRepo.Setup(g => g.GetOwnedAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<PlayerGear>());
+        // Default: nothing equipped (used by ownership spare-check in EquipAsync)
+        repo.Setup(r => r.GetEquippedAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerEquipment>().AsReadOnly());
 
         var service = new EquipmentService(
             repo.Object, gearDefs.Object, auditLog.Object, inventory.Object, itemDefs.Object, gearRepo.Object);
-        return (service, repo, gearDefs, auditLog, inventory, itemDefs);
+        return (service, repo, gearDefs, auditLog, inventory, itemDefs, gearRepo);
     }
 
     private static GearDefinition HelmDef() => new()
@@ -83,13 +87,16 @@ public class EquipmentServiceTests
     [Fact]
     public async Task Equip_ValidItem_ReturnsSuccess()
     {
-        var (service, repo, gearDefs, _, _, _) = BuildService();
+        var (service, repo, gearDefs, _, _, _, gearRepo) = BuildService();
+        var playerId = Guid.NewGuid();
 
         gearDefs.Setup(g => g.GetById("gear_conscript_helm")).Returns(HelmDef());
         repo.Setup(r => r.FindBySlotAsync(It.IsAny<Guid>(), EquipmentSlot.Head, It.IsAny<CancellationToken>()))
             .ReturnsAsync((PlayerEquipment?)null);
+        gearRepo.Setup(r => r.GetAsync(playerId, "gear_conscript_helm", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(PlayerGear.Create(playerId, "gear_conscript_helm", 1));
 
-        var result = await service.EquipAsync(Guid.NewGuid(), "Head", "gear_conscript_helm");
+        var result = await service.EquipAsync(playerId, "Head", "gear_conscript_helm");
 
         result.Success.Should().BeTrue();
         result.Item.Should().NotBeNull();
@@ -105,7 +112,7 @@ public class EquipmentServiceTests
     [Fact]
     public async Task Equip_UnknownSlot_ReturnsFailure()
     {
-        var (service, _, gearDefs, _, _, _) = BuildService();
+        var (service, _, gearDefs, _, _, _, _) = BuildService();
 
         var result = await service.EquipAsync(Guid.NewGuid(), "Shoulder", "gear_conscript_helm");
 
@@ -120,7 +127,7 @@ public class EquipmentServiceTests
     [Fact]
     public async Task Equip_GearNotFound_ReturnsFailure()
     {
-        var (service, _, gearDefs, _, _, _) = BuildService();
+        var (service, _, gearDefs, _, _, _, _) = BuildService();
 
         gearDefs.Setup(g => g.GetById("nonexistent")).Returns((GearDefinition?)null);
 
@@ -137,7 +144,7 @@ public class EquipmentServiceTests
     [Fact]
     public async Task Equip_SlotMismatch_ReturnsFailure()
     {
-        var (service, _, gearDefs, _, _, _) = BuildService();
+        var (service, _, gearDefs, _, _, _, _) = BuildService();
 
         gearDefs.Setup(g => g.GetById("gear_conscript_helm")).Returns(HelmDef()); // Slot=Head
 
@@ -154,14 +161,17 @@ public class EquipmentServiceTests
     [Fact]
     public async Task Equip_ExistingSlot_SwapsGear()
     {
-        var (service, repo, gearDefs, _, _, _) = BuildService();
+        var (service, repo, gearDefs, _, _, _, gearRepo) = BuildService();
+        var playerId = Guid.NewGuid();
 
-        var existingRow = PlayerEquipment.Create(Guid.NewGuid(), EquipmentSlot.Head, "gear_old_helm");
+        var existingRow = PlayerEquipment.Create(playerId, EquipmentSlot.Head, "gear_old_helm");
         gearDefs.Setup(g => g.GetById("gear_conscript_helm")).Returns(HelmDef());
-        repo.Setup(r => r.FindBySlotAsync(It.IsAny<Guid>(), EquipmentSlot.Head, It.IsAny<CancellationToken>()))
+        repo.Setup(r => r.FindBySlotAsync(playerId, EquipmentSlot.Head, It.IsAny<CancellationToken>()))
             .ReturnsAsync(existingRow);
+        gearRepo.Setup(r => r.GetAsync(playerId, "gear_conscript_helm", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(PlayerGear.Create(playerId, "gear_conscript_helm", 1));
 
-        var result = await service.EquipAsync(Guid.NewGuid(), "Head", "gear_conscript_helm");
+        var result = await service.EquipAsync(playerId, "Head", "gear_conscript_helm");
 
         result.Success.Should().BeTrue();
         repo.Verify(r => r.UpdateAsync(existingRow, It.IsAny<CancellationToken>()), Times.Once);
@@ -175,7 +185,7 @@ public class EquipmentServiceTests
     [Fact]
     public async Task Unequip_EquippedSlot_ReturnsSuccess()
     {
-        var (service, repo, _, _, _, _) = BuildService();
+        var (service, repo, _, _, _, _, _) = BuildService();
 
         var existingRow = PlayerEquipment.Create(Guid.NewGuid(), EquipmentSlot.Head, "gear_conscript_helm");
         repo.Setup(r => r.FindBySlotAsync(It.IsAny<Guid>(), EquipmentSlot.Head, It.IsAny<CancellationToken>()))
@@ -194,7 +204,7 @@ public class EquipmentServiceTests
     [Fact]
     public async Task Unequip_EmptySlot_ReturnsFailure()
     {
-        var (service, repo, _, _, _, _) = BuildService();
+        var (service, repo, _, _, _, _, _) = BuildService();
 
         repo.Setup(r => r.FindBySlotAsync(It.IsAny<Guid>(), EquipmentSlot.Head, It.IsAny<CancellationToken>()))
             .ReturnsAsync((PlayerEquipment?)null);
@@ -215,7 +225,7 @@ public class EquipmentServiceTests
         // Two equipped items: helm (DEF+1) + iron ring (ATK+1); base ATK=10, DEF=10
         // Expected: effective ATK=11, DEF=13 (helm + collar + chest each add 1 DEF, but spec says +3 DEF total)
         // Per spec test 8: "BonusAttack=1, BonusDefense=3 total; base ATK=10, DEF=10; effective = ATK=11, DEF=13"
-        var (service, repo, gearDefs, _, _, _) = BuildService();
+        var (service, repo, gearDefs, _, _, _, _) = BuildService();
         var playerId = Guid.NewGuid();
 
         var helmRow  = PlayerEquipment.Create(playerId, EquipmentSlot.Head, "gear_conscript_helm");
@@ -249,7 +259,7 @@ public class EquipmentServiceTests
     [Fact]
     public async Task GetEffectiveCombatData_WithMount_ReturnsProcData()
     {
-        var (service, repo, gearDefs, _, _, _) = BuildService();
+        var (service, repo, gearDefs, _, _, _, _) = BuildService();
         var playerId = Guid.NewGuid();
 
         var mountRow = PlayerEquipment.Create(playerId, EquipmentSlot.Mount, "gear_draft_horse");
@@ -273,7 +283,7 @@ public class EquipmentServiceTests
     public async Task GetEffectiveCombatData_ConditionalFlatAttack_AddsToEffectiveAttack()
     {
         // Gear with a conditional bonus: +1 ATK per 1 owned "item_a" (owns 3 → +3 ATK)
-        var (service, repo, gearDefs, _, inventory, itemDefs) = BuildService();
+        var (service, repo, gearDefs, _, inventory, itemDefs, _) = BuildService();
         var playerId = Guid.NewGuid();
 
         var ringRow = PlayerEquipment.Create(playerId, EquipmentSlot.Ring1, "gear_cond_ring");
@@ -320,7 +330,7 @@ public class EquipmentServiceTests
     public async Task GetEffectiveCombatData_ConditionalProcChanceClamped_NeverExceedsOne()
     {
         // Mount base procChance = 0.8; conditional adds 0.5 → 1.3, clamped to 1.0
-        var (service, repo, gearDefs, _, inventory, _) = BuildService();
+        var (service, repo, gearDefs, _, inventory, _, _) = BuildService();
         var playerId = Guid.NewGuid();
 
         var mountRow = PlayerEquipment.Create(playerId, EquipmentSlot.Mount, "gear_cond_mount");
@@ -366,7 +376,7 @@ public class EquipmentServiceTests
     [Fact]
     public async Task GetEffectiveCombatData_FlatDamagePercent_PropagatesInResult()
     {
-        var (service, repo, gearDefs, _, inventory, itemDefs) = BuildService();
+        var (service, repo, gearDefs, _, inventory, itemDefs, _) = BuildService();
         var playerId = Guid.NewGuid();
 
         var ringRow = PlayerEquipment.Create(playerId, EquipmentSlot.Ring1, "gear_dmg_ring");
@@ -414,7 +424,7 @@ public class EquipmentServiceTests
     {
         // Gear grants +2 ATK per 5 items tagged "material"; owns 3 of mat_a + 4 of mat_b = 7 total
         // floor(7/5) = 1 stack × 2 = +2 ATK
-        var (service, repo, gearDefs, _, inventory, itemDefs) = BuildService();
+        var (service, repo, gearDefs, _, inventory, itemDefs, _) = BuildService();
         var playerId = Guid.NewGuid();
 
         var ringRow = PlayerEquipment.Create(playerId, EquipmentSlot.Ring1, "gear_tag_ring");
@@ -610,5 +620,75 @@ public class EquipmentServiceTests
         existing.Quantity.Should().Be(5, "2 existing + 3 granted = 5");
         gearRepo.Verify(g => g.UpdateAsync(existing, It.IsAny<CancellationToken>()), Times.Once);
         gearRepo.Verify(g => g.CreateAsync(It.IsAny<PlayerGear>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    // -----------------------------------------------------------------------
+    // EquipAsync — G3 ownership gate
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task EquipAsync_OwnershipCheck_Fail_NotOwned()
+    {
+        var (service, repo, gearDefs, _, _, _, gearRepo) = BuildService();
+        var playerId = Guid.NewGuid();
+        const string gearId = "gear_conscript_helm";
+
+        gearDefs.Setup(g => g.GetById(gearId)).Returns(HelmDef());
+        gearRepo.Setup(r => r.GetAsync(playerId, gearId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerGear?)null);
+
+        var result = await service.EquipAsync(playerId, "Head", gearId);
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("do not own");
+        repo.Verify(r => r.CreateAsync(It.IsAny<PlayerEquipment>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task EquipAsync_OwnershipCheck_Fail_AllEquipped()
+    {
+        var (service, repo, gearDefs, _, _, _, gearRepo) = BuildService();
+        var playerId = Guid.NewGuid();
+        const string gearId = "gear_conscript_helm";
+
+        gearDefs.Setup(g => g.GetById(gearId)).Returns(HelmDef());
+        gearRepo.Setup(r => r.GetAsync(playerId, gearId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(PlayerGear.Create(playerId, gearId, 1));
+        // One copy already equipped in Head — owned(1) − equippedCount(1) = 0 → fail.
+        repo.Setup(r => r.GetEquippedAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerEquipment>
+            {
+                PlayerEquipment.Create(playerId, EquipmentSlot.Head, gearId),
+            }.AsReadOnly());
+
+        var result = await service.EquipAsync(playerId, "Head", gearId);
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("No available copy");
+    }
+
+    [Fact]
+    public async Task EquipAsync_OwnershipCheck_Success_SpareAvailable()
+    {
+        // Owns 2 helms; 1 already counted as equipped → spare = 1 → equip succeeds.
+        var (service, repo, gearDefs, _, _, _, gearRepo) = BuildService();
+        var playerId = Guid.NewGuid();
+        const string gearId = "gear_conscript_helm";
+
+        gearDefs.Setup(g => g.GetById(gearId)).Returns(HelmDef());
+        gearRepo.Setup(r => r.GetAsync(playerId, gearId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(PlayerGear.Create(playerId, gearId, 2));
+        // GetEquippedAsync returns 1 row for this def → equippedCount=1, available=2−1=1 → OK.
+        repo.Setup(r => r.GetEquippedAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerEquipment>
+            {
+                PlayerEquipment.Create(playerId, EquipmentSlot.Head, gearId),
+            }.AsReadOnly());
+        repo.Setup(r => r.FindBySlotAsync(playerId, EquipmentSlot.Head, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerEquipment?)null);
+
+        var result = await service.EquipAsync(playerId, "Head", gearId);
+
+        result.Success.Should().BeTrue();
     }
 }
