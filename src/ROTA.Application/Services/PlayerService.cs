@@ -61,8 +61,10 @@ public sealed class PlayerService : IPlayerService
         {
             Id               = player.Id,
             Username         = player.Username,
+            DisplayName      = string.IsNullOrWhiteSpace(player.DisplayName) ? player.Username : player.DisplayName,
             Email            = player.Email,
             Level            = player.Level,
+            Class            = player.Class.ToString(),
             Experience       = player.Experience,
             Gold             = player.Gold,
             GuildId          = player.GuildId,

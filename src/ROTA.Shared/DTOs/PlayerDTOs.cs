@@ -4,8 +4,10 @@ public class PlayerProfileResponse
 {
     public Guid Id { get; set; }
     public string Username { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public int Level { get; set; }
+    public string Class { get; set; } = string.Empty;
     public long Experience { get; set; }
     public long Gold { get; set; }
     public Guid? GuildId { get; set; }

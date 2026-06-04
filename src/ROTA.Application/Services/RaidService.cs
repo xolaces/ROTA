@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.Extensions.Options;
+using ROTA.Application.Configuration;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Models;
 using ROTA.Domain.Entities;
@@ -84,6 +85,7 @@ public sealed class RaidService : IRaidService
     private readonly ILegionService _legionService;
     // System 17 Slice 4 — leaderboard write hooks
     private readonly ILeaderboardService _leaderboards;
+    private readonly CombatConfig _combatConfig;
     private readonly Random _random;
 
     public RaidService(
@@ -114,6 +116,7 @@ public sealed class RaidService : IRaidService
         IGearDefinitionProvider gearDefs,
         ILegionService legionService,
         ILeaderboardService leaderboards,
+        IOptions<CombatConfig> combatConfig,
         Random? random = null)
     {
         _raids           = raids;
@@ -143,6 +146,7 @@ public sealed class RaidService : IRaidService
         _gearDefs        = gearDefs;
         _legionService   = legionService;
         _leaderboards    = leaderboards;
+        _combatConfig    = combatConfig.Value;
         _random          = random ?? Random.Shared;
     }
 
@@ -643,8 +647,11 @@ public sealed class RaidService : IRaidService
                 await _participants.UpdateAsync(participantFinal, ct);
 
             // On-hit XP and gold — granted every hit, inside the advisory lock.
-            // XP: single uniform roll [1.0, 4.0] × stamina spent (not per-stamina roll).
-            double xpRoll = 1.0 + _random.NextDouble() * 3.0; // uniform [1, 4]
+            // XP: single uniform roll [min, max] × stamina spent — CombatConfig-driven, not per-stamina.
+            // Defaults [1.0, 4.0] preserve the shipped curve (avg ~2.5/stamina ⇒ ~50 on a 20-stamina hit).
+            double xpMin  = _combatConfig.XpPerStaminaRollMin;
+            double xpMax  = _combatConfig.XpPerStaminaRollMax;
+            double xpRoll = xpMin + _random.NextDouble() * (xpMax - xpMin);
             xpGained  = Math.Max(1, (int)Math.Round(staminaCost * xpRoll));
             goldGained = (long)staminaCost * definition.GoldPerStamina;
 

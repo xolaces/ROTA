@@ -578,6 +578,7 @@ public class LeaderboardWriteHookTests
 
         var magicCfg  = Options.Create(new MagicConfig());
         var legionCfg = Options.Create(new LegionConfig());
+        var combatCfg = Options.Create(new CombatConfig());
 
         var service = new RaidService(
             raids.Object, participants.Object, players.Object, resources.Object,
@@ -587,7 +588,7 @@ public class LeaderboardWriteHookTests
             raidMagics.Object, magicDefs.Object, magicSvc.Object, magicCfg,
             playerLegions.Object, legionSlots.Object, unitDefs.Object, legionDefs.Object,
             legionCfg, commanderGear.Object, gearDefs.Object, legionSvc.Object,
-            leaderboards.Object, random);
+            leaderboards.Object, combatCfg, random);
 
         return new RaidBundle(service, raids, participants, players, resources, energy,
             auditLog, definitions, hitCache, equipment, stats, leaderboards);
