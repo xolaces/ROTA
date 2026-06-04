@@ -35,6 +35,16 @@ public sealed class RaidController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("{activeRaidId}/participants")]
+    [ProducesResponseType(typeof(IReadOnlyList<RaidParticipantRankDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetParticipants(
+        [FromRoute] Guid activeRaidId,
+        [FromQuery] int top = 25)
+    {
+        var result = await _raids.GetParticipantsAsync(activeRaidId, top);
+        return Ok(result);
+    }
+
     // Direct summon is an admin/dev tool — players summon only via sigils (POST /api/items/{id}/use).
     // Config key: Admin:PlayerIds (see Program.cs and appsettings notes).
     [HttpPost("{raidDefinitionId}/summon")]

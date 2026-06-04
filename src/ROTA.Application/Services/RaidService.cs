@@ -276,6 +276,29 @@ public sealed class RaidService : IRaidService
         };
     }
 
+    public async Task<IReadOnlyList<RaidParticipantRankDto>> GetParticipantsAsync(
+        Guid activeRaidId, int top, CancellationToken ct = default)
+    {
+        if (top < 1)   top = 1;
+        if (top > 100) top = 100;
+
+        var rows = await _participants.GetTopByDamageAsync(activeRaidId, top, ct);
+        var result = new List<RaidParticipantRankDto>(rows.Count);
+        for (int i = 0; i < rows.Count; i++)
+        {
+            var r = rows[i];
+            result.Add(new RaidParticipantRankDto
+            {
+                Rank        = i + 1,
+                PlayerId    = r.PlayerId,
+                DisplayName = r.DisplayName,
+                TotalDamage = r.TotalDamageDealt,
+                HitCount    = r.HitCount,
+            });
+        }
+        return result;
+    }
+
     public async Task<RaidHitResult> HitRaidAsync(
         Guid playerId, Guid activeRaidId, int hitSize, string idempotencyKey,
         CancellationToken ct = default)

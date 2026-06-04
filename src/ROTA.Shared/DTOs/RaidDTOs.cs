@@ -172,3 +172,12 @@ public enum RaidHitFailureCode
     AccessDenied        = 6,  // Personal raid — only the summoner may strike
     RaidFull            = 7,  // Participant cap reached for this raid size
 }
+
+public class RaidParticipantRankDto
+{
+    public int    Rank        { get; set; }
+    public Guid   PlayerId    { get; set; }
+    public string DisplayName { get; set; } = string.Empty;
+    public long   TotalDamage { get; set; }
+    public int    HitCount    { get; set; }
+}

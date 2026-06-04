@@ -1973,4 +1973,69 @@ public class RaidServiceTests
             player.Id, "gear_conscript_helm", 1, It.IsAny<CancellationToken>()),
             Times.Once, "gear drop with chance=1.0 must call GrantGearAsync for the eligible participant");
     }
+
+    // -----------------------------------------------------------------------
+    // PARTICIPANT RANKING
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task GetParticipants_AssignsSequentialRanks_FromRepoOrder()
+    {
+        var b = BuildService(new Random(0));
+        var raidId = Guid.NewGuid();
+
+        var p1 = Guid.NewGuid();
+        var p2 = Guid.NewGuid();
+        var p3 = Guid.NewGuid();
+        var rows = new List<RaidParticipantRank>
+        {
+            new(p1, "Alpha",   9000, 12),
+            new(p2, "Bravo",   4500, 7),
+            new(p3, "Charlie", 1000, 2),
+        };
+        b.Participants
+            .Setup(p => p.GetTopByDamageAsync(raidId, It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(rows);
+
+        var result = await b.Service.GetParticipantsAsync(raidId, 25);
+
+        result.Should().HaveCount(3);
+
+        result[0].Rank.Should().Be(1);
+        result[0].PlayerId.Should().Be(p1);
+        result[0].DisplayName.Should().Be("Alpha");
+        result[0].TotalDamage.Should().Be(9000);
+        result[0].HitCount.Should().Be(12);
+
+        result[1].Rank.Should().Be(2);
+        result[1].PlayerId.Should().Be(p2);
+        result[1].DisplayName.Should().Be("Bravo");
+        result[1].TotalDamage.Should().Be(4500);
+        result[1].HitCount.Should().Be(7);
+
+        result[2].Rank.Should().Be(3);
+        result[2].PlayerId.Should().Be(p3);
+        result[2].DisplayName.Should().Be("Charlie");
+        result[2].TotalDamage.Should().Be(1000);
+        result[2].HitCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task GetParticipants_ClampsTop_ToHundred()
+    {
+        var b = BuildService(new Random(0));
+        var raidId = Guid.NewGuid();
+
+        b.Participants
+            .Setup(p => p.GetTopByDamageAsync(raidId, It.Is<int>(t => t == 100), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipantRank>());
+
+        var result = await b.Service.GetParticipantsAsync(raidId, 9999);
+
+        result.Should().BeEmpty();
+        b.Participants.Verify(
+            p => p.GetTopByDamageAsync(raidId, It.Is<int>(t => t == 100), It.IsAny<CancellationToken>()),
+            Times.Once,
+            "top must be clamped to 100 before reaching the repository");
+    }
 }

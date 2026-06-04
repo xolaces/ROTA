@@ -51,4 +51,17 @@ public sealed class RaidParticipantRepository : IRaidParticipantRepository
         _db.RaidParticipants.Update(participant);
         await _db.SaveChangesAsync(ct);
     }
+
+    public async Task<IReadOnlyList<RaidParticipantRank>> GetTopByDamageAsync(
+        Guid activeRaidId, int top, CancellationToken ct = default)
+    {
+        var query =
+            from rp in _db.RaidParticipants
+            where rp.ActiveRaidId == activeRaidId && !rp.IsDeleted
+            join pl in _db.Players on rp.PlayerId equals pl.Id
+            orderby rp.TotalDamageDealt descending, rp.UpdatedAt ascending
+            select new RaidParticipantRank(rp.PlayerId, pl.DisplayName, rp.TotalDamageDealt, rp.HitCount);
+
+        return await query.Take(top).ToListAsync(ct);
+    }
 }

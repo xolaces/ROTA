@@ -15,4 +15,6 @@ public interface IRaidService
 
     Task<RaidHitResult> HitRaidAsync(
         Guid playerId, Guid activeRaidId, int hitSize, string idempotencyKey, CancellationToken ct = default);
+
+    Task<IReadOnlyList<RaidParticipantRankDto>> GetParticipantsAsync(Guid activeRaidId, int top, CancellationToken ct = default);
 }
