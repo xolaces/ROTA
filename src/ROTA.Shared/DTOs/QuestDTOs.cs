@@ -14,6 +14,13 @@ public class QuestAvailabilityResponse
     public int CompletionCount { get; set; }
     public DateTimeOffset? LastCompletedAt { get; set; }
     public bool IsBossNode { get; set; }
+    /// <summary>
+    /// True when the player may attempt this node. The service only returns nodes whose
+    /// prerequisite is satisfied, so every returned node is unlocked. The client gates the
+    /// Attempt button on this flag — it must be sent explicitly (a missing field deserializes
+    /// to false on the client and disables every Attempt button).
+    /// </summary>
+    public bool IsUnlocked { get; set; }
 }
 
 public class QuestAttemptRequest
