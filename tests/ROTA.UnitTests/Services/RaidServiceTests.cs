@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Moq;
+using ROTA.Application.Configuration;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Models;
 using ROTA.Application.Services;
@@ -44,7 +45,7 @@ public class RaidServiceTests
         Mock<ILegionService> LegionService,
         Mock<ILeaderboardService> Leaderboards);
 
-    private static ServiceBundle BuildService(Random? random = null, MagicConfig? magicConfig = null, LegionConfig? legionConfig = null)
+    private static ServiceBundle BuildService(Random? random = null, MagicConfig? magicConfig = null, LegionConfig? legionConfig = null, CombatConfig? combatConfig = null)
     {
         var raids          = new Mock<IActiveRaidRepository>();
         var participants   = new Mock<IRaidParticipantRepository>();
@@ -121,6 +122,7 @@ public class RaidServiceTests
 
         var magicCfg  = Options.Create(magicConfig  ?? new MagicConfig());
         var legionCfg = Options.Create(legionConfig ?? new LegionConfig());
+        var combatCfg = Options.Create(combatConfig ?? new CombatConfig());
 
         var service = new RaidService(
             raids.Object, participants.Object, players.Object, resources.Object,
@@ -130,7 +132,7 @@ public class RaidServiceTests
             raidMagics.Object, magicDefs.Object, magicSvc.Object, magicCfg,
             playerLegions.Object, legionSlots.Object, unitDefs.Object, legionDefs.Object,
             legionCfg, commanderGear.Object, gearDefs.Object, legionSvc.Object,
-            leaderboards.Object, random);
+            leaderboards.Object, combatCfg, random);
 
         return new ServiceBundle(service, raids, participants, players, resources, energy, gems,
             stats, inventory, itemDefs, lootTables, auditLog, definitions, hitCache, equipment,
@@ -755,6 +757,32 @@ public class RaidServiceTests
         result.Response.XpGained.Should().BeLessOrEqualTo(staminaCost * 4,
             "XP ceiling is staminaCost × 4.0 (roll maximum)");
         result.Response.XpGained.Should().BeGreaterOrEqualTo(1, "XP is always at least 1");
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(5)]
+    [InlineData(20)]
+    public async Task Hit_XpRoll_IsDrivenByCombatConfig(int hitSize)
+    {
+        // With min==max the per-hit roll collapses to a constant, so XP = round(staminaCost × const) exactly.
+        var cfg = new CombatConfig { XpPerStaminaRollMin = 3.0, XpPerStaminaRollMax = 3.0 };
+        var b = BuildService(new Random(42), combatConfig: cfg);
+        var player = MakePlayer();
+        var raid = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, hitSize, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        int staminaCost = hitSize; // StaminaCostPerHit=1
+        result.Response!.XpGained.Should().Be(staminaCost * 3,
+            "min==max==3.0 ⇒ the per-hit roll is exactly 3.0, so XP = staminaCost × 3 (config-driven)");
     }
 
     [Theory]
