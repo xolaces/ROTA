@@ -158,6 +158,10 @@ public class QuestServiceTests
 
         result.Should().HaveCount(1);
         result[0].Id.Should().Be("q001");
+        // Regression: every returned node is past the prerequisite filter, so it must be flagged
+        // unlocked. A missing/false IsUnlocked deserializes to false on the client and disables
+        // every Attempt button — the original play-blocking bug.
+        result[0].IsUnlocked.Should().BeTrue();
     }
 
     [Fact]

@@ -128,6 +128,9 @@ public sealed class QuestService : IQuestService
                 CompletionCount    = prog?.CompletionCount ?? 0,
                 LastCompletedAt    = prog?.LastCompletedAt,
                 IsBossNode         = quest.IsBoss,
+                // Returned nodes have already passed the prerequisite filter above, so they are
+                // attemptable. Must be set explicitly: the client disables Attempt when false.
+                IsUnlocked         = true,
             });
         }
         return result;
