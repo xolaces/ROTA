@@ -261,4 +261,69 @@ public class PlayerServiceTests
         var result = await validator.ValidateAsync(new UpdateUsernameRequest { Username = username });
         result.IsValid.Should().BeTrue($"'{username}' should pass validation");
     }
+
+    // -----------------------------------------------------------------------
+    // PUT /api/players/me/display-name — display name update
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task UpdateDisplayName_Succeeds_WithValidDisplayName()
+    {
+        var (service, players, _, auditLog) = BuildService();
+        var player = MakePlayer("testuser");
+
+        players.Setup(p => p.FindByIdAsync(player.Id, It.IsAny<CancellationToken>()))
+               .ReturnsAsync(player);
+        players.Setup(p => p.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>()))
+               .Returns(Task.CompletedTask);
+        auditLog.Setup(a => a.AppendAsync(It.IsAny<AuditLog>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+        var result = await service.UpdateDisplayNameAsync(player.Id, new UpdateDisplayNameRequest("NewName"));
+
+        result.Status.Should().Be(DisplayNameUpdateStatus.Success);
+        result.NewDisplayName.Should().Be("NewName");
+        players.Verify(p => p.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateDisplayName_ReturnsNotFound_WhenPlayerDoesNotExist()
+    {
+        var (service, players, _, _) = BuildService();
+        var playerId = Guid.NewGuid();
+
+        players.Setup(p => p.FindByIdAsync(playerId, It.IsAny<CancellationToken>()))
+               .ReturnsAsync((Player?)null);
+
+        var result = await service.UpdateDisplayNameAsync(playerId, new UpdateDisplayNameRequest("AnyName"));
+
+        result.Status.Should().Be(DisplayNameUpdateStatus.NotFound);
+        players.Verify(p => p.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    // -----------------------------------------------------------------------
+    // UpdateDisplayNameRequestValidator
+    // -----------------------------------------------------------------------
+
+    [Theory]
+    [InlineData("John_Doe-99")]                                              // letters, digits, underscore, hyphen
+    [InlineData("A")]                                                        // single char — valid
+    [InlineData("Hello World")]                                              // space allowed
+    public async Task UpdateDisplayNameValidator_Accepts_ValidDisplayNames(string name)
+    {
+        var validator = new UpdateDisplayNameRequestValidator();
+        var result = await validator.ValidateAsync(new UpdateDisplayNameRequest(name));
+        result.IsValid.Should().BeTrue($"'{name}' should pass validation");
+    }
+
+    [Theory]
+    [InlineData("")]                                                         // empty
+    [InlineData("bad!name")]                                                 // special char not allowed
+    [InlineData("this_display_name_is_way_too_long_to_fit_in_48_chars_xx")] // > 48 chars
+    public async Task UpdateDisplayNameValidator_Rejects_InvalidDisplayNames(string name)
+    {
+        var validator = new UpdateDisplayNameRequestValidator();
+        var result = await validator.ValidateAsync(new UpdateDisplayNameRequest(name));
+        result.IsValid.Should().BeFalse($"'{name}' should fail validation");
+    }
 }

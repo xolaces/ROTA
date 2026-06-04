@@ -17,3 +17,15 @@ public sealed class UpdateUsernameRequestValidator : AbstractValidator<UpdateUse
             .WithMessage("That username is reserved. Please choose another.");
     }
 }
+
+public sealed class UpdateDisplayNameRequestValidator : AbstractValidator<UpdateDisplayNameRequest>
+{
+    public UpdateDisplayNameRequestValidator()
+    {
+        RuleFor(x => x.DisplayName)
+            .NotEmpty()
+            .MaximumLength(48)
+            .Matches(@"^[A-Za-z0-9_ -]+$")
+            .WithMessage("DisplayName may only contain letters, digits, spaces, underscores, and hyphens.");
+    }
+}
