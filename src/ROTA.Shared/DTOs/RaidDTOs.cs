@@ -119,6 +119,23 @@ public class RaidHitRequest
     public string IdempotencyKey { get; set; } = string.Empty;
 }
 
+public class CompletedRaidResponse
+{
+    public Guid ActiveRaidId { get; set; }
+    public string RaidDefinitionId { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Difficulty { get; set; } = string.Empty;
+    public string DifficultyColor { get; set; } = string.Empty;
+    public DateTimeOffset DefeatedAt { get; set; }
+    public long YourTotalDamage { get; set; }
+    public string ContributionTier { get; set; } = string.Empty;
+    public long GoldEarned { get; set; }
+    public int XpEarned { get; set; }
+    public int GemsEarned { get; set; }
+    public int StatPointsEarned { get; set; }
+    public List<ItemGrantDTO> ItemsEarned { get; set; } = new();
+}
+
 // --- Service result wrappers ---
 
 public class SummonRaidResult

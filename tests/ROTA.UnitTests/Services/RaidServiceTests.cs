@@ -1905,4 +1905,254 @@ public class RaidServiceTests
         result.Response.DamageDealt.Should().BeInRange(38, 52,
             "commander BonusAttack=9999 must not inflate charBase beyond normal range");
     }
+
+    // -----------------------------------------------------------------------
+    // Raid result summary — RecordRewards written at kill per participant
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task Hit_Kill_RecordsRewardSummary_OntoEachParticipant()
+    {
+        // Single-participant kill: verify RecordRewards is called with the values actually
+        // granted (gold=750, xp=450 at Legendary1×1.5, gems=3 at 2×1.5 rounded, no items).
+        var b = BuildService(new Random(0));
+        var attacker = MakePlayer();
+        var raid = MakeRaid(currentHp: 1);
+
+        SetupHitScaffolding(b, attacker, raid);
+
+        var attackerPart = RaidParticipant.Create(raid.Id, attacker.Id);
+        attackerPart.RecordHit(100000);
+
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, attacker.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(attackerPart);
+        b.Participants.Setup(p => p.UpdateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipant> { attackerPart });
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        await b.Service.HitRaidAsync(attacker.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        // Legendary1 multiplier=1.50 × Normal diffMult=1.0:
+        // gold=round(500×1.0×1.50)=750, xp=round(300×1.0×1.50)=450, gems=round(2×1.50)=3
+        attackerPart.ContributionTier.Should().Be("Legendary",
+            "display tier strips the rank suffix: Legendary1→Legendary");
+        attackerPart.GoldEarned.Should().Be(750);
+        attackerPart.XpEarned.Should().Be(450);
+        attackerPart.GemsEarned.Should().Be(3);
+        attackerPart.StatPointsEarned.Should().Be(0, "no loot table configured for this test");
+        attackerPart.ItemsEarnedJson.Should().Be(string.Empty, "no items dropped");
+        attackerPart.RewardedAt.Should().NotBeNull("RewardedAt is set at kill");
+        // Field values prove RecordRewards was called; UpdateAsync count is not asserted here
+        // because the hit flow also calls it for RecordHit on the same participant.
+    }
+
+    [Fact]
+    public async Task Hit_Kill_RecordsRewardSummary_BothParticipants_CorrectTiers()
+    {
+        // Two participants: attacker=Legendary1, bystander=Legendary2.
+        // Verify each gets their own tier recorded — not the caller's values cross-applied.
+        var b = BuildService(new Random(0));
+        var attacker  = MakePlayer();
+        var bystander = MakePlayer();
+        var raid = MakeRaid(currentHp: 1);
+
+        SetupHitScaffolding(b, attacker, raid);
+        b.Players.Setup(p => p.FindByIdAsync(bystander.Id, It.IsAny<CancellationToken>())).ReturnsAsync(bystander);
+
+        var attackerPart  = RaidParticipant.Create(raid.Id, attacker.Id);
+        for (int i = 0; i < 10; i++) attackerPart.RecordHit(10000);  // 100000 — Legendary1
+        var bystanderPart = RaidParticipant.Create(raid.Id, bystander.Id);
+        bystanderPart.RecordHit(5000);                                // 5000 — Legendary2
+
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, attacker.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(attackerPart);
+        b.Participants.Setup(p => p.UpdateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipant> { attackerPart, bystanderPart });
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        await b.Service.HitRaidAsync(attacker.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        attackerPart.ContributionTier.Should().Be("Legendary");
+        attackerPart.GoldEarned.Should().Be(750,  "Legendary1 ×1.50 on 500 base");
+        bystanderPart.ContributionTier.Should().Be("Legendary");
+        bystanderPart.GoldEarned.Should().Be(625, "Legendary2 ×1.25 on 500 base");
+
+        // UpdateAsync fires: once for attacker's RecordHit (pre-kill), once per participant
+        // for RecordRewards (kill loop) = 3 total (attacker: 2, bystander: 1).
+        b.Participants.Verify(p => p.UpdateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()), Times.Exactly(3));
+    }
+
+    [Fact]
+    public async Task Hit_Kill_RecordsItemsEarnedJson_WhenItemsDropped()
+    {
+        // Configure a loot table with a 100%-chance item drop to guarantee a non-empty ItemsEarnedJson.
+        var b = BuildService(new Random(0));
+        var attacker = MakePlayer();
+        var raid = MakeRaid(currentHp: 1);
+
+        var lootTable = new LootTableDefinition
+        {
+            Id = "lt_raid_ironcolossus", Type = "Raid",
+            Difficulties = new Dictionary<string, LootTableDifficulty>
+            {
+                ["Normal"] = new()
+                {
+                    MinContributionPercent = 0.1,
+                    ThresholdRewards = new List<ThresholdReward>
+                    {
+                        new()
+                        {
+                            ContributionPercent = 0.1,
+                            UnassignedStatPoints = 0,
+                            ItemDrops = new List<ItemDropChance>
+                            {
+                                new ItemDropChance { ItemId = "item_stat_bag_small", Chance = 1.0, Quantity = 1 },
+                            },
+                        },
+                    },
+                },
+            },
+        };
+        b.LootTables.Setup(l => l.GetById("lt_raid_ironcolossus")).Returns(lootTable);
+
+        var itemDef = new ItemDefinition
+        {
+            Id     = "item_stat_bag_small",
+            Name   = "Small Stat Bag",
+            Rarity = ItemRarity.Green,
+            ArtKey = "item_statbag_small",
+            Type   = ItemType.StatBag,
+        };
+        b.ItemDefs.Setup(d => d.GetById("item_stat_bag_small")).Returns(itemDef);
+        b.Inventory.Setup(i => i.GetAsync(attacker.Id, "item_stat_bag_small", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerInventoryItem?)null);
+        b.Inventory.Setup(i => i.CreateAsync(It.IsAny<PlayerInventoryItem>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        SetupHitScaffolding(b, attacker, raid);
+
+        var attackerPart = RaidParticipant.Create(raid.Id, attacker.Id);
+        attackerPart.RecordHit(100000);
+
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, attacker.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(attackerPart);
+        b.Participants.Setup(p => p.UpdateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipant> { attackerPart });
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        await b.Service.HitRaidAsync(attacker.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        attackerPart.ItemsEarnedJson.Should().NotBeNullOrEmpty("a 100%-chance item drop was configured");
+        attackerPart.ItemsEarnedJson.Should().Contain("item_stat_bag_small",
+            "the guaranteed item id must appear in the serialized JSON");
+    }
+
+    // -----------------------------------------------------------------------
+    // GetCompletedRaidsAsync — read-side mapping and filtering
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task GetCompletedRaids_MapsFieldsCorrectly_FromParticipantRow()
+    {
+        var b = BuildService();
+        var playerId = Guid.NewGuid();
+
+        // Build a synthetic participant with a defeated raid attached (simulates EF Include result).
+        var raidId    = Guid.NewGuid();
+        var raidRow   = ActiveRaid.Create("raid_ironcolossus", playerId, 100000,
+            DateTimeOffset.UtcNow.AddHours(-1), RaidDifficulty.Hard);
+        raidRow.TakeDamage(100000);
+        raidRow.MarkDefeated();
+
+        var partRow = RaidParticipant.Create(raidId, playerId);
+        partRow.RecordHit(50000);
+        var rewardedTime = DateTimeOffset.UtcNow.AddMinutes(-5);
+        partRow.RecordRewards(
+            tier:       "Legendary",
+            gold:       625,
+            xp:         375,
+            gems:       2,
+            statPoints: 4,
+            itemsJson:  """[{"ItemId":"item_sigil_ironcolossus_normal","ItemName":"Sigil","Quantity":1,"Rarity":"White","ArtKey":"sigil_ic_n"}]""",
+            rewardedAt: rewardedTime);
+
+        // Inject raidRow as the navigation property via reflection (EF does this at runtime).
+        var navProp = typeof(RaidParticipant).GetProperty("ActiveRaid",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)!;
+        navProp.GetSetMethod(nonPublic: true)!.Invoke(partRow, new object[] { raidRow });
+
+        b.Participants.Setup(p => p.GetCompletedForPlayerAsync(playerId, It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipant> { partRow });
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.GetCompletedRaidsAsync(playerId);
+
+        result.Should().HaveCount(1);
+        var r = result[0];
+        r.ActiveRaidId.Should().Be(raidRow.Id);
+        r.RaidDefinitionId.Should().Be("raid_ironcolossus");
+        r.Name.Should().Be("The Iron Colossus");
+        r.Difficulty.Should().Be("Hard");
+        r.DifficultyColor.Should().Be("Yellow");
+        r.DefeatedAt.Should().Be(rewardedTime);
+        r.YourTotalDamage.Should().Be(50000);
+        r.ContributionTier.Should().Be("Legendary");
+        r.GoldEarned.Should().Be(625);
+        r.XpEarned.Should().Be(375);
+        r.GemsEarned.Should().Be(2);
+        r.StatPointsEarned.Should().Be(4);
+        r.ItemsEarned.Should().HaveCount(1);
+        r.ItemsEarned[0].ItemId.Should().Be("item_sigil_ironcolossus_normal");
+    }
+
+    [Fact]
+    public async Task GetCompletedRaids_ReturnsEmptyList_WhenNoCompletedRaids()
+    {
+        var b = BuildService();
+        var playerId = Guid.NewGuid();
+
+        b.Participants.Setup(p => p.GetCompletedForPlayerAsync(playerId, It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipant>());
+
+        var result = await b.Service.GetCompletedRaidsAsync(playerId);
+
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetCompletedRaids_DeserializesEmptyItemsJson_ToEmptyList()
+    {
+        var b = BuildService();
+        var playerId = Guid.NewGuid();
+
+        var raidRow = ActiveRaid.Create("raid_ironcolossus", playerId, 100000,
+            DateTimeOffset.UtcNow.AddHours(-1), RaidDifficulty.Normal);
+        raidRow.TakeDamage(100000);
+        raidRow.MarkDefeated();
+
+        var partRow = RaidParticipant.Create(raidRow.Id, playerId);
+        partRow.RecordHit(1000);
+        partRow.RecordRewards("Legendary", 750, 450, 3, 0, string.Empty, DateTimeOffset.UtcNow);
+
+        var navProp = typeof(RaidParticipant).GetProperty("ActiveRaid",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)!;
+        navProp.GetSetMethod(nonPublic: true)!.Invoke(partRow, new object[] { raidRow });
+
+        b.Participants.Setup(p => p.GetCompletedForPlayerAsync(playerId, It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipant> { partRow });
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.GetCompletedRaidsAsync(playerId);
+
+        result[0].ItemsEarned.Should().BeEmpty("blank ItemsEarnedJson deserializes to an empty list");
+    }
 }

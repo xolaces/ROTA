@@ -26,6 +26,19 @@ public sealed class RaidParticipantRepository : IRaidParticipantRepository
             .Where(p => p.ActiveRaidId == activeRaidId && !p.IsDeleted)
             .ToListAsync(ct);
 
+    public async Task<IReadOnlyList<RaidParticipant>> GetCompletedForPlayerAsync(
+        Guid playerId, int limit, CancellationToken ct = default)
+        => await _db.RaidParticipants
+            .Include(p => p.ActiveRaid)
+            .Where(p => p.PlayerId == playerId
+                     && !p.IsDeleted
+                     && p.ActiveRaid != null
+                     && p.ActiveRaid.IsDefeated
+                     && p.RewardedAt != null)
+            .OrderByDescending(p => p.RewardedAt)
+            .Take(limit)
+            .ToListAsync(ct);
+
     public async Task<RaidParticipant> CreateAsync(RaidParticipant participant, CancellationToken ct = default)
     {
         _db.RaidParticipants.Add(participant);

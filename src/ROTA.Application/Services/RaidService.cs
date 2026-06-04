@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.Extensions.Options;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Models;
@@ -181,6 +182,43 @@ public sealed class RaidService : IRaidService
                 DifficultyColor       = DifficultyColors[raid.Difficulty],
                 Size                  = raid.Size.ToString(),
                 YourCurrentTier       = ComputeTier(participant?.TotalDamageDealt ?? 0, activeRaids.Count, participant, null),
+            });
+        }
+
+        return result;
+    }
+
+    public async Task<IReadOnlyList<CompletedRaidResponse>> GetCompletedRaidsAsync(
+        Guid playerId, CancellationToken ct = default)
+    {
+        const int Limit = 50;
+        var rows = await _participants.GetCompletedForPlayerAsync(playerId, Limit, ct);
+        var result = new List<CompletedRaidResponse>(rows.Count);
+
+        foreach (var p in rows)
+        {
+            var raid = p.ActiveRaid!;
+            var definition = _raidDefinitions.GetById(raid.RaidDefinitionId);
+
+            var items = string.IsNullOrWhiteSpace(p.ItemsEarnedJson)
+                ? new List<ItemGrantDTO>()
+                : JsonSerializer.Deserialize<List<ItemGrantDTO>>(p.ItemsEarnedJson) ?? new List<ItemGrantDTO>();
+
+            result.Add(new CompletedRaidResponse
+            {
+                ActiveRaidId     = raid.Id,
+                RaidDefinitionId = raid.RaidDefinitionId,
+                Name             = definition?.Name ?? raid.RaidDefinitionId,
+                Difficulty       = raid.Difficulty.ToString(),
+                DifficultyColor  = DifficultyColors[raid.Difficulty],
+                DefeatedAt       = p.RewardedAt!.Value,
+                YourTotalDamage  = p.TotalDamageDealt,
+                ContributionTier = p.ContributionTier,
+                GoldEarned       = p.GoldEarned,
+                XpEarned         = p.XpEarned,
+                GemsEarned       = p.GemsEarned,
+                StatPointsEarned = p.StatPointsEarned,
+                ItemsEarned      = items,
             });
         }
 
@@ -783,6 +821,7 @@ public sealed class RaidService : IRaidService
                 await _stats.GrantLevelUpPointsAsync(p.PlayerId, newLevel, ct);
 
             // Gems — Rare+ only
+            int participantGemsGranted = 0;
             if (displayTier is not "Participant")
             {
                 int gemAmount = (int)Math.Round(definition.BaseGemReward * (double)multiplier);
@@ -791,8 +830,12 @@ public sealed class RaidService : IRaidService
                     var gemRef = $"raid:{raid.Id}:{p.PlayerId}";
                     var granted = await _gems.GrantGemsAsync(
                         p.PlayerId, gemAmount, GemTransactionType.RaidReward, gemRef, ct);
-                    if (p.PlayerId == callerPlayerId && granted)
-                        callerGemsGranted = gemAmount;
+                    if (granted)
+                    {
+                        participantGemsGranted = gemAmount;
+                        if (p.PlayerId == callerPlayerId)
+                            callerGemsGranted = gemAmount;
+                    }
                 }
             }
 
@@ -852,6 +895,20 @@ public sealed class RaidService : IRaidService
 
             if (unassignedSP > 0)
                 await _stats.AddUnassignedPointsAsync(p.PlayerId, unassignedSP, ct);
+
+            // Persist reward summary onto the participant row — same advisory-lock transaction.
+            var itemsJson = items.Count > 0
+                ? JsonSerializer.Serialize(items)
+                : string.Empty;
+            p.RecordRewards(
+                tier:        displayTier,
+                gold:        gold,
+                xp:          xp,
+                gems:        participantGemsGranted,
+                statPoints:  unassignedSP,
+                itemsJson:   itemsJson,
+                rewardedAt:  DateTimeOffset.UtcNow);
+            await _participants.UpdateAsync(p, ct);
 
             if (p.PlayerId == callerPlayerId)
             {
