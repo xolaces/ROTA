@@ -222,6 +222,18 @@ Build: 0 errors, 0 warnings. Tests: 232 unit + 7 integration = 239 total, all pa
 - ProcBonus type: double → long in RaidHitResponse
 - Function Reference fully refreshed; spec in docs/specs/shipped/system-13-stacking-bonuses.md
 
+## System 19 — Raid Sharing (2026-06-04) — COMPLETE (3 slices)
+Raids are PRIVATE until shared to the public list. Spec: docs/specs/shipped/system-19-raid-sharing.md
+- Backend: ActiveRaid.IsPublic (default false) + Share() domain method; migration AddRaidVisibility.
+  GET /api/raids/{id} (join-by-UID; 404 hides others' Personal raids); POST /api/raids/{id}/share
+  (summoner-only, audited; 403 not-summoner / 404 not-found / 409 Personal). List filter =
+  (IsPublic && Size != Personal) || own. Hit-access gate unchanged. Sigils summon Small (shareable).
+- DTOs: ActiveRaidResponse.IsPublic; ShareRaidResult + ShareRaidFailureCode {None,NotFound,
+  NotSummoner,CannotSharePersonal}.
+- Client (ROTA.Client6 master): Share panel in RaidCombatView (summoner-only, non-Personal) —
+  UID copy + "Share to public list" → flips to "Shared ✓"; Join-by-UID card on the Public tab;
+  PRIVATE badge on own unshared cards.
+
 ## PHASE-2 Deferred Items
 - DiscernmentInvestment effect: quest drop quality (raid crit shipped v0.2.3)
 - Explicit DB transaction scope for QUEST reward steps (energy committed but rewards not atomic; raids fixed v0.2.5)
