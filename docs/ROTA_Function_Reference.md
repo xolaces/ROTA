@@ -281,6 +281,7 @@ Implementation: `LeaderboardService` (`src/ROTA.Application/Services/Leaderboard
 | Method | Description |
 |--------|-------------|
 | `Task<IReadOnlyList<ActiveRaidResponse>> GetActiveRaidsAsync(Guid, CancellationToken)` | Active raids list |
+| `Task<IReadOnlyList<CompletedRaidResponse>> GetCompletedRaidsAsync(Guid, CancellationToken)` | Caller's completed raids with persisted reward summary; limit 50, newest first |
 | `Task<SummonRaidResult> SummonRaidAsync(Guid, string raidDefinitionId, RaidDifficulty, CancellationToken)` | Summon raid |
 | `Task<RaidHitResult> HitRaidAsync(Guid, Guid activeRaidId, int hitSize, string key, CancellationToken)` | Hit a raid |
 
@@ -565,6 +566,7 @@ EnsureAdminAsync: idempotent bootstrap. Reads Seed:AdminPassword (required, no d
 | Endpoint | Service Method | Responses |
 |----------|---------------|-----------|
 | `GET /api/raids` | `GetActiveRaidsAsync` | 200 |
+| `GET /api/raids/completed` | `GetCompletedRaidsAsync` | 200 — caller's defeated raids with reward summary; newest first, limit 50 |
 | `POST /api/raids/{raidDefinitionId}/summon` | `SummonRaidAsync` | 201, 400, 404, 422 |
 | `POST /api/raids/{activeRaidId}/hit` | `HitRaidAsync` | 200, 400, 404, 409, 410, 422 |
 

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ROTA.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using ROTA.Infrastructure.Persistence;
 namespace ROTA.Infrastructure.Migrations
 {
     [DbContext(typeof(RotaDbContext))]
-    partial class RotaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260604000055_AddRaidParticipantRewards")]
+    partial class AddRaidParticipantRewards
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -553,60 +556,6 @@ namespace ROTA.Infrastructure.Migrations
                         .HasDatabaseName("ix_player_equipment_player_slot");
 
                     b.ToTable("player_equipment", (string)null);
-                });
-
-            modelBuilder.Entity("ROTA.Domain.Entities.PlayerGear", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<string>("GearDefinitionId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("gear_definition_id");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("is_deleted");
-
-                    b.Property<Guid>("PlayerId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("player_id");
-
-                    b.Property<int>("Quantity")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(1)
-                        .HasColumnName("quantity");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PlayerId")
-                        .HasDatabaseName("ix_player_gear_player_id");
-
-                    b.HasIndex("PlayerId", "GearDefinitionId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_player_gear_player_gear");
-
-                    b.ToTable("player_gear", (string)null);
                 });
 
             modelBuilder.Entity("ROTA.Domain.Entities.PlayerInventoryItem", b =>

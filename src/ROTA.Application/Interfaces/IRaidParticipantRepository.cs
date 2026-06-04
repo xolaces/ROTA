@@ -6,6 +6,7 @@ public interface IRaidParticipantRepository
 {
     Task<RaidParticipant?> FindByRaidAndPlayerAsync(Guid activeRaidId, Guid playerId, CancellationToken ct = default);
     Task<IReadOnlyList<RaidParticipant>> GetAllForRaidAsync(Guid activeRaidId, CancellationToken ct = default);
+    Task<IReadOnlyList<RaidParticipant>> GetCompletedForPlayerAsync(Guid playerId, int limit, CancellationToken ct = default);
     Task<RaidParticipant> CreateAsync(RaidParticipant participant, CancellationToken ct = default);
     Task UpdateAsync(RaidParticipant participant, CancellationToken ct = default);
 }

@@ -7,6 +7,8 @@ public interface IRaidService
 {
     Task<IReadOnlyList<ActiveRaidResponse>> GetActiveRaidsAsync(Guid playerId, CancellationToken ct = default);
 
+    Task<IReadOnlyList<CompletedRaidResponse>> GetCompletedRaidsAsync(Guid playerId, CancellationToken ct = default);
+
     Task<SummonRaidResult> SummonRaidAsync(
         Guid playerId, string raidDefinitionId, RaidDifficulty difficulty,
         RaidSize size = RaidSize.Large, CancellationToken ct = default);
