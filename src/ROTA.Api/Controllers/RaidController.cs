@@ -45,6 +45,39 @@ public sealed class RaidController : ControllerBase
         return Ok(result);
     }
 
+    // Join-by-UID: open a raid from a pasted id. The GUID is the invite token, so any visibility
+    // resolves — except others' Personal raids (404 to avoid leaking their existence).
+    [HttpGet("{activeRaidId}")]
+    [ProducesResponseType(typeof(ActiveRaidResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetById([FromRoute] Guid activeRaidId)
+    {
+        var result = await _raids.GetRaidByIdAsync(activeRaidId, GetPlayerId());
+        return result is null ? NotFound() : Ok(result);
+    }
+
+    // Summoner-only: publish this raid to the public list.
+    [HttpPost("{activeRaidId}/share")]
+    [ProducesResponseType(typeof(ActiveRaidResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Share([FromRoute] Guid activeRaidId)
+    {
+        var result = await _raids.ShareRaidAsync(GetPlayerId(), activeRaidId);
+
+        if (result.Success)
+            return Ok(result.Raid);
+
+        return result.FailureCode switch
+        {
+            ShareRaidFailureCode.NotFound            => NotFound(new { message = result.FailureReason }),
+            ShareRaidFailureCode.NotSummoner         => StatusCode(StatusCodes.Status403Forbidden, new { message = result.FailureReason }),
+            ShareRaidFailureCode.CannotSharePersonal => Conflict(new { message = result.FailureReason }),
+            _                                        => UnprocessableEntity(new { message = result.FailureReason }),
+        };
+    }
+
     // Direct summon is an admin/dev tool — players summon only via sigils (POST /api/items/{id}/use).
     // Config key: Admin:PlayerIds (see Program.cs and appsettings notes).
     [HttpPost("{raidDefinitionId}/summon")]

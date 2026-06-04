@@ -12,7 +12,8 @@ public class ActiveRaid
         long maxHp,
         DateTimeOffset expiresAt,
         RaidDifficulty difficulty = RaidDifficulty.Normal,
-        RaidSize size = RaidSize.Large)
+        RaidSize size = RaidSize.Large,
+        bool isPublic = false)
     {
         return new ActiveRaid
         {
@@ -24,6 +25,7 @@ public class ActiveRaid
             IsDefeated         = false,
             Difficulty         = difficulty,
             Size               = size,
+            IsPublic           = isPublic,
             ParticipantCount   = 0,
             ExpiresAt          = expiresAt,
             CreatedAt          = DateTimeOffset.UtcNow,
@@ -40,6 +42,11 @@ public class ActiveRaid
     public bool IsDefeated { get; private set; }
     public RaidDifficulty Difficulty { get; private set; }
     public RaidSize Size { get; private set; }
+
+    // Visibility — summons start private (false). Share() flips it so the raid appears in the
+    // public list. Decoupled from Size: the raid id (GUID) is always the invite token.
+    public bool IsPublic { get; private set; }
+
     public DateTimeOffset ExpiresAt { get; private set; }
 
     // Denormalised for O(1) participant count on every hit response â€” incremented on first hit per player.
@@ -69,6 +76,14 @@ public class ActiveRaid
     public void IncrementParticipantCount()
     {
         ParticipantCount++;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    // Publish this raid to the public list. Idempotent — sharing an already-public raid is a no-op
+    // beyond bumping UpdatedAt. Caller (RaidService) enforces summoner-only + non-Personal rules.
+    public void Share()
+    {
+        IsPublic  = true;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 }

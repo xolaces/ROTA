@@ -5,6 +5,11 @@ namespace ROTA.Application.Interfaces;
 public interface IActiveRaidRepository
 {
     Task<ActiveRaid?> FindByIdAsync(Guid id, CancellationToken ct = default);
+
+    // Like FindByIdAsync but Includes the SummonedByPlayer navigation so callers can map
+    // SummonedByUsername. Returns a tracked entity — safe to mutate (Share) and persist via UpdateAsync.
+    Task<ActiveRaid?> FindByIdWithSummonerAsync(Guid id, CancellationToken ct = default);
+
     Task<IReadOnlyList<ActiveRaid>> GetAllActiveAsync(CancellationToken ct = default);
     Task<ActiveRaid> CreateAsync(ActiveRaid raid, CancellationToken ct = default);
     Task UpdateAsync(ActiveRaid raid, CancellationToken ct = default);

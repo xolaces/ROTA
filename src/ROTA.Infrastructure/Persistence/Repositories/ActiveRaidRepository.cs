@@ -22,6 +22,12 @@ public sealed class ActiveRaidRepository : IActiveRaidRepository
             .Where(r => r.Id == id && !r.IsDeleted)
             .FirstOrDefaultAsync(ct);
 
+    public async Task<ActiveRaid?> FindByIdWithSummonerAsync(Guid id, CancellationToken ct = default)
+        => await _db.ActiveRaids
+            .Include(r => r.SummonedByPlayer)
+            .Where(r => r.Id == id && !r.IsDeleted)
+            .FirstOrDefaultAsync(ct);
+
     public async Task<IReadOnlyList<ActiveRaid>> GetAllActiveAsync(CancellationToken ct = default)
         => await _db.ActiveRaids
             .Include(r => r.SummonedByPlayer)
