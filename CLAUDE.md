@@ -234,6 +234,27 @@ Raids are PRIVATE until shared to the public list. Spec: docs/specs/shipped/syst
   UID copy + "Share to public list" → flips to "Shared ✓"; Join-by-UID card on the Public tab;
   PRIVATE badge on own unshared cards.
 
+## System 20 — Quest Node Depletion + Discernment Drops (2026-06-05) — COMPLETE (4 slices)
+Spec: docs/specs/shipped/system-20-quest-depletion-drops.md. 476 unit + 35 integration green.
+- Node depletion: PlayerQuestProgress.Progress (starts 100) + IsCleared + Deplete(); each attempt
+  drains the node (battle −5, boss −2.5, QuestConfig-driven). Reaching 0 latches IsCleared, and the
+  unlock rule is now "prerequisite node IsCleared" (was "completed once"). Cleared nodes stay
+  replayable. Migration AddQuestNodeProgress auto-clears already-completed nodes.
+- Discernment drops: the dormant quest loot pipeline is now wired (lootTableId on all 5 quests + 5
+  type:"Quest" loot tables). ProcessQuestLootAsync scales each chance drop by Discernment
+  (base × (1 + Disc×0.03), cap 0.95 that never lowers a high base); guaranteed drops unaffected.
+- Pano set: 8 Orange "Pano's …" questing-set gear pieces (gear.json) distributed across the quest
+  loot tables at difficulty-scaled rates. Set bonus stays PHASE-2.
+- DTOs: QuestAvailabilityResponse.{Progress,IsCleared}; QuestResultResponse.{NodeProgress,
+  NodeCleared,NodeJustCleared}.
+- Client (ROTA.Client6 master): quest cards show a depletion bar (amber→green "CLEARED ✓"/"LOCKED")
+  + "node cleared" callout; mock quests made stateful so the bar moves in mock mode.
+
+## Class regen preview (T7, 2026-06-05)
+ClassRegenRates gains ChoicePreviews (per-available-class regen rates) so the client's auto-triggered
+class-unlock overlay shows each option's benefit. Client: class selection removed from the Profile
+screen (inline card) and now surfaces as an overlay when a new tier unlocks.
+
 ## PHASE-2 Deferred Items
 - DiscernmentInvestment effect: quest drop quality (raid crit shipped v0.2.3)
 - Explicit DB transaction scope for QUEST reward steps (energy committed but rewards not atomic; raids fixed v0.2.5)

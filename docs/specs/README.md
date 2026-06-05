@@ -25,6 +25,7 @@ queue a build agent works against; it stays as the historical decision record af
 | `system-15-legion.md` | System 15 / v0.2.7 | Units + legions, commander slot, legion power as a separate damage term. |
 | `system-17-leaderboards.md` | System 17 / **v0.2.8** | Global leaderboards — 6 boards, aggregate table, eligibility-in-SQL, write hooks, stat snapshot. (5 slices, complete.) |
 | `system-19-raid-sharing.md` | System 19 | Raids private until shared — `ActiveRaid.IsPublic` + `Share()`, `GET /api/raids/{id}` (join-by-UID), `POST /api/raids/{id}/share` (summoner-only), list = public + own; sigils summon `Small`. Client share panel + join-by-UID. (3 slices, complete.) |
+| `system-20-quest-depletion-drops.md` | System 20 | Quest nodes deplete 100→0 (battle −5 / boss −2.5) to clear + unlock the next; Discernment-scaled chance drops via the activated quest loot pipeline; Pano "Legendary" (Orange) 8-piece set. Client depletion bar + class work alongside. (4 slices, complete.) |
 
 ## Active (`active/`)
 
