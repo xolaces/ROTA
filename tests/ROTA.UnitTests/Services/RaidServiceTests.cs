@@ -787,30 +787,19 @@ public class RaidServiceTests
     }
 
     [Theory]
-    [InlineData(1, 1, 1)]   // hitSize=1, goldPerStamina=1 → gold=1
-    [InlineData(5, 1, 5)]   // hitSize=5, goldPerStamina=1 → gold=5
-    [InlineData(20, 2, 40)] // hitSize=20, goldPerStamina=2 → gold=40
-    public async Task Hit_GrantsCorrectGold_PerStaminaCost(int hitSize, long goldPerStamina, long expectedGold)
+    [InlineData(1)]
+    [InlineData(5)]
+    [InlineData(20)]
+    public async Task Hit_GoldRoll_IsDrivenByCombatConfig(int hitSize)
     {
-        var b = BuildService(new Random(0));
+        // Gold mirrors the XP roll (System / T10): staminaCost × Uniform[min,max]. With min==max the
+        // roll collapses to a constant, so gold = round(staminaCost × const) exactly.
+        var cfg = new CombatConfig { GoldPerStaminaRollMin = 5.0, GoldPerStaminaRollMax = 5.0 };
+        var b = BuildService(new Random(42), combatConfig: cfg);
         var player = MakePlayer();
         var raid = MakeRaid();
 
-        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus(goldPerStamina));
-        b.Raids.Setup(r => r.FindByIdAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
-        b.Raids.Setup(r => r.AtomicApplyHitAsync(
-                raid.Id,
-                It.IsAny<Func<ActiveRaid, Task<bool>>>(),
-                It.IsAny<CancellationToken>()))
-            .Returns<Guid, Func<ActiveRaid, Task<bool>>, CancellationToken>((_, mutate, _) => mutate(raid));
-        b.Energy.Setup(e => e.SpendEnergyAsync(player.Id, ResourceType.Stamina, It.IsAny<int>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
-        b.Players.Setup(p => p.FindByIdWithStatsAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
-        b.Players.Setup(p => p.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-        b.Resources.Setup(r => r.GetAsync(player.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(MakeStaminaResource());
-        b.Energy.Setup(e => e.GetCurrentEnergyAsync(player.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(4);
+        SetupHitScaffolding(b, player, raid);
         b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync((RaidParticipant?)null);
         b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
@@ -819,8 +808,9 @@ public class RaidServiceTests
         var result = await b.Service.HitRaidAsync(player.Id, raid.Id, hitSize, Guid.NewGuid().ToString());
 
         result.Success.Should().BeTrue();
-        result.Response!.GoldGained.Should().Be(expectedGold,
-            $"gold = staminaCost({hitSize}) × goldPerStamina({goldPerStamina})");
+        int staminaCost = hitSize; // StaminaCostPerHit=1
+        result.Response!.GoldGained.Should().Be(staminaCost * 5,
+            "min==max==5 ⇒ the per-hit gold roll is exactly 5, so gold = staminaCost × 5 (config-driven)");
     }
 
     [Fact]
@@ -1646,8 +1636,9 @@ public class RaidServiceTests
     public async Task Hit_GoldProcMagic_AddsGoldOnProc()
     {
         // GoldProc with procChance=1.0, procAmount=1.0 doubles goldGained.
-        // Default definition: goldPerStamina=1, staminaCost=1 → base=1; proc adds 1*1=1 → total 2.
-        var b      = BuildService(new Random(0));
+        // Pin the gold roll to 1.0 (min==max) so base gold = staminaCost(1) × 1 = 1; proc adds 1 → 2.
+        var b      = BuildService(new Random(0),
+            combatConfig: new CombatConfig { GoldPerStaminaRollMin = 1.0, GoldPerStaminaRollMax = 1.0 });
         var player = MakePlayer();
         var raid   = MakeRaid();
 

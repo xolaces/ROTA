@@ -13,4 +13,9 @@ public class CombatConfig
     // Defaults preserve the shipped curve (avg ~2.5 XP per stamina ⇒ ~50 on a 20-stamina hit).
     public double XpPerStaminaRollMin { get; set; } = 1.0;
     public double XpPerStaminaRollMax { get; set; } = 4.0;
+
+    // On-hit raid GOLD = staminaCost × Uniform[GoldPerStaminaRollMin, GoldPerStaminaRollMax]
+    // (mirrors the XP roll). Replaces the old flat RaidDefinition.GoldPerStamina multiplier.
+    public double GoldPerStaminaRollMin { get; set; } = 3.0;
+    public double GoldPerStaminaRollMax { get; set; } = 8.0;
 }

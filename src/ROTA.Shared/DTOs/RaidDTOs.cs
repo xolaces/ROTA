@@ -46,6 +46,10 @@ public class RaidHitResponse
     // On-hit progression — granted every hit regardless of kill outcome
     public int XpGained { get; set; }
     public long GoldGained { get; set; }
+    // Running totals after this hit (so the client can update the header/state without a re-fetch).
+    public long NewPlayerExperience { get; set; }
+    public int  NewPlayerLevel { get; set; }
+    public long NewPlayerGold { get; set; }
     // Crit outcome for this hit (IsCrit=false and CritMultiplier=1.0 when not a crit)
     public bool IsCrit { get; set; }
     public double CritMultiplier { get; set; }

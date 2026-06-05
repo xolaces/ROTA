@@ -456,6 +456,10 @@ public sealed class RaidService : IRaidService
         RaidRewards? rewards = null;
         int xpGained         = 0;
         long goldGained      = 0;
+        // Running player totals after the hit (captured inside the lock; used to build the response).
+        long newPlayerExperience = 0;
+        int  newPlayerLevel      = 0;
+        long newPlayerGold       = 0;
 
         var applied = await _raids.AtomicApplyHitAsync(activeRaidId, async lockedRaid =>
         {
@@ -719,7 +723,11 @@ public sealed class RaidService : IRaidService
             double xpMax  = _combatConfig.XpPerStaminaRollMax;
             double xpRoll = xpMin + _random.NextDouble() * (xpMax - xpMin);
             xpGained  = Math.Max(1, (int)Math.Round(staminaCost * xpRoll));
-            goldGained = (long)staminaCost * definition.GoldPerStamina;
+            // Gold mirrors the XP roll — staminaCost × Uniform[min,max] (default 3-8/stamina).
+            double goldMin  = _combatConfig.GoldPerStaminaRollMin;
+            double goldMax  = _combatConfig.GoldPerStaminaRollMax;
+            double goldRoll = goldMin + _random.NextDouble() * (goldMax - goldMin);
+            goldGained = Math.Max(1, (long)Math.Round(staminaCost * goldRoll));
 
             // GoldProc and XpProc magics — modify grants before they're applied.
             // Stacks=false: only the first proc of that effectType is applied per hit.
@@ -769,6 +777,11 @@ public sealed class RaidService : IRaidService
                 rewards = await DistributeKillRewardsAsync(
                     playerId, player, lockedRaid, definition, allParticipants, ct);
             }
+
+            // Capture running totals after on-hit grant + any kill rewards (player mutated in both).
+            newPlayerExperience = player.Experience;
+            newPlayerLevel      = player.Level;
+            newPlayerGold       = player.Gold;
 
             finalHp       = lockedRaid.CurrentHp;
             finalDefeated = lockedRaid.IsDefeated;
@@ -827,6 +840,11 @@ public sealed class RaidService : IRaidService
             YourCurrentTier = callerTier,
             XpGained        = xpGained,
             GoldGained      = goldGained,
+            // Running totals after this hit (incl. any kill rewards) so the client header/state can
+            // reflect the new XP/level/gold without a profile re-fetch on the hot hit path.
+            NewPlayerExperience = newPlayerExperience,
+            NewPlayerLevel      = newPlayerLevel,
+            NewPlayerGold       = newPlayerGold,
             IsCrit          = isCrit,
             CritMultiplier  = appliedCritMult,
             ProcFired       = procFired,
