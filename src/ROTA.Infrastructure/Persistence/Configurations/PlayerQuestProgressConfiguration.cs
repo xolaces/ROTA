@@ -28,6 +28,14 @@ public class PlayerQuestProgressConfiguration : IEntityTypeConfiguration<PlayerQ
             .HasColumnName("completion_count")
             .HasDefaultValue(0);
 
+        builder.Property(p => p.Progress)
+            .HasColumnName("progress")
+            .HasDefaultValue(100.0);
+
+        builder.Property(p => p.IsCleared)
+            .HasColumnName("is_cleared")
+            .HasDefaultValue(false);
+
         builder.Property(p => p.LastCompletedAt)
             .HasColumnName("last_completed_at");
 

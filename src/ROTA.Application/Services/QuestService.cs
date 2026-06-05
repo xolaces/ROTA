@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Options;
+using ROTA.Application.Configuration;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Models;
 using ROTA.Domain.Entities;
@@ -59,6 +61,7 @@ public sealed class QuestService : IQuestService
     private readonly IMagicService _magicService;
     private readonly ILegionService _legionService;
     private readonly IEquipmentService _equipment;
+    private readonly QuestConfig _questConfig;
     private readonly Random _random;
 
     public QuestService(
@@ -76,6 +79,7 @@ public sealed class QuestService : IQuestService
         IMagicService magicService,
         ILegionService legionService,
         IEquipmentService equipment,
+        IOptions<QuestConfig> questConfig,
         Random? random = null)
     {
         _definitions       = definitions;
@@ -92,6 +96,7 @@ public sealed class QuestService : IQuestService
         _magicService      = magicService;
         _legionService     = legionService;
         _equipment         = equipment;
+        _questConfig       = questConfig.Value;
         _random            = random ?? Random.Shared;
     }
 
@@ -101,8 +106,9 @@ public sealed class QuestService : IQuestService
         var allProgress = await _questProgress.GetAllForPlayerAsync(playerId, ct);
         var progressByQuestId = allProgress.ToDictionary(p => p.QuestId);
 
+        // A node unlocks the next only once it is fully depleted (Cleared) — not on first completion.
         var completedQuestIds = progressByQuestId
-            .Where(kv => kv.Value.CompletionCount > 0)
+            .Where(kv => kv.Value.IsCleared)
             .Select(kv => kv.Key)
             .ToHashSet();
 
@@ -127,6 +133,8 @@ public sealed class QuestService : IQuestService
                 PrerequisiteQuestId = quest.PrerequisiteQuestId,
                 CompletionCount    = prog?.CompletionCount ?? 0,
                 LastCompletedAt    = prog?.LastCompletedAt,
+                Progress           = prog?.Progress ?? _questConfig.NodeStartProgress,
+                IsCleared          = prog?.IsCleared ?? false,
                 IsBossNode         = quest.IsBoss,
                 // Returned nodes have already passed the prerequisite filter above, so they are
                 // attemptable. Must be set explicitly: the client disables Attempt when false.
@@ -144,12 +152,12 @@ public sealed class QuestService : IQuestService
         if (quest is null)
             return Fail(QuestFailureCode.QuestNotFound, "Quest not found.");
 
-        // 2. Verify node prerequisite is completed (difficulty-agnostic)
+        // 2. Verify node prerequisite is fully cleared (depleted to 0) — difficulty-agnostic
         if (quest.PrerequisiteQuestId is not null)
         {
             var prereq = await _questProgress.GetAsync(playerId, quest.PrerequisiteQuestId, ct);
-            if (prereq is null || prereq.CompletionCount == 0)
-                return Fail(QuestFailureCode.PrerequisiteNotMet, "Prerequisite quest not completed.");
+            if (prereq is null || !prereq.IsCleared)
+                return Fail(QuestFailureCode.PrerequisiteNotMet, "Prerequisite quest not yet cleared.");
         }
 
         // 3. Verify difficulty gate (Hard requires Normal, etc.)
@@ -191,12 +199,19 @@ public sealed class QuestService : IQuestService
         foreach (var newLevel in levelUps)
             await _stats.GrantLevelUpPointsAsync(playerId, newLevel, ct);
 
-        // 8. Record per-node progress (prerequisite tracking — difficulty agnostic)
+        // 8. Record per-node progress + deplete the node (difficulty-agnostic). Boss nodes deplete
+        //    slower (more attempts to clear). Clearing (Progress→0) unlocks the next node.
         var progress = await _questProgress.GetAsync(playerId, questId, ct);
         bool isNewProgress = progress is null;
         if (isNewProgress)
-            progress = PlayerQuestProgress.Create(playerId, questId);
-        progress!.RecordCompletion();
+            progress = PlayerQuestProgress.Create(playerId, questId, _questConfig.NodeStartProgress);
+        bool wasCleared = progress!.IsCleared;
+        progress.RecordCompletion();
+        double depletion = quest.IsBoss
+            ? _questConfig.BossDepletionPerAttempt
+            : _questConfig.BattleDepletionPerAttempt;
+        progress.Deplete(depletion);
+        bool nodeJustCleared = !wasCleared && progress.IsCleared;
 
         if (isNewProgress)
             await _questProgress.CreateAsync(progress, ct);
@@ -283,6 +298,9 @@ public sealed class QuestService : IQuestService
             CurrentLevelXp    = player.Experience,
             XpToNextLevel     = _stats.XpToNextLevel(player.Level),
             LevelsGained      = levelUps.Count,
+            NodeProgress      = progress.Progress,
+            NodeCleared       = progress.IsCleared,
+            NodeJustCleared   = nodeJustCleared,
         };
     }
 

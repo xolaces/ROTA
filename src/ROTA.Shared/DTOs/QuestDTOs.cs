@@ -13,6 +13,10 @@ public class QuestAvailabilityResponse
     public string? PrerequisiteQuestId { get; set; }
     public int CompletionCount { get; set; }
     public DateTimeOffset? LastCompletedAt { get; set; }
+    // Node depletion (System 20): Progress counts down from 100→0 over repeated attempts; the node
+    // is Cleared at 0, which unlocks the next node. Client renders the depletion bar + cleared state.
+    public double Progress { get; set; }
+    public bool IsCleared { get; set; }
     public bool IsBossNode { get; set; }
     /// <summary>
     /// True when the player may attempt this node. The service only returns nodes whose
@@ -49,6 +53,12 @@ public class QuestResultResponse
     public long CurrentLevelXp { get; set; }
     public int XpToNextLevel { get; set; }
     public int LevelsGained { get; set; }
+
+    // Node depletion (System 20): the node's remaining Progress after this attempt, whether it is
+    // now fully Cleared, and whether THIS attempt is the one that cleared it (for a client callout).
+    public double NodeProgress { get; set; }
+    public bool NodeCleared { get; set; }
+    public bool NodeJustCleared { get; set; }
 }
 
 public enum QuestFailureCode

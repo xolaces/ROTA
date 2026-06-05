@@ -1,5 +1,7 @@
 using FluentAssertions;
+using Microsoft.Extensions.Options;
 using Moq;
+using ROTA.Application.Configuration;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Models;
 using ROTA.Application.Services;
@@ -80,11 +82,14 @@ public class QuestServiceTests
         equipment.Setup(e => e.GrantGearAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
+        var questConfig = Options.Create(new QuestConfig());
+
         var service = new QuestService(
             definitions.Object, questProgress.Object, difficultyProgress.Object,
             players.Object, energy.Object, gems.Object,
             stats.Object, lootTables.Object, itemDefs.Object, inventory.Object,
-            auditLog.Object, magicService.Object, legionService.Object, equipment.Object, random);
+            auditLog.Object, magicService.Object, legionService.Object, equipment.Object,
+            questConfig, random);
 
         return new ServiceBundle(service, definitions, questProgress, difficultyProgress,
             players, energy, gems, stats, lootTables, itemDefs, inventory, auditLog, magicService,
@@ -165,22 +170,30 @@ public class QuestServiceTests
     }
 
     [Fact]
-    public async Task GetAvailableQuests_UnlocksQ002_AfterQ001Completed()
+    public async Task GetAvailableQuests_UnlocksQ002_OnlyAfterQ001Cleared()
     {
         var b = BuildService();
         var playerId = Guid.NewGuid();
 
-        var prog = PlayerQuestProgress.Create(playerId, "q001");
-        prog.RecordCompletion();
+        // Completing q001 once is NOT enough now — the node must be fully depleted (Cleared).
+        var partial = PlayerQuestProgress.Create(playerId, "q001");
+        partial.RecordCompletion();
+        partial.Deplete(5);   // 95 remaining → not cleared
 
         b.Definitions.Setup(d => d.GetAll()).Returns(TwoQuestChain());
         b.QuestProgress.Setup(r => r.GetAllForPlayerAsync(playerId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<PlayerQuestProgress> { prog });
+            .ReturnsAsync(new List<PlayerQuestProgress> { partial });
 
-        var result = await b.Service.GetAvailableQuestsAsync(playerId);
+        var stillLocked = await b.Service.GetAvailableQuestsAsync(playerId);
+        stillLocked.Should().ContainSingle().Which.Id.Should().Be("q001");
 
-        result.Should().HaveCount(2);
-        result.Should().Contain(r => r.Id == "q002");
+        // Deplete q001 to 0 → Cleared → q002 unlocks.
+        partial.Deplete(100);
+        partial.IsCleared.Should().BeTrue();
+
+        var unlocked = await b.Service.GetAvailableQuestsAsync(playerId);
+        unlocked.Should().HaveCount(2);
+        unlocked.Should().Contain(r => r.Id == "q002");
     }
 
     // -----------------------------------------------------------------------
@@ -255,6 +268,107 @@ public class QuestServiceTests
         result.DifficultyColor.Should().Be(color);
         result.GoldGranted.Should().Be(expectedGold);
         b.Energy.Verify(e => e.SpendEnergyAsync(player.Id, ResourceType.Energy, expectedEnergy, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    // -----------------------------------------------------------------------
+    // AttemptQuestAsync — node depletion (System 20)
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task AttemptQuest_DepletesBattleNode_By5_OnFreshAttempt()
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+        b.Definitions.Setup(d => d.GetById("q001")).Returns(TwoQuestChain()[0]);
+        SetupPlayerAndEnergy(b, player); // QuestProgress.GetAsync → null (fresh node, starts at 100)
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q001", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue();
+        result.NodeProgress.Should().Be(95.0);   // 100 − 5
+        result.NodeCleared.Should().BeFalse();
+        result.NodeJustCleared.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task AttemptQuest_DepletesBossNode_By2Point5()
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+        b.Definitions.Setup(d => d.GetById("q_boss")).Returns(BossQuest());
+        SetupPlayerAndEnergy(b, player);
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q_boss", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue();
+        result.NodeProgress.Should().Be(97.5);   // 100 − 2.5 (boss depletes slower)
+        result.NodeCleared.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task AttemptQuest_ClearsNode_AndFlagsJustCleared_OnFinalDepletion()
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+        b.Definitions.Setup(d => d.GetById("q001")).Returns(TwoQuestChain()[0]);
+        SetupPlayerAndEnergy(b, player);
+
+        // Existing node with only 5 progress left — one more battle attempt clears it.
+        var nearlyDone = PlayerQuestProgress.Create(player.Id, "q001");
+        nearlyDone.Deplete(95); // 5 remaining, not yet cleared
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q001", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(nearlyDone);
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q001", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue();
+        result.NodeProgress.Should().Be(0.0);
+        result.NodeCleared.Should().BeTrue();
+        result.NodeJustCleared.Should().BeTrue();
+        b.QuestProgress.Verify(r => r.UpdateAsync(It.IsAny<PlayerQuestProgress>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_AlreadyClearedNode_StaysReplayable_NotJustCleared()
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+        b.Definitions.Setup(d => d.GetById("q001")).Returns(TwoQuestChain()[0]);
+        SetupPlayerAndEnergy(b, player);
+
+        var cleared = PlayerQuestProgress.Create(player.Id, "q001");
+        cleared.Deplete(100); // already at 0 / cleared
+        cleared.IsCleared.Should().BeTrue();
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q001", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(cleared);
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q001", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue();        // still farmable for XP/drops
+        result.NodeProgress.Should().Be(0.0);
+        result.NodeCleared.Should().BeTrue();
+        result.NodeJustCleared.Should().BeFalse(); // it was already cleared before this attempt
+    }
+
+    [Fact]
+    public async Task AttemptQuest_BlockedByPrerequisite_UntilPrereqCleared()
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+        b.Definitions.Setup(d => d.GetById("q002")).Returns(TwoQuestChain()[1]);
+        SetupPlayerAndEnergy(b, player);
+
+        // Prereq q001 exists but only partially depleted → q002 still blocked.
+        var prereq = PlayerQuestProgress.Create(player.Id, "q001");
+        prereq.Deplete(50); // 50 remaining, not cleared
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q001", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(prereq);
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q002", QuestDifficulty.Normal);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(QuestFailureCode.PrerequisiteNotMet);
+        b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     // -----------------------------------------------------------------------

@@ -163,6 +163,9 @@ builder.Services.Configure<CombatConfig>(
 builder.Services.Configure<MagicConfig>(
     builder.Configuration.GetSection("MagicConfig"));
 
+builder.Services.Configure<QuestConfig>(
+    builder.Configuration.GetSection("QuestConfig"));
+
 builder.Services.Configure<LegionConfig>(
     builder.Configuration.GetSection("LegionConfig"));
 
