@@ -235,7 +235,9 @@ public sealed class QuestService : IQuestService
             if (granted) gemsGranted = gemReward;
         }
 
-        // 12. Process loot table
+        // 12. Process loot table. Discernment raises chance-drop rates (System 20 Slice 2) — fetch
+        //     it once and pass it in; guaranteed drops are unaffected so this read can be skipped
+        //     when there's nothing chance-based, but it's a cheap single read on a successful attempt.
         var itemsGranted = new List<ItemGrantDTO>();
         if (quest.LootTableId is not null)
         {
@@ -243,7 +245,9 @@ public sealed class QuestService : IQuestService
             if (lootTable?.Difficulties is not null
                 && lootTable.Difficulties.TryGetValue(difficulty.ToString(), out var diffLoot))
             {
-                await ProcessQuestLootAsync(playerId, diffLoot, itemsGranted, ct);
+                var stats = await _stats.GetStatsAsync(playerId, ct);
+                int discernment = stats?.DiscernmentInvestment ?? 0;
+                await ProcessQuestLootAsync(playerId, diffLoot, discernment, itemsGranted, ct);
             }
         }
 
@@ -311,9 +315,20 @@ public sealed class QuestService : IQuestService
     private async Task ProcessQuestLootAsync(
         Guid playerId,
         Application.Models.LootTableDifficulty loot,
+        int discernmentInvestment,
         List<ItemGrantDTO> itemsGranted,
         CancellationToken ct)
     {
+        // Discernment raises every chance-drop's effective rate, capped at MaxDropChance — but the
+        // cap never *lowers* a base that's already high (a base 1.0 "always" drop stays 1.0). It only
+        // bounds the Discernment boost on low-base drops. Guaranteed drops never pass through here.
+        double Scale(double baseChance)
+        {
+            double boosted = baseChance * (1 + discernmentInvestment * _questConfig.DiscernmentDropMultiplier);
+            double cap = Math.Max(baseChance, _questConfig.MaxDropChance);
+            return Math.Min(boosted, cap);
+        }
+
         if (loot.GuaranteedDrops is not null)
         {
             foreach (var drop in loot.GuaranteedDrops)
@@ -324,7 +339,7 @@ public sealed class QuestService : IQuestService
         {
             foreach (var drop in loot.ChanceDrops)
             {
-                if (_random.NextDouble() < drop.Chance)
+                if (_random.NextDouble() < Scale(drop.Chance))
                     await GrantItemAsync(playerId, drop.ItemId, drop.Quantity, itemsGranted, ct);
             }
         }
@@ -334,7 +349,7 @@ public sealed class QuestService : IQuestService
         {
             foreach (var drop in loot.MagicDrops)
             {
-                if (_random.NextDouble() < drop.Chance)
+                if (_random.NextDouble() < Scale(drop.Chance))
                     await _magicService.GrantMagicAsync(playerId, drop.MagicId, ct);
             }
         }
@@ -344,7 +359,7 @@ public sealed class QuestService : IQuestService
         {
             foreach (var drop in loot.UnitDrops)
             {
-                if (_random.NextDouble() < drop.Chance)
+                if (_random.NextDouble() < Scale(drop.Chance))
                     await _legionService.GrantUnitAsync(playerId, drop.UnitId, ct);
             }
         }
@@ -354,7 +369,7 @@ public sealed class QuestService : IQuestService
         {
             foreach (var drop in loot.LegionDrops)
             {
-                if (_random.NextDouble() < drop.Chance)
+                if (_random.NextDouble() < Scale(drop.Chance))
                     await _legionService.GrantLegionAsync(playerId, drop.LegionId, ct);
             }
         }
@@ -363,7 +378,7 @@ public sealed class QuestService : IQuestService
         if (loot.GearDrops is not null)
         {
             foreach (var drop in loot.GearDrops)
-                if (_random.NextDouble() < drop.Chance)
+                if (_random.NextDouble() < Scale(drop.Chance))
                     await _equipment.GrantGearAsync(playerId, drop.GearDefinitionId, drop.Quantity, ct);
         }
     }

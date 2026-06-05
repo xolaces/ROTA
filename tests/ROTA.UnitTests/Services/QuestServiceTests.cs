@@ -779,4 +779,75 @@ public class QuestServiceTests
         b.Equipment.Verify(e => e.GrantGearAsync(
             player.Id, "gear_conscript_helm", 1, It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    // -----------------------------------------------------------------------
+    // AttemptQuestAsync — Discernment-scaled chance drops (System 20 Slice 2)
+    // -----------------------------------------------------------------------
+
+    // Returns a fixed roll from NextDouble() so chance thresholds are deterministic.
+    private sealed class FixedRandom : Random
+    {
+        private readonly double _value;
+        public FixedRandom(double value) => _value = value;
+        public override double NextDouble() => _value;
+    }
+
+    private static (ServiceBundle b, Player player) GearDropFixture(double roll, int discernment)
+    {
+        var b = BuildService(new FixedRandom(roll));
+        var player = MakePlayer();
+
+        var quest = new QuestDefinition
+        {
+            Id = "q_disc", Name = "Discernment Quest", Chapter = 1, BaseEnergyCost = 5,
+            GoldReward = 0, ExperienceReward = 0, LootTableId = "lt_disc",
+        };
+        b.Definitions.Setup(d => d.GetById("q_disc")).Returns(quest);
+        SetupPlayerAndEnergy(b, player);
+
+        // One gear chance-drop at a 10% base rate.
+        var lootTable = new LootTableDefinition
+        {
+            Id = "lt_disc", Type = "Quest",
+            Difficulties = new Dictionary<string, LootTableDifficulty>
+            {
+                ["Normal"] = new()
+                {
+                    GearDrops = new List<GearDropChance>
+                    {
+                        new() { GearDefinitionId = "gear_pano_helm", Quantity = 1, Chance = 0.10 },
+                    },
+                },
+            },
+        };
+        b.LootTables.Setup(l => l.GetById("lt_disc")).Returns(lootTable);
+        b.Stats.Setup(s => s.GetStatsAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PlayerStatsResponse { DiscernmentInvestment = discernment });
+
+        return (b, player);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_GearDrop_DoesNotDrop_AtBaseChance_WhenRollExceedsIt()
+    {
+        // base 0.10, Discernment 0 → effective 0.10; roll 0.15 ≥ 0.10 → no drop.
+        var (b, player) = GearDropFixture(roll: 0.15, discernment: 0);
+
+        await b.Service.AttemptQuestAsync(player.Id, "q_disc", QuestDifficulty.Normal);
+
+        b.Equipment.Verify(e => e.GrantGearAsync(
+            It.IsAny<Guid>(), "gear_pano_helm", It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_GearDrop_Drops_WhenDiscernmentRaisesChanceAboveTheSameRoll()
+    {
+        // base 0.10, Discernment 30 → 0.10 × (1 + 30×0.03) = 0.19; same roll 0.15 < 0.19 → drops.
+        var (b, player) = GearDropFixture(roll: 0.15, discernment: 30);
+
+        await b.Service.AttemptQuestAsync(player.Id, "q_disc", QuestDifficulty.Normal);
+
+        b.Equipment.Verify(e => e.GrantGearAsync(
+            player.Id, "gear_pano_helm", 1, It.IsAny<CancellationToken>()), Times.Once);
+    }
 }

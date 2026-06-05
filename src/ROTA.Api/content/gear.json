@@ -94,5 +94,102 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/conscript_gloves.png"
+  },
+
+  {
+    "id": "gear_pano_helm",
+    "name": "Pano's War Helm",
+    "description": "Legendary questing helm of the lost vanguard Pano. Hums with old power.",
+    "rarity": "Orange",
+    "slot": "Head",
+    "bonusAttack": 2,
+    "bonusDefense": 4,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/pano_helm.png"
+  },
+  {
+    "id": "gear_pano_amulet",
+    "name": "Pano's Amulet",
+    "description": "An amulet warm to the touch, part of Pano's questing regalia.",
+    "rarity": "Orange",
+    "slot": "Neck",
+    "bonusAttack": 2,
+    "bonusDefense": 3,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/pano_amulet.png"
+  },
+  {
+    "id": "gear_pano_cuirass",
+    "name": "Pano's Cuirass",
+    "description": "The famed breastplate of Pano. Turns aside blows that would fell a lesser fighter.",
+    "rarity": "Orange",
+    "slot": "Torso",
+    "bonusAttack": 3,
+    "bonusDefense": 6,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/pano_cuirass.png"
+  },
+  {
+    "id": "gear_pano_signet",
+    "name": "Pano's Signet",
+    "description": "A signet ring that sharpens the wearer's strikes.",
+    "rarity": "Orange",
+    "slot": "Ring1",
+    "bonusAttack": 5,
+    "bonusDefense": 1,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/pano_signet.png"
+  },
+  {
+    "id": "gear_pano_band",
+    "name": "Pano's Band",
+    "description": "The companion band to Pano's signet. Steadies the hand in battle.",
+    "rarity": "Orange",
+    "slot": "Ring2",
+    "bonusAttack": 3,
+    "bonusDefense": 3,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/pano_band.png"
+  },
+  {
+    "id": "gear_pano_steed",
+    "name": "Pano's Steed",
+    "description": "Pano's tireless warhorse. Charges with devastating force.",
+    "rarity": "Orange",
+    "slot": "Mount",
+    "bonusAttack": 0,
+    "bonusDefense": 0,
+    "procChance": 0.10,
+    "procPercent": 4.0,
+    "iconPath": "icons/gear/pano_steed.png"
+  },
+  {
+    "id": "gear_pano_greaves",
+    "name": "Pano's Greaves",
+    "description": "Greaves that carry the wearer surefooted across any field.",
+    "rarity": "Orange",
+    "slot": "Boots",
+    "bonusAttack": 2,
+    "bonusDefense": 3,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/pano_greaves.png"
+  },
+  {
+    "id": "gear_pano_gauntlets",
+    "name": "Pano's Gauntlets",
+    "description": "Gauntlets that lend crushing strength to every strike.",
+    "rarity": "Orange",
+    "slot": "Gloves",
+    "bonusAttack": 4,
+    "bonusDefense": 2,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/pano_gauntlets.png"
   }
 ]
