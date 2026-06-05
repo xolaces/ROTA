@@ -115,8 +115,7 @@ public sealed class ClassService : IClassService
             null), ct);
 
         var rates = GetRegenRates(requested);
-        rates.AvailableChoices = GetAvailableChoices(player.Level, requested)
-            .Select(c => c.ToString()).ToList();
+        PopulateChoices(rates, player.Level, requested);
         return rates;
     }
 
@@ -126,8 +125,26 @@ public sealed class ClassService : IClassService
         if (player is null) return null;
 
         var rates = GetRegenRates(player.Class);
-        rates.AvailableChoices = GetAvailableChoices(player.Level, player.Class)
-            .Select(c => c.ToString()).ToList();
+        PopulateChoices(rates, player.Level, player.Class);
         return rates;
+    }
+
+    // Fills AvailableChoices + a parallel ChoicePreviews list (each candidate class's regen rates)
+    // so the client unlock overlay can show benefits per choice without a call per class.
+    private void PopulateChoices(ClassRegenRates rates, int level, PlayerClass current)
+    {
+        var choices = GetAvailableChoices(level, current);
+        rates.AvailableChoices = choices.Select(c => c.ToString()).ToList();
+        rates.ChoicePreviews = choices.Select(c =>
+        {
+            var r = GetRegenRates(c);
+            return new ClassChoicePreview
+            {
+                ClassName                        = c.ToString(),
+                EnergyRegenMinutesPerPoint       = r.EnergyRegenMinutesPerPoint,
+                StaminaRegenMinutesPerPoint      = r.StaminaRegenMinutesPerPoint,
+                GuildStaminaRegenMinutesPerPoint = r.GuildStaminaRegenMinutesPerPoint,
+            };
+        }).ToList();
     }
 }

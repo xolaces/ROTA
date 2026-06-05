@@ -203,6 +203,43 @@ public class ClassServiceTests
         player.Class.Should().Be(PlayerClass.Conscript);
     }
 
+    [Fact]
+    public async Task GetClassInfoAsync_AtUnlockLevel_PopulatesChoicePreviews_ParallelToChoices()
+    {
+        var svc = BuildService(out var players);
+        var player = MakePlayer(level: 5); // Tier 2 unlock → three choices
+        players.Setup(p => p.FindByIdAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(player);
+
+        var info = await svc.GetClassInfoAsync(player.Id);
+
+        info.Should().NotBeNull();
+        info!.AvailableChoices.Should().HaveCount(3);
+        info.ChoicePreviews.Should().HaveCount(3);
+        // Previews mirror the choices one-to-one and carry that class's own regen rates.
+        info.ChoicePreviews.Select(p => p.ClassName).Should().BeEquivalentTo(info.AvailableChoices);
+        foreach (var preview in info.ChoicePreviews)
+        {
+            var expected = svc.GetRegenRates(Enum.Parse<PlayerClass>(preview.ClassName));
+            preview.EnergyRegenMinutesPerPoint.Should().Be(expected.EnergyRegenMinutesPerPoint);
+            preview.StaminaRegenMinutesPerPoint.Should().Be(expected.StaminaRegenMinutesPerPoint);
+        }
+    }
+
+    [Fact]
+    public async Task GetClassInfoAsync_NoPendingChoice_HasEmptyPreviews()
+    {
+        var svc = BuildService(out var players);
+        var player = MakePlayer(level: 3); // below Tier 2 unlock → no choices
+        players.Setup(p => p.FindByIdAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(player);
+
+        var info = await svc.GetClassInfoAsync(player.Id);
+
+        info!.AvailableChoices.Should().BeEmpty();
+        info.ChoicePreviews.Should().BeEmpty();
+    }
+
     // -----------------------------------------------------------------------
     // ComputeAutoAdvance — path-based (L500, L1000)
     // -----------------------------------------------------------------------
