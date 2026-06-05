@@ -54,6 +54,14 @@ public class PlayerStats
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
+    // Restore CurrentHealth to BaseMaxHealth. Used on level-up (full resource refill).
+    // Health does not deplete in current combat (PHASE-2) — forward-compatible no-op today.
+    public void RestoreFullHealth()
+    {
+        CurrentHealth = BaseMaxHealth;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
     public void AllocateToEnergy(int amount)
     {
         EnergyInvestment += amount;

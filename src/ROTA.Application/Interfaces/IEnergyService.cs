@@ -10,6 +10,12 @@ public interface IEnergyService
 
     Task RefillEnergyAsync(Guid playerId, ResourceType type, int amount, CancellationToken ct = default);
 
+    /// <summary>
+    /// Fully refills the resource pool to its current MaxValue (CurrentValue = MaxValue),
+    /// resetting the regen checkpoint to now. Used on level-up (all pools restored).
+    /// </summary>
+    Task RefillToMaxAsync(Guid playerId, ResourceType type, CancellationToken ct = default);
+
     Task UpdateMaxAsync(Guid playerId, ResourceType type, int newMax, CancellationToken ct = default);
 
     /// <summary>

@@ -1,7 +1,7 @@
 # System 20 — Quest Node Depletion + Discernment Drops (Pano set)
 
-*Status: DRAFT — design proposed, several owner decisions flagged (§Decisions). Spec-first per
-owner workflow. Traced against current quest code 2026-06-04.*
+*Status: SHIPPED 2026-06-05 — all 4 slices built (owner: "build with my defaults"). Decisions
+resolved below. Traced against current quest code 2026-06-04.*
 
 ## Goal (owner — ticket T5)
 1. Each quest **node starts at 100** and **depletes 5 per attempt** (→ 20 attempts to clear).
@@ -98,32 +98,31 @@ false` on `player_quest_progress`. **Back-compat:** existing rows default to Pro
 i.e. everyone "re-grinds" the bar. If that's undesirable for current testers, seed `IsCleared=true`/
 `Progress=0` for nodes with `CompletionCount > 0` in the migration (decision).
 
-## Decisions (need owner input)
-1. **Depletion per difficulty?** Ticket says flat −5 / −2.5 regardless of difficulty. Keep flat, or
-   let higher difficulty deplete faster (e.g. ×difficulty reward-mult) so harder runs clear faster?
-   *(Recommend: flat, as written — simplest, matches ticket.)*
-2. **Cleared-node replay:** keep nodes farmable after clear (recommend yes), or lock them?
-3. **Discernment formula constants:** `baseChance`, `discernmentDropK`, `maxChance`, and the Pano
-   base rates. Need target numbers (e.g. "at 50 Discernment a Pano piece ~1/40 runs"). I'll propose
-   defaults you can tune.
-4. **Pano set scope:** all 8 slots or a subset? Per-piece stats? Rarity (Orange ceiling). Any
-   stop-gap `ConditionalBonus` until real set-bonuses ship?
-5. **Migration back-compat:** auto-clear nodes already completed by current testers, or reset
-   everyone to a fresh 100 bar?
-6. **Content depth:** only 5 quests exist. Depletion (20–40 attempts/node) makes the chain much
-   longer to traverse — fine for beta, but worth confirming you don't want more nodes first (ticket
-   #3 from the prior handoff: "2 raids / 5 quests is thin").
+## Decisions (RESOLVED — owner chose "build with my defaults", 2026-06-05)
+1. **Depletion per difficulty?** → **Flat** −5 / −2.5 regardless of difficulty (as written). Tunable
+   in `QuestConfig` if revisited.
+2. **Cleared-node replay:** → **Yes**, nodes stay farmable after clear (one-way `IsCleared` latch).
+3. **Discernment constants:** → `DiscernmentDropMultiplier = 0.03`/pt, `MaxDropChance = 0.95` (cap
+   never lowers an already-high base). Pano base rates 0.02→0.10 by difficulty. All in `QuestConfig`/
+   loot tables — tune freely.
+4. **Pano set scope:** → **All 8 slots**, **Orange** rarity, individually strong stats. **No set
+   bonus** (stays PHASE-2); revisit when the set-bonus system ships.
+5. **Migration back-compat:** → **Auto-clear** nodes already completed (`completion_count > 0` →
+   `is_cleared = true, progress = 0`) so current testers keep their unlocks.
+6. **Content depth:** → Deferred. Still only 5 quests; depletion lengthens traversal. Expanding the
+   questline remains open (prior handoff item "2 raids / 5 quests is thin").
 
 ## Slices
-1. **Node depletion core:** `PlayerQuestProgress.Progress/IsCleared/Deplete`, `QuestConfig`
-   (depletion amounts), attempt applies depletion, unlock rule → `IsCleared`-prereq; migration
-   `AddQuestNodeProgress`; DTO fields; unit tests (deplete to clear, unlock gating, boss 2.5, replay).
-2. **Discernment drops:** activate quest loot tables (`lootTableId` + `type:"Quest"` tables +
-   validation), Discernment multiplier in `ProcessQuestLootAsync`; tests (0 vs high Discernment odds,
-   guaranteed unaffected, idempotency intact).
-3. **Pano set content:** gear pieces + drop-pool placement; (optional) per-piece `ConditionalBonus`.
-4. **Client:** quest card shows the depletion bar + cleared/locked state; drops surfaced in the
-   attempt result; DTO mirror; headless-compile.
+1. **Node depletion core** ✅ (`41eb89f`): `PlayerQuestProgress.Progress/IsCleared/Deplete`,
+   `QuestConfig`, attempt applies depletion, unlock rule → `IsCleared`-prereq; migration
+   `AddQuestNodeProgress` (+ auto-clear back-compat); DTO fields; +5 unit tests.
+2. **Discernment drops** ✅ (`6b93a12`): quest loot tables wired (`lootTableId` + 5 `type:"Quest"`
+   tables), Discernment multiplier in `ProcessQuestLootAsync` (cap never lowers a high base); +2 tests.
+3. **Pano set content** ✅ (`6b93a12`): 8 Orange Pano pieces in `gear.json`, distributed across the 5
+   quest loot tables at difficulty-scaled rates. No set bonus (PHASE-2).
+4. **Client** ✅ (ROTA.Client6 `master`): depletion bar + cleared/locked state on quest cards,
+   "node cleared" callout, drops via `ItemsGranted`; DTO mirror; mock quests made stateful so the bar
+   moves in mock mode. Headless-compiled 0 `error CS`.
 
 ## Non-goals (defer)
 Real gear set-bonus system, rarity-tier weighted drop model (start with the multiplier), node

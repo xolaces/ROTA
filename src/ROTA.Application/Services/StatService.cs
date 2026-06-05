@@ -113,7 +113,19 @@ public sealed class StatService : IStatService
         if (player?.Stats is null) return;
 
         player.Stats.AddSkillPoints(10);
+
+        // T22 — restore health to full on level-up (forward-compatible; health is PHASE-2 in combat).
+        player.Stats.RestoreFullHealth();
         await _players.UpdateStatsAsync(player.Stats, ct);
+
+        // T24 — GuildStamina scales 1:1 with level. Sync the stored pool max to the new level before
+        // the refill below (Energy/Stamina max depend on investment, not level, so they need no resync).
+        await _energy.UpdateMaxAsync(playerId, ResourceType.GuildStamina, newLevel, ct);
+
+        // T22 — fully refill all resource pools on level-up.
+        await _energy.RefillToMaxAsync(playerId, ResourceType.Energy, ct);
+        await _energy.RefillToMaxAsync(playerId, ResourceType.Stamina, ct);
+        await _energy.RefillToMaxAsync(playerId, ResourceType.GuildStamina, ct);
 
         if (newLevel % 5 == 0)
         {

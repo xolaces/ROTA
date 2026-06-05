@@ -65,6 +65,8 @@ public class StatServiceTests
             .Returns(Task.CompletedTask);
         energy.Setup(e => e.UpdateMaxAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        energy.Setup(e => e.RefillToMaxAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
         players.Setup(p => p.UpdateStatsAsync(It.IsAny<PlayerStats>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         players.Setup(p => p.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>()))
@@ -233,6 +235,32 @@ public class StatServiceTests
             b.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never,
                 $"level {level} is not divisible by 5 so no gems should be granted");
         }
+    }
+
+    [Fact]
+    public async Task GrantLevelUpPoints_RefillsAllPools_AndSyncsGuildStaminaToLevel()
+    {
+        // T22 — all resource pools fully refilled on level-up; health restored.
+        // T24 — GuildStamina max synced 1:1 to the new level.
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: 12, skillPoints: 0);
+        // Drain health so the restore is observable.
+        typeof(PlayerStats).GetProperty("CurrentHealth")!.SetValue(player.Stats, 1);
+        SetupPlayer(b, player);
+
+        await b.Service.GrantLevelUpPointsAsync(player.Id, 12);
+
+        // GuildStamina max wired to the new level (T24)
+        b.Energy.Verify(e => e.UpdateMaxAsync(player.Id, ResourceType.GuildStamina, 12, It.IsAny<CancellationToken>()),
+            Times.Once, "GuildStamina max should be synced to the new level on level-up");
+
+        // All three pools refilled (T22)
+        b.Energy.Verify(e => e.RefillToMaxAsync(player.Id, ResourceType.Energy, It.IsAny<CancellationToken>()), Times.Once);
+        b.Energy.Verify(e => e.RefillToMaxAsync(player.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()), Times.Once);
+        b.Energy.Verify(e => e.RefillToMaxAsync(player.Id, ResourceType.GuildStamina, It.IsAny<CancellationToken>()), Times.Once);
+
+        // Health restored to full
+        player.Stats!.CurrentHealth.Should().Be(player.Stats.BaseMaxHealth);
     }
 
     // -----------------------------------------------------------------------

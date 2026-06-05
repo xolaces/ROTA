@@ -99,6 +99,17 @@ public sealed class EnergyService : IEnergyService
         }, ct);
     }
 
+    public async Task RefillToMaxAsync(Guid playerId, ResourceType type, CancellationToken ct = default)
+    {
+        var now = DateTimeOffset.UtcNow;
+
+        await _resources.AtomicUpdateAsync(playerId, type, resource =>
+        {
+            resource.SaveCheckpoint(resource.MaxValue, now);
+            return true;
+        }, ct);
+    }
+
     public async Task UpdateMaxAsync(Guid playerId, ResourceType type, int newMax, CancellationToken ct = default)
     {
         var now = DateTimeOffset.UtcNow;

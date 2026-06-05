@@ -104,6 +104,14 @@ public class RaidConcurrencyTests : IAsyncLifetime
             // Player.Create seeds PlayerStats and three PlayerResource rows (Energy/Stamina/GuildStamina).
             player1 = Player.Create("p1", "p1@test.dev", "test-hash");
             player2 = Player.Create("p2", "p2@test.dev", "test-hash");
+
+            // Level both to 100 with 0 progress into the level. The killing hit grants ~450 XP
+            // (300 base ×1.5 solo Legendary1); a level-up would fully refill stamina (T22) and mask
+            // the lock behavior this test isolates. At L100, XpToNextLevel ≈ 754 > 450 → no level-up.
+            var statService = scope.ServiceProvider.GetRequiredService<IStatService>();
+            LevelUpTo(player1, 100, statService);
+            LevelUpTo(player2, 100, statService);
+
             db.Players.AddRange(player1, player2);
 
             // HP = 1 → any hit (minimum damage = 1) kills the raid.
@@ -207,6 +215,14 @@ public class RaidConcurrencyTests : IAsyncLifetime
     // -----------------------------------------------------------------------
     // Helper
     // -----------------------------------------------------------------------
+
+    // Advance a player to targetLevel with exactly 0 progress into the level, using the real
+    // XP-per-level formula (one level per AddExperience call, fed exactly the XP required).
+    private static void LevelUpTo(Player player, int targetLevel, IStatService stats)
+    {
+        while (player.Level < targetLevel)
+            player.AddExperience(stats.XpToNextLevel(player.Level), lvl => stats.XpToNextLevel(lvl));
+    }
 
     // Walk up from the test binary directory until we find src/ROTA.Api with a content/ folder.
     // Works for both local `dotnet test` runs and CI pipelines that clone the full repo.
