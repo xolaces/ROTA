@@ -1,7 +1,7 @@
 # System 19 — Raid Sharing (private-until-shared + join by UID)
 
-*Status: DRAFT — design complete, one decision flagged (§5). Spec-first per owner workflow.
-Traced against current raid code 2026-06-04.*
+*Status: SHIPPED 2026-06-04 — all three slices complete (backend core, sigil size, client UI).
+§5 decision resolved. Traced against current raid code 2026-06-04.*
 
 ## Goal (owner)
 Summoned raids are **private until shared to public**. Two ways to join someone's raid:
@@ -93,12 +93,18 @@ gates summoning — **no cooldowns**. The long-term gate is **energy → quests 
 late-game besides bragging/achievements).
 
 ## Slices
-1. **Backend core** (decision-independent): `IsPublic` + `Share()` + migration `AddRaidVisibility`;
+1. **Backend core** ✅ (`043f172`, merged `7981d2a`): `IsPublic` + `Share()` + migration `AddRaidVisibility`;
    list-filter update; `GET /api/raids/{id}`; `POST /api/raids/{id}/share`; `ActiveRaidResponse.IsPublic`;
    `SummonRaidAsync` passes `isPublic:false`. Unit + integration tests (share by non-summoner 403,
    private not listed to others / listed to summoner, get-by-id any visibility, share-Personal rejected).
-2. **Sigil size** (per §5 decision): set sigil `SummonSize`/default; HP-pool check.
-3. **Client**: share panel (UID copy + Share button) + join-by-UID field; DTO mirror; headless-compile.
+2. **Sigil size** ✅ (`0961b43`): early-game sigils set to `Small` in `content/items.json` (`SummonSize`).
+3. **Client** ✅ (`bd50794`, ROTA.Client6 `master`): Share panel inside `RaidCombatView`
+   (summoner-only, non-Personal) — selectable UID field + Copy (`GUIUtility.systemCopyBuffer`) +
+   "Share to public list" → `ShareRaidAsync`, flips to "Shared ✓", surfaces NotSummoner /
+   CannotSharePersonal. Join-by-UID card atop the Public tab → `GetRaidByIdAsync` → open combat
+   (handles invalid/404). PRIVATE badge on own unshared cards. DTOs mirrored (`IsPublic`,
+   `ShareRaidResult`, `ShareRaidFailureCode`); `GetRaidByIdAsync`/`ShareRaidAsync` on `IRotaApi`
+   (Http maps status→result; Mock store flips `IsPublic`). Headless-compiled: 0 `error CS`.
 
 ## Non-goals (defer)
 Invite revocation, per-player allowlists, re-privatising a shared raid, share links/deep-linking.
