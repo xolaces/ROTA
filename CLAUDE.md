@@ -274,10 +274,14 @@ class-unlock overlay shows each option's benefit. Client: class selection remove
 screen (inline card) and now surfaces as an overlay when a new tier unlocks.
 
 ## Phase 2 — Ops & Social (T30–T40) — BACKEND COMPLETE (2026-06-06)
-Build: 0 errors. Tests: **524 unit + 35 integration = 559, all green.** Spec:
-docs/specs/active/phase-2-ops-social.md. Branch: feat/phase2-ops-social (off main).
-Migrations applied: AddOutboundEmails, AddPlayerMute, AddPinnacleFirstClaims, AddSocialSystem.
-All 7 design decisions were resolved up-front (see spec §6).
+Build: 0 errors. Tests: **526 unit + 35 integration = 561, all green** (incl. an adversarial
+multi-agent review pass + fixes). Spec: docs/specs/active/phase-2-ops-social.md. Branch:
+feat/phase2-ops-social (off main). Migrations applied: AddOutboundEmails, AddPlayerMute,
+AddPinnacleFirstClaims, AddSocialSystem, FriendshipPartialUniqueIndex. All 7 design decisions
+were resolved up-front (see spec §6). Review hardening: friendships use a partial unique index
+(re-friend after unfriend) + conflict-safe insert; muted/banned players can't PM or chat; a block
+hides PM history. Accepted-as-noted: chat mute is a per-message DB hit (PHASE-2 Redis cache);
+report rate-limit consumed before checks (anti-abuse); Email:Enabled defaults true (owner has creds).
 
 - **T39 — Operator email backbone (FOUNDATION):** `IEmailService`/`SmtpEmailService` (Gmail SMTP;
   creds in user-secrets `Email:Username`/`Email:Password` — NOTE: decision #1 said SendGrid, but the
