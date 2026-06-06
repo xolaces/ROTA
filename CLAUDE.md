@@ -331,6 +331,11 @@ report rate-limit consumed before checks (anti-abuse); Email:Enabled defaults tr
   **world/raid chat SEND** (send box is present-but-disabled "Live chat coming soon"). Private messaging
   is unaffected — it rides REST. Wiring a SignalR client lights up real-time world/raid chat + live PM
   push in one follow-up.
+- **OPEN PLAYTEST BUGS (client/mock fidelity, 2026-06-06)** — see `docs/SESSION_HANDOFF.md` §A for
+  root-cause + fix locations: (1) alloc doesn't credit current bar (MockRotaApi.AllocateStatAsync omits
+  the LiveValue bump T30 does live); (2) HeaderBar bars drift from server truth (ticker reconcile);
+  (3) Hit ×20 allowed with 10 stamina (RaidCombatView gates on defeated-only, not stamina; mock doesn't
+  enforce). Live backend is authoritative + tested — these are client display + MockRotaApi fidelity gaps.
 
 ## PHASE-2 Deferred Items
 - DiscernmentInvestment effect: quest drop quality (raid crit shipped v0.2.3)

@@ -80,7 +80,63 @@ mirror live (mutable state), or playtest feedback is noise. Live mode is the rea
 - Backend open follow-up: confirm gem amounts for pinnacle tiers **2000 / 15000 / 25000** (omitted from
   `LevelingConfig.PinnacleGemRewards` until set); stat-rollback is PHASE-2.
 
-## CARRY-OVER BACKLOG (pre-existing, owner's call)
+## ⏭️ REMAINING WORK → next session (Phase 2 tail) — START HERE
+Backend + dashboard + most client UI shipped. What's left, in priority order:
+
+### A. OPEN PLAYTEST BUGS — client/mock fidelity (owner-reported 2026-06-06)
+All three are **client + MockRotaApi** issues. The **live backend is server-authoritative and unit-tested**
+(T30 credit, EnergyService stamina guard, raid stamina spend) — these are mock-fidelity / client-display
+gaps, the recurring lesson (owner playtests in `useMock=true`). Fix in `C:\Dev\ROTA.Client6` (close the
+Editor, branch off `feat/phase2-client-plumbing` or `master`, headless-compile to verify).
+
+1. **Allocating Energy/Stamina doesn't move the *current* bar (no immediate reward).**
+   - Root cause: `Assets/ROTA.Client/Runtime/Api/MockRotaApi.cs` → `AllocateStatAsync` (~L145–146) raises
+     `MaxEnergy/MaxStamina` + `SetResourceMax(...)` but never bumps the resource **`LiveValue`**. T30
+     credits the delta to *current* on the live server (via `RefillEnergyAsync`, tested) — the mock omits it.
+   - Fix: in `AllocateStatAsync`, for Energy/Stamina also raise that resource's `LiveValue` by `amount`
+     (cap at new max) — add a `BumpResourceLive(type, amount)` helper mirroring `SetResourceMax`.
+   - Live path is fine: `ProfileScreen` re-fetches the profile after alloc (`GetProfileAsync()` → `_state.Set`,
+     ~L955), so the credited current shows once the mock returns it. `AllocateStatResponse` carries new MAX
+     only (no current) — the re-fetch is what surfaces the credit; keep that re-fetch.
+
+2. **Top-left HeaderBar resource bars don't match the true backend values (display drift).**
+   - Root cause: the T29 per-second regen ticker in `UI/HeaderBar.cs` extrapolates display values and must
+     **snap to server truth on every `PlayerState.Changed`**. It drifts when a spend isn't reconciled into
+     `PlayerState` (so the ticker keeps counting from a stale base), and #1's max-without-current skews the
+     fill ratio.
+   - Fix: make the header derive purely from `PlayerState` (server truth) with the ticker as cosmetic
+     extrapolation that resets to the server value on each fetch; ensure every spend reconciles —
+     after a raid hit patch stamina from the authoritative `RaidHitResponse` (`PlayerState.PatchStamina`
+     exists) and/or re-fetch; same for quest energy. Audit `HeaderBar.RenderResources` + the spend paths.
+
+3. **Hit ×20 was allowed with only 10 stamina.**
+   - Root cause: `Screens/RaidCombatView.cs` gates the hit buttons on `!raid.IsDefeated` only
+     (`_hitRow.SetEnabled(...)`, ~L503) — NOT on available stamina, so ×5/×20 are clickable below cost.
+     On live the server rejects (EnergyService → 422); the client let the click through; the mock raid-hit
+     doesn't enforce stamina either.
+   - Fix (client gate): track current stamina; enable each `Hit ×N` button only when `stamina >= N`; refresh
+     gating on the per-second tick, after each hit, and on profile change; surface a clear "not enough
+     stamina" message on a 422. Fix (mock fidelity): `MockRotaApi` raid-hit must reject when current
+     stamina < hitSize and **deduct** stamina on success (mirror the backend) so mock enforces the rule.
+
+### B. Real-time chat — ONE task: a Unity SignalR client → `/hubs/chat`
+Lights up **T35 raid chat** + public **world/raid chat SEND** (today a disabled "Live chat coming soon"
+box) + **live PM push**. PM already works over REST; the hub + auth (JWT-over-querystring) are live on the
+backend — purely a client-side addition. Events to handle: `WorldMessage`, `RaidMessage`, `PrivateMessage`,
+`Muted`. Add a SignalR client (BestHTTP or Microsoft SignalR client DLLs — verify Unity/IL2CPP compatibility).
+
+### C. DECISIONS needed from owner
+- **Pinnacle gem amounts for levels 2000 / 15000 / 25000** — omitted from
+  `appsettings.json` → `LevelingConfig.PinnacleGemRewards` until set (1000/2500/5000/7500/10000 are live).
+- Whether **mute** should cover **PMs** (currently it does — gated in `SocialService.SendMessageAsync`).
+
+### D. MERGES (all green, owner's call)
+- Backend: **`feat/phase2-ops-social`** pushed to origin — open a PR / merge to `main`.
+- Unity client: **`feat/phase2-client-plumbing`** (local; verified-compiling) — eyeball in Editor, merge to `master`.
+- Dashboard: `C:\Dev\rota-ops-dashboard` (local git, no remote) — add a remote if you want it off-machine.
+- Pre-existing: **`chore/drift-control-tooling`** still unmerged.
+
+
 - **T18** character vector models — DEFERRED (no vector-art pipeline; nav icons are Unicode emoji).
 - **Merge `chore/drift-control-tooling` → `main`** (additive, green).
 - **Content depth** — still 5 quests / 2 raids. Expand the questline.
