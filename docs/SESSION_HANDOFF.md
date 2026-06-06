@@ -7,18 +7,36 @@ parallelize, run any git / merge / dotnet (incl. `dotnet ef database update`) wi
 
 ## REPOS & GIT STATE
 - **Backend** (.NET 10): `C:\Users\xolac\OneDrive\Documentos\Projects\ROTA` — git `main`, remote
-  `origin` = github.com/xolaces/ROTA. `main` @ `8cf28d3`, **all pushed**. Docker (pg+redis) up; all
-  migrations applied (latest `AddQuestNodeProgress`). **476 unit + 35 integration green.**
+  `origin` = github.com/xolaces/ROTA. `main` @ `87ec8e9`, **all pushed**. Docker (pg+redis) up; all
+  migrations applied (latest `AddQuestEverCleared`). **478 unit + 35 integration green.**
   **Branch `chore/drift-control-tooling` is still UNMERGED** (drift tooling + the `/audit-dtos`
   command + `audit/` ledgers live there — merge to `main` when ready).
-- **Unity** (6.4 / 6000.4.9f1): `C:\Dev\ROTA.Client6` — git `master` @ `1d44080`, **local-only (no
+- **Unity** (6.4 / 6000.4.9f1): `C:\Dev\ROTA.Client6` — git `master` @ `ff90627`, **local-only (no
   remote)**. Use `git -C`. `Main.unity`'s `useMock` toggle — never commit it.
 
 ## READ FIRST
 - `docs/ROTA_Function_Reference.md` (API/DTO contract), `CLAUDE.md` (architecture + security rules),
   `docs/specs/shipped/` (system specs). Confirm BOTH repos' `git log` before trusting anything.
 
-## SHIPPED RECENTLY (all verified, all merged)
+## SHIPPED THIS SESSION (T19–T29, all verified + merged)
+- **T20/T21/T22/T24 (level-up cluster):** backend full resource refill + GuildStamina-1:1-to-level
+  on level-up (new `IEnergyService.RefillToMaxAsync`; GuildStamina pool was stuck at max 1). Client
+  `LevelUpOverlay` (tap-to-dismiss) + `MilestoneBanner` (sweep every 2500 levels) via
+  `PlayerState.NotifyLevelUp`.
+- **T26/T29 (correctness):** T29 — `HeaderBar` regen ticker (server regen was correct; the header
+  just never advanced between fetches). T26 — chapter-boss RESET CYCLE: clearing a node now LOCKS it
+  (server `NodeCleared`→409); a boss clear resets the whole chapter. Split `IsCleared` (resettable) /
+  `HasEverCleared` (permanent unlock latch). Migration `AddQuestEverCleared`. **Reverses System 20's
+  "replayable".**
+- **T19/T23/T25 (UI polish):** compact share button; raid countdown timer bar under the HP bar;
+  slimmer profile left column.
+- **T28:** alloc window shows live landing values + live LSI/BSI (BSI = (ATK+DEF)/Level); pool maxima
+  removed from profile (they're in the header), profile shows INDICES instead.
+- **T27:** legion tab selection-first; capacity-matched Generals/Troops slot segments; stub Equipment.
+- **MOCK NOTE:** `MockRotaApi._mockProfile.Level = 2498` (was 67) so milestones are reachable in
+  mock playtest — revert for general mock testing. Mock quest/raid now level up + refill statefully.
+
+## SHIPPED PRIOR SESSIONS (all verified, all merged)
 Playtest batch T1–T8 (System 19 client + System 20 + class preview) and T9–T18 below.
 - **T9** compact Share pill · **T10** on-hit gold roll 3-8/stamina + combat-log XP/gold + running
   totals (XP was always firing — confirmed) · **T11** fresh-account quests (was mock seeding) ·
