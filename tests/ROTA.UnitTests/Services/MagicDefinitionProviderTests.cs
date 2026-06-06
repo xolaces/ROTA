@@ -25,13 +25,20 @@ public class MagicDefinitionProviderTests : IDisposable
     // -----------------------------------------------------------------------
 
     [Fact]
-    public void Provider_LoadsAllTenStarterMagics()
+    public void Provider_LoadsStarterAndPinnaclePlaceholderMagics()
     {
         // Point at the actual Api content directory
         var apiContentRoot = FindApiContentRoot();
         var provider = new MagicDefinitionProvider(apiContentRoot);
 
-        provider.GetAll().Should().HaveCount(10);
+        var all = provider.GetAll();
+        // 10 starter magics + 5 inert pinnacle placeholders (T33).
+        all.Should().HaveCount(15);
+        all.Should().Contain(m => m.Id == "magic_smite", "starter magics still load");
+
+        var pinnacle = provider.GetById("magic_pinnacle_5000");
+        pinnacle.Should().NotBeNull("a pinnacle placeholder magic was added");
+        pinnacle!.ProcChance.Should().Be(0.0, "pinnacle placeholders are inert until designed by the first-claimant");
     }
 
     [Fact]

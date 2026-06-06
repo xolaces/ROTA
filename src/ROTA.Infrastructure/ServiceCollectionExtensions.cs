@@ -45,6 +45,8 @@ public static class ServiceCollectionExtensions
         // Phase 2 — Ops & Social: operator email backbone (T39)
         services.AddScoped<IEmailService, SmtpEmailService>();
         services.AddSingleton<IEmailSendQueue, EmailSendQueue>();
+        // Anti-spam limiter for player submissions (T37 reports, T38 bug/ticket)
+        services.AddScoped<ISubmissionRateLimiter, SubmissionRateLimiter>();
 
         // Content definition providers — singletons: JSON files read once at startup
         services.AddSingleton<IQuestDefinitionProvider>(
