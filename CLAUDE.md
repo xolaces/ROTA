@@ -237,9 +237,10 @@ Raids are PRIVATE until shared to the public list. Spec: docs/specs/shipped/syst
 ## System 20 — Quest Node Depletion + Discernment Drops (2026-06-05) — COMPLETE (4 slices)
 Spec: docs/specs/shipped/system-20-quest-depletion-drops.md. 476 unit + 35 integration green.
 - Node depletion: PlayerQuestProgress.Progress (starts 100) + IsCleared + Deplete(); each attempt
-  drains the node (battle −5, boss −2.5, QuestConfig-driven). Reaching 0 latches IsCleared, and the
-  unlock rule is now "prerequisite node IsCleared" (was "completed once"). Cleared nodes stay
-  replayable. Migration AddQuestNodeProgress auto-clears already-completed nodes.
+  drains the node (battle −5, boss −2.5, QuestConfig-driven). Reaching 0 latches IsCleared.
+  Migration AddQuestNodeProgress auto-clears already-completed nodes. NOTE: T26 (2026-06-06) later
+  reversed "cleared nodes stay replayable" → cleared nodes now LOCK until a chapter-boss reset; unlock
+  gating moved to the permanent HasEverCleared latch. See the "Level-up cluster + correctness" entry.
 - Discernment drops: the dormant quest loot pipeline is now wired (lootTableId on all 5 quests + 5
   type:"Quest" loot tables). ProcessQuestLootAsync scales each chance drop by Discernment
   (base × (1 + Disc×0.03), cap 0.95 that never lowers a high base); guaranteed drops unaffected.
@@ -249,6 +250,23 @@ Spec: docs/specs/shipped/system-20-quest-depletion-drops.md. 476 unit + 35 integ
   NodeCleared,NodeJustCleared}.
 - Client (ROTA.Client6 master): quest cards show a depletion bar (amber→green "CLEARED ✓"/"LOCKED")
   + "node cleared" callout; mock quests made stateful so the bar moves in mock mode.
+
+## Level-up cluster + correctness bugs (T20-T29, 2026-06-06)
+- T22/T24: GrantLevelUpPointsAsync (the quest+raid chokepoint) now fully refills all resource pools
+  (new IEnergyService.RefillToMaxAsync) and syncs GuildStamina max 1:1 to the new level on each
+  level-up (GuildStamina was seeded at max 1 and never updated — DTO showed level, pool stayed 1).
+- T20/T21 (client): LevelUpOverlay (tap-to-dismiss congrats) + MilestoneBanner (sweep every 2500
+  levels), driven by PlayerState.NotifyLevelUp; mock seeded near a milestone (Level 2498) for testing.
+- T29 (client): HeaderBar regen ticker — server regen was always correct, but the header only updated
+  on profile re-fetch, so bars looked frozen. Now advances displayed values per-second from the
+  server's RegenMinutesPerPoint/SecondsToNextPoint, reconciling on each fetch. Mock regenerates too.
+- T26: chapter-boss RESET CYCLE — REVERSES System 20's "cleared nodes stay replayable". Clearing a
+  node now LOCKS it (server rejects with QuestFailureCode.NodeCleared → 409); completing a chapter
+  boss resets that whole chapter's nodes to fresh (deplete→clear→boss→reset). PlayerQuestProgress
+  split into resettable IsCleared (attemptability) + permanent HasEverCleared (unlock gating, so a
+  reset never re-locks earned progression). Migration AddQuestEverCleared (backfill = is_cleared).
+  DTOs: QuestResultResponse.ChapterReset; QuestFailureCode.NodeCleared. Client: Attempt disabled on
+  cleared nodes + "⟳ CHAPTER RESET" callout.
 
 ## Class regen preview (T7, 2026-06-05)
 ClassRegenRates gains ChoicePreviews (per-available-class regen rates) so the client's auto-triggered
