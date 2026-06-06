@@ -18,10 +18,23 @@ public sealed class FriendshipRepository : IFriendshipRepository
     public Task<Friendship?> GetByIdAsync(Guid id, CancellationToken ct = default)
         => _db.Friendships.FirstOrDefaultAsync(f => f.Id == id && !f.IsDeleted, ct);
 
-    public async Task AddAsync(Friendship friendship, CancellationToken ct = default)
+    public async Task<bool> AddAsync(Friendship friendship, CancellationToken ct = default)
     {
-        _db.Friendships.Add(friendship);
-        await _db.SaveChangesAsync(ct);
+        try
+        {
+            _db.Friendships.Add(friendship);
+            await _db.SaveChangesAsync(ct);
+            return true;
+        }
+        catch (DbUpdateException)
+        {
+            // Concurrent same-pair insert won the unique index. Detach so a later SaveChanges on this
+            // scoped context doesn't retry it, and report the conflict to the caller.
+            foreach (var entry in _db.ChangeTracker.Entries<Friendship>()
+                         .Where(e => e.State == EntityState.Added).ToList())
+                entry.State = EntityState.Detached;
+            return false;
+        }
     }
 
     public async Task UpdateAsync(Friendship friendship, CancellationToken ct = default)

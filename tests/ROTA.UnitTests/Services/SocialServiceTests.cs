@@ -49,6 +49,7 @@ public class SocialServiceTests
         players.Setup(p => p.FindByUsernameAsync("bob", It.IsAny<CancellationToken>())).ReturnsAsync(target);
         blocks.Setup(b => b.EitherBlockedAsync(requester, target.Id, It.IsAny<CancellationToken>())).ReturnsAsync(false);
         friends.Setup(f => f.FindBetweenAsync(requester, target.Id, It.IsAny<CancellationToken>())).ReturnsAsync((Friendship?)null);
+        friends.Setup(f => f.AddAsync(It.IsAny<Friendship>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
         var result = await service.SendFriendRequestAsync(requester, "bob");
 
@@ -155,6 +156,43 @@ public class SocialServiceTests
         result.Message.Should().NotBeNull();
         result.Message!.Body.Should().Be("hi friend");
         messages.Verify(m => m.AddAsync(It.IsAny<PrivateMessage>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SendMessage_WhenSenderMuted_Fails()
+    {
+        var (service, players, friends, blocks, messages, _, _, _) = Build();
+        var sender = MakePlayer("me");
+        sender.Mute(DateTimeOffset.UtcNow.AddHours(1));
+        var target = MakePlayer("bob");
+        var friendship = Friendship.Create(sender.Id, target.Id);
+        friendship.Accept();
+        players.Setup(p => p.FindByIdAsync(sender.Id, It.IsAny<CancellationToken>())).ReturnsAsync(sender);
+        players.Setup(p => p.FindByUsernameAsync("bob", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+        blocks.Setup(b => b.EitherBlockedAsync(sender.Id, target.Id, It.IsAny<CancellationToken>())).ReturnsAsync(false);
+        friends.Setup(f => f.FindBetweenAsync(sender.Id, target.Id, It.IsAny<CancellationToken>())).ReturnsAsync(friendship);
+
+        var result = await service.SendMessageAsync(sender.Id, "bob", "hi");
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("muted");
+        messages.Verify(m => m.AddAsync(It.IsAny<PrivateMessage>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetConversation_WhenBlocked_ReturnsEmpty()
+    {
+        var (service, players, _, blocks, messages, _, _, _) = Build();
+        var me = Guid.NewGuid();
+        var target = MakePlayer("bob");
+        players.Setup(p => p.FindByUsernameAsync("bob", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+        blocks.Setup(b => b.EitherBlockedAsync(me, target.Id, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+
+        var result = await service.GetConversationAsync(me, "bob", 50);
+
+        result.Should().BeEmpty();
+        messages.Verify(m => m.GetConversationAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never, "a block hides the conversation history");
     }
 
     // ---- report ----

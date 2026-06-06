@@ -30,7 +30,7 @@ public sealed class ChatHub : Hub
     {
         body = Sanitize(body);
         if (body.Length == 0) return;
-        if (await IsMutedAsync()) { await NotifyMuted(); return; }
+        if (await CannotChatAsync()) { await NotifyBlocked(); return; }
 
         var msg = BuildMessage("World", null, body);
         await _world.AppendAsync(msg);
@@ -48,7 +48,7 @@ public sealed class ChatHub : Hub
     {
         body = Sanitize(body);
         if (body.Length == 0 || string.IsNullOrWhiteSpace(raidId)) return;
-        if (await IsMutedAsync()) { await NotifyMuted(); return; }
+        if (await CannotChatAsync()) { await NotifyBlocked(); return; }
 
         var msg = BuildMessage("Raid", raidId, body);
         await Clients.Group(RaidGroup(raidId)).SendAsync("RaidMessage", msg);
@@ -74,13 +74,15 @@ public sealed class ChatHub : Hub
 
     private Guid SenderId() => Guid.Parse(Context.User!.FindFirst("sub")!.Value);
 
-    private async Task<bool> IsMutedAsync()
+    private async Task<bool> CannotChatAsync()
     {
+        // A muted (T40) or banned player cannot send. Banned matters because their 15-min access token
+        // outlives session revocation, so a live socket could otherwise keep chatting post-ban.
         var p = await _players.FindByIdAsync(SenderId());
-        return p is not null && p.IsMuted;
+        return p is not null && (p.IsBanned || p.IsMuted);
     }
 
-    private Task NotifyMuted() => Clients.Caller.SendAsync("Muted", "You are muted and cannot send messages.");
+    private Task NotifyBlocked() => Clients.Caller.SendAsync("Muted", "You cannot send messages right now (muted or banned).");
 
     private static string Sanitize(string body)
     {

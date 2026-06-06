@@ -54,10 +54,23 @@ public sealed class SocialService : ISocialService
 
         var existing = await _friends.FindBetweenAsync(requesterId, target.Id, ct);
         if (existing is not null)
-            return AdminActionResult.Fail(existing.Status == FriendshipStatus.Accepted
-                ? "Already friends." : "A friend request is already pending.");
+        {
+            if (existing.Status == FriendshipStatus.Accepted)
+                return AdminActionResult.Fail("Already friends.");
+            // A pending request addressed to ME means the other player already asked — mutual intent,
+            // so accept it rather than create a second (reverse-direction) row.
+            if (existing.AddresseeId == requesterId)
+            {
+                existing.Accept();
+                await _friends.UpdateAsync(existing, ct);
+                await Audit(requesterId, "FriendRequestAccepted", $"friendship={existing.Id} (mutual)", ct);
+                return AdminActionResult.Ok();
+            }
+            return AdminActionResult.Fail("A friend request is already pending.");
+        }
 
-        await _friends.AddAsync(Friendship.Create(requesterId, target.Id), ct);
+        if (!await _friends.AddAsync(Friendship.Create(requesterId, target.Id), ct))
+            return AdminActionResult.Fail("A friend request already exists.");
         await Audit(requesterId, "FriendRequestSent", $"requester={requesterId} target={target.Id}", ct);
         return AdminActionResult.Ok();
     }
@@ -148,6 +161,12 @@ public sealed class SocialService : ISocialService
         var target = await ResolveAsync(targetUsernameOrId, ct);
         if (target is null) return SendMessageResult.Fail("Recipient not found.");
         if (target.Id == senderId) return SendMessageResult.Fail("You cannot message yourself.");
+
+        // Banned/muted players cannot send PMs (mirrors the chat hub's gate — mute covers all messaging).
+        var sender = await _players.FindByIdAsync(senderId, ct);
+        if (sender is { IsBanned: true }) return SendMessageResult.Fail("You are banned and cannot send messages.");
+        if (sender is { IsMuted: true }) return SendMessageResult.Fail("You are muted and cannot send messages.");
+
         if (await _blocks.EitherBlockedAsync(senderId, target.Id, ct))
             return SendMessageResult.Fail("Cannot message — a block is in place.");
 
@@ -165,6 +184,9 @@ public sealed class SocialService : ISocialService
     {
         var target = await ResolveAsync(targetUsernameOrId, ct);
         if (target is null) return Array.Empty<PrivateMessageDto>();
+        // A block hides the conversation history from both sides.
+        if (await _blocks.EitherBlockedAsync(playerId, target.Id, ct))
+            return Array.Empty<PrivateMessageDto>();
 
         take = Math.Clamp(take, 1, MaxConversation);
         var rows = await _messages.GetConversationAsync(playerId, target.Id, take, ct);

@@ -19,7 +19,11 @@ public class FriendshipConfiguration : IEntityTypeConfiguration<Friendship>
         builder.Property(f => f.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("NOW()");
         builder.Property(f => f.IsDeleted).HasColumnName("is_deleted").HasDefaultValue(false);
 
-        builder.HasIndex(f => new { f.RequesterId, f.AddresseeId }).IsUnique();
+        // Partial unique index: only ACTIVE rows are unique on the pair, so re-friending after an
+        // unfriend (soft-deleted row lingers) can insert a fresh row without colliding.
+        builder.HasIndex(f => new { f.RequesterId, f.AddresseeId })
+            .IsUnique()
+            .HasFilter("is_deleted = false");
         builder.HasIndex(f => f.AddresseeId);
 
         builder.HasOne<Player>().WithMany().HasForeignKey(f => f.RequesterId).OnDelete(DeleteBehavior.Restrict);
