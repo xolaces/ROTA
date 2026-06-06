@@ -1,0 +1,5 @@
+[
+  { "id": "trophy_aureate", "name": "Aureate Trophy", "tier": "Aureate", "legionPowerBonusFraction": 0.25 },
+  { "id": "trophy_argent",  "name": "Argent Trophy",  "tier": "Argent",  "legionPowerBonusFraction": 0.10 },
+  { "id": "trophy_bronzed", "name": "Bronzed Trophy", "tier": "Bronzed", "legionPowerBonusFraction": 0.05 }
+]

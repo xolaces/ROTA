@@ -223,5 +223,37 @@
     "iconPath": "",
     "acquisition": "Pinnacle reward — level 25000 (placeholder, design pending first-claimant)",
     "gemPrice": 0
+  },
+  {
+    "id": "magic_wrath_of_the_ancients",
+    "name": "Wrath of the Ancients",
+    "description": "The Gauntlet rank-1 aura. An off-cap proc applied to the Gauntlet raid, outside the five-magic slot cap. Rank-acquired only (per-event consumable).",
+    "rarity": "Orange",
+    "category": "Damage",
+    "effectType": "DamageProc",
+    "procChance": 0.27,
+    "procAmount": 2.50,
+    "conditions": [],
+    "offCap": true,
+    "stacks": false,
+    "iconPath": "",
+    "acquisition": "Gauntlet rank 1",
+    "gemPrice": 0
+  },
+  {
+    "id": "magic_blessing_of_the_ancients",
+    "name": "Blessing of the Ancients",
+    "description": "The Gauntlet ranks 2–10 aura. An off-cap proc applied to the Gauntlet raid, outside the five-magic slot cap. Rank-acquired only (per-event consumable).",
+    "rarity": "Orange",
+    "category": "Damage",
+    "effectType": "DamageProc",
+    "procChance": 0.15,
+    "procAmount": 4.25,
+    "conditions": [],
+    "offCap": true,
+    "stacks": false,
+    "iconPath": "",
+    "acquisition": "Gauntlet rank 2-10",
+    "gemPrice": 0
   }
 ]

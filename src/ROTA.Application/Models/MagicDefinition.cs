@@ -17,4 +17,9 @@ public class MagicDefinition
     public string          IconPath    { get; set; } = string.Empty;
     public string          Acquisition { get; set; } = string.Empty;
     public int             GemPrice    { get; set; } = 0;  // 0 = not available in gem shop
+
+    // BETA (System 16 Slice 1) — marks an off-cap Gauntlet aura (Wrath/Blessing) that
+    // resolves OUTSIDE the shared five-magic MaxAggregateProcBonus cap. Combat does NOT
+    // read this yet (wired in Slice 4); content + Gauntlet provider validation only.
+    public bool            OffCap      { get; set; } = false;
 }

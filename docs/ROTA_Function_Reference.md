@@ -1,8 +1,53 @@
 # ROTA Function Reference
-Last updated: 2026-06-03 (System 17 Leaderboards Slice 5 — Stat board snapshot)
+Last updated: 2026-06-06 (System 16 Gauntlet — Slice 1 content/definitions/provider)
 Update when adding public methods or entities.
 
 ---
+
+## System 16 — Gauntlet (Slice 1 — content + definitions)
+
+### Enums (`src/ROTA.Domain/Enums/`)
+| Enum | Values |
+|------|--------|
+| `GauntletLeague` | `Whelpling` (L1–1999), `Wyrm` (L2000–9999), `Dragon` (L10000+) |
+| `GauntletEventState` | `Scheduled, Active, Closed, Settled` |
+| `GauntletRewardKind` | `Tokens, Pitchfork, Trophy, Magic` |
+| `GauntletTrophyTier` | `Aureate` (+25%), `Argent` (+10%), `Bronzed` (+5%) |
+| `GauntletCurrency` | `Token, Pitchfork` — currency-ledger discriminator |
+| `GauntletCurrencyTransactionType` | `RankReward, RaidDefeatReward, ShopPurchase, GemPurchase` |
+| `StrikeTransactionType` | `RaidDefeat, GemPurchase, HitSpend, SpecialRaidDrop` |
+
+### Config — `GauntletConfig` (`src/ROTA.Application/Configuration/GauntletConfig.cs`)
+`IOptions<GauntletConfig>`, bound from appsettings `"GauntletConfig"`. LeagueBounds (Whelpling 1–1999 /
+Wyrm 2000–9999 / Dragon 10000–`NoMaxLevel`), MinEntryLevel 20, PrizeRankCount 500, LeaderboardPageSize 200,
+ScoreSnapshotSeconds 60, StrikeRatePerSize {Small 1, Medium 5, Large 20}, StrikesPerDefeat 10.
+`NoMaxLevel = int.MaxValue` is the open-ended-top-league sentinel.
+
+### Content models (`src/ROTA.Application/Models/`)
+- `GauntletPrizeTable { List<GauntletPrizeBand> Bands }`; `GauntletPrizeBand { RankFrom, RankTo, Tokens, Pitchfork, TrophyId?, MagicId? }`.
+- `GauntletTrophyDefinition { Id, Name, Tier (GauntletTrophyTier), LegionPowerBonusFraction (double) }`.
+- `GauntletRaidDefinition { Id, Name, Tier="Event", LadderStage, BaseHp, TimerHours, StaminaCostPerHit, LootTableId, BaseGoldReward, BaseExperienceReward, BaseGemReward, ArtKey, GauntletScored }` — **dedicated** model (does NOT reuse `RaidDefinition`, leaving existing raid loading untouched).
+- `MagicDefinition.OffCap` (bool, default false) — marks off-cap Gauntlet auras; combat reads it in Slice 4.
+
+### IGauntletContentProvider (`src/ROTA.Application/Interfaces/`)
+Singleton; mirrors `IMagicDefinitionProvider`. Loads `gauntlet_prizes/trophies/raids.json` at construction;
+throws `InvalidOperationException` at startup on invalid data. Methods: `GetPrizeTable()`, `GetBandForRank(int)`,
+`GetAllTrophies()`, `GetTrophyById(string)`, `GetGauntletRaids()`, `GetGauntletRaidByStage(int)`,
+`ResolveLeague(int)`. Impl `GauntletContentProvider` (`src/ROTA.Infrastructure/Services/`) depends on
+`IMagicDefinitionProvider` + `IOptions<GauntletConfig>`; eagerly constructed in `Program.cs` (fail-at-boot).
+
+### Content (`src/ROTA.Api/content/`)
+- `gauntlet_prizes.json` (7 bands, contiguous 1..500), `gauntlet_trophies.json` (3 trophies),
+  `gauntlet_raids.json` (6-stage ladder, baseHp 5000→488281, ~2.5× geometric).
+- `magics.json` +2 **off-cap** rows: `magic_wrath_of_the_ancients` (procChance 0.27, procAmount 2.50),
+  `magic_blessing_of_the_ancients` (0.15, 4.25); both `offCap:true`, `gemPrice:0`.
+
+**Startup validation:** duplicate ids; prize bands overlap/gap/coverage ≠ 1..PrizeRankCount; dangling
+trophyId/magicId; trophy fraction ≤ 0; league bounds gap/overlap/non-open-ended-top; Gauntlet magic missing
+or procChance ∉ (0,1] / procAmount ≤ 0 / offCap ≠ true; naming guard vs `magic_smite` / `magic_blessing_of_might`.
+
+**Slice 1 scope:** content/validation only — NO entities, migrations, DbSets, endpoints, or combat changes
+(deferred to Slices 2/4). 25 unit tests.
 
 ## System 17 — Global Leaderboards (Slice 1)
 

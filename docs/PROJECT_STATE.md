@@ -73,6 +73,18 @@ tables. Loop works; thin.
 - **Slice 4** (branch `slice/leaderboards-s4`): Write hooks. `ILeaderboardService` extended with `RecordEnergySpendAsync(playerId, amount, at)` and `RecordRaidHitAsync(playerId, damageFinal, at)`. `LeaderboardService` implements both — fan-out to board+period calls via the existing `ILeaderboardEntryRepository`. `EnergyService.SpendEnergyAsync`: after the atomic spend + audit write, calls `RecordEnergySpendAsync` for `ResourceType.Energy` only (Stamina/GuildStamina excluded, Q6); failure is swallowed+logged — spend never rolls back. `RaidService.HitRaidAsync`: inside the `AtomicApplyHitAsync` advisory-lock callback immediately after `participantFinal.RecordHit(damageFinal)`, calls `RecordRaidHitAsync` — rides the ambient transaction; never reached on the Redis cached-replay early-return path. No new migrations. +12 unit tests (LeaderboardWriteHookTests: period boundaries, leaderboard failure swallow, Stamina exclusion, cached-replay guard, damageFinal pass-through).
 - **Slice 5** (branch `slice/leaderboards-s5`): Stat board snapshot. `ILeaderboardEntryRepository` extended with `SetValueAsync(playerId, board, period, periodKey, value, at)` (overwrite-upsert: unconditional value overwrite; `last_progress_at` bumped ONLY when value changed — tiebreak survives repeated snapshots) and `GetEligibleStatSnapshotAsync(minLevel, excludeAdmins)` (single SQL join players+player_stats applying full eligibility predicate). `ILeaderboardService.SnapshotStatBoardAsync()` queries eligible stat snapshots and calls `SetValueAsync` × 3 per player (StatAttack=BaseAttack, StatDefense=BaseDefense, StatDiscernment=DiscernmentInvestment), Period=Live, period_key="live". `AdminController` extended: `POST /api/admin/leaderboards/stat/refresh` [AdminOnly] — DB actor re-verify, calls SnapshotStatBoardAsync, writes audit_log (`StatBoardRefreshed`), returns `StatBoardRefreshResponse{PlayersSnapshotted, SnapshotAt}`. CLI `leaderboard-refresh-stat` added to AdminCli. `StatBoardRefreshResponse` DTO added. No new migrations. +5 unit service tests + 4 unit controller tests + 8 integration tests (ranking, eligibility, Moderator included, idempotency, value update, last_progress_at preserved/bumped).
 
+## System 16 — Gauntlet (in progress)
+- **Slice 1** (branch `feat/system16-gauntlet-s1-content`): content + definitions only. 7 enums
+  (GauntletLeague/EventState/RewardKind/TrophyTier/Currency/CurrencyTransactionType/StrikeTransactionType).
+  `GauntletConfig` (IOptions, appsettings-bound, league bounds/entry floor/prize+page counts/strike rates).
+  Content models GauntletPrizeTable+Band, GauntletTrophyDefinition, dedicated GauntletRaidDefinition (NOT
+  reusing RaidDefinition). `MagicDefinition.OffCap` field (combat reads it in S4). `IGauntletContentProvider`
+  + `GauntletContentProvider` (singleton, startup-validated, eager-constructed). content/gauntlet_prizes.json
+  (7 bands → 1..500) + gauntlet_trophies.json (3) + gauntlet_raids.json (6-stage ladder); 2 off-cap magic
+  rows (Wrath 0.27/2.50, Blessing 0.15/4.25). +25 unit tests. No entities/migrations/combat (Slices 2/4).
+  Build 0 errors; **551 unit + 35 integration green**. (NOTE: global counts elsewhere in this doc predate
+  Phase 2 / Systems 18–20 and are stale — separate reconciliation pending.)
+
 ## Not implemented (High)
 Game client (C# SDK = v0.3.0) · discernment quest-drop-quality (later) ·
 moderation (back-burnered) · world chat · guild · gauntlet · gacha/pity ·

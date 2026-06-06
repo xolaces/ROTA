@@ -1,0 +1,13 @@
+{
+  "bands": [
+    { "rankFrom": 1,   "rankTo": 1,   "tokens": 50, "pitchfork": 10,
+      "trophyId": "trophy_aureate", "magicId": "magic_wrath_of_the_ancients" },
+    { "rankFrom": 2,   "rankTo": 10,  "tokens": 25, "pitchfork": 5,
+      "trophyId": "trophy_argent",  "magicId": "magic_blessing_of_the_ancients" },
+    { "rankFrom": 11,  "rankTo": 50,  "tokens": 20, "pitchfork": 2 },
+    { "rankFrom": 51,  "rankTo": 100, "tokens": 15, "pitchfork": 1 },
+    { "rankFrom": 101, "rankTo": 200, "tokens": 10 },
+    { "rankFrom": 201, "rankTo": 499, "tokens": 5 },
+    { "rankFrom": 500, "rankTo": 500, "tokens": 5, "trophyId": "trophy_bronzed" }
+  ]
+}

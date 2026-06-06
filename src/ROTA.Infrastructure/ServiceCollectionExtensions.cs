@@ -1,5 +1,7 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using ROTA.Application.Configuration;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Services;
 using ROTA.Application.Validators;
@@ -70,6 +72,13 @@ public static class ServiceCollectionExtensions
             _ => new UnitDefinitionProvider(contentRootPath));
         services.AddSingleton<ILegionDefinitionProvider>(
             _ => new LegionDefinitionProvider(contentRootPath));
+        // System 16 Slice 1 — depends on the magic provider (validates Gauntlet magics +
+        // prize magicId refs) and IOptions<GauntletConfig> (validates league bounds).
+        services.AddSingleton<IGauntletContentProvider>(sp =>
+            new GauntletContentProvider(
+                contentRootPath,
+                sp.GetRequiredService<IMagicDefinitionProvider>(),
+                sp.GetRequiredService<IOptions<GauntletConfig>>()));
 
         // Leaderboard infrastructure — singleton because PeriodKeyResolver is stateless + validates config at ctor
         services.AddSingleton<IPeriodKeyResolver, PeriodKeyResolver>();

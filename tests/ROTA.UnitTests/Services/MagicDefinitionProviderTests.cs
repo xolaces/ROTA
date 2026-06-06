@@ -32,8 +32,9 @@ public class MagicDefinitionProviderTests : IDisposable
         var provider = new MagicDefinitionProvider(apiContentRoot);
 
         var all = provider.GetAll();
-        // 10 starter magics + 5 inert pinnacle placeholders (T33).
-        all.Should().HaveCount(15);
+        // 10 starter magics + 5 inert pinnacle placeholders (T33)
+        // + 2 Gauntlet rank magics (System 16 Slice 1: Wrath + Blessing of the Ancients).
+        all.Should().HaveCount(17);
         all.Should().Contain(m => m.Id == "magic_smite", "starter magics still load");
 
         var pinnacle = provider.GetById("magic_pinnacle_5000");

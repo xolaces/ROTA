@@ -161,6 +161,9 @@ builder.Services.Configure<LevelingConfig>(
 builder.Services.Configure<LeaderboardConfig>(
     builder.Configuration.GetSection("LeaderboardConfig"));
 
+builder.Services.Configure<GauntletConfig>(
+    builder.Configuration.GetSection("GauntletConfig"));
+
 builder.Services.Configure<ClassConfig>(
     builder.Configuration.GetSection("ClassConfig"));
 
@@ -217,6 +220,11 @@ if (args.Length > 0 && AdminCli.IsCommand(args[0]))
     return await AdminCli.RunAsync(args, builder);
 
 var app = builder.Build();
+
+// System 16 Slice 1 — eagerly construct the Gauntlet content provider so its startup
+// validation (prize bands, trophy/magic refs, league bounds, off-cap magics, naming
+// guard) throws at boot rather than on first use.
+app.Services.GetRequiredService<IGauntletContentProvider>();
 
 // Dev-only auto-migrate: keeps a fresh local DB in sync without a manual
 // `dotnet ef database update`. Idempotent — safe to run even when the schema
