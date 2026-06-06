@@ -38,6 +38,14 @@ public class StatServiceTests
                 [2500]  = 35000,
                 [5000]  = 75000,
                 [10000] = 200000,
+            },
+            PinnacleGemRewards = new Dictionary<int, int>
+            {
+                [1000]  = 250,
+                [2500]  = 500,
+                [5000]  = 1500,
+                [7500]  = 2000,
+                [10000] = 2500,
             }
         });
 
@@ -286,6 +294,64 @@ public class StatServiceTests
             b.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never,
                 $"level {level} is not divisible by 5 so no gems should be granted");
         }
+    }
+
+    // -----------------------------------------------------------------------
+    // GrantLevelUpPointsAsync — T32 pinnacle gem rewards
+    // -----------------------------------------------------------------------
+
+    [Theory]
+    [InlineData(1000, 250)]
+    [InlineData(2500, 500)]
+    [InlineData(5000, 1500)]
+    [InlineData(7500, 2000)]
+    [InlineData(10000, 2500)]
+    public async Task GrantLevelUpPoints_GrantsPinnacleGems_AtConfiguredLevels(int level, int expectedGems)
+    {
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: level, skillPoints: 0);
+        SetupPlayer(b, player);
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        await b.Service.GrantLevelUpPointsAsync(player.Id, level);
+
+        b.Gems.Verify(g => g.GrantGemsAsync(
+            player.Id, expectedGems, GemTransactionType.PinnacleReward,
+            $"pinnacle:gems:{player.Id}:{level}", It.IsAny<CancellationToken>()), Times.Once,
+            $"level {level} is a pinnacle level granting {expectedGems} gems");
+    }
+
+    [Fact]
+    public async Task GrantLevelUpPoints_NoPinnacleGems_AtConvergenceLevelWithUnconfirmedAmount()
+    {
+        // 2000 is a convergence (class-gate) level but its gem amount is intentionally unconfigured,
+        // so no PinnacleReward gems are granted there until the owner sets one.
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: 2000, skillPoints: 0);
+        SetupPlayer(b, player);
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        await b.Service.GrantLevelUpPointsAsync(player.Id, 2000);
+
+        b.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(),
+            GemTransactionType.PinnacleReward, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GrantLevelUpPoints_NonPinnacleLevel_GrantsNoPinnacleGems()
+    {
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: 12, skillPoints: 0);
+        SetupPlayer(b, player);
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        await b.Service.GrantLevelUpPointsAsync(player.Id, 12);
+
+        b.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(),
+            GemTransactionType.PinnacleReward, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]

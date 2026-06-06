@@ -143,6 +143,16 @@ public sealed class StatService : IStatService
                 playerId, 5, GemTransactionType.LevelUpReward, referenceId, ct);
         }
 
+        // T32 — pinnacle / milestone gem reward (data-driven via LevelingConfig.PinnacleGemRewards).
+        // Idempotent by referenceId; separate from the every-5 LevelUpReward above.
+        var pinnacleGems = _levelingConfig.Value.GetPinnacleGems(newLevel);
+        if (pinnacleGems > 0)
+        {
+            await _gems.GrantGemsAsync(
+                playerId, pinnacleGems, GemTransactionType.PinnacleReward,
+                $"pinnacle:gems:{playerId}:{newLevel}", ct);
+        }
+
         // Auto-advance class on milestone levels (500, 1000, 2000, 5000, etc.)
         var advanced    = _classService.ComputeAutoAdvance(newLevel, player.Class);
         var classChanged = advanced != player.Class;
@@ -154,7 +164,7 @@ public sealed class StatService : IStatService
 
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, "LevelUpReward", null,
-            $"Level {newLevel} reward: +10 SkillPoints{(newLevel % 5 == 0 ? ", +5 Gems" : "")}{(classChanged ? $", class → {advanced}" : "")}",
+            $"Level {newLevel} reward: +10 SkillPoints{(newLevel % 5 == 0 ? ", +5 Gems" : "")}{(pinnacleGems > 0 ? $", +{pinnacleGems} Pinnacle Gems" : "")}{(classChanged ? $", class → {advanced}" : "")}",
             null), ct);
     }
 

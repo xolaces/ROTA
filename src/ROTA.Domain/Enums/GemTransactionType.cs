@@ -11,4 +11,5 @@ public enum GemTransactionType
     MagicPurchase   = 7,
     UnitPurchase    = 8,
     LegionPurchase  = 9,
+    PinnacleReward  = 10,
 }
