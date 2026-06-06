@@ -106,9 +106,10 @@ public sealed class QuestService : IQuestService
         var allProgress = await _questProgress.GetAllForPlayerAsync(playerId, ct);
         var progressByQuestId = allProgress.ToDictionary(p => p.QuestId);
 
-        // A node unlocks the next only once it is fully depleted (Cleared) — not on first completion.
-        var completedQuestIds = progressByQuestId
-            .Where(kv => kv.Value.IsCleared)
+        // A node unlocks the next once the prerequisite has EVER been cleared (permanent latch) — so a
+        // chapter-boss reset (T26), which clears IsCleared back to false, never re-locks earned content.
+        var unlockedQuestIds = progressByQuestId
+            .Where(kv => kv.Value.HasEverCleared)
             .Select(kv => kv.Key)
             .ToHashSet();
 
@@ -116,7 +117,7 @@ public sealed class QuestService : IQuestService
         foreach (var quest in _definitions.GetAll())
         {
             if (quest.PrerequisiteQuestId is not null
-                && !completedQuestIds.Contains(quest.PrerequisiteQuestId))
+                && !unlockedQuestIds.Contains(quest.PrerequisiteQuestId))
                 continue;
 
             progressByQuestId.TryGetValue(quest.Id, out var prog);
@@ -152,13 +153,20 @@ public sealed class QuestService : IQuestService
         if (quest is null)
             return Fail(QuestFailureCode.QuestNotFound, "Quest not found.");
 
-        // 2. Verify node prerequisite is fully cleared (depleted to 0) — difficulty-agnostic
+        // 2. Verify node prerequisite has ever been cleared (permanent latch) — difficulty-agnostic.
         if (quest.PrerequisiteQuestId is not null)
         {
             var prereq = await _questProgress.GetAsync(playerId, quest.PrerequisiteQuestId, ct);
-            if (prereq is null || !prereq.IsCleared)
+            if (prereq is null || !prereq.HasEverCleared)
                 return Fail(QuestFailureCode.PrerequisiteNotMet, "Prerequisite quest not yet cleared.");
         }
+
+        // 2b. T26 — a cleared (locked) node can't be attempted until the chapter boss resets it.
+        //     Fetched here (before any side effects) and reused for depletion at step 8.
+        var progress = await _questProgress.GetAsync(playerId, questId, ct);
+        if (progress is not null && progress.IsCleared)
+            return Fail(QuestFailureCode.NodeCleared,
+                "This node is cleared — defeat the chapter boss to reset it.");
 
         // 3. Verify difficulty gate (Hard requires Normal, etc.)
         var requiredDifficulty = DifficultyGates[difficulty];
@@ -200,8 +208,8 @@ public sealed class QuestService : IQuestService
             await _stats.GrantLevelUpPointsAsync(playerId, newLevel, ct);
 
         // 8. Record per-node progress + deplete the node (difficulty-agnostic). Boss nodes deplete
-        //    slower (more attempts to clear). Clearing (Progress→0) unlocks the next node.
-        var progress = await _questProgress.GetAsync(playerId, questId, ct);
+        //    slower (more attempts to clear). Clearing (Progress→0) locks the node and unlocks the next.
+        //    `progress` was fetched at step 2b (guaranteed not-cleared here).
         bool isNewProgress = progress is null;
         if (isNewProgress)
             progress = PlayerQuestProgress.Create(playerId, questId, _questConfig.NodeStartProgress);
@@ -217,6 +225,15 @@ public sealed class QuestService : IQuestService
             await _questProgress.CreateAsync(progress, ct);
         else
             await _questProgress.UpdateAsync(progress, ct);
+
+        // 8b. T26 — completing a chapter boss resets the WHOLE chapter back to fresh (the
+        //     deplete→clear→boss→reset farming cycle). HasEverCleared is preserved so unlocks hold.
+        bool chapterReset = false;
+        if (quest.IsBoss && nodeJustCleared)
+        {
+            await ResetChapterAsync(playerId, quest.Chapter, progress, ct);
+            chapterReset = true;
+        }
 
         // 9. Record per-difficulty progress
         var diffProg = await _difficultyProgress.GetAsync(playerId, questId, difficulty, ct);
@@ -305,7 +322,28 @@ public sealed class QuestService : IQuestService
             NodeProgress      = progress.Progress,
             NodeCleared       = progress.IsCleared,
             NodeJustCleared   = nodeJustCleared,
+            ChapterReset      = chapterReset,
         };
+    }
+
+    // T26 — reset every node in `chapter` back to fresh (Progress→start, IsCleared→false). Called when
+    // a chapter boss is cleared. HasEverCleared is preserved on each node so forward unlocks survive.
+    // The just-cleared boss's own progress instance is passed in to avoid a redundant re-fetch/retrack.
+    private async Task ResetChapterAsync(
+        Guid playerId, int chapter, PlayerQuestProgress bossProgress, CancellationToken ct)
+    {
+        foreach (var node in _definitions.GetAll())
+        {
+            if (node.Chapter != chapter) continue;
+
+            var p = node.Id == bossProgress.QuestId
+                ? bossProgress
+                : await _questProgress.GetAsync(playerId, node.Id, ct);
+            if (p is null) continue; // node never attempted → already fresh
+
+            p.Reset(_questConfig.NodeStartProgress);
+            await _questProgress.UpdateAsync(p, ct);
+        }
     }
 
     // -------------------------------------------------------------------

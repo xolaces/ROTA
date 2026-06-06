@@ -36,6 +36,10 @@ public class PlayerQuestProgressConfiguration : IEntityTypeConfiguration<PlayerQ
             .HasColumnName("is_cleared")
             .HasDefaultValue(false);
 
+        builder.Property(p => p.HasEverCleared)
+            .HasColumnName("has_ever_cleared")
+            .HasDefaultValue(false);
+
         builder.Property(p => p.LastCompletedAt)
             .HasColumnName("last_completed_at");
 

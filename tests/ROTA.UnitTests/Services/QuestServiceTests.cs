@@ -329,8 +329,9 @@ public class QuestServiceTests
     }
 
     [Fact]
-    public async Task AttemptQuest_AlreadyClearedNode_StaysReplayable_NotJustCleared()
+    public async Task AttemptQuest_AlreadyClearedNode_IsRejected_NoSideEffects()
     {
+        // T26 — a cleared (locked) node can't be attempted until the chapter boss resets it.
         var b = BuildService();
         var player = MakePlayer();
         b.Definitions.Setup(d => d.GetById("q001")).Returns(TwoQuestChain()[0]);
@@ -344,10 +345,48 @@ public class QuestServiceTests
 
         var result = await b.Service.AttemptQuestAsync(player.Id, "q001", QuestDifficulty.Normal);
 
-        result.Success.Should().BeTrue();        // still farmable for XP/drops
-        result.NodeProgress.Should().Be(0.0);
-        result.NodeCleared.Should().BeTrue();
-        result.NodeJustCleared.Should().BeFalse(); // it was already cleared before this attempt
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(QuestFailureCode.NodeCleared);
+        // Guard runs before any side effects — no energy spent.
+        b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_BossCompletion_ResetsWholeChapter_PreservingUnlocks()
+    {
+        // T26 — clearing a chapter boss resets every node in that chapter back to fresh
+        // (Progress→start, IsCleared→false) while keeping HasEverCleared (forward unlocks survive).
+        var b = BuildService();
+        var player = MakePlayer();
+        b.Definitions.Setup(d => d.GetById("q_boss")).Returns(BossQuest());
+        b.Definitions.Setup(d => d.GetAll())
+            .Returns(new List<QuestDefinition> { TwoQuestChain()[0], BossQuest() });
+        SetupPlayerAndEnergy(b, player);
+
+        // A previously-cleared battle node in the same chapter — should be restored by the reset.
+        var battle = PlayerQuestProgress.Create(player.Id, "q001");
+        battle.Deplete(100); // cleared
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q001", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(battle);
+
+        // The boss with 2.5 progress left — one boss attempt (depletes 2.5) clears it.
+        var boss = PlayerQuestProgress.Create(player.Id, "q_boss");
+        boss.Deplete(97.5);
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q_boss", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(boss);
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q_boss", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue();
+        result.NodeJustCleared.Should().BeTrue();
+        result.ChapterReset.Should().BeTrue();
+
+        // Both nodes are fresh again, but their permanent unlock latch is preserved.
+        battle.IsCleared.Should().BeFalse();
+        battle.Progress.Should().Be(100.0);
+        battle.HasEverCleared.Should().BeTrue("a chapter reset must never re-lock earned progression");
+        boss.IsCleared.Should().BeFalse();
+        boss.HasEverCleared.Should().BeTrue();
     }
 
     [Fact]

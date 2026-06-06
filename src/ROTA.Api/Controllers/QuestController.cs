@@ -50,6 +50,7 @@ public sealed class QuestController : ControllerBase
             QuestFailureCode.QuestNotFound      => NotFound(new { message = result.FailureReason }),
             QuestFailureCode.PlayerNotFound     => NotFound(new { message = result.FailureReason }),
             QuestFailureCode.DifficultyLocked   => StatusCode(StatusCodes.Status403Forbidden, result),
+            QuestFailureCode.NodeCleared        => Conflict(result),
             _                                   => UnprocessableEntity(result),
         };
     }

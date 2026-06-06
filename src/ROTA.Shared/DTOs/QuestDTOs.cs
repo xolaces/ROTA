@@ -59,6 +59,9 @@ public class QuestResultResponse
     public double NodeProgress { get; set; }
     public bool NodeCleared { get; set; }
     public bool NodeJustCleared { get; set; }
+    // T26: true when this attempt completed a chapter boss and reset the whole chapter's nodes to
+    // fresh (the deplete→clear→boss→reset farming cycle).
+    public bool ChapterReset { get; set; }
 }
 
 public enum QuestFailureCode
@@ -70,4 +73,6 @@ public enum QuestFailureCode
     PlayerNotFound     = 4,
     PlayerBanned       = 5,
     DifficultyLocked   = 6,
+    // T26: the node is cleared (locked) and can't be attempted until the chapter boss resets it.
+    NodeCleared        = 7,
 }
