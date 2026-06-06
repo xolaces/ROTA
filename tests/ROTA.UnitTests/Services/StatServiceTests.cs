@@ -23,7 +23,8 @@ public class StatServiceTests
         Mock<IGemService> Gems,
         Mock<IAuditLogRepository> AuditLog,
         Mock<IClassService> Classes,
-        Mock<IEquipmentService> Equipment);
+        Mock<IEquipmentService> Equipment,
+        Mock<IPinnacleService> Pinnacle);
 
     private static IOptions<LevelingConfig> DefaultLevelingConfig() =>
         Options.Create(new LevelingConfig
@@ -68,6 +69,7 @@ public class StatServiceTests
         var auditLog  = new Mock<IAuditLogRepository>();
         var classes   = new Mock<IClassService>();
         var equipment = new Mock<IEquipmentService>();
+        var pinnacle  = new Mock<IPinnacleService>();
 
         auditLog.Setup(a => a.AppendAsync(It.IsAny<AuditLog>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -90,8 +92,8 @@ public class StatServiceTests
 
         return new ServiceBundle(
             new StatService(players.Object, energy.Object, gems.Object, auditLog.Object,
-                DefaultLevelingConfig(), DefaultCombatConfig(), classes.Object, equipment.Object),
-            players, energy, gems, auditLog, classes, equipment);
+                DefaultLevelingConfig(), DefaultCombatConfig(), classes.Object, equipment.Object, pinnacle.Object),
+            players, energy, gems, auditLog, classes, equipment, pinnacle);
     }
 
     // Creates a player that has FindByIdWithStatsAsync returning it with fully initialised stats
@@ -352,6 +354,36 @@ public class StatServiceTests
 
         b.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(),
             GemTransactionType.PinnacleReward, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    // -----------------------------------------------------------------------
+    // GrantLevelUpPointsAsync — T33 pinnacle first-claim hook
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task GrantLevelUpPoints_RecordsFirstClaim_AtPinnacleLevel()
+    {
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: 5000, skillPoints: 0);
+        SetupPlayer(b, player);
+
+        await b.Service.GrantLevelUpPointsAsync(player.Id, 5000);
+
+        b.Pinnacle.Verify(p => p.RecordFirstClaimAsync(player.Id, 5000, It.IsAny<CancellationToken>()),
+            Times.Once, "reaching a configured pinnacle level records the first-claim");
+    }
+
+    [Fact]
+    public async Task GrantLevelUpPoints_NoFirstClaim_AtNonPinnacleLevel()
+    {
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: 12, skillPoints: 0);
+        SetupPlayer(b, player);
+
+        await b.Service.GrantLevelUpPointsAsync(player.Id, 12);
+
+        b.Pinnacle.Verify(p => p.RecordFirstClaimAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 
     [Fact]

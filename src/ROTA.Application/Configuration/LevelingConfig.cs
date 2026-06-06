@@ -26,4 +26,10 @@ public class LevelingConfig
     /// <summary>Gems to grant on reaching exactly <paramref name="level"/> (0 when it is not a pinnacle level).</summary>
     public int GetPinnacleGems(int level)
         => PinnacleGemRewards.TryGetValue(level, out var gems) ? gems : 0;
+
+    /// <summary>
+    /// True if <paramref name="level"/> is a configured pinnacle level. Drives both the gem reward (T32)
+    /// and the first-claim logging (T33), so a single config map is the one source of "pinnacle levels".
+    /// </summary>
+    public bool IsPinnacleLevel(int level) => PinnacleGemRewards.ContainsKey(level);
 }

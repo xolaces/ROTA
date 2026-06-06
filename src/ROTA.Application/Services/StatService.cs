@@ -19,6 +19,7 @@ public sealed class StatService : IStatService
     private readonly IOptions<CombatConfig> _combatConfig;
     private readonly IClassService _classService;
     private readonly IEquipmentService _equipment;
+    private readonly IPinnacleService _pinnacle;
 
     public StatService(
         IPlayerRepository players,
@@ -28,7 +29,8 @@ public sealed class StatService : IStatService
         IOptions<LevelingConfig> levelingConfig,
         IOptions<CombatConfig> combatConfig,
         IClassService classService,
-        IEquipmentService equipment)
+        IEquipmentService equipment,
+        IPinnacleService pinnacle)
     {
         _players        = players;
         _energy         = energy;
@@ -38,6 +40,7 @@ public sealed class StatService : IStatService
         _combatConfig   = combatConfig;
         _classService   = classService;
         _equipment      = equipment;
+        _pinnacle       = pinnacle;
     }
 
     public async Task<AllocateStatResponse> AllocateStatPointAsync(
@@ -152,6 +155,11 @@ public sealed class StatService : IStatService
                 playerId, pinnacleGems, GemTransactionType.PinnacleReward,
                 $"pinnacle:gems:{playerId}:{newLevel}", ct);
         }
+
+        // T33 — first-claimant logging + operator email (idempotent; only the first player at a given
+        // pinnacle level triggers it). Same "pinnacle level" set as the gem reward above.
+        if (_levelingConfig.Value.IsPinnacleLevel(newLevel))
+            await _pinnacle.RecordFirstClaimAsync(playerId, newLevel, ct);
 
         // Auto-advance class on milestone levels (500, 1000, 2000, 5000, etc.)
         var advanced    = _classService.ComputeAutoAdvance(newLevel, player.Class);

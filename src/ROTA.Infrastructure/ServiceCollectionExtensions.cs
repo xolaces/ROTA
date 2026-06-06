@@ -36,6 +36,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPlayerCommanderGearRepository, PlayerCommanderGearRepository>();
         services.AddScoped<ILeaderboardEntryRepository, LeaderboardEntryRepository>();
         services.AddScoped<IOutboundEmailRepository, OutboundEmailRepository>();
+        services.AddScoped<IPinnacleClaimRepository, PinnacleClaimRepository>();
 
         // Infrastructure services
         services.AddScoped<IAuthLockoutService, AuthLockoutService>();
@@ -83,6 +84,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ILegionService, LegionService>();
         services.AddScoped<ILeaderboardService, LeaderboardService>();
         services.AddScoped<IEmailNotificationService, EmailNotificationService>();
+        services.AddScoped<IPinnacleService, PinnacleService>();
 
         // FluentValidation — scan Application assembly for all IValidator<T> implementations
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();

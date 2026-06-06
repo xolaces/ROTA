@@ -35,6 +35,14 @@ public class OutboundEmailListResponse
     public int PageSize { get; init; }
 }
 
+/// <summary>A pinnacle first-claim row for GET /api/admin/pinnacle-claims (T33).</summary>
+public class PinnacleClaimResponse
+{
+    public int PinnacleLevel { get; init; }
+    public Guid PlayerId { get; init; }
+    public DateTimeOffset ClaimedAt { get; init; }
+}
+
 /// <summary>Aggregate counts for GET /api/admin/emails/stats (dashboard overview KPIs).</summary>
 public class OpsEmailStatsResponse
 {

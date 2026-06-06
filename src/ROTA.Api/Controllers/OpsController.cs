@@ -19,11 +19,16 @@ public sealed class OpsController : ControllerBase
 {
     private readonly IOutboundEmailRepository _emails;
     private readonly IAuditLogRepository _audit;
+    private readonly IPinnacleClaimRepository _pinnacleClaims;
 
-    public OpsController(IOutboundEmailRepository emails, IAuditLogRepository audit)
+    public OpsController(
+        IOutboundEmailRepository emails,
+        IAuditLogRepository audit,
+        IPinnacleClaimRepository pinnacleClaims)
     {
         _emails = emails;
         _audit = audit;
+        _pinnacleClaims = pinnacleClaims;
     }
 
     /// <summary>Paged, filterable list of operator emails (newest first).</summary>
@@ -66,6 +71,20 @@ public sealed class OpsController : ControllerBase
             Failed = s.Failed,
             ByType = s.ByType,
         });
+    }
+
+    /// <summary>Pinnacle first-claim leaderboard (T33) — who reached each pinnacle level first.</summary>
+    [HttpGet("/api/admin/pinnacle-claims")]
+    [ProducesResponseType(typeof(IReadOnlyList<PinnacleClaimResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<PinnacleClaimResponse>>> PinnacleClaims()
+    {
+        var claims = await _pinnacleClaims.ListAsync();
+        return Ok(claims.Select(c => new PinnacleClaimResponse
+        {
+            PinnacleLevel = c.PinnacleLevel,
+            PlayerId = c.PlayerId,
+            ClaimedAt = c.ClaimedAt,
+        }).ToList());
     }
 
     /// <summary>Full detail for a single email.</summary>
