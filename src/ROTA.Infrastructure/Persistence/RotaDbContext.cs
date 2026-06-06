@@ -47,6 +47,9 @@ public class RotaDbContext : DbContext
     // ----- System 18 — Gear Ownership -----
     public DbSet<PlayerGear> PlayerGear => Set<PlayerGear>();
 
+    // ----- Phase 2 — Ops & Social -----
+    public DbSet<OutboundEmail> OutboundEmails => Set<OutboundEmail>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

@@ -35,10 +35,15 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPlayerLegionSlotRepository, PlayerLegionSlotRepository>();
         services.AddScoped<IPlayerCommanderGearRepository, PlayerCommanderGearRepository>();
         services.AddScoped<ILeaderboardEntryRepository, LeaderboardEntryRepository>();
+        services.AddScoped<IOutboundEmailRepository, OutboundEmailRepository>();
 
         // Infrastructure services
         services.AddScoped<IAuthLockoutService, AuthLockoutService>();
         services.AddScoped<IRaidHitCache, RaidHitCache>();
+
+        // Phase 2 — Ops & Social: operator email backbone (T39)
+        services.AddScoped<IEmailService, SmtpEmailService>();
+        services.AddSingleton<IEmailSendQueue, EmailSendQueue>();
 
         // Content definition providers — singletons: JSON files read once at startup
         services.AddSingleton<IQuestDefinitionProvider>(
@@ -77,6 +82,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMagicService, MagicService>();
         services.AddScoped<ILegionService, LegionService>();
         services.AddScoped<ILeaderboardService, LeaderboardService>();
+        services.AddScoped<IEmailNotificationService, EmailNotificationService>();
 
         // FluentValidation — scan Application assembly for all IValidator<T> implementations
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();

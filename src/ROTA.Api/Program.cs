@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 using System.Security.Cryptography;
 using ROTA.Api;
+using ROTA.Api.BackgroundServices;
 using ROTA.Infrastructure.Persistence;
 using ROTA.Api.Middleware;
 using ROTA.Application.Interfaces;
@@ -169,7 +170,13 @@ builder.Services.Configure<QuestConfig>(
 builder.Services.Configure<LegionConfig>(
     builder.Configuration.GetSection("LegionConfig"));
 
+builder.Services.Configure<EmailConfig>(
+    builder.Configuration.GetSection("Email"));
+
 builder.Services.AddRotaServices(builder.Environment.ContentRootPath);
+
+// Phase 2 (T39): out-of-band sender that drains the email queue without blocking requests.
+builder.Services.AddHostedService<EmailSendBackgroundService>();
 
 // Redis — factory-based so the connection string is resolved from the fully-built
 // IConfiguration (after all sources, including test overrides, have been applied)
