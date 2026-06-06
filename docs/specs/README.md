@@ -32,6 +32,7 @@ queue a build agent works against; it stays as the historical decision record af
 | File | System | Status | Purpose |
 |---|---|---|---|
 | `system-16-gauntlet.md` | System 16 | **Decision-complete — ready to build (6 slices)** | Competitive Gauntlet event: leagues, Strikes ledger, Wrath/Blessing off-cap auras, trophies, two-currency token shop. Slice 4 = deep combat/money. |
+| `system-21-guild-foundations.md` | System 21 | **Design — open decisions pending (§5); fundamentals-first** | Guild/clan: cross-game design study + ROTA fundamentals (identity, membership, roles, guild chat, guild raids). Campaigns + async guild wars on the roadmap. Reuses raid/contribution engine + GuildStamina + chat hub. |
 
 ## Backlog (`backlog/`)
 
