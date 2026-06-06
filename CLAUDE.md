@@ -320,10 +320,17 @@ report rate-limit consumed before checks (anti-abuse); Email:Enabled defaults tr
   SendRaidMessage (ephemeral per-raid group). Muted players (T40) rejected. `SenderRole` carried for
   reserved-name colouring. `SubUserIdProvider` maps SignalR identity → JWT sub (needed for PM).
   GET /api/chat/world/history backfill.
-- **CLIENT (Unity) NOT DONE:** the Editor was open all session (can't headless-compile), so client UI
-  is deferred to a verified pass. API plumbing (DTO mirror + IRotaApi/Http/Mock methods + T31) written
-  UNVERIFIED on client branch `feat/phase2-client-plumbing` — needs Editor-closed headless compile
-  before merge. New chat/social/bug-panel UI screens still to build.
+- **CLIENT (Unity) — BUILT + VERIFIED-COMPILING** on branch `feat/phase2-client-plumbing` (local-only,
+  off master, UNMERGED; headless compile exit 0, zero `error CS`). DTO mirror + IRotaApi/Http/Mock
+  plumbing (commit b49d955) + UI (commit c4f9882): **T31** profile scrollbar, **T38** bug/feedback panel
+  (HeaderBar 🐞), **T37** SocialScreen (friends, **PM over REST**, blocks, report dialog; nav entry),
+  **T34** raid layout restructure (combat log bottom-left, compact actions, leaderboard 5→10), **T32**
+  pinnacle gem callout on LevelUpOverlay, **T36** world-chat read-only panel + HeaderBar 💬 unread dot.
+  Mock paths are stateful. Merge to master when ready.
+- **CLIENT DEFERRED (need a Unity SignalR client → /hubs/chat):** **T35** raid chat, and public
+  **world/raid chat SEND** (send box is present-but-disabled "Live chat coming soon"). Private messaging
+  is unaffected — it rides REST. Wiring a SignalR client lights up real-time world/raid chat + live PM
+  push in one follow-up.
 
 ## PHASE-2 Deferred Items
 - DiscernmentInvestment effect: quest drop quality (raid crit shipped v0.2.3)

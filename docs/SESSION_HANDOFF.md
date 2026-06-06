@@ -53,25 +53,31 @@ leaderboard tabs, stat-alloc, fresh quest node) were **stateless-mock artifacts*
 was correct. **Mock fidelity is part of every ticket**: a new feature's `MockRotaApi` path must
 mirror live (mutable state), or playtest feedback is noise. Live mode is the real validation.
 
-## Phase 2 — Ops & Social (T30–T40) — BACKEND SHIPPED (2026-06-06), CLIENT UI NEXT
+## Phase 2 — Ops & Social (T30–T40) — BACKEND + CLIENT SHIPPED (2026-06-06)
 **Spec:** `docs/specs/active/phase-2-ops-social.md`. CLAUDE.md has the full shipped summary.
-- **Backend: ALL 8 tickets done on branch `feat/phase2-ops-social`** (off main, UNMERGED) — T39 email
-  backbone, T40 ban/mute, T30 SP delta, T32 pinnacle gems, T33 first-claim + placeholder magics, T38
-  feedback, T37 friends/PM/report, T35/36 SignalR chat. **524 unit + 35 integration green.** Migrations
-  AddOutboundEmails/AddPlayerMute/AddPinnacleFirstClaims/AddSocialSystem applied. Merge to main when ready.
+- **Backend: ALL 8 tickets done on branch `feat/phase2-ops-social`** (off main, UNMERGED, **pushed to
+  origin**) — T39 email backbone, T40 ban/mute, T30 SP delta, T32 pinnacle gems, T33 first-claim +
+  placeholder magics, T38 feedback, T37 friends/PM/report, T35/36 SignalR chat. **526 unit + 35
+  integration green** (+ adversarial multi-agent review pass + fixes). Migrations AddOutboundEmails/
+  AddPlayerMute/AddPinnacleFirstClaims/AddSocialSystem/FriendshipPartialUniqueIndex applied. Merge to main when ready.
 - **React ops dashboard SHIPPED** at **`C:\Dev\rota-ops-dashboard`** (separate local git repo, no remote):
   Vite+React+TS, mission-control UI, demo-mode default, admin-JWT login, `npm run build` passes. Run
   `npm install && npm run dev`. Point at the live API in Settings or `.env.local` (VITE_API_BASE).
 - **Email provider deviation:** working provider is **Gmail SMTP** (`SmtpEmailService`; creds in API
   user-secrets `Email:Username`/`Email:Password` — temporary, owner to rotate), NOT SendGrid. Same
   `IEmailService` interface keeps SendGrid as the documented swap.
-- **CLIENT (Unity) is the next batch.** API plumbing (DTO mirror + IRotaApi/Http/Mock methods + T31
-  scrollbar) was written **UNVERIFIED** on client branch `feat/phase2-client-plumbing` (Editor was open
-  → no compile). **Close the Editor, headless-compile that branch, fix any `error CS`, then build the
-  UI:** T31 (done in plumbing), T34 raid layout, T32 pinnacle/class overlay + gem callout, T35 raid-chat
-  panel + T36 world-chat button/indicator + T37 friends/PM/report screens (SignalR client to /hubs/chat,
-  events WorldMessage/RaidMessage/PrivateMessage/Muted), T38 bug-submission panel. Mock-fidelity per ticket.
-- Open follow-up: confirm gem amounts for pinnacle tiers **2000 / 15000 / 25000** (omitted from
+- **CLIENT (Unity) — BUILT + VERIFIED-COMPILING** on branch `feat/phase2-client-plumbing` (local-only,
+  off master, UNMERGED; headless compile exit 0, zero `error CS`, confirmed twice + independently).
+  Shipped: plumbing/DTO mirror (b49d955) + UI (c4f9882) — T31 scrollbar, T38 bug panel (HeaderBar 🐞),
+  T37 SocialScreen (friends / PM-over-REST / blocks / report; nav entry), T34 raid layout restructure,
+  T32 pinnacle gem callout, T36 world-chat read-only panel + HeaderBar 💬 unread dot. Mocks are stateful.
+  **Merge to master when ready** (close the Editor first; `git -C C:\Dev\ROTA.Client6`). Note: untracked
+  `Assets/_Recovery/` is Unity crash cruft — ignore, don't commit.
+- **CLIENT follow-up (one task): wire a Unity SignalR client to `/hubs/chat`** (events
+  WorldMessage / RaidMessage / PrivateMessage / Muted) to light up **T35 raid chat** + public
+  **world/raid chat SEND** (currently a disabled "Live chat coming soon" box) + live PM push. Private
+  messaging already works over REST. No backend change needed — the hub is live.
+- Backend open follow-up: confirm gem amounts for pinnacle tiers **2000 / 15000 / 25000** (omitted from
   `LevelingConfig.PinnacleGemRewards` until set); stat-rollback is PHASE-2.
 
 ## CARRY-OVER BACKLOG (pre-existing, owner's call)
