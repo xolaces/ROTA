@@ -79,12 +79,21 @@ public sealed class StatService : IStatService
 
         await _players.UpdateStatsAsync(stats, ct);
 
-        // Update resource max values when energy or stamina investment changes
+        // Update resource max values when energy or stamina investment changes.
+        // T30 — raising the cap by N also credits +N to the *current* pool (the gained delta, capped
+        // at the new max by RefillEnergyAsync) so the spend has an immediate effect. This is NOT a
+        // full refill — contrast GrantLevelUpPointsAsync, which calls RefillToMaxAsync.
         if (statType == StatType.Energy)
+        {
             await _energy.UpdateMaxAsync(playerId, ResourceType.Energy, stats.ComputeMaxEnergy(), ct);
+            await _energy.RefillEnergyAsync(playerId, ResourceType.Energy, amount, ct);
+        }
 
         if (statType == StatType.Stamina)
+        {
             await _energy.UpdateMaxAsync(playerId, ResourceType.Stamina, stats.ComputeMaxStamina(), ct);
+            await _energy.RefillEnergyAsync(playerId, ResourceType.Stamina, amount, ct);
+        }
 
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, "AllocateStat", null,

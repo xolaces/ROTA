@@ -167,6 +167,57 @@ public class StatServiceTests
         b.Energy.Verify(e => e.UpdateMaxAsync(player.Id, ResourceType.Energy, 19, It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    // -----------------------------------------------------------------------
+    // AllocateStatPointAsync — T30: gained max delta credited to current pool
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task AllocateEnergy_CreditsGainedDeltaToCurrentPool()
+    {
+        // Investing N raises MaxEnergy by N and credits +N to the *current* pool (delta-grant,
+        // capped at the new max), NOT a full refill.
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: 10, skillPoints: 20);
+        SetupPlayer(b, player);
+
+        var result = await b.Service.AllocateStatPointAsync(player.Id, StatType.Energy, 4);
+
+        result.Success.Should().BeTrue();
+        b.Energy.Verify(e => e.RefillEnergyAsync(player.Id, ResourceType.Energy, 4, It.IsAny<CancellationToken>()),
+            Times.Once, "the gained max delta is credited to current");
+        b.Energy.Verify(e => e.RefillToMaxAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<CancellationToken>()),
+            Times.Never, "allocation is a delta-grant, never a full refill");
+    }
+
+    [Fact]
+    public async Task AllocateStamina_CreditsGainedDeltaToCurrentPool()
+    {
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: 10, skillPoints: 20);
+        SetupPlayer(b, player);
+
+        var result = await b.Service.AllocateStatPointAsync(player.Id, StatType.Stamina, 2);
+
+        result.Success.Should().BeTrue();
+        b.Energy.Verify(e => e.RefillEnergyAsync(player.Id, ResourceType.Stamina, 2, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task AllocateAttack_DoesNotTouchResourcePools()
+    {
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: 10, skillPoints: 20);
+        SetupPlayer(b, player);
+
+        await b.Service.AllocateStatPointAsync(player.Id, StatType.Attack, 3);
+
+        b.Energy.Verify(e => e.RefillEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never, "non-resource stats never credit a pool");
+        b.Energy.Verify(e => e.UpdateMaxAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
     [Fact]
     public async Task AllocateStamina_RejectsAllocation_WhenLsiCapWouldBeExceeded()
     {
