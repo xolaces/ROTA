@@ -83,11 +83,9 @@ mirror live (mutable state), or playtest feedback is noise. Live mode is the rea
 ## ⏭️ REMAINING WORK → next session (Phase 2 tail) — START HERE
 Backend + dashboard + most client UI shipped. What's left, in priority order:
 
-### A. OPEN PLAYTEST BUGS — client/mock fidelity (owner-reported 2026-06-06)
-All three are **client + MockRotaApi** issues. The **live backend is server-authoritative and unit-tested**
-(T30 credit, EnergyService stamina guard, raid stamina spend) — these are mock-fidelity / client-display
-gaps, the recurring lesson (owner playtests in `useMock=true`). Fix in `C:\Dev\ROTA.Client6` (close the
-Editor, branch off `feat/phase2-client-plumbing` or `master`, headless-compile to verify).
+### A. PLAYTEST BUGS — ✅ FIXED 2026-06-06 (client `feat/phase2-client-plumbing` @ `4c144d7`, compile-verified)
+All three were **client + MockRotaApi** issues (live backend was already server-authoritative + tested —
+the recurring `useMock=true` fidelity trap). Fixes below; details kept for reference.
 
 1. **Allocating Energy/Stamina doesn't move the *current* bar (no immediate reward).**
    - Root cause: `Assets/ROTA.Client/Runtime/Api/MockRotaApi.cs` → `AllocateStatAsync` (~L145–146) raises
