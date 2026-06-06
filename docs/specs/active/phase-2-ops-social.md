@@ -65,9 +65,9 @@ Self-contained operator notification backbone. **Persist first, send second, nev
 
 ### 2a. Where the code goes (per CLAUDE.md)
 - **Interface:** `Application/Interfaces/IEmailService.cs` — `Task SendAsync(EmailMessage msg, CancellationToken ct)`.
-- **Provider impl:** `Infrastructure/...` (external I/O, like Redis/EF). e.g. `SendGridEmailService` or
-  `GmailEmailService` behind `IEmailService`. Creds via Secret Manager / env / user-secrets — **never
-  hardcoded** (mirror the JWT key + `Seed:AdminPassword` pattern). See Open Decision #1.
+- **Provider impl:** `Infrastructure/Email/SendGridEmailService.cs` behind `IEmailService`. Uses
+  **SendGrid** transactional API. Creds (`SendGrid:ApiKey`, `SendGrid:FromAddress`) in Secret Manager /
+  user-secrets — **never hardcoded** (mirror the JWT key + `Seed:AdminPassword` pattern).
 - **Outbound log table** (the dashboard's source of truth): `outbound_emails`. snake_case; every table
   rule from CLAUDE.md applies — `id uuid DEFAULT gen_random_uuid()`, `created_at`, `updated_at`,
   `is_deleted`; FKs indexed. Suggested columns:
@@ -100,11 +100,11 @@ Self-contained operator notification backbone. **Persist first, send second, nev
     this). Writes `review_status` + `reviewed_by` (from JWT) + audit_log.
 - DTOs mirrored to client only if the game UI needs them; the dashboard is a separate React app.
 
-### 2d. The React dashboard (separate web UI — Open Decision #2)
+### 2d. The React dashboard (separate repo)
+- **Lives in its own repository** (not inside this ROTA repo). Name TBD; e.g. `rota-ops-dashboard`.
 - Reads the admin API. Groups entries **by type**; each row: type **badge**, **timestamp**, triggering
   **player/system**, **summary**, and an **expand** for detail. Approve/Dismiss buttons → triage.
 - Auth: admin login (reuse RS256 JWT + AdminOnly). This is Nathan's triage tool — read + manual approve.
-- Likely a new folder/repo (e.g. `ops-dashboard/`); confirm hosting/repo placement with owner.
 
 ### 2e. Security / hygiene
 - Player-triggered emails (T37/T38) MUST be rate-limited per-player AND per-IP (RateLimitMiddleware +
@@ -128,22 +128,28 @@ Self-contained operator notification backbone. **Persist first, send second, nev
 ### T37 — Friends, PM, Social moderation
 - Friends (request/accept), private messaging between friends, block/unblock + block-list mgmt.
 - **Report** from any profile/context menu → `PlayerReport` email via T39 (reporter, reported, reason
-  enum, description). Validate + rate-limit. Visible in the dashboard the moment it's filed.
+  enum, description). FluentValidation before service layer. **Rate limit: 5 reports/hour per player,
+  15/hour per IP** (Redis, same pattern as auth lockout). Visible in dashboard the moment it's filed.
 - PM needs the chat/messaging delivery infra (Open Decision #3). Reserved-name/role coloring applies —
   read memory `chat-roles-and-reserved-naming` (mod orange `+*`, dev red `DEV_xxxx`).
 
 ### T38 — Beta in-game bug/ticket submission
 - In-game panel to file Bug Report or General Feedback → `BugReport`/`GeneralTicket` email via T39.
 - Carry the submitter identity + a **game-state snapshot** (current screen, level, relevant stats) +
-  the written description. Validate + rate-limit. Surfaces in the dashboard under the right type.
+  the written description. FluentValidation before service layer. **Rate limit: 5 submissions/hour per
+  player, 15/hour per IP** (same Redis pattern). Surfaces in dashboard under the right type.
 
 ### T40 — Moderation / punishment action logging
 - On any punitive action (ban, mute, stat rollback, etc.) by a mod/dev → auto-log + `ModerationAction`
   email via T39 (acting mod, target, action, reason, timestamp). Creates a dispute-review audit trail.
-- **Hook point:** `AdminService` (exists: role grant/revoke; last-admin guard; session revocation) and
-  `Player.Ban` (exists). **Mute and stat-rollback do NOT exist yet** — see Open Decision #5.
+- **Mute is in scope for T40.** Add `Player.Mute(DateTime expiresAt)` / `IsMuted` / `MuteExpiresAt` to
+  the domain + a migration. Wire into `AdminService` (`MutePlayerAsync`), enforce in middleware (muted
+  players can't send chat messages). **Stat-rollback stays PHASE-2** (too complex for this batch).
+- **Use `ModerationAction` email type** (not a separate `PunishmentLog` — one type is enough for MVP).
+- Hook points: `AdminService` (exists: role grant/revoke; last-admin guard; session revocation) and
+  `Player.Ban` (exists). Extend `AdminController [AdminOnly]` with `POST /api/admin/players/{id}/mute`.
 - Note: `audit_log` already records state changes; T40 ADDS the email routing + a structured punishment
-  view. Consider a `PunishmentLog` type vs `ModerationAction` (the ticket mentions both — clarify).
+  view so disputes have a reviewable trail in the dashboard.
 
 ---
 
@@ -165,17 +171,21 @@ Self-contained operator notification backbone. **Persist first, send second, nev
   doesn't bleed over it. Headless-compile + eyeball (owner playtests visuals).
 
 ### T32 — Pinnacle gates: mandatory class select + gem rewards (backend + client)
-- Pinnacle levels **1000, 2500, 5000, 7500, 10000**: the class-selection overlay MUST appear and be
-  mandatory — even when only one class is available, the player makes an explicit pick (no skip/defer).
-- Gem rewards granted simultaneously, credited BEFORE dismissal:
-  `1000→250, 2500→500, 5000→1500, 7500→2000, 10000→2500`.
+
+**Class-gate levels** (mandatory class-select overlay + gem reward) = **`ConvergenceLevels` exactly**:
+`2000, 5000, 7500, 10000, 15000, 25000` — hook into `ClassConfig.ConvergenceLevels`; do NOT add a
+separate pinnacle list. Gem amounts: `5000→1500, 7500→2000, 10000→2500` (carried from original spec);
+`2000, 15000, 25000` gem amounts **need to be confirmed with owner before building those tiers**.
+
+**Intermediate milestones** (gem reward only, no class-gate overlay): `1000→250`, `2500→500`.
+
+- At class-gate levels the class-selection overlay MUST appear and be mandatory — even when only one
+  class is available, the player makes an explicit pick (no skip/defer).
+- Gem rewards granted simultaneously, credited BEFORE dismissal.
+- `GemTransactionType.PinnacleReward` + `referenceId = "pinnacle:gems:{playerId}:{level}"` (idempotent,
+  via `IGemService.GrantGemsAsync`).
 - Build on: client `ClassGate` (T15, already a mandatory blocking overlay) + `ClassService`
-  (GetAvailableChoices / ComputeAutoAdvance / AssignClassAsync) + `StatService.GrantLevelUpPointsAsync`
-  (gem grants via `IGemService.GrantGemsAsync`, idempotent referenceId; add a `PinnacleReward`
-  GemTransactionType + `referenceId = "pinnacle:gems:{playerId}:{level}"`).
-- **RECONCILE (Open Decision #4):** existing `ClassConfig.ConvergenceLevels` = 2000/5000/7500/10000/
-  15000/25000 and `ClassUnlockLevels` (Tier2=5, Tier3=100). T32's pinnacle list (1000/2500/...) does
-  NOT match. Decide whether pinnacle gates are a NEW concept or replace convergence levels.
+  (GetAvailableChoices / ComputeAutoAdvance / AssignClassAsync) + `StatService.GrantLevelUpPointsAsync`.
 
 ### T34 — Raid screen layout restructure (client, `RaidCombatView.cs`)
 - Consolidate the stamina + hit controls into a compact area (currently spread out).
@@ -194,31 +204,30 @@ Self-contained operator notification backbone. **Persist first, send second, nev
 
 ### T36 — World chat
 - Persistent open/close button; **exclamation indicator** on the button when a message arrives while
-  closed. Visible to all players. Persistence/retention TBD (raid chat is ephemeral; world likely
-  keeps a recent buffer — confirm).
+  closed. Visible to all players.
+- **Retention: last 100 messages in a Redis ring buffer** (`LPUSH` + `LTRIM`). Ephemeral — does not
+  survive a Redis restart. No DB table needed.
 - Apply reserved-name/role coloring (memory `chat-roles-and-reserved-naming`: mod orange `+*`, dev red).
 
-### Delivery (applies to T35/T36 and T37 PM)
-- No real-time infra is wired today (no SignalR/WebSocket usage in app code). Decide: **short-polling**
-  (simplest MVP, fits the existing request/response + Redis stack) vs **SignalR** (true push, more
-  setup). Redis pub/sub can back either. This choice gates the whole cluster — make it first.
+### Delivery (applies to T35/T36 and T37 PM) — **SignalR decided**
+- **Use SignalR** (WebSocket, true push). Add `Microsoft.AspNetCore.SignalR` (built into ASP.NET Core —
+  no extra package). Wire a Hub per chat scope: `RaidChatHub` (scoped per raid instance) and
+  `WorldChatHub` (global). Redis pub/sub (`StackExchange.Redis`, already present) backs both hubs for
+  multi-instance scale. No real-time infra exists today — T35 is the greenfield first pass.
 
 ---
 
-## 6. OPEN DECISIONS — confirm with owner BEFORE building
+## 6. DECISIONS — all resolved (2026-06-06)
 
-1. **Email provider (T39):** Gmail API vs SendGrid (or other). SendGrid is simpler/most reliable for
-   transactional; Gmail API needs OAuth. Where do creds live (Secret Manager / env)?
-2. **Dashboard hosting (T39):** separate React repo vs `ops-dashboard/` folder in this repo; how it
-   authenticates (admin RS256 JWT).
-3. **Chat delivery (T35/36/37):** short-poll vs SignalR. Picks the architecture for the whole cluster.
-4. **Pinnacle levels (T32/T33):** 1000/2500/5000/7500/10000 vs existing ConvergenceLevels
-   (2000/5000/7500/10000/15000/25000). New concept or reconcile? Placeholder magics (T33) are "above
-   2500" — which exact levels?
-5. **Mute / stat-rollback (T40):** don't exist (only `Ban` + role changes). Build them as part of T40,
-   or log only the actions that exist for now? `ModerationAction` vs `PunishmentLog` — one type or two?
-6. **Player-submission rate limits (T37/T38):** per-player/per-IP caps for reports & tickets (anti-spam).
-7. **World-chat retention (T36):** buffer size / persistence window.
+| # | Topic | Decision |
+|---|-------|----------|
+| 1 | Email provider (T39) | **SendGrid** — API key in Secret Manager (`SendGrid:ApiKey`, `SendGrid:FromAddress`) |
+| 2 | Dashboard hosting (T39) | **Separate repo** (e.g. `rota-ops-dashboard`); authenticates via RS256 JWT + AdminOnly |
+| 3 | Chat delivery (T35/36/37) | **SignalR** (WebSocket). `RaidChatHub` + `WorldChatHub`; Redis pub/sub backplane |
+| 4 | Pinnacle gates (T32/T33) | **ConvergenceLevels win** (2000/5000/7500/10000/15000/25000 = class gates). 1000/2500 = gem-only milestones. Gem amounts at 2000/15000/25000 still TBD — confirm before building those tiers |
+| 5 | Mute/rollback (T40) | **Mute in scope** (`Player.Mute`, `MuteExpiresAt`, `AdminService.MutePlayerAsync`). Stat-rollback PHASE-2. Use `ModerationAction` email type (not separate `PunishmentLog`) |
+| 6 | Rate limits (T37/T38) | **5/hour per player, 15/hour per IP** (Redis, same pattern as auth lockout) |
+| 7 | World-chat retention (T36) | **100-message Redis ring buffer** (`LPUSH` + `LTRIM`). Ephemeral — no DB table |
 
 ---
 

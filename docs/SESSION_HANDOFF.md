@@ -65,9 +65,9 @@ mirror live (mutable state), or playtest feedback is noise. Live mode is the rea
   **T37** friends/PM/social + report.
 - Email-dependent: **T33** pinnacle first-claim log, **T37** player report, **T38** bug/ticket, **T40**
   moderation/punishment log.
-- **7 OPEN DECISIONS need the owner before building** (email provider, dashboard hosting, chat delivery
-  polling-vs-SignalR, pinnacle-level reconciliation vs ConvergenceLevels, Mute/rollback existence,
-  rate limits, world-chat retention) — listed in §6 of the spec. Resolve these first.
+- **All 7 design decisions are resolved** (SendGrid, separate dashboard repo, SignalR chat,
+  ConvergenceLevels win for class gates, Mute in T40 scope, 5/hr player rate limits, 100-msg Redis
+  ring buffer) — see §6 of the spec for the full table. No unresolved decisions block any ticket.
 
 ## CARRY-OVER BACKLOG (pre-existing, owner's call)
 - **T18** character vector models — DEFERRED (no vector-art pipeline; nav icons are Unicode emoji).
