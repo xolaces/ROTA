@@ -94,6 +94,12 @@ public class Player
     public bool IsBanned { get; private set; } = false;
     public string? BanReason { get; private set; }
 
+    /// <summary>UTC instant the chat mute expires; null when the player has never been muted (T40).</summary>
+    public DateTimeOffset? MuteExpiresAt { get; private set; }
+
+    /// <summary>True while an unexpired mute is in effect. Derived — not mapped (Ignore in config).</summary>
+    public bool IsMuted => MuteExpiresAt.HasValue && MuteExpiresAt.Value > DateTimeOffset.UtcNow;
+
     // Timestamps
     public DateTimeOffset CreatedAt { get; private set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedAt { get; private set; } = DateTimeOffset.UtcNow;
@@ -137,6 +143,20 @@ public class Player
     {
         IsBanned = true;
         BanReason = reason;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>Mutes the player's chat until <paramref name="expiresAt"/> (UTC). Bumps UpdatedAt (T40).</summary>
+    public void Mute(DateTimeOffset expiresAt)
+    {
+        MuteExpiresAt = expiresAt;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>Clears any active mute. Bumps UpdatedAt (T40).</summary>
+    public void Unmute()
+    {
+        MuteExpiresAt = null;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 

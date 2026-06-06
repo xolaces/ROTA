@@ -20,6 +20,23 @@ public class RoleChangeRequest
     public string Role { get; set; } = string.Empty;
 }
 
+/// <summary>Request to ban a player (T40).</summary>
+public class BanPlayerRequest
+{
+    /// <summary>Reason for the ban (recorded + emailed for the dispute trail).</summary>
+    public string Reason { get; set; } = string.Empty;
+}
+
+/// <summary>Request to mute a player's chat for a fixed duration (T40).</summary>
+public class MutePlayerRequest
+{
+    /// <summary>Mute duration in minutes (must be positive).</summary>
+    public int DurationMinutes { get; set; } = 60;
+
+    /// <summary>Reason for the mute (recorded + emailed).</summary>
+    public string Reason { get; set; } = string.Empty;
+}
+
 /// <summary>Request to generate beta keys.</summary>
 public class GenerateBetaKeysRequest
 {

@@ -27,4 +27,25 @@ public interface IAdminService
     Task<AdminActionResult> RevokeRoleAsync(
         Guid actorId, string targetUsernameOrId, PlayerRoles role,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Bans the target player (T40). Requires actor to be Moderator or Admin; cannot ban an admin.
+    /// Revokes the target's sessions, audits, and raises a ModerationAction operator email.
+    /// </summary>
+    Task<AdminActionResult> BanPlayerAsync(
+        Guid actorId, string targetUsernameOrId, string reason, string? ipAddress = null,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Mutes the target's chat for <paramref name="durationMinutes"/> (T40). Requires Moderator/Admin;
+    /// cannot mute an admin. Audits + raises a ModerationAction email.
+    /// </summary>
+    Task<AdminActionResult> MutePlayerAsync(
+        Guid actorId, string targetUsernameOrId, int durationMinutes, string reason, string? ipAddress = null,
+        CancellationToken ct = default);
+
+    /// <summary>Lifts any active mute on the target (T40). Audits + raises a ModerationAction email.</summary>
+    Task<AdminActionResult> UnmutePlayerAsync(
+        Guid actorId, string targetUsernameOrId, string? ipAddress = null,
+        CancellationToken ct = default);
 }

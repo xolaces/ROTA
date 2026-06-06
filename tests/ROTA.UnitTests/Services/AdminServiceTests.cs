@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Moq;
 using ROTA.Application.Interfaces;
+using ROTA.Application.Models;
 using ROTA.Application.Services;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
@@ -22,11 +23,23 @@ public class AdminServiceTests
                     Mock<IAuditLogRepository> auditLog)
         BuildService()
     {
+        var (service, players, tokens, auditLog, _) = BuildServiceEx();
+        return (service, players, tokens, auditLog);
+    }
+
+    private static (AdminService service,
+                    Mock<IPlayerRepository> players,
+                    Mock<IRefreshTokenRepository> tokens,
+                    Mock<IAuditLogRepository> auditLog,
+                    Mock<IEmailNotificationService> emails)
+        BuildServiceEx()
+    {
         var players  = new Mock<IPlayerRepository>();
         var tokens   = new Mock<IRefreshTokenRepository>();
         var auditLog = new Mock<IAuditLogRepository>();
-        var service  = new AdminService(players.Object, tokens.Object, auditLog.Object);
-        return (service, players, tokens, auditLog);
+        var emails   = new Mock<IEmailNotificationService>();
+        var service  = new AdminService(players.Object, tokens.Object, auditLog.Object, emails.Object);
+        return (service, players, tokens, auditLog, emails);
     }
 
     private static Player MakeAdmin(string username = "admin") =>
@@ -243,5 +256,119 @@ public class AdminServiceTests
 
         result.Success.Should().BeFalse();
         result.FailureReason.Should().Contain("not an admin");
+    }
+
+    // -----------------------------------------------------------------------
+    // MODERATION — ban / mute / unmute (T40)
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task BanPlayerAsync_ValidModerator_Bans_RevokesSessions_Audits_AndEmails()
+    {
+        var (service, players, tokens, auditLog, emails) = BuildServiceEx();
+        var actor  = MakePlayer("mod", PlayerRoles.Player | PlayerRoles.Moderator);
+        var target = MakePlayer("baddie");
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+        players.Setup(r => r.FindByUsernameAsync("baddie", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+        players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        tokens.Setup(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+
+        var result = await service.BanPlayerAsync(actor.Id, "baddie", "cheating");
+
+        result.Success.Should().BeTrue();
+        target.IsBanned.Should().BeTrue();
+        tokens.Verify(r => r.RevokeAllActiveAsync(target.Id, It.IsAny<CancellationToken>()), Times.Once,
+            "a banned player's sessions are killed immediately");
+        auditLog.Verify(a => a.AppendAsync(
+            It.Is<AuditLog>(l => l.Action == "PlayerBanned"), It.IsAny<CancellationToken>()), Times.Once);
+        emails.Verify(e => e.QueueAsync(
+            It.Is<EmailPayload>(p => p.Type == EmailType.ModerationAction),
+            It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once,
+            "every punitive action raises a ModerationAction operator email");
+    }
+
+    [Fact]
+    public async Task BanPlayerAsync_TargetIsAdmin_Fails_NoEmail()
+    {
+        var (service, players, _, _, emails) = BuildServiceEx();
+        var actor  = MakeAdmin("actor");
+        var target = MakeAdmin("other-admin");
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+        players.Setup(r => r.FindByUsernameAsync("other-admin", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+
+        var result = await service.BanPlayerAsync(actor.Id, "other-admin", "x");
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("admin");
+        emails.Verify(e => e.QueueAsync(
+            It.IsAny<EmailPayload>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task MutePlayerAsync_ValidModerator_SetsMute_Audits_AndEmails()
+    {
+        var (service, players, _, auditLog, emails) = BuildServiceEx();
+        var actor  = MakeAdmin();
+        var target = MakePlayer("chatty");
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+        players.Setup(r => r.FindByUsernameAsync("chatty", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+        players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+
+        var result = await service.MutePlayerAsync(actor.Id, "chatty", 30, "spam");
+
+        result.Success.Should().BeTrue();
+        target.IsMuted.Should().BeTrue();
+        target.MuteExpiresAt.Should().NotBeNull();
+        auditLog.Verify(a => a.AppendAsync(
+            It.Is<AuditLog>(l => l.Action == "PlayerMuted"), It.IsAny<CancellationToken>()), Times.Once);
+        emails.Verify(e => e.QueueAsync(
+            It.Is<EmailPayload>(p => p.Type == EmailType.ModerationAction),
+            It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task MutePlayerAsync_NonModeratorActor_Fails()
+    {
+        var (service, players, _, _, _) = BuildServiceEx();
+        var actor = MakePlayer("regular"); // plain player, no mod/admin
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+
+        var result = await service.MutePlayerAsync(actor.Id, "x", 10, "y");
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("not a moderator");
+    }
+
+    [Fact]
+    public async Task MutePlayerAsync_NonPositiveDuration_Fails()
+    {
+        var (service, _, _, _, _) = BuildServiceEx();
+
+        var result = await service.MutePlayerAsync(Guid.Empty, "x", 0, "y");
+
+        result.Success.Should().BeFalse("a non-positive mute duration is rejected");
+    }
+
+    [Fact]
+    public async Task UnmutePlayerAsync_ClearsMute()
+    {
+        var (service, players, _, _, _) = BuildServiceEx();
+        var actor  = MakeAdmin();
+        var target = MakePlayer("muted");
+        target.Mute(DateTimeOffset.UtcNow.AddHours(1));
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+        players.Setup(r => r.FindByUsernameAsync("muted", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+        players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+
+        var result = await service.UnmutePlayerAsync(actor.Id, "muted");
+
+        result.Success.Should().BeTrue();
+        target.IsMuted.Should().BeFalse();
+        target.MuteExpiresAt.Should().BeNull();
     }
 }

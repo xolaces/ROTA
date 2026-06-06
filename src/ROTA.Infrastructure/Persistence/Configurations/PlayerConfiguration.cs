@@ -77,6 +77,12 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
         builder.Property(p => p.BanReason)
             .HasColumnName("ban_reason");
 
+        builder.Property(p => p.MuteExpiresAt)
+            .HasColumnName("mute_expires_at");
+
+        // IsMuted is derived from MuteExpiresAt — never a column.
+        builder.Ignore(p => p.IsMuted);
+
         builder.Property(p => p.CreatedAt)
             .HasColumnName("created_at")
             .HasDefaultValueSql("NOW()");
