@@ -53,21 +53,26 @@ leaderboard tabs, stat-alloc, fresh quest node) were **stateless-mock artifacts*
 was correct. **Mock fidelity is part of every ticket**: a new feature's `MockRotaApi` path must
 mirror live (mutable state), or playtest feedback is noise. Live mode is the real validation.
 
-## NEXT BATCH → Phase 2 — Ops & Social (Tickets 30–40) — NOT STARTED
-**Full spec + build order + open decisions:** `docs/specs/active/phase-2-ops-social.md` (READ IT FIRST).
-- **T39 is the FOUNDATION — build it first.** Operator email service + classification + `outbound_emails`
-  log table + admin API + a separate React triage dashboard (rotadevteam@gmail.com). T33/T37/T38/T40
-  route their payloads through it.
-- Independent: **T30** (SP spend → immediate resource delta), **T31** (profile scrollbar behind
-  equipment panel), **T32** (pinnacle gates: mandatory class select + gem rewards), **T34** (raid
-  layout restructure).
-- Chat cluster (shared real-time-delivery decision): **T35** raid chat → **T36** world chat →
-  **T37** friends/PM/social + report.
-- Email-dependent: **T33** pinnacle first-claim log, **T37** player report, **T38** bug/ticket, **T40**
-  moderation/punishment log.
-- **All 7 design decisions are resolved** (SendGrid, separate dashboard repo, SignalR chat,
-  ConvergenceLevels win for class gates, Mute in T40 scope, 5/hr player rate limits, 100-msg Redis
-  ring buffer) — see §6 of the spec for the full table. No unresolved decisions block any ticket.
+## Phase 2 — Ops & Social (T30–T40) — BACKEND SHIPPED (2026-06-06), CLIENT UI NEXT
+**Spec:** `docs/specs/active/phase-2-ops-social.md`. CLAUDE.md has the full shipped summary.
+- **Backend: ALL 8 tickets done on branch `feat/phase2-ops-social`** (off main, UNMERGED) — T39 email
+  backbone, T40 ban/mute, T30 SP delta, T32 pinnacle gems, T33 first-claim + placeholder magics, T38
+  feedback, T37 friends/PM/report, T35/36 SignalR chat. **524 unit + 35 integration green.** Migrations
+  AddOutboundEmails/AddPlayerMute/AddPinnacleFirstClaims/AddSocialSystem applied. Merge to main when ready.
+- **React ops dashboard SHIPPED** at **`C:\Dev\rota-ops-dashboard`** (separate local git repo, no remote):
+  Vite+React+TS, mission-control UI, demo-mode default, admin-JWT login, `npm run build` passes. Run
+  `npm install && npm run dev`. Point at the live API in Settings or `.env.local` (VITE_API_BASE).
+- **Email provider deviation:** working provider is **Gmail SMTP** (`SmtpEmailService`; creds in API
+  user-secrets `Email:Username`/`Email:Password` — temporary, owner to rotate), NOT SendGrid. Same
+  `IEmailService` interface keeps SendGrid as the documented swap.
+- **CLIENT (Unity) is the next batch.** API plumbing (DTO mirror + IRotaApi/Http/Mock methods + T31
+  scrollbar) was written **UNVERIFIED** on client branch `feat/phase2-client-plumbing` (Editor was open
+  → no compile). **Close the Editor, headless-compile that branch, fix any `error CS`, then build the
+  UI:** T31 (done in plumbing), T34 raid layout, T32 pinnacle/class overlay + gem callout, T35 raid-chat
+  panel + T36 world-chat button/indicator + T37 friends/PM/report screens (SignalR client to /hubs/chat,
+  events WorldMessage/RaidMessage/PrivateMessage/Muted), T38 bug-submission panel. Mock-fidelity per ticket.
+- Open follow-up: confirm gem amounts for pinnacle tiers **2000 / 15000 / 25000** (omitted from
+  `LevelingConfig.PinnacleGemRewards` until set); stat-rollback is PHASE-2.
 
 ## CARRY-OVER BACKLOG (pre-existing, owner's call)
 - **T18** character vector models — DEFERRED (no vector-art pipeline; nav icons are Unicode emoji).

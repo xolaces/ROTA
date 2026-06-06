@@ -1,7 +1,14 @@
 # Phase 2 — Ops & Social (Tickets 30–40) — HANDOFF / SPEC
 
-Status: **NOT STARTED** — handoff for a fresh Claude Code session. Nothing in this batch is built.
+Status: **BACKEND COMPLETE (2026-06-06)** — all 8 backend tickets built, tested, migrated on branch
+`feat/phase2-ops-social` (524 unit + 35 integration green). **Client (Unity) UI still to build** (the
+Editor was open all session → no headless compile; API plumbing written UNVERIFIED on client branch
+`feat/phase2-client-plumbing`). See CLAUDE.md "Phase 2 — Ops & Social" for the shipped summary.
 Owner: Nathan (a.k.a. Xolaces / DEV_Xolaces). Operator email: **rotadevteam@gmail.com**.
+
+> **Provider note:** Decision #1 selected SendGrid, but the owner supplied Gmail SMTP credentials, so
+> the working `IEmailService` is `SmtpEmailService` (Gmail; creds in user-secrets). SendGrid remains the
+> documented swap behind the same interface. The SMTP password is temporary (owner will rotate).
 
 This batch adds an **operator email + dashboard backbone (T39)** that several tickets route through,
 plus social systems (chat, friends/PM), pinnacle/level polish, and small client fixes. Read this with

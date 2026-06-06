@@ -273,6 +273,54 @@ ClassRegenRates gains ChoicePreviews (per-available-class regen rates) so the cl
 class-unlock overlay shows each option's benefit. Client: class selection removed from the Profile
 screen (inline card) and now surfaces as an overlay when a new tier unlocks.
 
+## Phase 2 — Ops & Social (T30–T40) — BACKEND COMPLETE (2026-06-06)
+Build: 0 errors. Tests: **524 unit + 35 integration = 559, all green.** Spec:
+docs/specs/active/phase-2-ops-social.md. Branch: feat/phase2-ops-social (off main).
+Migrations applied: AddOutboundEmails, AddPlayerMute, AddPinnacleFirstClaims, AddSocialSystem.
+All 7 design decisions were resolved up-front (see spec §6).
+
+- **T39 — Operator email backbone (FOUNDATION):** `IEmailService`/`SmtpEmailService` (Gmail SMTP;
+  creds in user-secrets `Email:Username`/`Email:Password` — NOTE: decision #1 said SendGrid, but the
+  owner supplied Gmail SMTP creds, so the working provider is SMTP/Gmail behind the same interface;
+  SendGrid remains the documented swap). `outbound_emails` table (jsonb detail/metadata, send+review
+  status) is the dashboard's source of truth. `EmailNotificationService.QueueAsync` = persist-first +
+  audit + enqueue; `EmailSendQueue` (Channel) + `EmailSendBackgroundService` (hosted) send out-of-band
+  and swallow failures (never blocks gameplay). `EmailType {BugReport,PlayerReport,ModerationAction,
+  PinnacleFirstClaim,GeneralTicket}`; `EmailPayload` is the one shape all producers build.
+  `OpsController [AdminOnly]`: GET /api/admin/emails (list+filter), /stats, /{id}, POST {id}/approve|
+  dismiss; GET /api/admin/pinnacle-claims. **The React ops dashboard is a SEPARATE repo at
+  C:\Dev\rota-ops-dashboard** (demo-mode default; admin JWT login).
+- **T40 — Moderation:** `Player.Mute(expiresAt)/Unmute()/IsMuted` (derived, Ignore-mapped) +
+  mute_expires_at. `AdminService.BanPlayerAsync/MutePlayerAsync/UnmutePlayerAsync` (Mod-or-Admin,
+  cannot target an admin, ban revokes sessions) → audit + ModerationAction email.
+  `ModerationController [ModeratorOrAdmin]` /api/moderation/players/{id}/ban|mute|unmute. Stat-rollback
+  stays PHASE-2.
+- **T30:** AllocateStatPointAsync credits the gained Energy/Stamina delta to current via
+  RefillEnergyAsync (not a full refill).
+- **T32:** `GemTransactionType.PinnacleReward`; GrantLevelUpPointsAsync grants pinnacle gems
+  idempotently from `LevelingConfig.PinnacleGemRewards` (1000:250, 2500:500, 5000:1500, 7500:2000,
+  10000:2500). Class-gate levels stay `ConvergenceLevels` (decision #4); 2000/15000/25000 gem amounts
+  omitted pending owner confirmation.
+- **T33:** `PinnacleFirstClaim` + unique index on pinnacle_level (atomic first-claim);
+  `PinnacleService.RecordFirstClaimAsync` → audit + PinnacleFirstClaim email on first claim only;
+  wired into GrantLevelUpPointsAsync. `LevelingConfig.IsPinnacleLevel` is the single pinnacle-level
+  source. content/magics.json: 5 inert Orange placeholder magics (5000–25000).
+- **T38:** `FeedbackController [Authorize]` POST /api/feedback (Bug→BugReport, Feedback→GeneralTicket
+  email) with game-state snapshot. `ISubmissionRateLimiter` (Redis, reusable): 5/hr per player + 15/hr
+  per IP → 429.
+- **T37:** Friendship/PlayerBlock/PrivateMessage + `SocialService` (friend request/accept/remove,
+  block/unblock, friends-only block-gated PM, GetConversation, ReportPlayer→PlayerReport email,
+  rate-limited). `SocialController [Authorize]` /api/social/*; PM delivered live via the chat hub.
+- **T35/T36 — Chat (SignalR):** `ChatHub` at /hubs/chat (JWT-over-querystring already wired) —
+  SendWorldMessage (broadcast + 100-msg Redis ring buffer `RedisWorldChatStore`), JoinRaid/
+  SendRaidMessage (ephemeral per-raid group). Muted players (T40) rejected. `SenderRole` carried for
+  reserved-name colouring. `SubUserIdProvider` maps SignalR identity → JWT sub (needed for PM).
+  GET /api/chat/world/history backfill.
+- **CLIENT (Unity) NOT DONE:** the Editor was open all session (can't headless-compile), so client UI
+  is deferred to a verified pass. API plumbing (DTO mirror + IRotaApi/Http/Mock methods + T31) written
+  UNVERIFIED on client branch `feat/phase2-client-plumbing` — needs Editor-closed headless compile
+  before merge. New chat/social/bug-panel UI screens still to build.
+
 ## PHASE-2 Deferred Items
 - DiscernmentInvestment effect: quest drop quality (raid crit shipped v0.2.3)
 - Explicit DB transaction scope for QUEST reward steps (energy committed but rewards not atomic; raids fixed v0.2.5)
