@@ -53,15 +53,29 @@ leaderboard tabs, stat-alloc, fresh quest node) were **stateless-mock artifacts*
 was correct. **Mock fidelity is part of every ticket**: a new feature's `MockRotaApi` path must
 mirror live (mutable state), or playtest feedback is noise. Live mode is the real validation.
 
-## OPEN / NEXT (owner's call)
-- **T18** character vector models — DEFERRED (no vector-art pipeline yet; nav icons are Unicode
-  emoji). T16/T17 shipped placeholders; real vector art is pending this decision.
+## NEXT BATCH → Phase 2 — Ops & Social (Tickets 30–40) — NOT STARTED
+**Full spec + build order + open decisions:** `docs/specs/active/phase-2-ops-social.md` (READ IT FIRST).
+- **T39 is the FOUNDATION — build it first.** Operator email service + classification + `outbound_emails`
+  log table + admin API + a separate React triage dashboard (rotadevteam@gmail.com). T33/T37/T38/T40
+  route their payloads through it.
+- Independent: **T30** (SP spend → immediate resource delta), **T31** (profile scrollbar behind
+  equipment panel), **T32** (pinnacle gates: mandatory class select + gem rewards), **T34** (raid
+  layout restructure).
+- Chat cluster (shared real-time-delivery decision): **T35** raid chat → **T36** world chat →
+  **T37** friends/PM/social + report.
+- Email-dependent: **T33** pinnacle first-claim log, **T37** player report, **T38** bug/ticket, **T40**
+  moderation/punishment log.
+- **7 OPEN DECISIONS need the owner before building** (email provider, dashboard hosting, chat delivery
+  polling-vs-SignalR, pinnacle-level reconciliation vs ConvergenceLevels, Mute/rollback existence,
+  rate limits, world-chat retention) — listed in §6 of the spec. Resolve these first.
+
+## CARRY-OVER BACKLOG (pre-existing, owner's call)
+- **T18** character vector models — DEFERRED (no vector-art pipeline; nav icons are Unicode emoji).
 - **Merge `chore/drift-control-tooling` → `main`** (additive, green).
-- **Content depth** — still 5 quests / 2 raids; depletion lengthens traversal. Expand the questline.
+- **Content depth** — still 5 quests / 2 raids. Expand the questline.
 - **Malachar raid size** — both raids summon `Small`; bump per-sigil in `content/items.json`.
-- **Gear set bonuses** (PHASE-2) — Pano pieces are strong individually; named set bonus later.
-- **System 16 Gauntlet** — spec in `docs/specs/active/`, decision-complete, not built.
-- **Live-mode validation pass** of the whole batch (owner tests in mock; verify server-authoritative).
+- **Gear set bonuses** (PHASE-2); **System 16 Gauntlet** (spec in `docs/specs/active/`, unbuilt).
+- **Live-mode validation pass** of the T19–T29 batch (owner tests in mock; verify server-authoritative).
 
 ## DISCIPLINE / GOTCHAS
 - Backend: branch off `main`; JWT `MSB3277` warnings in the test project are pre-existing — IGNORE.
