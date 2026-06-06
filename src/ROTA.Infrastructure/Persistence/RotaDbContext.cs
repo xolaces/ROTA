@@ -50,6 +50,9 @@ public class RotaDbContext : DbContext
     // ----- Phase 2 — Ops & Social -----
     public DbSet<OutboundEmail> OutboundEmails => Set<OutboundEmail>();
     public DbSet<PinnacleFirstClaim> PinnacleFirstClaims => Set<PinnacleFirstClaim>();
+    public DbSet<Friendship> Friendships => Set<Friendship>();
+    public DbSet<PlayerBlock> PlayerBlocks => Set<PlayerBlock>();
+    public DbSet<PrivateMessage> PrivateMessages => Set<PrivateMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

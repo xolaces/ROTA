@@ -3,8 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 using System.Security.Cryptography;
+using Microsoft.AspNetCore.SignalR;
 using ROTA.Api;
 using ROTA.Api.BackgroundServices;
+using ROTA.Api.SignalR;
 using ROTA.Infrastructure.Persistence;
 using ROTA.Api.Middleware;
 using ROTA.Application.Interfaces;
@@ -145,6 +147,10 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddSignalR();
 
+// Chat/PM delivery (T35/36/37) keys SignalR's per-user identity on the JWT "sub" claim
+// (MapInboundClaims is off, so sub is not remapped to NameIdentifier).
+builder.Services.AddSingleton<IUserIdProvider, SubUserIdProvider>();
+
 // EF Core + PostgreSQL
 builder.Services.AddDbContext<RotaDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -276,9 +282,8 @@ if (app.Environment.IsDevelopment())
 app.MapControllers();
 app.MapHealthChecks("/health");
 
-// SignalR hubs registered here as systems are built
-// app.MapHub<RaidHub>("/hubs/raid");
-// app.MapHub<GuildHub>("/hubs/guild");
+// SignalR hubs (T35 raid chat, T36 world chat, T37 PM delivery)
+app.MapHub<ChatHub>("/hubs/chat");
 
 app.Run();
 

@@ -37,6 +37,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ILeaderboardEntryRepository, LeaderboardEntryRepository>();
         services.AddScoped<IOutboundEmailRepository, OutboundEmailRepository>();
         services.AddScoped<IPinnacleClaimRepository, PinnacleClaimRepository>();
+        services.AddScoped<IFriendshipRepository, FriendshipRepository>();
+        services.AddScoped<IBlockRepository, BlockRepository>();
+        services.AddScoped<IPrivateMessageRepository, PrivateMessageRepository>();
 
         // Infrastructure services
         services.AddScoped<IAuthLockoutService, AuthLockoutService>();
@@ -47,6 +50,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IEmailSendQueue, EmailSendQueue>();
         // Anti-spam limiter for player submissions (T37 reports, T38 bug/ticket)
         services.AddScoped<ISubmissionRateLimiter, SubmissionRateLimiter>();
+        // World-chat ring buffer (T36)
+        services.AddScoped<IWorldChatStore, RedisWorldChatStore>();
 
         // Content definition providers — singletons: JSON files read once at startup
         services.AddSingleton<IQuestDefinitionProvider>(
@@ -87,6 +92,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ILeaderboardService, LeaderboardService>();
         services.AddScoped<IEmailNotificationService, EmailNotificationService>();
         services.AddScoped<IPinnacleService, PinnacleService>();
+        services.AddScoped<ISocialService, SocialService>();
 
         // FluentValidation — scan Application assembly for all IValidator<T> implementations
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
