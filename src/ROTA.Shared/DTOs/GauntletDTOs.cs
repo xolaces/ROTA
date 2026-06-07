@@ -117,10 +117,43 @@ public class GauntletEventActionResult
     public string? FailureReason { get; init; }
     public GauntletEventResponse? Event { get; init; }
 
+    /// <summary>
+    /// Settlement payout counts (System 16 Slice 5). Populated only on the settle path; null for
+    /// open/close. Carried alongside the event so the existing controller/CLI shape is unchanged.
+    /// </summary>
+    public GauntletSettlementSummaryResponse? Settlement { get; init; }
+
     public static GauntletEventActionResult Ok(GauntletEventResponse ev)
         => new() { Success = true, Event = ev };
+    public static GauntletEventActionResult Ok(
+        GauntletEventResponse ev, GauntletSettlementSummaryResponse settlement)
+        => new() { Success = true, Event = ev, Settlement = settlement };
     public static GauntletEventActionResult Fail(string reason)
         => new() { Success = false, FailureReason = reason };
+}
+
+/// <summary>
+/// Settlement payout summary (System 16 Slice 5). Returned by <c>SettleEventAsync</c> and surfaced
+/// by the admin settle endpoint + CLI. Counts are the number of grant ACTIONS performed this run —
+/// because settlement is idempotent, a re-settle of an already-Settled event reports zeros (nothing
+/// new was paid).
+/// </summary>
+public class GauntletSettlementSummaryResponse
+{
+    /// <summary>Number of prize-eligible entries (LastRank within PrizeRankCount) processed.</summary>
+    public int RanksSettled { get; init; }
+
+    /// <summary>Total Token amount credited across all bands this run.</summary>
+    public long TokensGranted { get; init; }
+
+    /// <summary>Total Pitchfork amount credited across all bands this run.</summary>
+    public long PitchforkGranted { get; init; }
+
+    /// <summary>Number of trophy upserts performed this run.</summary>
+    public int TrophiesGranted { get; init; }
+
+    /// <summary>Number of honor-echo records written for revoked event-magic holders this run.</summary>
+    public int HonorsWritten { get; init; }
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

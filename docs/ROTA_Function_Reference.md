@@ -102,6 +102,28 @@ non-Gauntlet hit is byte-for-byte identical to before). New scoped ctor deps:
 definition resolution (a real ladder-stage raid won't resolve through `IRaidDefinitionProvider`). Slice 4
 is exercised via seeded ActiveRaids with `GauntletEventId` set + a normal `RaidDefinitionId`.
 
+## System 16 — Gauntlet (Slice 5 — settlement, idempotent)
+
+`GauntletAdminService.SettleEventAsync(eventId)` — idempotent prize distribution (money-bug class).
+Already-Settled → zero-count no-op; must be Closed otherwise. Flow: `RecomputeRanksAsync` → for each entry
+with `LastRank ≤ PrizeRankCount`, `GetBandForRank` → credit **Tokens** (refId
+`gauntletsettle:{eventId}:{playerId}:tokens`) + **Pitchfork** (`…:pitchfork`) via the currency ledger
+(ReferenceExists pre-check + unique partial index) + **Trophy** (`PlayerGauntletTrophy.UpsertAsync`,
+idempotent) → **honor write-back** (`RevokeAllForEventAsync` returns the revoked rows → write
+`PlayerMagicHonor` per holder if absent) → `MarkSettled` (only after all grants commit). Ranks are
+per-league, so every league's rank-1..N gets its own band. Returns `GauntletSettlementSummaryResponse`
+{RanksSettled, TokensGranted, PitchforkGranted, TrophiesGranted, HonorsWritten} (carried on
+`GauntletEventActionResult.Settlement`; surfaced by the settle endpoint + `gauntlet-settle` CLI — no API contract change).
+
+**Per-raid-defeat reward** — in `HitRaidAsync`'s `isKill` block, gated on `GauntletEventId`, inside the
+advisory-lock tx: `+StrikesPerDefeat` strikes (refId `gauntletdefeat:{raidId}:{playerId}:strikes`) + `+1`
+Token (`…:token`), each ReferenceExists-guarded (idempotent on a re-processed kill). New RaidService dep:
+`IGauntletCurrencyRepository`.
+
+**DEFERRED (follow-up):** spec step 2e — the next-event Wrath/Blessing **consumable** (`PlayerEventMagic`)
+hand-off (contradicts auto-settle-on-close; bundled with the ladder-summon follow-up). Settle writes only
+honor + tokens + pitchfork + trophies. +19 unit, +5 integration tests (incl. settle-twice-pays-once vs real ledger balances).
+
 ## System 17 — Global Leaderboards (Slice 1)
 
 ### Enums (`src/ROTA.Domain/Enums/`)

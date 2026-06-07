@@ -49,7 +49,8 @@ public class RaidServiceTests
         Mock<IPlayerEventMagicRepository> PlayerEventMagics,
         Mock<IPlayerMagicHonorRepository> PlayerMagicHonors,
         Mock<IStrikeRepository> Strikes,
-        Mock<IGauntletScoringService> GauntletScoring);
+        Mock<IGauntletScoringService> GauntletScoring,
+        Mock<IGauntletCurrencyRepository> GauntletCurrency);
 
     private static ServiceBundle BuildService(Random? random = null, MagicConfig? magicConfig = null, LegionConfig? legionConfig = null, CombatConfig? combatConfig = null, GauntletConfig? gauntletConfig = null)
     {
@@ -84,6 +85,7 @@ public class RaidServiceTests
         var playerMagicHonors = new Mock<IPlayerMagicHonorRepository>();
         var strikes          = new Mock<IStrikeRepository>();
         var gauntletScoring  = new Mock<IGauntletScoringService>();
+        var gauntletCurrency = new Mock<IGauntletCurrencyRepository>();
 
         hitCache.Setup(c => c.TryAcquireSlotAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((true, (RaidHitResponse?)null));
@@ -159,6 +161,22 @@ public class RaidServiceTests
         gauntletScoring.Setup(s => s.UpdateScoreAsync(
                 It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        // System 16 Slice 5 — per-defeat Token reward: no prior reference by default (so a Gauntlet
+        // kill credits fresh); CreateAsync is a no-op. Idempotency tests override ReferenceExistsAsync.
+        gauntletCurrency.Setup(r => r.ReferenceExistsAsync(
+                It.IsAny<Guid>(), It.IsAny<GauntletCurrency>(), It.IsAny<GauntletCurrencyTransactionType>(),
+                It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        gauntletCurrency.Setup(r => r.CreateAsync(
+                It.IsAny<GauntletCurrencyTransaction>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        // Strike ledger CreateAsync (per-defeat credit) + ReferenceExistsAsync default for Slice 5.
+        // (SpendAsync is already set up above for the hit-cost path.)
+        strikes.Setup(r => r.ReferenceExistsAsync(
+                It.IsAny<Guid>(), It.IsAny<StrikeTransactionType>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        strikes.Setup(r => r.CreateAsync(It.IsAny<StrikeTransaction>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
 
         var magicCfg  = Options.Create(magicConfig  ?? new MagicConfig());
         var legionCfg = Options.Create(legionConfig ?? new LegionConfig());
@@ -176,13 +194,14 @@ public class RaidServiceTests
             leaderboards.Object, combatCfg,
             trophyRepo.Object, gauntletContent.Object, playerEventMagics.Object,
             playerMagicHonors.Object, strikes.Object, gauntletScoring.Object, gauntletCfg,
-            random);
+            gauntletCurrency.Object, random);
 
         return new ServiceBundle(service, raids, participants, players, resources, energy, gems,
             stats, inventory, itemDefs, lootTables, auditLog, definitions, hitCache, equipment,
             raidMagics, magicDefs, magicSvc, playerLegions, legionSlots, unitDefs, legionDefs,
             commanderGear, gearDefs, legionSvc, leaderboards,
-            trophyRepo, gauntletContent, playerEventMagics, playerMagicHonors, strikes, gauntletScoring);
+            trophyRepo, gauntletContent, playerEventMagics, playerMagicHonors, strikes, gauntletScoring,
+            gauntletCurrency);
     }
 
     private static Player MakePlayer(long xp = 0)
@@ -2993,5 +3012,130 @@ public class RaidServiceTests
             Times.Never, "cached replay must not double-score");
         b.Raids.Verify(r => r.AtomicApplyHitAsync(It.IsAny<Guid>(), It.IsAny<Func<ActiveRaid, Task<bool>>>(), It.IsAny<CancellationToken>()),
             Times.Never);
+    }
+
+    // =======================================================================
+    // System 16 Slice 5 — per-Gauntlet-raid-defeat reward (StrikesPerDefeat strikes + 1 Token)
+    //   credited to the killer inside the advisory-lock tx, gated on GauntletEventId, idempotent.
+    // =======================================================================
+
+    // Set up a one-shot KILL on the given raid: low HP so any hit drops it to 0, single participant.
+    private void SetupKill(ServiceBundle b, Player attacker, ActiveRaid raid)
+    {
+        SetupHitScaffolding(b, attacker, raid);
+        var part = RaidParticipant.Create(raid.Id, attacker.Id);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, attacker.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(part);
+        b.Participants.Setup(p => p.UpdateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipant> { part });
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+    }
+
+    [Fact]
+    public async Task Hit_GauntletKill_CreditsStrikesPerDefeatAndOneToken()
+    {
+        var eventId = Guid.NewGuid();
+        var cfg = new GauntletConfig { StrikesPerDefeat = 10 };
+        var b = BuildService(new Random(0), gauntletConfig: cfg);
+        var attacker = MakePlayer();
+        var raid = MakeGauntletRaid(eventId, currentHp: 1);   // any hit kills
+
+        SetupKill(b, attacker, raid);
+
+        var result = await b.Service.HitRaidAsync(attacker.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.IsDefeated.Should().BeTrue();
+
+        // +StrikesPerDefeat strikes, type RaidDefeat, deterministic per-(raid,player) referenceId.
+        var strikeRef = $"gauntletdefeat:{raid.Id}:{attacker.Id}:strikes";
+        b.Strikes.Verify(r => r.CreateAsync(It.Is<StrikeTransaction>(
+            t => t.Amount == 10 && t.TransactionType == StrikeTransactionType.RaidDefeat
+              && t.ReferenceId == strikeRef), It.IsAny<CancellationToken>()), Times.Once);
+
+        // +1 Token, type RaidDefeatReward, deterministic per-(raid,player) referenceId.
+        var tokenRef = $"gauntletdefeat:{raid.Id}:{attacker.Id}:token";
+        b.GauntletCurrency.Verify(r => r.CreateAsync(It.Is<GauntletCurrencyTransaction>(
+            t => t.Currency == GauntletCurrency.Token && t.Amount == 1
+              && t.TransactionType == GauntletCurrencyTransactionType.RaidDefeatReward
+              && t.ReferenceId == tokenRef), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Hit_GauntletKill_ReprocessedKill_DoesNotDoubleCredit()
+    {
+        // A re-processed kill (both references already present) must NOT credit a second time —
+        // the ReferenceExists guard is the money-bug backstop.
+        var eventId = Guid.NewGuid();
+        var b = BuildService(new Random(0));
+        var attacker = MakePlayer();
+        var raid = MakeGauntletRaid(eventId, currentHp: 1);
+
+        SetupKill(b, attacker, raid);
+        b.Strikes.Setup(r => r.ReferenceExistsAsync(
+                attacker.Id, StrikeTransactionType.RaidDefeat, $"gauntletdefeat:{raid.Id}:{attacker.Id}:strikes",
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        b.GauntletCurrency.Setup(r => r.ReferenceExistsAsync(
+                attacker.Id, GauntletCurrency.Token, GauntletCurrencyTransactionType.RaidDefeatReward,
+                $"gauntletdefeat:{raid.Id}:{attacker.Id}:token", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var result = await b.Service.HitRaidAsync(attacker.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.IsDefeated.Should().BeTrue();
+        b.Strikes.Verify(r => r.CreateAsync(It.IsAny<StrikeTransaction>(), It.IsAny<CancellationToken>()),
+            Times.Never, "the defeat-strike reference already exists → no double-credit");
+        b.GauntletCurrency.Verify(r => r.CreateAsync(It.IsAny<GauntletCurrencyTransaction>(), It.IsAny<CancellationToken>()),
+            Times.Never, "the defeat-token reference already exists → no double-credit");
+    }
+
+    [Fact]
+    public async Task Hit_NonGauntletKill_CreditsNoStrikesNoToken()
+    {
+        // An ordinary (non-Gauntlet) raid kill must NOT credit the per-defeat strikes/token.
+        var b = BuildService(new Random(0));
+        var attacker = MakePlayer();
+        var raid = MakeRaid(currentHp: 1);   // ordinary raid, GauntletEventId == null
+
+        SetupKill(b, attacker, raid);
+
+        var result = await b.Service.HitRaidAsync(attacker.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.IsDefeated.Should().BeTrue();
+        b.Strikes.Verify(r => r.CreateAsync(It.IsAny<StrikeTransaction>(), It.IsAny<CancellationToken>()),
+            Times.Never, "non-Gauntlet kills earn no Gauntlet strikes");
+        b.GauntletCurrency.Verify(r => r.CreateAsync(It.IsAny<GauntletCurrencyTransaction>(), It.IsAny<CancellationToken>()),
+            Times.Never, "non-Gauntlet kills earn no Gauntlet tokens");
+    }
+
+    [Fact]
+    public async Task Hit_GauntletNonKill_CreditsNoDefeatReward()
+    {
+        // A Gauntlet hit that does NOT kill (raid survives) earns no per-defeat reward.
+        var eventId = Guid.NewGuid();
+        var b = BuildService(new Random(0));
+        var attacker = MakePlayer();
+        var raid = MakeGauntletRaid(eventId);   // full HP (100000) — one small hit won't kill
+
+        SetupHitScaffolding(b, attacker, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, attacker.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(attacker.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.IsDefeated.Should().BeFalse();
+        b.Strikes.Verify(r => r.CreateAsync(It.IsAny<StrikeTransaction>(), It.IsAny<CancellationToken>()),
+            Times.Never, "the per-defeat reward only fires on a kill");
+        b.GauntletCurrency.Verify(r => r.CreateAsync(It.IsAny<GauntletCurrencyTransaction>(), It.IsAny<CancellationToken>()),
+            Times.Never, "the per-defeat reward only fires on a kill");
     }
 }

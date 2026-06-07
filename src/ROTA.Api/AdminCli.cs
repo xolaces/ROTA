@@ -264,6 +264,11 @@ public static class AdminCli
             return 1;
         }
         Console.WriteLine($"{verb}: event {result.Event!.Id} → state {result.Event.State}.");
+        // Surface the settlement payout counts (System 16 Slice 5) when present.
+        if (result.Settlement is { } s)
+            Console.WriteLine(
+                $"  payout: ranks={s.RanksSettled}, tokens={s.TokensGranted}, " +
+                $"pitchfork={s.PitchforkGranted}, trophies={s.TrophiesGranted}, honors={s.HonorsWritten}.");
         return 0;
     }
 

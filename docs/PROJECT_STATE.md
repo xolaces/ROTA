@@ -123,6 +123,16 @@ tables. Loop works; thin.
   byte-identical (regression-proven). +14 test methods. Build 0 errors; **615 unit + 62 integration green**.
   KNOWN FOLLOW-UP: Gauntlet ladder summon/climb endpoint + gauntlet-stage def resolution (S1–S6 omit it).
 
+- **Slice 5 (settlement)** (branch `feat/system16-gauntlet-s5-settlement`): idempotent prize payout in
+  GauntletAdminService.SettleEventAsync — RecomputeRanks → per-league band distribution (tokens+pitchfork
+  via currency ledger with ReferenceExists + unique-index guard; trophy UpsertAsync) → honor write-back
+  (RevokeAllForEventAsync returns revoked rows → PlayerMagicHonor) → MarkSettled (only after grants);
+  already-Settled fast-path = zero-count no-op. Per-defeat reward in HitRaidAsync isKill block (Gauntlet
+  only, inside tx): +StrikesPerDefeat strikes + 1 Token, ReferenceExists-guarded. GauntletSettlementSummaryResponse.
+  +19 unit + 5 integration (incl. settle-twice-pays-once vs real Postgres ledgers + a forced-rerun test
+  proving the per-grant referenceId guard alone blocks re-credit). Build 0 errors; **634 unit + 67 integration green**.
+  DEFERRED: next-event consumable hand-off (bundled with the ladder-summon follow-up).
+
 ## Not implemented (High)
 Game client (C# SDK = v0.3.0) · discernment quest-drop-quality (later) ·
 moderation (back-burnered) · world chat · guild · gauntlet · gacha/pity ·

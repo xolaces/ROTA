@@ -94,6 +94,8 @@ public sealed class RaidService : IRaidService
     private readonly IStrikeRepository                _strikes;
     private readonly IGauntletScoringService          _gauntletScoring;
     private readonly GauntletConfig                   _gauntletConfig;
+    // System 16 Slice 5 — per-Gauntlet-raid-defeat Token reward (credited inside the advisory-lock tx).
+    private readonly IGauntletCurrencyRepository       _gauntletCurrency;
     private readonly Random _random;
 
     public RaidService(
@@ -132,6 +134,7 @@ public sealed class RaidService : IRaidService
         IStrikeRepository strikes,
         IGauntletScoringService gauntletScoring,
         IOptions<GauntletConfig> gauntletConfig,
+        IGauntletCurrencyRepository gauntletCurrency,
         Random? random = null)
     {
         _raids           = raids;
@@ -169,6 +172,7 @@ public sealed class RaidService : IRaidService
         _strikes           = strikes;
         _gauntletScoring   = gauntletScoring;
         _gauntletConfig    = gauntletConfig.Value;
+        _gauntletCurrency  = gauntletCurrency;
         _random          = random ?? Random.Shared;
     }
 
@@ -881,6 +885,37 @@ public sealed class RaidService : IRaidService
             if (isKill)
             {
                 lockedRaid.MarkDefeated();
+
+                // System 16 Slice 5 — per-Gauntlet-raid-defeat reward. GAUNTLET RAIDS ONLY (gated on
+                // GauntletEventId). Gauntlet raids are Personal/solo, so the killer is the lone
+                // contributor — credit playerId. Both grants ride THIS advisory-lock tx (atomic with
+                // the kill / MarkDefeated) and are plain append CreateAsync (EF Add+SaveChanges, no
+                // ChangeTracker.Clear — tx-safe inside the lock). Each is guarded by a ReferenceExists
+                // pre-check against a per-(raid,player) referenceId so a re-processed kill (e.g. a
+                // crashed-then-retried hit that re-enters this block) never double-credits — the same
+                // money-bug discipline as the settlement payout.
+                if (lockedRaid.GauntletEventId is not null)
+                {
+                    var strikeDefeatRef = $"gauntletdefeat:{activeRaidId}:{playerId}:strikes";
+                    if (!await _strikes.ReferenceExistsAsync(
+                            playerId, StrikeTransactionType.RaidDefeat, strikeDefeatRef, ct))
+                    {
+                        await _strikes.CreateAsync(StrikeTransaction.Create(
+                            playerId, _gauntletConfig.StrikesPerDefeat,
+                            StrikeTransactionType.RaidDefeat, strikeDefeatRef), ct);
+                    }
+
+                    var tokenDefeatRef = $"gauntletdefeat:{activeRaidId}:{playerId}:token";
+                    if (!await _gauntletCurrency.ReferenceExistsAsync(
+                            playerId, GauntletCurrency.Token,
+                            GauntletCurrencyTransactionType.RaidDefeatReward, tokenDefeatRef, ct))
+                    {
+                        await _gauntletCurrency.CreateAsync(GauntletCurrencyTransaction.Create(
+                            playerId, GauntletCurrency.Token, 1,
+                            GauntletCurrencyTransactionType.RaidDefeatReward, tokenDefeatRef), ct);
+                    }
+                }
+
                 // GetAllForRaidAsync sees the participant saved above (same tx).
                 var allParticipants = await _participants.GetAllForRaidAsync(activeRaidId, ct);
                 rewards = await DistributeKillRewardsAsync(
