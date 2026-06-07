@@ -96,6 +96,9 @@ public sealed class RaidService : IRaidService
     private readonly GauntletConfig                   _gauntletConfig;
     // System 16 Slice 5 — per-Gauntlet-raid-defeat Token reward (credited inside the advisory-lock tx).
     private readonly IGauntletCurrencyRepository       _gauntletCurrency;
+    // System 21 Slice 3b — guild raids: membership gate + contribution accrual; pooled-sigil summon.
+    private readonly IGuildMembershipRepository _guildMemberships;
+    private readonly IGuildEconomyRepository    _guildEconomy;
     private readonly Random _random;
 
     public RaidService(
@@ -135,6 +138,8 @@ public sealed class RaidService : IRaidService
         IGauntletScoringService gauntletScoring,
         IOptions<GauntletConfig> gauntletConfig,
         IGauntletCurrencyRepository gauntletCurrency,
+        IGuildMembershipRepository guildMemberships,
+        IGuildEconomyRepository guildEconomy,
         Random? random = null)
     {
         _raids           = raids;
@@ -173,6 +178,8 @@ public sealed class RaidService : IRaidService
         _gauntletScoring   = gauntletScoring;
         _gauntletConfig    = gauntletConfig.Value;
         _gauntletCurrency  = gauntletCurrency;
+        _guildMemberships  = guildMemberships;
+        _guildEconomy      = guildEconomy;
         _random          = random ?? Random.Shared;
     }
 
@@ -191,6 +198,7 @@ public sealed class RaidService : IRaidService
         // stage is solo + summoner-gated there too.)
         var activeRaids = allRaids
             .Where(r => r.GauntletEventId is null
+                        && r.GuildId is null   // System 21 Slice 3b — guild raids live on the guild screen
                         && ((r.IsPublic && r.Size != RaidSize.Personal) || r.SummonedByPlayerId == playerId))
             .ToList();
         var result = new List<ActiveRaidResponse>(activeRaids.Count);
@@ -233,6 +241,84 @@ public sealed class RaidService : IRaidService
             YourCurrentTier       = ComputeTier(participant?.TotalDamageDealt ?? 0, totalParticipants, participant, null),
             IsPublic              = raid.IsPublic,
         };
+    }
+
+    // System 21 Slice 3b — the caller's guild's active raids (guild screen). Scoped to the caller's
+    // guild_id; reuses the shared MapToResponseAsync projection. Returns empty when the caller is
+    // guild-less (the guild is resolved server-side, never from client input).
+    public async Task<IReadOnlyList<ActiveRaidResponse>> GetGuildRaidsAsync(
+        Guid playerId, CancellationToken ct = default)
+    {
+        var membership = await _guildMemberships.FindByPlayerAsync(playerId, ct);
+        if (membership is null)
+            return Array.Empty<ActiveRaidResponse>();
+
+        var allRaids = await _raids.GetAllActiveAsync(ct);
+        var guildRaids = allRaids.Where(r => r.GuildId == membership.GuildId).ToList();
+        var result = new List<ActiveRaidResponse>(guildRaids.Count);
+        var now = DateTimeOffset.UtcNow;
+        foreach (var raid in guildRaids)
+            result.Add(await MapToResponseAsync(raid, playerId, guildRaids.Count, now, ct));
+        return result;
+    }
+
+    // System 21 Slice 3b — officer-gated guild-raid summon. Consumes 1 sigil from the guild pool
+    // (atomic + balance-guarded — no overspend under concurrent summons) then creates a Large guild
+    // raid stamped with guild_id. All members can then hit it (spending GuildStamina); rewards flow
+    // through the existing contribution-tier engine + GuildMembership.ContributionTotal accrual.
+    // KNOWN DEBT (accepted Phase-2 multi-step pattern): the pool debit and raid insert are not in one
+    // DB transaction. The debit is atomic (no overspend); a crash between the two would, at worst, lose
+    // one pooled sigil with no raid (favors the house, not exploitable) — never a free raid.
+    public async Task<SummonGuildRaidResult> SummonGuildRaidAsync(
+        Guid playerId, string raidDefinitionId, RaidDifficulty difficulty, CancellationToken ct = default)
+    {
+        var membership = await _guildMemberships.FindByPlayerAsync(playerId, ct);
+        if (membership is null)
+            return SummonGuildRaidResult.Fail(GuildRaidFailureCode.NotInGuild, "You are not a member of a guild.");
+        if (membership.Rank < GuildRank.Officer)
+            return SummonGuildRaidResult.Fail(GuildRaidFailureCode.PermissionDenied,
+                "Only officers or the leader may summon a guild raid.");
+
+        var definition = _raidDefinitions.GetById(raidDefinitionId);
+        if (definition is null || !string.Equals(definition.Tier, "Guild", StringComparison.OrdinalIgnoreCase))
+            return SummonGuildRaidResult.Fail(GuildRaidFailureCode.DefinitionNotFound,
+                $"Guild raid '{raidDefinitionId}' not found.");
+
+        long finalHp = (long)(definition.BaseHp * HpMultipliers[difficulty]);
+        var expiresAt = DateTimeOffset.UtcNow.AddHours(definition.TimerHours);
+        // Large = participant cap 50 = the guild member cap, so every member can join the fight.
+        var raid = ActiveRaid.Create(raidDefinitionId, playerId, finalHp, expiresAt, difficulty, RaidSize.Large);
+        raid.LinkGuild(membership.GuildId);
+
+        // Consume 1 pooled sigil — atomic + balance-guarded. referenceId ties the debit to this raid id.
+        var poolRef = $"guildsummon:{raid.Id}";
+        var spend = await _guildEconomy.TrySpendPoolAsync(membership.GuildId, 1, poolRef, ct);
+        if (spend == GuildPoolSpendOutcome.Insufficient)
+            return SummonGuildRaidResult.Fail(GuildRaidFailureCode.InsufficientPool,
+                "The guild sigil pool is empty — donate sigils before summoning.");
+        if (spend == GuildPoolSpendOutcome.AlreadyCharged)
+            // Fresh raid id ⇒ this can't normally happen; treat defensively as a conflict.
+            return SummonGuildRaidResult.Fail(GuildRaidFailureCode.Conflict, "Summon conflicted; retry.");
+
+        await _raids.CreateAsync(raid, ct);
+
+        await _auditLog.AppendAsync(AuditLog.Create(
+            playerId, "GuildRaidSummon", null,
+            $"guild={membership.GuildId} raid={raid.Id} def={raidDefinitionId} [{difficulty}] hp={finalHp} sigilRef={poolRef}",
+            null), ct);
+
+        var poolBalance = await _guildEconomy.GetPoolBalanceAsync(membership.GuildId, ct);
+        return SummonGuildRaidResult.Ok(new SummonRaidResponse
+        {
+            ActiveRaidId          = raid.Id,
+            Name                  = definition.Name,
+            MaxHp                 = raid.MaxHp,
+            ExpiresAt             = raid.ExpiresAt,
+            TimerRemainingSeconds = (long)(expiresAt - DateTimeOffset.UtcNow).TotalSeconds,
+            Difficulty            = difficulty.ToString(),
+            DifficultyColor       = DifficultyColors[difficulty],
+            Size                  = RaidSize.Large.ToString(),
+        }, poolBalance);
     }
 
     public async Task<IReadOnlyList<CompletedRaidResponse>> GetCompletedRaidsAsync(
@@ -426,6 +512,16 @@ public sealed class RaidService : IRaidService
             return HitFail(RaidHitFailureCode.AccessDenied,
                 "This is a private raid. Only the summoner may strike it.");
 
+        // 3a-guild. Guild raid access gate (System 21 Slice 3b) — only members of the owning guild may
+        //           strike. Guild raids are non-Personal (Large), so the Personal gate above never applies.
+        if (raid.GuildId is not null)
+        {
+            var striker = await _guildMemberships.FindByGuildAndPlayerAsync(raid.GuildId.Value, playerId, ct);
+            if (striker is null)
+                return HitFail(RaidHitFailureCode.AccessDenied,
+                    "Only members of this guild may strike its raid.");
+        }
+
         // 3b. Participant cap enforcement (pre-spend — no stamina cost on rejection).
         //     Personal raids are already gated above (access gate = effective cap of 1).
         //     A small over-cap race is acceptable — not security-critical.
@@ -463,6 +559,8 @@ public sealed class RaidService : IRaidService
         //     raids keep the exact stamina path above. The actual debit happens inside the advisory-lock
         //     tx (so it commits atomically with the hit); this only resolves the per-hit cost.
         bool isGauntlet = raid.GauntletEventId is not null;
+        // System 21 Slice 3b — guild raids spend GuildStamina (= hit size) instead of Stamina/Strikes.
+        bool isGuildRaid = raid.GuildId is not null;
         int strikeCost = hitSize switch
         {
             5  => _gauntletConfig.StrikeRatePerSize.Medium,
@@ -484,6 +582,7 @@ public sealed class RaidService : IRaidService
         bool raceCondition       = false;
         bool staminaInsufficient = false;
         bool strikesInsufficient = false;   // System 16 Slice 4 — Gauntlet strike spend failed
+        bool guildStaminaInsufficient = false; // System 21 Slice 3b — guild-raid GuildStamina spend failed
         long offCapBonus         = 0;       // System 16 Slice 4 — off-cap Wrath/Blessing aura bonus
         long damageFinal         = 0;
         long finalHp             = 0;
@@ -533,6 +632,19 @@ public sealed class RaidService : IRaidService
                     return false;   // no stamina is spent on the Gauntlet path
                 }
                 // Charged (debited now) or AlreadyCharged (idempotent replay within the tx) → proceed.
+            }
+            else if (isGuildRaid)
+            {
+                // System 21 Slice 3b — guild raids spend GuildStamina (cost = hit size, since
+                // guild_raids.json sets StaminaCostPerHit=1). Same tx-safe AtomicUpdateAsync path as
+                // Stamina, so the debit commits/rolls back atomically with the hit. Strikes never apply.
+                var guildStaminaSpent = await _energy.SpendEnergyAsync(
+                    playerId, ResourceType.GuildStamina, staminaCost, ct);
+                if (!guildStaminaSpent)
+                {
+                    guildStaminaInsufficient = true;
+                    return false;
+                }
             }
             else
             {
@@ -836,6 +948,21 @@ public sealed class RaidService : IRaidService
             else
                 await _participants.UpdateAsync(participantFinal, ct);
 
+            // System 21 Slice 3b — accrue this hit's damage to the member's lifetime guild contribution
+            // (the "damage dealt" metric), inside the advisory-lock tx (atomic with the hit/RecordHit).
+            // Guild raids only; the access gate already required current membership, so this is a no-op
+            // only in the rare race where the striker left the guild mid-hit.
+            if (lockedRaid.GuildId is not null)
+            {
+                var contributor = await _guildMemberships.FindByGuildAndPlayerAsync(
+                    lockedRaid.GuildId.Value, playerId, ct);
+                if (contributor is not null)
+                {
+                    contributor.AddContribution(damageFinal);
+                    await _guildMemberships.UpdateAsync(contributor, ct);
+                }
+            }
+
             // On-hit XP and gold — granted every hit, inside the advisory lock.
             // XP: single uniform roll [min, max] × stamina spent — CombatConfig-driven, not per-stamina.
             // Defaults [1.0, 4.0] preserve the shipped curve (avg ~2.5/stamina ⇒ ~50 on a 20-stamina hit).
@@ -950,6 +1077,10 @@ public sealed class RaidService : IRaidService
             // System 16 Slice 4 — Gauntlet strike spend rolled back with the tx; no damage, no score.
             if (strikesInsufficient)
                 return HitFail(RaidHitFailureCode.InsufficientStrikes, "Insufficient strikes.");
+
+            // System 21 Slice 3b — guild-raid GuildStamina spend rolled back with the tx; no damage.
+            if (guildStaminaInsufficient)
+                return HitFail(RaidHitFailureCode.InsufficientGuildStamina, "Insufficient guild stamina.");
 
             return raceCondition
                 ? HitFail(RaidHitFailureCode.RaidAlreadyDefeated,

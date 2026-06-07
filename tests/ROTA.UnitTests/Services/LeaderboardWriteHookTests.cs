@@ -549,6 +549,9 @@ public class LeaderboardWriteHookTests
         var strikes           = new Mock<IStrikeRepository>();
         var gauntletScoring   = new Mock<IGauntletScoringService>();
         var gauntletCurrency  = new Mock<IGauntletCurrencyRepository>();   // System 16 Slice 5 — per-defeat Token reward
+        // System 21 Slice 3b — guild-raid deps (unused by these leaderboard-hook tests; raids are non-guild).
+        var guildMemberships  = new Mock<IGuildMembershipRepository>();
+        var guildEconomy      = new Mock<IGuildEconomyRepository>();
         trophyRepo.Setup(r => r.GetForPlayerAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<PlayerGauntletTrophy>());
 
@@ -604,7 +607,7 @@ public class LeaderboardWriteHookTests
             leaderboards.Object, combatCfg,
             trophyRepo.Object, gauntletContent.Object, playerEventMagics.Object,
             playerMagicHonors.Object, strikes.Object, gauntletScoring.Object, gauntletCfg,
-            gauntletCurrency.Object, random);
+            gauntletCurrency.Object, guildMemberships.Object, guildEconomy.Object, random);
 
         return new RaidBundle(service, raids, participants, players, resources, energy,
             auditLog, definitions, hitCache, equipment, stats, leaderboards);

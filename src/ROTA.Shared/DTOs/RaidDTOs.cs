@@ -192,6 +192,7 @@ public enum RaidHitFailureCode
     AccessDenied        = 6,  // Personal raid — only the summoner may strike
     RaidFull            = 7,  // Participant cap reached for this raid size
     InsufficientStrikes = 8,  // BETA (System 16 Slice 4) — Gauntlet raid: not enough Strikes for this hit size
+    InsufficientGuildStamina = 9, // System 21 Slice 3b — guild raid: not enough GuildStamina for this hit size (→ 422)
 }
 
 public enum ShareRaidFailureCode

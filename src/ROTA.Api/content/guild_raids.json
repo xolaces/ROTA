@@ -1,0 +1,50 @@
+[
+  {
+    "id": "guild_raid_warlord",
+    "name": "Gorehowl the Warlord",
+    "tier": "Guild",
+    "baseHp": 500000,
+    "personalBaseHp": 0,
+    "timerHours": 48,
+    "staminaCostPerHit": 1,
+    "goldPerStamina": 1,
+    "lootTableId": "",
+    "baseGoldReward": 800,
+    "baseExperienceReward": 500,
+    "baseGemReward": 3,
+    "hasOnHitDrops": false,
+    "artKey": "guild_raid_warlord"
+  },
+  {
+    "id": "guild_raid_leviathan",
+    "name": "The Sunken Leviathan",
+    "tier": "Guild",
+    "baseHp": 1500000,
+    "personalBaseHp": 0,
+    "timerHours": 48,
+    "staminaCostPerHit": 1,
+    "goldPerStamina": 1,
+    "lootTableId": "",
+    "baseGoldReward": 2000,
+    "baseExperienceReward": 1200,
+    "baseGemReward": 6,
+    "hasOnHitDrops": false,
+    "artKey": "guild_raid_leviathan"
+  },
+  {
+    "id": "guild_raid_titan",
+    "name": "Kronarch, World-Ender",
+    "tier": "Guild",
+    "baseHp": 5000000,
+    "personalBaseHp": 0,
+    "timerHours": 72,
+    "staminaCostPerHit": 1,
+    "goldPerStamina": 1,
+    "lootTableId": "",
+    "baseGoldReward": 5000,
+    "baseExperienceReward": 3000,
+    "baseGemReward": 12,
+    "hasOnHitDrops": false,
+    "artKey": "guild_raid_titan"
+  }
+]

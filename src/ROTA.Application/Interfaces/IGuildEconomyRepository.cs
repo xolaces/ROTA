@@ -46,4 +46,13 @@ public interface IGuildEconomyRepository
     Task<bool> AddDonationAsync(
         GuildCurrencyTransaction playerDebit, GuildSigilPoolTransaction poolCredit,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Atomically debit the guild sigil pool by <paramref name="amount"/> (Slice 3b — a raid summon),
+    /// guarded by a balance check in the same statement so concurrent summons can never overspend.
+    /// Raw parameterised SQL that participates in the ambient transaction when one is open (mirrors
+    /// StrikeRepository.SpendAsync). Idempotent on (guild_id, RaidSummon, referenceId).
+    /// </summary>
+    Task<GuildPoolSpendOutcome> TrySpendPoolAsync(
+        Guid guildId, int amount, string referenceId, CancellationToken ct = default);
 }

@@ -1,5 +1,8 @@
+using System.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
+using NpgsqlTypes;
 using ROTA.Application.Interfaces;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
@@ -80,6 +83,63 @@ public sealed class GuildEconomyRepository : IGuildEconomyRepository
         {
             _db.ChangeTracker.Clear();
             return false;
+        }
+    }
+
+    public async Task<GuildPoolSpendOutcome> TrySpendPoolAsync(
+        Guid guildId, int amount, string referenceId, CancellationToken ct = default)
+    {
+        var conn = (NpgsqlConnection)_db.Database.GetDbConnection();
+        if (conn.State != ConnectionState.Open)
+            await conn.OpenAsync(ct);
+
+        // Participate in the ambient transaction (e.g. a summon tx) when one is open; null standalone.
+        var dbTx = _db.Database.CurrentTransaction?.GetDbTransaction() as NpgsqlTransaction;
+
+        // 1. Idempotency-first: a RaidSummon row for this reference means the original debit committed.
+        const string existsSql = """
+            SELECT EXISTS (
+                SELECT 1 FROM guild_sigil_pool_transactions
+                WHERE guild_id         = @guildId
+                  AND transaction_type = @type
+                  AND reference_id     = @referenceId
+            )
+            """;
+        await using (var existsCmd = new NpgsqlCommand(existsSql, conn, dbTx))
+        {
+            existsCmd.Parameters.AddWithValue("guildId",     NpgsqlDbType.Uuid,    guildId);
+            existsCmd.Parameters.AddWithValue("type",        NpgsqlDbType.Integer, (int)GuildSigilPoolTransactionType.RaidSummon);
+            existsCmd.Parameters.AddWithValue("referenceId", NpgsqlDbType.Text,    referenceId);
+            var exists = (bool)(await existsCmd.ExecuteScalarAsync(ct))!;
+            if (exists)
+                return GuildPoolSpendOutcome.AlreadyCharged;
+        }
+
+        // 2. Conditional INSERT of the −debit row guarded by the pool-balance check in the same
+        //    statement — atomic at the row level (rows 1 ⇒ Charged, 0 ⇒ Insufficient). The unique
+        //    partial index is the hard backstop against a concurrent duplicate reference. Raw SQL, so
+        //    no ChangeTracker interaction.
+        const string insertSql = """
+            INSERT INTO guild_sigil_pool_transactions (id, guild_id, amount, transaction_type, reference_id, created_at)
+            SELECT gen_random_uuid(), @guildId, @amount, @type, @referenceId, NOW()
+            WHERE (SELECT COALESCE(SUM(amount), 0) FROM guild_sigil_pool_transactions WHERE guild_id = @guildId) >= @cost
+            """;
+        await using var insertCmd = new NpgsqlCommand(insertSql, conn, dbTx);
+        insertCmd.Parameters.AddWithValue("guildId",     NpgsqlDbType.Uuid,    guildId);
+        insertCmd.Parameters.AddWithValue("amount",      NpgsqlDbType.Integer, -amount);
+        insertCmd.Parameters.AddWithValue("type",        NpgsqlDbType.Integer, (int)GuildSigilPoolTransactionType.RaidSummon);
+        insertCmd.Parameters.AddWithValue("referenceId", NpgsqlDbType.Text,    referenceId);
+        insertCmd.Parameters.AddWithValue("cost",        NpgsqlDbType.Integer, amount);
+
+        try
+        {
+            int rows = await insertCmd.ExecuteNonQueryAsync(ct);
+            return rows == 1 ? GuildPoolSpendOutcome.Charged : GuildPoolSpendOutcome.Insufficient;
+        }
+        catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UniqueViolation)
+        {
+            // Concurrent caller inserted the same reference — the original debit committed. Idempotent.
+            return GuildPoolSpendOutcome.AlreadyCharged;
         }
     }
 

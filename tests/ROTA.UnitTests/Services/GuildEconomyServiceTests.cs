@@ -68,6 +68,16 @@ public class GuildEconomyServiceTests
             Pool.Add(poolCredit);
             return Task.FromResult(true);
         }
+
+        public Task<GuildPoolSpendOutcome> TrySpendPoolAsync(Guid guildId, int amount, string referenceId, CancellationToken ct = default)
+        {
+            if (Pool.Any(t => t.GuildId == guildId && t.TransactionType == GuildSigilPoolTransactionType.RaidSummon && t.ReferenceId == referenceId))
+                return Task.FromResult(GuildPoolSpendOutcome.AlreadyCharged);
+            var balance = Pool.Where(t => t.GuildId == guildId).Sum(t => (long)t.Amount);
+            if (balance < amount) return Task.FromResult(GuildPoolSpendOutcome.Insufficient);
+            Pool.Add(GuildSigilPoolTransaction.Create(guildId, -amount, GuildSigilPoolTransactionType.RaidSummon, referenceId));
+            return Task.FromResult(GuildPoolSpendOutcome.Charged);
+        }
     }
 
     private sealed class FakeMembershipRepo : IGuildMembershipRepository

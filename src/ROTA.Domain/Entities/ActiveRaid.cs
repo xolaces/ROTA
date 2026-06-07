@@ -54,6 +54,11 @@ public class ActiveRaid
     // ordinary raids. Stamped at summon by Slice 4; the setter is provided now.
     public Guid? GauntletEventId { get; private set; }
 
+    // System 21 Slice 3b (additive) — links this raid to a guild. Stamped at summon by the officer-
+    // gated guild-raid summon. Null on ordinary/Gauntlet raids. When set, HitRaidAsync gates access to
+    // guild members and spends GuildStamina (not Stamina); contribution accrues to the membership.
+    public Guid? GuildId { get; private set; }
+
     // Denormalised for O(1) participant count on every hit response â€” incremented on first hit per player.
     public int ParticipantCount { get; private set; }
 
@@ -98,6 +103,13 @@ public class ActiveRaid
     {
         GauntletEventId = eventId;
         UpdatedAt       = DateTimeOffset.UtcNow;
+    }
+
+    // System 21 Slice 3b (additive) — stamps this raid as belonging to a guild. Set once at summon.
+    public void LinkGuild(Guid guildId)
+    {
+        GuildId   = guildId;
+        UpdatedAt = DateTimeOffset.UtcNow;
     }
 }
 

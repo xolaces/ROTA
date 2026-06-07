@@ -43,6 +43,11 @@ public class ActiveRaidConfiguration : IEntityTypeConfiguration<ActiveRaid>
         builder.Property(r => r.GauntletEventId)
             .HasColumnName("gauntlet_event_id");
 
+        // System 21 Slice 3b (additive) — nullable link to a guild. Stamped at the officer-gated
+        // guild-raid summon; null on ordinary/Gauntlet raids.
+        builder.Property(r => r.GuildId)
+            .HasColumnName("guild_id");
+
         builder.Property(r => r.Difficulty)
             .HasColumnName("difficulty")
             .HasDefaultValue(RaidDifficulty.Normal);
@@ -99,5 +104,15 @@ public class ActiveRaidConfiguration : IEntityTypeConfiguration<ActiveRaid>
 
         builder.HasIndex(r => r.GauntletEventId)
             .HasDatabaseName("ix_active_raids_gauntlet_event_id");
+
+        // System 21 Slice 3b (additive) — nullable FK → guilds. Restrict so we keep raid history if a
+        // guild is soft-deleted. Indexed (architecture rule: every FK indexed) + used by the guild-raid list.
+        builder.HasOne<Guild>()
+            .WithMany()
+            .HasForeignKey(r => r.GuildId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(r => r.GuildId)
+            .HasDatabaseName("ix_active_raids_guild_id");
     }
 }

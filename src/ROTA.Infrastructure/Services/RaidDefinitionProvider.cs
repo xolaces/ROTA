@@ -48,6 +48,29 @@ public sealed class RaidDefinitionProvider : IRaidDefinitionProvider
             }
         }
 
+        // System 21 Slice 3b — guild raids (content/guild_raids.json) are registered as plain
+        // RaidDefinitions (Tier="Guild"). The guild combat behaviour (GuildStamina spend, member-only
+        // access, contribution accrual) is gated on ActiveRaid.GuildId — NOT the definition — so the
+        // combat lookup is unchanged. lootTableId "" → benign kill-reward loot pass (gold/XP/gem tier
+        // rewards are still granted); item loot tables for guild raids are a content follow-up.
+        var guildPath = Path.Combine(contentRootPath, "content", "guild_raids.json");
+        if (File.Exists(guildPath))
+        {
+            var guildJson = File.ReadAllText(guildPath);
+            var guildList = JsonSerializer.Deserialize<List<RaidDefinition>>(guildJson, options)
+                ?? throw new InvalidOperationException("guild_raids.json deserialized to null.");
+
+            foreach (var g in guildList)
+            {
+                if (byId.ContainsKey(g.Id))
+                    throw new InvalidOperationException(
+                        $"guild_raids.json: raid id '{g.Id}' collides with an existing raid id; " +
+                        "guild raid ids must be distinct from ordinary and Gauntlet raids.");
+
+                byId[g.Id] = g;
+            }
+        }
+
         _raids = byId;
     }
 

@@ -50,7 +50,9 @@ public class RaidServiceTests
         Mock<IPlayerMagicHonorRepository> PlayerMagicHonors,
         Mock<IStrikeRepository> Strikes,
         Mock<IGauntletScoringService> GauntletScoring,
-        Mock<IGauntletCurrencyRepository> GauntletCurrency);
+        Mock<IGauntletCurrencyRepository> GauntletCurrency,
+        Mock<IGuildMembershipRepository> GuildMemberships,
+        Mock<IGuildEconomyRepository> GuildEconomy);
 
     private static ServiceBundle BuildService(Random? random = null, MagicConfig? magicConfig = null, LegionConfig? legionConfig = null, CombatConfig? combatConfig = null, GauntletConfig? gauntletConfig = null)
     {
@@ -86,6 +88,20 @@ public class RaidServiceTests
         var strikes          = new Mock<IStrikeRepository>();
         var gauntletScoring  = new Mock<IGauntletScoringService>();
         var gauntletCurrency = new Mock<IGauntletCurrencyRepository>();
+        // System 21 Slice 3b — guild-raid deps. Default: not in a guild (guild branches never fire for
+        // ordinary/Gauntlet raids), pool spend Charged. Guild-raid tests override these per-test.
+        var guildMemberships = new Mock<IGuildMembershipRepository>();
+        var guildEconomy     = new Mock<IGuildEconomyRepository>();
+        guildMemberships.Setup(r => r.FindByPlayerAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GuildMembership?)null);
+        guildMemberships.Setup(r => r.FindByGuildAndPlayerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GuildMembership?)null);
+        guildMemberships.Setup(r => r.UpdateAsync(It.IsAny<GuildMembership>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        guildEconomy.Setup(r => r.TrySpendPoolAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GuildPoolSpendOutcome.Charged);
+        guildEconomy.Setup(r => r.GetPoolBalanceAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(0L);
 
         hitCache.Setup(c => c.TryAcquireSlotAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((true, (RaidHitResponse?)null));
@@ -194,14 +210,14 @@ public class RaidServiceTests
             leaderboards.Object, combatCfg,
             trophyRepo.Object, gauntletContent.Object, playerEventMagics.Object,
             playerMagicHonors.Object, strikes.Object, gauntletScoring.Object, gauntletCfg,
-            gauntletCurrency.Object, random);
+            gauntletCurrency.Object, guildMemberships.Object, guildEconomy.Object, random);
 
         return new ServiceBundle(service, raids, participants, players, resources, energy, gems,
             stats, inventory, itemDefs, lootTables, auditLog, definitions, hitCache, equipment,
             raidMagics, magicDefs, magicSvc, playerLegions, legionSlots, unitDefs, legionDefs,
             commanderGear, gearDefs, legionSvc, leaderboards,
             trophyRepo, gauntletContent, playerEventMagics, playerMagicHonors, strikes, gauntletScoring,
-            gauntletCurrency);
+            gauntletCurrency, guildMemberships, guildEconomy);
     }
 
     private static Player MakePlayer(long xp = 0)
@@ -3137,5 +3153,234 @@ public class RaidServiceTests
             Times.Never, "the per-defeat reward only fires on a kill");
         b.GauntletCurrency.Verify(r => r.CreateAsync(It.IsAny<GauntletCurrencyTransaction>(), It.IsAny<CancellationToken>()),
             Times.Never, "the per-defeat reward only fires on a kill");
+    }
+
+    // =======================================================================
+    // System 21 Slice 3b — Guild raids (GuildStamina fork, access gate,
+    // contribution accrual, officer-gated pooled-sigil summon)
+    // =======================================================================
+
+    // A Large guild raid using the raid_ironcolossus definition (StaminaCostPerHit=1 → GuildStamina
+    // cost = hit size). The guild fork is driven by ActiveRaid.GuildId, not the definition's tier.
+    private static ActiveRaid MakeGuildRaid(Guid guildId, long currentHp = 100000, int hoursUntilExpiry = 48)
+    {
+        var raid = ActiveRaid.Create(
+            "raid_ironcolossus", Guid.NewGuid(), 100000,
+            DateTimeOffset.UtcNow.AddHours(hoursUntilExpiry), RaidDifficulty.Normal, RaidSize.Large);
+        raid.LinkGuild(guildId);
+        if (currentHp < 100000) raid.TakeDamage(100000 - currentHp);
+        return raid;
+    }
+
+    private static RaidDefinition GuildBoss(string id = "guild_raid_warlord") => new()
+    {
+        Id                   = id,
+        Name                 = "Gorehowl the Warlord",
+        Tier                 = "Guild",
+        BaseHp               = 500000,
+        PersonalBaseHp       = 0,
+        TimerHours           = 48,
+        StaminaCostPerHit    = 1,
+        LootTableId          = "",
+        BaseGoldReward       = 800,
+        BaseExperienceReward = 500,
+        BaseGemReward        = 3,
+        HasOnHitDrops        = false,
+    };
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(5)]
+    [InlineData(20)]
+    public async Task Hit_GuildRaid_SpendsGuildStamina_NotStamina(int hitSize)
+    {
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var guildId = Guid.NewGuid();
+        var raid = MakeGuildRaid(guildId);
+
+        SetupHitScaffolding(b, player, raid);
+        b.GuildMemberships.Setup(r => r.FindByGuildAndPlayerAsync(guildId, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GuildMembership.Create(guildId, player.Id, GuildRank.Member));
+        b.Energy.Setup(e => e.SpendEnergyAsync(player.Id, ResourceType.GuildStamina, It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, hitSize, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        b.Energy.Verify(e => e.SpendEnergyAsync(player.Id, ResourceType.GuildStamina, hitSize, It.IsAny<CancellationToken>()),
+            Times.Once, "a guild raid spends GuildStamina equal to the hit size");
+        b.Energy.Verify(e => e.SpendEnergyAsync(player.Id, ResourceType.Stamina, It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never, "a guild raid never spends ordinary Stamina");
+    }
+
+    [Fact]
+    public async Task Hit_GuildRaid_NonMember_AccessDenied_NoSpend()
+    {
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var guildId = Guid.NewGuid();
+        var raid = MakeGuildRaid(guildId);
+
+        SetupHitScaffolding(b, player, raid);
+        // Default bundle: FindByGuildAndPlayerAsync → null (the striker is not a member of this guild).
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(RaidHitFailureCode.AccessDenied);
+        b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never, "a non-member is rejected pre-spend");
+    }
+
+    [Fact]
+    public async Task Hit_GuildRaid_InsufficientGuildStamina_NoDamage()
+    {
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var guildId = Guid.NewGuid();
+        var raid = MakeGuildRaid(guildId);
+        var hpBefore = raid.CurrentHp;
+
+        SetupHitScaffolding(b, player, raid);
+        b.GuildMemberships.Setup(r => r.FindByGuildAndPlayerAsync(guildId, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GuildMembership.Create(guildId, player.Id, GuildRank.Member));
+        b.Energy.Setup(e => e.SpendEnergyAsync(player.Id, ResourceType.GuildStamina, It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false); // pool empty for this member
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 5, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(RaidHitFailureCode.InsufficientGuildStamina);
+        raid.CurrentHp.Should().Be(hpBefore, "no damage when the GuildStamina spend fails");
+        b.Participants.Verify(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Hit_GuildRaid_AccruesContributionToMembership()
+    {
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var guildId = Guid.NewGuid();
+        var raid = MakeGuildRaid(guildId);
+        var membership = GuildMembership.Create(guildId, player.Id, GuildRank.Member);
+
+        SetupHitScaffolding(b, player, raid);
+        b.GuildMemberships.Setup(r => r.FindByGuildAndPlayerAsync(guildId, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(membership);
+        b.Energy.Setup(e => e.SpendEnergyAsync(player.Id, ResourceType.GuildStamina, It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 20, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        membership.ContributionTotal.Should().BeGreaterThan(0, "the hit's damage accrues to the member's guild contribution");
+        b.GuildMemberships.Verify(r => r.UpdateAsync(membership, It.IsAny<CancellationToken>()),
+            Times.Once, "the accrual is persisted inside the advisory-lock tx");
+    }
+
+    [Fact]
+    public async Task SummonGuildRaid_Officer_ConsumesPool_CreatesGuildRaid()
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+        var guildId = Guid.NewGuid();
+        var membership = GuildMembership.Create(guildId, player.Id, GuildRank.Officer);
+
+        b.GuildMemberships.Setup(r => r.FindByPlayerAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(membership);
+        b.Definitions.Setup(d => d.GetById("guild_raid_warlord")).Returns(GuildBoss());
+        b.GuildEconomy.Setup(e => e.TrySpendPoolAsync(guildId, 1, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GuildPoolSpendOutcome.Charged);
+        b.GuildEconomy.Setup(e => e.GetPoolBalanceAsync(guildId, It.IsAny<CancellationToken>())).ReturnsAsync(4L);
+        b.Raids.Setup(r => r.CreateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ActiveRaid r, CancellationToken _) => r);
+
+        var result = await b.Service.SummonGuildRaidAsync(player.Id, "guild_raid_warlord", RaidDifficulty.Normal);
+
+        result.Success.Should().BeTrue(result.FailureReason);
+        result.PoolBalanceAfter.Should().Be(4L);
+        b.GuildEconomy.Verify(e => e.TrySpendPoolAsync(guildId, 1, It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Once, "a summon consumes exactly one pooled sigil");
+        b.Raids.Verify(r => r.CreateAsync(
+            It.Is<ActiveRaid>(a => a.GuildId == guildId && a.Size == RaidSize.Large && a.MaxHp == 500000),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SummonGuildRaid_NonOfficer_PermissionDenied_NoPoolSpend()
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+        var guildId = Guid.NewGuid();
+        b.GuildMemberships.Setup(r => r.FindByPlayerAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GuildMembership.Create(guildId, player.Id, GuildRank.Member));
+        b.Definitions.Setup(d => d.GetById("guild_raid_warlord")).Returns(GuildBoss());
+
+        var result = await b.Service.SummonGuildRaidAsync(player.Id, "guild_raid_warlord", RaidDifficulty.Normal);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(GuildRaidFailureCode.PermissionDenied);
+        b.GuildEconomy.Verify(e => e.TrySpendPoolAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        b.Raids.Verify(r => r.CreateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SummonGuildRaid_NotInGuild_Fails()
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+        // Default bundle: FindByPlayerAsync → null.
+        b.Definitions.Setup(d => d.GetById("guild_raid_warlord")).Returns(GuildBoss());
+
+        var result = await b.Service.SummonGuildRaidAsync(player.Id, "guild_raid_warlord", RaidDifficulty.Normal);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(GuildRaidFailureCode.NotInGuild);
+    }
+
+    [Fact]
+    public async Task SummonGuildRaid_InsufficientPool_NoRaidCreated()
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+        var guildId = Guid.NewGuid();
+        b.GuildMemberships.Setup(r => r.FindByPlayerAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GuildMembership.Create(guildId, player.Id, GuildRank.Leader));
+        b.Definitions.Setup(d => d.GetById("guild_raid_warlord")).Returns(GuildBoss());
+        b.GuildEconomy.Setup(e => e.TrySpendPoolAsync(guildId, 1, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GuildPoolSpendOutcome.Insufficient);
+
+        var result = await b.Service.SummonGuildRaidAsync(player.Id, "guild_raid_warlord", RaidDifficulty.Normal);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(GuildRaidFailureCode.InsufficientPool);
+        b.Raids.Verify(r => r.CreateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()),
+            Times.Never, "no raid is created when the pool is empty");
+    }
+
+    [Fact]
+    public async Task SummonGuildRaid_NonGuildDefinition_NotFound()
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+        var guildId = Guid.NewGuid();
+        b.GuildMemberships.Setup(r => r.FindByPlayerAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GuildMembership.Create(guildId, player.Id, GuildRank.Officer));
+        // An ordinary (non-Guild-tier) definition must be rejected for guild summon.
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.SummonGuildRaidAsync(player.Id, "raid_ironcolossus", RaidDifficulty.Normal);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(GuildRaidFailureCode.DefinitionNotFound);
+        b.GuildEconomy.Verify(e => e.TrySpendPoolAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }
