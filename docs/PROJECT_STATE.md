@@ -133,6 +133,29 @@ tables. Loop works; thin.
   proving the per-grant referenceId guard alone blocks re-credit). Build 0 errors; **634 unit + 67 integration green**.
   DEFERRED: next-event consumable hand-off (bundled with the ladder-summon follow-up).
 
+- **Slice 6 (token shop)** (branch `feat/system16-gauntlet-s6-shop`): power-focused Token/Pitchfork shop —
+  the LAST Gauntlet slice. `content/gauntlet_shop.json` (6 entries, real def ids) + `GauntletShopEntry`
+  model `{Id, RewardKind, PayloadId, Amount?, Currency, Price, MaxOwned?}`; `GauntletShopRewardKind
+  {Unit, Legion, Gear, GemBundle, StrikeRefill}`. `IGauntletShopProvider`/`GauntletShopProvider`
+  (Infrastructure singleton, eagerly constructed; ctor takes unit/legion/gear def providers) throws at
+  boot on dup id / price≤0 / bad currency / unresolved Unit/Legion/Gear payloadId / own-once not maxOwned:1
+  / bundle|refill amount≤0. `GauntletService.GetShopAsync` (catalogue + Token+Pitchfork balances +
+  per-entry AlreadyOwned) + `BuyFromShopAsync` mirrors LegionService.BuyUnitAsync: ownership pre-check →
+  AlreadyOwned (no charge) → tri-state `IGauntletCurrencyRepository.SpendAsync(entry.Currency, …)` (refId
+  `gauntletshop:{playerId}:{entryId}`; Insufficient → InsufficientTokens, no write; Charged|AlreadyCharged
+  → grant) → idempotent grant per rewardKind (Unit/Legion Grant*; Gear GrantGearAsync(.,1) gated by the
+  pre-check; GemBundle GrantGemsAsync via gem-ledger unique index; StrikeRefill CreateAsync guarded by
+  ReferenceExistsAsync). **Token vs Pitchfork isolation:** spend uses entry.Currency, so a Pitchfork-priced
+  item with only Tokens → InsufficientTokens (Token balance untouched). Additive enums
+  `GemTransactionType.GauntletShopReward=12` + `StrikeTransactionType.ShopRefill=4` (code-only, stored as
+  int — NO migration/sentinel). GauntletController [Authorize]: GET /api/gauntlet/shop, POST
+  /api/gauntlet/shop/{entryId}/buy (Success/AlreadyCharged→200, AlreadyOwned→409, InsufficientTokens→422,
+  unknown→404). DTOs GauntletShopEntryResponse/GauntletShopResponse/BuyShopResult. New GauntletService ctor
+  deps: IGauntletShopProvider, ILegionService, IEquipmentService. (Pre-existing BuyUnitIdempotencyTests
+  given an EmptyShopProvider override so its single-unit IUnitDefinitionProvider stub doesn't fail shop
+  boot validation.) +18 unit + 2 integration (buy-twice-charges-once + currency isolation vs real Postgres
+  ledgers). Build 0 errors; **652 unit + 69 integration green**. No new migration.
+
 ## Not implemented (High)
 Game client (C# SDK = v0.3.0) · discernment quest-drop-quality (later) ·
 moderation (back-burnered) · world chat · guild · gauntlet · gacha/pity ·

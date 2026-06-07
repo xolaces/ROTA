@@ -59,6 +59,7 @@ or procChance ∉ (0,1] / procAmount ≤ 0 / offCap ≠ true; naming guard vs `m
 - `PlayerGauntletTrophy` { PlayerId, GauntletTrophyId } unique `(player_id, gauntlet_trophy_id)`; `PlayerEventMagic` { PlayerId, GauntletEventId, MagicDefinitionId } + `Revoke()`, unique triple; `PlayerMagicHonor` { PlayerId, MagicDefinitionId } unique pair.
 - `ActiveRaid.GauntletEventId` (Guid?, additive) + `LinkGauntletEvent(eventId)`; nullable FK + index on `active_raids` (stamped at summon in Slice 4).
 - `GemTransactionType.GauntletStrikePurchase = 11`; `GauntletConfig.StrikeGemPrice` (default 1, tunable). Result enums `StrikeSpendOutcome`/`GauntletCurrencySpendOutcome` { Charged, Insufficient, AlreadyCharged }.
+- (Slice 6) `GauntletShopRewardKind { Unit, Legion, Gear, GemBundle, StrikeRefill }`; additive enum values `GemTransactionType.GauntletShopReward = 12` (GemBundle grant credit) + `StrikeTransactionType.ShopRefill = 4` (StrikeRefill credit) — code-only (stored as int, no migration/sentinel needed).
 - **Migration `AddGauntletSystem`** — ONE consolidated migration (not the spec's 8). `dotnet ef database update` NOT run — coordinate with owner.
 
 ### Repositories (scoped)
@@ -69,7 +70,7 @@ or procChance ∉ (0,1] / procAmount ≤ 0 / offCap ≠ true; naming guard vs `m
 - `IPlayerGauntletTrophyRepository`: `GetForPlayerAsync`, `UpsertAsync`. `IPlayerEventMagicRepository`: `FindAsync`, `GrantAsync`, `RevokeAllForEventAsync`. `IPlayerMagicHonorRepository`: `HasHonorAsync`, `GrantAsync`.
 
 ### Services
-- `IGauntletService`: `GetCurrentEventAsync`, `JoinEventAsync(playerId)` (league locked via `ResolveLeague`; rejects no-event/L<MinEntry/banned/deleted; idempotent), `GetMyEntryAsync(playerId, eventId)`, `BuyStrikesAsync(playerId, strikes, idempotencyKey)` (gem spend → strike credit; referenceId `strikebuy:{playerId}:{key}`; lost-purchase recovery).
+- `IGauntletService`: `GetCurrentEventAsync`, `JoinEventAsync(playerId)` (league locked via `ResolveLeague`; rejects no-event/L<MinEntry/banned/deleted; idempotent), `GetMyEntryAsync(playerId, eventId)`, `BuyStrikesAsync(playerId, strikes, idempotencyKey)` (gem spend → strike credit; referenceId `strikebuy:{playerId}:{key}`; lost-purchase recovery), `GetShopAsync(playerId)` (Slice 6: catalogue + Token/Pitchfork balances + per-entry AlreadyOwned), `BuyFromShopAsync(playerId, shopEntryId)` (Slice 6: ownership pre-check → tri-state currency spend → idempotent grant; refId `gauntletshop:{playerId}:{shopEntryId}`).
 - `IGauntletAdminService`: `OpenEventAsync` (≤1 active), `CloseEventAsync` (must be Active), `SettleEventAsync` (state-only + idempotent; payout is Slice 5).
 - `IGauntletScoringService` (Slice 3): `UpdateScoreAsync(playerId, eventId, deltaScore, hitAt)` (atomic score += delta; tie_break_at advances only on positive delta; wired by S4), `RecomputeRanksAsync(eventId)` (per-league `ROW_NUMBER` snapshot into last_rank; idempotent), `GetLeaderboardAsync(eventId, league, callerId)` → `GauntletLeaderboardResponse` (top `LeaderboardPageSize` by snapshot rank + caller's league-scoped rank/score + total ranked).
 
@@ -77,12 +78,12 @@ or procChance ∉ (0,1] / procAmount ≤ 0 / offCap ≠ true; naming guard vs `m
 - `GauntletRankSnapshotService` (hosted, singleton; DI scope per tick): every `GauntletConfig.ScoreSnapshotSeconds` resolves the active event and calls `RecomputeRanksAsync`; no-op when none active; try/catch never crashes the host.
 
 ### Endpoints
-- `GauntletController` [Authorize]: `GET /api/gauntlet` (overview: event + entry + strike/token/pitchfork balances), `GET /api/gauntlet/leaderboard?league=` (Slice 3: snapshot-ranked board + `YourRank`/`YourScore`; 400 invalid/missing league; empty board when no active event), `POST /api/gauntlet/join`, `POST /api/gauntlet/strikes/buy`.
+- `GauntletController` [Authorize]: `GET /api/gauntlet` (overview: event + entry + strike/token/pitchfork balances), `GET /api/gauntlet/leaderboard?league=` (Slice 3: snapshot-ranked board + `YourRank`/`YourScore`; 400 invalid/missing league; empty board when no active event), `POST /api/gauntlet/join`, `POST /api/gauntlet/strikes/buy`, `GET /api/gauntlet/shop` (Slice 6: catalogue + balances), `POST /api/gauntlet/shop/{entryId}/buy` (Slice 6: Success/AlreadyCharged → 200, AlreadyOwned → 409, InsufficientTokens → 422, unknown entry → 404).
 - `GauntletAdminController` [AdminOnly + DB actor re-verify]: `POST /api/admin/gauntlet/events` (open; 409 on ≤1-active), `POST .../events/{id}/close`, `POST .../events/{id}/settle`.
 - CLI (`AdminCli`): `gauntlet-open`, `gauntlet-close`, `gauntlet-settle`.
 
 ### DTOs (`src/ROTA.Shared/DTOs/GauntletDTOs.cs`)
-GauntletEventResponse, GauntletEntryResponse, GauntletOverviewResponse, StrikeBalanceResponse, GauntletCurrencyBalanceResponse, BuyStrikesRequest, OpenGauntletEventRequest, JoinGauntletResult, BuyStrikesResult, GauntletEventActionResult, GauntletLeaderboardResponse (Slice 3: League/Entries/YourRank/YourScore/TotalRanked), GauntletLeaderboardEntryDto (Rank/PlayerId/DisplayName/Score). Validators: BuyStrikesRequestValidator, OpenGauntletEventRequestValidator.
+GauntletEventResponse, GauntletEntryResponse, GauntletOverviewResponse, StrikeBalanceResponse, GauntletCurrencyBalanceResponse, BuyStrikesRequest, OpenGauntletEventRequest, JoinGauntletResult, BuyStrikesResult, GauntletEventActionResult, GauntletLeaderboardResponse (Slice 3: League/Entries/YourRank/YourScore/TotalRanked), GauntletLeaderboardEntryDto (Rank/PlayerId/DisplayName/Score), GauntletShopEntryResponse + GauntletShopResponse + BuyShopResult (Slice 6). Validators: BuyStrikesRequestValidator, OpenGauntletEventRequestValidator.
 
 **Slice 2 scope:** persistence + lifecycle + join + strike economy. No combat changes (scoring + strike spend wired in Slice 4). +38 unit, +10 integration tests.
 
@@ -123,6 +124,40 @@ Token (`…:token`), each ReferenceExists-guarded (idempotent on a re-processed 
 **DEFERRED (follow-up):** spec step 2e — the next-event Wrath/Blessing **consumable** (`PlayerEventMagic`)
 hand-off (contradicts auto-settle-on-close; bundled with the ladder-summon follow-up). Settle writes only
 honor + tokens + pitchfork + trophies. +19 unit, +5 integration tests (incl. settle-twice-pays-once vs real ledger balances).
+
+## System 16 — Gauntlet (Slice 6 — token shop, economy idempotency)
+
+**Content** — `content/gauntlet_shop.json` + `GauntletShopEntry` model `{ Id, RewardKind, PayloadId,
+Amount, Currency (Token|Pitchfork), Price, MaxOwned? }` (own-once kinds set `MaxOwned = 1`;
+GemBundle/StrikeRefill are repeatable, `MaxOwned = null`). Starter catalogue (6 entries, real def ids):
+`shop_unit_morvath` (Unit gen_morvath, Token 120), `shop_legion_ironlegion` (Legion legion_ironlegion,
+Token 200), `shop_gear_pano_cuirass` (Gear gear_pano_cuirass, Token 80), `shop_gear_pano_steed` (Gear
+gear_pano_steed, **Pitchfork** 15), `shop_gembundle_small` (GemBundle 250 gems, Token 50),
+`shop_strikerefill_medium` (StrikeRefill 50 strikes, Token 25).
+
+**Provider** — `IGauntletShopProvider` / `GauntletShopProvider` (Infrastructure singleton, eagerly
+constructed in `Program.cs`). Ctor takes the unit/legion/gear def providers for payloadId referential
+validation. Startup throws on: empty catalogue; empty/duplicate id; invalid currency/rewardKind; `price ≤ 0`;
+Unit/Legion/Gear payloadId that does not resolve in the matching def provider OR is empty OR is not
+`maxOwned:1`; GemBundle/StrikeRefill `amount ≤ 0`.
+
+**Purchase flow** — `GauntletService.BuyFromShopAsync(playerId, shopEntryId)` mirrors
+`LegionService.BuyUnitAsync`: (1) unknown id → NotFound-style fail; (2) own-once kinds — ownership
+pre-check (via `ILegionService.GetOwnedUnitsAsync`/`GetOwnedLegionsAsync` /
+`IEquipmentService.GetOwnedGearAsync`) → `AlreadyOwned` WITHOUT charge/grant; (3)
+`IGauntletCurrencyRepository.SpendAsync(playerId, entry.Currency, entry.Price, refId)` (refId
+`gauntletshop:{playerId}:{shopEntryId}`) — `Insufficient` → `InsufficientTokens` (no write),
+`Charged|AlreadyCharged` → grant; (4) grant dispatched on rewardKind, each idempotent so AlreadyCharged
+re-grants without re-charging: Unit/Legion → `Grant*Async` (own-once upsert), Gear → `GrantGearAsync(..,1)`
+(gated by the step-2 pre-check), GemBundle → `GrantGemsAsync(.., GauntletShopReward, refId)` (gem-ledger
+unique index), StrikeRefill → `StrikeTransaction.Create(.., ShopRefill, refId)` guarded by
+`ReferenceExistsAsync`. Audited (`GauntletShopBuy`). **Token vs Pitchfork isolation:** the spend passes
+`entry.Currency`, so a Pitchfork-priced entry attempted with only a Token balance → `Insufficient` in
+Pitchfork → `InsufficientTokens` (the Token balance is never touched).
+
+**New `GauntletService` ctor deps:** `IGauntletShopProvider`, `ILegionService`, `IEquipmentService`.
++11 unit (GauntletService shop) + 7 unit (GauntletShopProvider validation) + 2 integration
+(`GauntletShopIdempotencyTests`: buy-twice-charges-once + currency isolation vs real Postgres ledgers).
 
 ## System 17 — Global Leaderboards (Slice 1)
 

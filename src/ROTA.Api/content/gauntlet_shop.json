@@ -1,0 +1,50 @@
+[
+  {
+    "id": "shop_unit_morvath",
+    "rewardKind": "Unit",
+    "payloadId": "gen_morvath",
+    "currency": "Token",
+    "price": 120,
+    "maxOwned": 1
+  },
+  {
+    "id": "shop_legion_ironlegion",
+    "rewardKind": "Legion",
+    "payloadId": "legion_ironlegion",
+    "currency": "Token",
+    "price": 200,
+    "maxOwned": 1
+  },
+  {
+    "id": "shop_gear_pano_cuirass",
+    "rewardKind": "Gear",
+    "payloadId": "gear_pano_cuirass",
+    "currency": "Token",
+    "price": 80,
+    "maxOwned": 1
+  },
+  {
+    "id": "shop_gear_pano_steed",
+    "rewardKind": "Gear",
+    "payloadId": "gear_pano_steed",
+    "currency": "Pitchfork",
+    "price": 15,
+    "maxOwned": 1
+  },
+  {
+    "id": "shop_gembundle_small",
+    "rewardKind": "GemBundle",
+    "payloadId": "",
+    "amount": 250,
+    "currency": "Token",
+    "price": 50
+  },
+  {
+    "id": "shop_strikerefill_medium",
+    "rewardKind": "StrikeRefill",
+    "payloadId": "",
+    "amount": 50,
+    "currency": "Token",
+    "price": 25
+  }
+]

@@ -191,3 +191,83 @@ public class GauntletLeaderboardEntryDto
     public string DisplayName { get; init; } = string.Empty;
     public long Score { get; init; }
 }
+
+// ──────────────────────────────────────────────────────────────────────────────
+// System 16 Slice 6 — token-shop DTOs (catalogue + purchase result).
+// ──────────────────────────────────────────────────────────────────────────────
+
+/// <summary>One catalogue entry, hydrated with a caller-specific <see cref="AlreadyOwned"/> flag.</summary>
+public class GauntletShopEntryResponse
+{
+    public string Id { get; init; } = string.Empty;
+
+    /// <summary>Reward kind name (Unit/Legion/Gear/GemBundle/StrikeRefill).</summary>
+    public string RewardKind { get; init; } = string.Empty;
+
+    /// <summary>Definition id for Unit/Legion/Gear; empty for GemBundle/StrikeRefill.</summary>
+    public string PayloadId { get; init; } = string.Empty;
+
+    /// <summary>Gems (GemBundle) or Strikes (StrikeRefill) granted; 0 for own-once kinds.</summary>
+    public int Amount { get; init; }
+
+    /// <summary>Currency name (Token/Pitchfork) that funds the purchase.</summary>
+    public string Currency { get; init; } = string.Empty;
+
+    /// <summary>Price in <see cref="Currency"/>.</summary>
+    public int Price { get; init; }
+
+    /// <summary>Ownership cap; 1 for own-once kinds, null for repeatable bundles/refills.</summary>
+    public int? MaxOwned { get; init; }
+
+    /// <summary>
+    /// True when the caller already owns this own-once payload (so a buy would return AlreadyOwned).
+    /// Always false for repeatable kinds (GemBundle/StrikeRefill).
+    /// </summary>
+    public bool AlreadyOwned { get; init; }
+}
+
+/// <summary>GET /api/gauntlet/shop — the catalogue plus the caller's live Token + Pitchfork balances.</summary>
+public class GauntletShopResponse
+{
+    public List<GauntletShopEntryResponse> Entries { get; init; } = new();
+    public long TokenBalance { get; init; }
+    public long PitchforkBalance { get; init; }
+}
+
+/// <summary>
+/// Result of <c>BuyFromShopAsync</c>. The tri-state spend underneath is the explicit safeguard
+/// against the magic/gem money-bug: <see cref="InsufficientTokens"/> (no charge, no grant) and
+/// <see cref="AlreadyCharged"/> (idempotent re-grant, no re-charge) are never conflated.
+/// </summary>
+public class BuyShopResult
+{
+    /// <summary>True on a first-time purchase OR an idempotent replay (AlreadyCharged re-grant).</summary>
+    public bool Success { get; init; }
+
+    /// <summary>Own-once payload was already owned → no charge, no grant.</summary>
+    public bool AlreadyOwned { get; init; }
+
+    /// <summary>Balance in the entry's currency was insufficient → no charge, no grant.</summary>
+    public bool InsufficientTokens { get; init; }
+
+    /// <summary>
+    /// The spend row already existed (lost-purchase replay): the original charge committed, so the
+    /// payload was re-granted idempotently without re-charging. Reported alongside Success = true.
+    /// </summary>
+    public bool AlreadyCharged { get; init; }
+
+    /// <summary>Human-readable reason on the unknown-entry (NotFound-style) failure path.</summary>
+    public string? FailureReason { get; init; }
+
+    public static BuyShopResult Ok(bool alreadyCharged = false)
+        => new() { Success = true, AlreadyCharged = alreadyCharged };
+
+    public static BuyShopResult OwnedAlready()
+        => new() { Success = false, AlreadyOwned = true };
+
+    public static BuyShopResult Insufficient()
+        => new() { Success = false, InsufficientTokens = true };
+
+    public static BuyShopResult Fail(string reason)
+        => new() { Success = false, FailureReason = reason };
+}

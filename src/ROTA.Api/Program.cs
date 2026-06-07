@@ -229,6 +229,11 @@ var app = builder.Build();
 // guard) throws at boot rather than on first use.
 app.Services.GetRequiredService<IGauntletContentProvider>();
 
+// System 16 Slice 6 — eagerly construct the token-shop provider so its catalogue validation
+// (payloadId referential integrity, price > 0, currency valid, no duplicate ids, bundle/refill
+// amount > 0) throws at boot rather than on first purchase.
+app.Services.GetRequiredService<IGauntletShopProvider>();
+
 // Dev-only auto-migrate: keeps a fresh local DB in sync without a manual
 // `dotnet ef database update`. Idempotent — safe to run even when the schema
 // is already current. Production deployments must run migrations explicitly

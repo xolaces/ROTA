@@ -14,4 +14,7 @@ public enum GemTransactionType
     PinnacleReward  = 10,
     // System 16 Slice 2 — gems spent to buy Gauntlet Strikes (uncapped action currency).
     GauntletStrikePurchase = 11,
+    // System 16 Slice 6 — gems GRANTED from a Gauntlet token-shop GemBundle purchase
+    // (a +credit on the gem ledger, idempotent via the shop referenceId).
+    GauntletShopReward = 12,
 }

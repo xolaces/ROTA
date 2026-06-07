@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using ROTA.Application.Configuration;
 using ROTA.Application.Interfaces;
+using ROTA.Application.Models;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
 using ROTA.Shared.DTOs;
@@ -20,6 +21,10 @@ public sealed class GauntletService : IGauntletService
     private readonly IGemService _gems;
     private readonly IAuditLogRepository _auditLog;
     private readonly GauntletConfig _config;
+    // Slice 6 — token shop
+    private readonly IGauntletShopProvider _shop;
+    private readonly ILegionService _legions;
+    private readonly IEquipmentService _equipment;
 
     public GauntletService(
         IGauntletEventRepository events,
@@ -30,17 +35,23 @@ public sealed class GauntletService : IGauntletService
         IPlayerRepository players,
         IGemService gems,
         IAuditLogRepository auditLog,
-        IOptions<GauntletConfig> config)
+        IOptions<GauntletConfig> config,
+        IGauntletShopProvider shop,
+        ILegionService legions,
+        IEquipmentService equipment)
     {
-        _events   = events;
-        _entries  = entries;
-        _strikes  = strikes;
-        _currency = currency;
-        _content  = content;
-        _players  = players;
-        _gems     = gems;
-        _auditLog = auditLog;
-        _config   = config.Value;
+        _events    = events;
+        _entries   = entries;
+        _strikes   = strikes;
+        _currency  = currency;
+        _content   = content;
+        _players   = players;
+        _gems      = gems;
+        _auditLog  = auditLog;
+        _config    = config.Value;
+        _shop      = shop;
+        _legions   = legions;
+        _equipment = equipment;
     }
 
     public async Task<GauntletEventResponse?> GetCurrentEventAsync(CancellationToken ct = default)
@@ -129,6 +140,147 @@ public sealed class GauntletService : IGauntletService
         return BuyStrikesResult.Ok(cost, balance);
     }
 
+    // ── Slice 6 — token shop ────────────────────────────────────────────────
+
+    public async Task<GauntletShopResponse> GetShopAsync(Guid playerId, CancellationToken ct = default)
+    {
+        var entries = _shop.GetAll();
+
+        // Own-once ownership is read once per kind so the catalogue can flag AlreadyOwned without a
+        // per-entry round trip. Repeatable kinds (GemBundle/StrikeRefill) are never "owned".
+        var hydrated = new List<GauntletShopEntryResponse>(entries.Count);
+        if (entries.Count > 0)
+        {
+            var ownedUnits   = (await _legions.GetOwnedUnitsAsync(playerId, ct)).Select(u => u.UnitDefinitionId).ToHashSet(StringComparer.Ordinal);
+            var ownedLegions = (await _legions.GetOwnedLegionsAsync(playerId, ct)).Select(l => l.LegionDefinitionId).ToHashSet(StringComparer.Ordinal);
+            var ownedGear    = (await _equipment.GetOwnedGearAsync(playerId, ct)).Select(g => g.GearDefinitionId).ToHashSet(StringComparer.Ordinal);
+
+            foreach (var e in entries)
+            {
+                hydrated.Add(MapShopEntry(e, IsOwned(e, ownedUnits, ownedLegions, ownedGear)));
+            }
+        }
+
+        var tokenBalance     = await _currency.GetBalanceAsync(playerId, GauntletCurrency.Token, ct);
+        var pitchforkBalance = await _currency.GetBalanceAsync(playerId, GauntletCurrency.Pitchfork, ct);
+
+        return new GauntletShopResponse
+        {
+            Entries          = hydrated,
+            TokenBalance     = tokenBalance,
+            PitchforkBalance = pitchforkBalance,
+        };
+    }
+
+    public async Task<BuyShopResult> BuyFromShopAsync(
+        Guid playerId, string shopEntryId, CancellationToken ct = default)
+    {
+        // 1. Unknown id → NotFound-style failure (no charge, no grant).
+        var entry = _shop.GetById(shopEntryId);
+        if (entry is null)
+            return BuyShopResult.Fail($"Shop entry '{shopEntryId}' not found.");
+
+        // 2. Own-once kinds (Unit/Legion/Gear, maxOwned:1): ownership pre-check FIRST — if already
+        //    owned, return AlreadyOwned WITHOUT charging or granting (mirrors BuyUnit/BuyMagic).
+        if (entry.IsOwnOnce && await IsPayloadOwnedAsync(playerId, entry, ct))
+            return BuyShopResult.OwnedAlready();
+
+        // 3. Spend from the entry's currency with the tri-state result. The SAME referenceId threads
+        //    the spend and the (idempotent) grant, so a retry recovers a lost purchase without
+        //    double-charging. Token vs Pitchfork is isolated by passing entry.Currency: a
+        //    Pitchfork-priced entry debits the Pitchfork balance, so a caller with only Tokens gets
+        //    Insufficient (wrong-currency = insufficient in THAT currency).
+        //
+        // PHASE-2: wrap SpendAsync + the grant in one DB transaction (see LegionService.BuyUnitAsync).
+        // The AlreadyCharged recovery path already makes a mid-air crash recoverable; atomicity is a
+        // hardening step, not a correctness fix.
+        var referenceId = $"gauntletshop:{playerId}:{entry.Id}";
+        var outcome = await _currency.SpendAsync(playerId, entry.Currency, entry.Price, referenceId, ct);
+
+        if (outcome == GauntletCurrencySpendOutcome.Insufficient)
+            return BuyShopResult.Insufficient();
+
+        // outcome is Charged OR AlreadyCharged → grant idempotently. AlreadyCharged means the spend
+        // row already existed (lost-purchase replay): re-grant, never re-charge.
+        bool alreadyCharged = outcome == GauntletCurrencySpendOutcome.AlreadyCharged;
+
+        await GrantPayloadAsync(playerId, entry, referenceId, ct);
+
+        await _auditLog.AppendAsync(AuditLog.Create(
+            playerId, "GauntletShopBuy", null,
+            $"Bought shop entry {entry.Id} ({entry.RewardKind}, payload={entry.PayloadId}, " +
+            $"amount={entry.Amount}) for {entry.Price} {entry.Currency} " +
+            $"(ref={referenceId}, spend={outcome}).", null), ct);
+
+        return BuyShopResult.Ok(alreadyCharged);
+    }
+
+    // Dispatches the grant on rewardKind. Every branch is idempotent so the AlreadyCharged (lost-
+    // purchase) path can re-run safely without double-granting:
+    //   Unit/Legion → ILegionService.Grant* (idempotent own-once upsert).
+    //   Gear        → guarded by the step-2 ownership pre-check (only reached when NOT owned), so
+    //                 GrantGearAsync(..,1) grants exactly once across the happy + replay paths.
+    //   GemBundle   → IGemService.GrantGemsAsync — idempotent via the gem ledger's unique index on
+    //                 the referenceId.
+    //   StrikeRefill→ IStrikeRepository.CreateAsync guarded by ReferenceExistsAsync.
+    private async Task GrantPayloadAsync(
+        Guid playerId, GauntletShopEntry entry, string referenceId, CancellationToken ct)
+    {
+        switch (entry.RewardKind)
+        {
+            case GauntletShopRewardKind.Unit:
+                await _legions.GrantUnitAsync(playerId, entry.PayloadId, ct);
+                break;
+
+            case GauntletShopRewardKind.Legion:
+                await _legions.GrantLegionAsync(playerId, entry.PayloadId, ct);
+                break;
+
+            case GauntletShopRewardKind.Gear:
+                await _equipment.GrantGearAsync(playerId, entry.PayloadId, 1, ct);
+                break;
+
+            case GauntletShopRewardKind.GemBundle:
+                await _gems.GrantGemsAsync(
+                    playerId, entry.Amount, GemTransactionType.GauntletShopReward, referenceId, ct);
+                break;
+
+            case GauntletShopRewardKind.StrikeRefill:
+                if (!await _strikes.ReferenceExistsAsync(
+                        playerId, StrikeTransactionType.ShopRefill, referenceId, ct))
+                {
+                    await _strikes.CreateAsync(StrikeTransaction.Create(
+                        playerId, entry.Amount, StrikeTransactionType.ShopRefill, referenceId), ct);
+                }
+                break;
+        }
+    }
+
+    // Ownership pre-check for an own-once entry (single round trip on the matching collection).
+    private async Task<bool> IsPayloadOwnedAsync(
+        Guid playerId, GauntletShopEntry entry, CancellationToken ct)
+        => entry.RewardKind switch
+        {
+            GauntletShopRewardKind.Unit =>
+                (await _legions.GetOwnedUnitsAsync(playerId, ct)).Any(u => u.UnitDefinitionId == entry.PayloadId),
+            GauntletShopRewardKind.Legion =>
+                (await _legions.GetOwnedLegionsAsync(playerId, ct)).Any(l => l.LegionDefinitionId == entry.PayloadId),
+            GauntletShopRewardKind.Gear =>
+                (await _equipment.GetOwnedGearAsync(playerId, ct)).Any(g => g.GearDefinitionId == entry.PayloadId),
+            _ => false,
+        };
+
+    private static bool IsOwned(
+        GauntletShopEntry e,
+        HashSet<string> ownedUnits, HashSet<string> ownedLegions, HashSet<string> ownedGear)
+        => e.IsOwnOnce && e.RewardKind switch
+        {
+            GauntletShopRewardKind.Unit   => ownedUnits.Contains(e.PayloadId),
+            GauntletShopRewardKind.Legion => ownedLegions.Contains(e.PayloadId),
+            GauntletShopRewardKind.Gear   => ownedGear.Contains(e.PayloadId),
+            _ => false,
+        };
+
     // ── Mapping ──────────────────────────────────────────────────────────────
 
     internal static GauntletEventResponse MapEvent(GauntletEvent e)
@@ -152,5 +304,18 @@ public sealed class GauntletService : IGauntletService
             Score           = e.Score,
             TieBreakAt      = e.TieBreakAt,
             LastRank        = e.LastRank,
+        };
+
+    internal static GauntletShopEntryResponse MapShopEntry(GauntletShopEntry e, bool alreadyOwned)
+        => new()
+        {
+            Id           = e.Id,
+            RewardKind   = e.RewardKind.ToString(),
+            PayloadId    = e.PayloadId,
+            Amount       = e.Amount,
+            Currency     = e.Currency.ToString(),
+            Price        = e.Price,
+            MaxOwned     = e.MaxOwned,
+            AlreadyOwned = alreadyOwned,
         };
 }

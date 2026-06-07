@@ -127,6 +127,37 @@ public sealed class GauntletController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>The token-shop catalogue + the caller's live Token and Pitchfork balances.</summary>
+    [HttpGet("shop")]
+    [ProducesResponseType(typeof(GauntletShopResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetShop(CancellationToken ct)
+        => Ok(await _gauntlet.GetShopAsync(PlayerId(), ct));
+
+    /// <summary>
+    /// Buys a token-shop entry (idempotent; Token vs Pitchfork isolated). Success/AlreadyCharged →
+    /// 200; AlreadyOwned → 409; InsufficientTokens → 422; unknown entry → 404.
+    /// </summary>
+    [HttpPost("shop/{entryId}/buy")]
+    [ProducesResponseType(typeof(BuyShopResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> BuyFromShop(string entryId, CancellationToken ct)
+    {
+        var result = await _gauntlet.BuyFromShopAsync(PlayerId(), entryId, ct);
+
+        // Success covers both a first-time purchase and an idempotent AlreadyCharged re-grant.
+        if (result.Success)
+            return Ok(result);
+        if (result.AlreadyOwned)
+            return Conflict(result);
+        if (result.InsufficientTokens)
+            return UnprocessableEntity(result);
+
+        // Remaining failure = unknown entry id (NotFound-style).
+        return NotFound(new { message = result.FailureReason });
+    }
+
     // ── Helpers ────────────────────────────────────────────────────────────────
 
     private IActionResult Invalid(FluentValidation.Results.ValidationResult v)

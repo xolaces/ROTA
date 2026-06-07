@@ -28,4 +28,20 @@ public interface IGauntletService
     /// </summary>
     Task<BuyStrikesResult> BuyStrikesAsync(
         Guid playerId, int strikes, string idempotencyKey, CancellationToken ct = default);
+
+    /// <summary>
+    /// The token-shop catalogue (each entry hydrated with a caller-specific AlreadyOwned flag for
+    /// own-once kinds) plus the caller's live Token and Pitchfork balances.
+    /// </summary>
+    Task<GauntletShopResponse> GetShopAsync(Guid playerId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Buys a token-shop entry, mirroring the BuyUnit/BuyMagic discipline. Own-once kinds are
+    /// ownership-pre-checked (AlreadyOwned without charging); the spend is idempotent on
+    /// referenceId <c>gauntletshop:{playerId}:{shopEntryId}</c> from the entry's currency, and the
+    /// grant is idempotent so an AlreadyCharged replay re-grants without re-charging. An unknown
+    /// entry id fails NotFound-style. Token vs Pitchfork are never conflated — a Pitchfork-priced
+    /// entry attempted with only a Token balance returns InsufficientTokens.
+    /// </summary>
+    Task<BuyShopResult> BuyFromShopAsync(Guid playerId, string shopEntryId, CancellationToken ct = default);
 }

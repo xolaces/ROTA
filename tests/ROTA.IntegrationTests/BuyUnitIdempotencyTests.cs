@@ -94,6 +94,13 @@ public class BuyUnitIdempotencyTests : IAsyncLifetime
                             LegionBonus = 0,
                             GemPrice    = TestGemPrice,
                         }));
+
+                    // System 16 Slice 6: the Gauntlet shop provider is eagerly constructed at boot
+                    // and validates its catalogue's Unit payloadIds against IUnitDefinitionProvider.
+                    // Because this test swaps that provider for a single-unit stub, the shipped
+                    // catalogue (which references real units) would fail boot validation. This test
+                    // does not exercise the shop, so stub it with an empty catalogue.
+                    services.AddSingleton<IGauntletShopProvider>(new EmptyShopProvider());
                 });
             });
 
@@ -249,5 +256,13 @@ public class BuyUnitIdempotencyTests : IAsyncLifetime
 
         public IReadOnlyList<UnitDefinition> GetAll()
             => new[] { _unit };
+    }
+
+    // Empty shop catalogue — this test does not exercise the Gauntlet token shop, and an empty
+    // catalogue trivially passes the boot-time payloadId validation against the stubbed unit provider.
+    private sealed class EmptyShopProvider : IGauntletShopProvider
+    {
+        public IReadOnlyList<GauntletShopEntry> GetAll() => Array.Empty<GauntletShopEntry>();
+        public GauntletShopEntry? GetById(string id) => null;
     }
 }

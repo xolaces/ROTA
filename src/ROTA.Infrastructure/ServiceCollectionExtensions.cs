@@ -88,6 +88,14 @@ public static class ServiceCollectionExtensions
                 contentRootPath,
                 sp.GetRequiredService<IMagicDefinitionProvider>(),
                 sp.GetRequiredService<IOptions<GauntletConfig>>()));
+        // System 16 Slice 6 — token-shop catalogue. Depends on the unit/legion/gear def providers
+        // for payloadId referential validation; throws at startup on a bad catalogue.
+        services.AddSingleton<IGauntletShopProvider>(sp =>
+            new GauntletShopProvider(
+                contentRootPath,
+                sp.GetRequiredService<IUnitDefinitionProvider>(),
+                sp.GetRequiredService<ILegionDefinitionProvider>(),
+                sp.GetRequiredService<IGearDefinitionProvider>()));
 
         // Leaderboard infrastructure — singleton because PeriodKeyResolver is stateless + validates config at ctor
         services.AddSingleton<IPeriodKeyResolver, PeriodKeyResolver>();

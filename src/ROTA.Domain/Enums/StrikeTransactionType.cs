@@ -18,4 +18,10 @@ public enum StrikeTransactionType
 
     /// <summary>Low-rate credit dropped by special raids (Phase 2 earning path).</summary>
     SpecialRaidDrop = 3,
+
+    /// <summary>
+    /// Credit from a Gauntlet token-shop StrikeRefill purchase (System 16 Slice 6) — paid for with
+    /// Token/Pitchfork, not gems. Idempotent via the shop referenceId guarded by ReferenceExistsAsync.
+    /// </summary>
+    ShopRefill = 4,
 }
