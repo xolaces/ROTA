@@ -46,6 +46,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IGuildRepository, GuildRepository>();
         services.AddScoped<IGuildMembershipRepository, GuildMembershipRepository>();
         services.AddScoped<IGuildJoinRequestRepository, GuildJoinRequestRepository>();
+        // System 21 — Guild sigil economy (Slice 3a)
+        services.AddScoped<IGuildEconomyRepository, GuildEconomyRepository>();
 
         // System 16 — Gauntlet (Slice 2) repositories
         services.AddScoped<IGauntletEventRepository, GauntletEventRepository>();
@@ -126,6 +128,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPinnacleService, PinnacleService>();
         services.AddScoped<ISocialService, SocialService>();
         services.AddScoped<IGuildService, GuildService>();
+        services.AddScoped<IGuildEconomyService, GuildEconomyService>();
 
         // System 16 — Gauntlet (Slice 2) services
         services.AddScoped<IGauntletService, GauntletService>();

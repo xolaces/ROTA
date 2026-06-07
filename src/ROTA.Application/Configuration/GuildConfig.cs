@@ -30,4 +30,24 @@ public class GuildConfig
 
     /// <summary>Maximum guild name length (matches the name-input validator). Standard-v1 default.</summary>
     public int NameMaxLength { get; set; } = 32;
+
+    // ── Sigil economy (Slice 3a) — all TUNABLE BALANCE VALUES, flagged for owner confirmation ──
+
+    /// <summary>Sigils granted by the once-daily guild claim (decision §7). TUNABLE. Default 1.</summary>
+    public int DailySigilClaimAmount { get; set; } = 1;
+
+    /// <summary>
+    /// Shop tickets granted by the once-daily guild claim — the placeholder currency used to buy sigils.
+    /// Sized to fund <see cref="DailyBuyCap"/> buys at <see cref="SigilShopTicketPrice"/> each. TUNABLE.
+    /// </summary>
+    public int DailyTicketGrantAmount { get; set; } = 3;
+
+    /// <summary>Shop tickets required to buy one guild sigil. TUNABLE (placeholder pricing). Default 1.</summary>
+    public int SigilShopTicketPrice { get; set; } = 1;
+
+    /// <summary>Max guild sigils a player can buy per UTC day (decision §7). LOCKED at 3.</summary>
+    public int DailyBuyCap { get; set; } = 3;
+
+    /// <summary>Max guild sigils a player can donate to the pool per UTC day (decision §7). LOCKED at 3.</summary>
+    public int DailyDonateCap { get; set; } = 3;
 }

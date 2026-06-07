@@ -68,6 +68,10 @@ public class RotaDbContext : DbContext
     public DbSet<GuildMembership> GuildMemberships => Set<GuildMembership>();
     public DbSet<GuildJoinRequest> GuildJoinRequests => Set<GuildJoinRequest>();
 
+    // ----- System 21 — Guild sigil economy (Slice 3a) -----
+    public DbSet<GuildCurrencyTransaction> GuildCurrencyTransactions => Set<GuildCurrencyTransaction>();
+    public DbSet<GuildSigilPoolTransaction> GuildSigilPoolTransactions => Set<GuildSigilPoolTransaction>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
