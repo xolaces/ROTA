@@ -337,6 +337,50 @@ report rate-limit consumed before checks (anti-abuse); Email:Enabled defaults tr
   (3) Hit ×20 allowed with 10 stamina (RaidCombatView gates on defeated-only, not stamina; mock doesn't
   enforce). Live backend is authoritative + tested — these are client display + MockRotaApi fidelity gaps.
 
+## System 16 — Gauntlet (2026-06-07) — COMPLETE (7 slices, merged to main)
+Build: 0 errors. Tests: 737 green at merge. Spec: docs/specs/active/system-16-gauntlet.md. Branches
+v0.2.9-gauntlet-s1..s6 + -loop (tagged + pushed). Migration AddGauntletSystem (NOT applied). The
+**individual** competitive pillar — your power → your placement. Reuses the raid engine (NO parallel combat
+path: every amplifier gates on `ActiveRaid.GauntletEventId`).
+- League-locked by convergence tier (Whelpling/Wyrm/Dragon); join + gem→strikes buy (idempotent).
+- 7 entities incl. append-only StrikeTransaction + GauntletCurrencyTransaction (Token/Pitchfork) ledgers.
+- Combat fork in RaidService.HitRaidAsync: trophy mult (highest-only, pre-PowerScaling); off-cap
+  Wrath/Blessing auras (current-owner ×1.25 / former-honor ×1.10, outside MaxAggregateProcBonus, pre-crit);
+  strike-spend fork (Strikes not Stamina, tx-safe raw-SQL StrikeRepository.SpendAsync); score hook.
+- Idempotent settlement (ledger + unique-index; honor write-back); token shop; finite-6-stage auto-advance
+  ladder (GET /api/gauntlet/ladder lazy-spawn) + rank-magic hand-off on open. CLI gauntlet-open/close/settle.
+- KNOWN FOLLOW-UPS: ladder double-spawn race (per-player lock / partial unique index); finite ladder ceiling
+  tunable via gauntlet_raids.json stage count.
+
+## System 21 — Guild / Clan Foundations (2026-06-07) — S1+S2 merged to main; S3a+S3b on branches
+Spec: docs/specs/active/system-21-guild-foundations.md (§5 LOCKED). The **collective** pillar (vs the
+Gauntlet's individual one). Memory: guild-foundations-decisions.md.
+- **S1 core/membership/join** [merged]: Guild/GuildMembership/GuildJoinRequest + 4 enums + GuildConfig +
+  GuildService (create [gold + L20 gate], disband, per-guild join policy Open/Application/InviteOnly,
+  apply/accept/invite/leave/kick/promote/demote/transfer, inactivity succession, roster/browse) +
+  GuildController (14 endpoints). One-guild-per-player + ci name/tag uniqueness via partial unique indexes
+  (the friendship lesson). Permission: actor.Rank>target.Rank ∧ newRank<actor.Rank (only Leader sets ranks).
+- **S2 chat** [merged]: ChatHub guild channel (mute-gate → member-gate, per-guild group) +
+  RedisGuildChatStore (100-msg ring) + GET /api/chat/guild/history. Unity SignalR client deferred.
+- **S3a sigil economy** [branch feat/system21-guild-s3a-sigil-economy]: append-only discriminated per-player
+  ledger (GuildCurrency {Sigil,ShopTicket}) + per-guild sigil-pool ledger. Daily claim (sigil + ticket
+  allowance, idempotent guildclaim/guildticket:{p}:{date}); buy (spends tickets, ≤3/day); donate
+  (personal→pool, ≤3/day, atomic cross-table); balances. GuildSigilController api/guilds/sigils. Migration
+  AddGuildSigilEconomy. GuildConfig tunables (DailySigilClaimAmount/DailyTicketGrantAmount/SigilShopTicketPrice/
+  DailyBuyCap/DailyDonateCap).
+- **S3b guild raids** [branch feat/system21-guild-s3b-guild-raids, stacked on S3a]: `ActiveRaid.GuildId`
+  fork — NO parallel combat path. RaidService.HitRaidAsync gates to guild members, spends GuildStamina = hit
+  size (1/5/20) inside the advisory-lock tx (the first GuildStamina sink), accrues
+  GuildMembership.ContributionTotal; rewards via the existing contribution-tier engine. SummonGuildRaidAsync
+  (officer-gated; consumes 1 pooled sigil via raw-SQL balance-guarded TrySpendPoolAsync). content/guild_raids.json
+  (3 bosses, Tier="Guild", lootTableId="" → gold/XP/gem tier rewards; item loot a follow-up). GuildRaidController
+  api/guilds/raids (list + summon); members hit via the existing /api/raids/{id}/hit. Migration AddGuildRaidLink.
+- At S3b: **722 unit + 84 integration = 806 green; 0 errors, 0 code warnings.** Migrations NOT applied
+  (AddGuildSystem, AddGuildSigilEconomy, AddGuildRaidLink) — owner coordinates `dotnet ef database update`.
+- KNOWN FOLLOW-UPS: inactivity-succession scheduled auto-driver; guild-raid summon pool-debit + raid-insert
+  not in one tx (debit is atomic, no overspend — accepted Phase-2 pattern); guild-raid item loot tables;
+  confirm tunable balances (CreationGoldCost, daily caps, ticket allowance).
+
 ## PHASE-2 Deferred Items
 - DiscernmentInvestment effect: quest drop quality (raid crit shipped v0.2.3)
 - Explicit DB transaction scope for QUEST reward steps (energy committed but rewards not atomic; raids fixed v0.2.5)
