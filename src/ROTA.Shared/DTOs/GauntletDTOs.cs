@@ -122,3 +122,39 @@ public class GauntletEventActionResult
     public static GauntletEventActionResult Fail(string reason)
         => new() { Success = false, FailureReason = reason };
 }
+
+// ──────────────────────────────────────────────────────────────────────────────
+// System 16 Slice 3 — leaderboard / scoring DTOs.
+// ──────────────────────────────────────────────────────────────────────────────
+
+/// <summary>
+/// GET /api/gauntlet/leaderboard?league= — the snapshot-ranked page for a single league plus the
+/// caller's own standing (regardless of position). Ranks are drawn from the ~60s Postgres snapshot
+/// (GauntletEntry.LastRank); they are NOT recomputed on read.
+/// </summary>
+public class GauntletLeaderboardResponse
+{
+    /// <summary>League name (Whelpling/Wyrm/Dragon) the board is scoped to.</summary>
+    public string League { get; init; } = string.Empty;
+
+    /// <summary>Top <c>LeaderboardPageSize</c> entries for the league, ordered by snapshot rank ASC.</summary>
+    public List<GauntletLeaderboardEntryDto> Entries { get; init; } = new();
+
+    /// <summary>The caller's snapshot rank in this league+event, or null if they have no entry.</summary>
+    public int? YourRank { get; init; }
+
+    /// <summary>The caller's current score in this league+event, or null if they have no entry.</summary>
+    public long? YourScore { get; init; }
+
+    /// <summary>Total ranked entries in this league (entries with a non-null snapshot rank).</summary>
+    public int TotalRanked { get; init; }
+}
+
+/// <summary>One row on the Gauntlet leaderboard.</summary>
+public class GauntletLeaderboardEntryDto
+{
+    public int Rank { get; init; }
+    public Guid PlayerId { get; init; }
+    public string DisplayName { get; init; } = string.Empty;
+    public long Score { get; init; }
+}

@@ -19,17 +19,20 @@ namespace ROTA.Api.Controllers;
 public sealed class GauntletController : ControllerBase
 {
     private readonly IGauntletService _gauntlet;
+    private readonly IGauntletScoringService _scoring;
     private readonly IStrikeRepository _strikes;
     private readonly IGauntletCurrencyRepository _currency;
     private readonly IValidator<BuyStrikesRequest> _buyValidator;
 
     public GauntletController(
         IGauntletService gauntlet,
+        IGauntletScoringService scoring,
         IStrikeRepository strikes,
         IGauntletCurrencyRepository currency,
         IValidator<BuyStrikesRequest> buyValidator)
     {
         _gauntlet     = gauntlet;
+        _scoring      = scoring;
         _strikes      = strikes;
         _currency     = currency;
         _buyValidator = buyValidator;
@@ -60,6 +63,36 @@ public sealed class GauntletController : ControllerBase
             TokenBalance     = tokenBalance,
             PitchforkBalance = pitchforkBalance,
         });
+    }
+
+    /// <summary>
+    /// The snapshot-ranked leaderboard for a single league plus the caller's own standing. Ranks are
+    /// served from the ~60s Postgres snapshot (not recomputed on read). Returns an empty board for the
+    /// league when no event is active. 400 on a missing/invalid <c>league</c>.
+    /// </summary>
+    [HttpGet("leaderboard")]
+    [ProducesResponseType(typeof(GauntletLeaderboardResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetLeaderboard([FromQuery] string? league, CancellationToken ct)
+    {
+        if (!Enum.TryParse<GauntletLeague>(league, ignoreCase: true, out var parsedLeague)
+            || !Enum.IsDefined(parsedLeague))
+        {
+            return BadRequest(new
+            {
+                message = $"A valid 'league' query parameter is required ({string.Join(", ", Enum.GetNames<GauntletLeague>())}).",
+            });
+        }
+
+        var activeEvent = await _gauntlet.GetCurrentEventAsync(ct);
+        if (activeEvent is null)
+        {
+            // No event running → an empty board for the requested league (not an error).
+            return Ok(new GauntletLeaderboardResponse { League = parsedLeague.ToString() });
+        }
+
+        var board = await _scoring.GetLeaderboardAsync(activeEvent.Id, parsedLeague, PlayerId(), ct);
+        return Ok(board);
     }
 
     /// <summary>Joins the active event (idempotent). League is locked at first join.</summary>

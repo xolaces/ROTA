@@ -97,6 +97,21 @@ tables. Loop works; thin.
   ActiveRaid.GauntletEventId additive column+FK. GemTransactionType.GauntletStrikePurchase; GauntletConfig.StrikeGemPrice.
   +38 unit + 10 integration. Build 0 errors; **589 unit + 45 integration green**.
 
+- **Slice 3** (branch `feat/system16-gauntlet-s3-leaderboard`): scoring aggregation + per-league snapshot
+  rank + leaderboard read (NO combat changes — S4 wires the score hook). `IGauntletScoringService` +
+  `GauntletScoringService` (scoped): `UpdateScoreAsync` (atomic score += delta; tie_break_at advances only
+  on a positive delta), `RecomputeRanksAsync` (idempotent), `GetLeaderboardAsync` → `GauntletLeaderboardResponse`.
+  `IGauntletEntryRepository`/`GauntletEntryRepository` extended with raw-Npgsql ranked reads (mirrors
+  LeaderboardEntryRepository): `IncrementScoreAsync` (single race-safe UPDATE, ambient-tx aware),
+  `RecomputeRanksAsync` (one set-based UPDATE via `ROW_NUMBER() OVER (PARTITION BY league ORDER BY score DESC,
+  tie_break_at ASC)` → last_rank), `GetLeaderboardPageAsync` (ORDER BY last_rank, league-isolated, joined to
+  players for DisplayName, excludes un-snapshotted), `GetRankAndScoreAsync` (league-scoped caller standing),
+  `CountRankedAsync`. `GauntletRankSnapshotService` hosted (singleton; DI scope per tick; PeriodicTimer at
+  `ScoreSnapshotSeconds`; no-op when no active event; try/catch never crashes host). GET
+  /api/gauntlet/leaderboard?league= [Authorize] (400 invalid/missing league; empty board when none active).
+  DTOs GauntletLeaderboardResponse/GauntletLeaderboardEntryDto. No new migrations (GauntletEntry + ranking
+  index already exist). +6 unit + 17 integration. Build 0 errors; **595 unit + 62 integration green**.
+
 ## Not implemented (High)
 Game client (C# SDK = v0.3.0) · discernment quest-drop-quality (later) ·
 moderation (back-burnered) · world chat · guild · gauntlet · gacha/pity ·

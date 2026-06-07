@@ -187,6 +187,9 @@ builder.Services.AddRotaServices(builder.Environment.ContentRootPath);
 // Phase 2 (T39): out-of-band sender that drains the email queue without blocking requests.
 builder.Services.AddHostedService<EmailSendBackgroundService>();
 
+// System 16 Slice 3: periodic per-league rank snapshot for the active Gauntlet event.
+builder.Services.AddHostedService<GauntletRankSnapshotService>();
+
 // Redis — factory-based so the connection string is resolved from the fully-built
 // IConfiguration (after all sources, including test overrides, have been applied)
 // rather than from builder.Configuration at service-registration time.

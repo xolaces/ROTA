@@ -116,6 +116,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IGauntletService, GauntletService>();
         services.AddScoped<IGauntletAdminService, GauntletAdminService>();
 
+        // System 16 — Gauntlet (Slice 3) scoring / leaderboard read service
+        services.AddScoped<IGauntletScoringService, GauntletScoringService>();
+
         // FluentValidation — scan Application assembly for all IValidator<T> implementations
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
 

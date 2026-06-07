@@ -71,14 +71,18 @@ or procChance ∉ (0,1] / procAmount ≤ 0 / offCap ≠ true; naming guard vs `m
 ### Services
 - `IGauntletService`: `GetCurrentEventAsync`, `JoinEventAsync(playerId)` (league locked via `ResolveLeague`; rejects no-event/L<MinEntry/banned/deleted; idempotent), `GetMyEntryAsync(playerId, eventId)`, `BuyStrikesAsync(playerId, strikes, idempotencyKey)` (gem spend → strike credit; referenceId `strikebuy:{playerId}:{key}`; lost-purchase recovery).
 - `IGauntletAdminService`: `OpenEventAsync` (≤1 active), `CloseEventAsync` (must be Active), `SettleEventAsync` (state-only + idempotent; payout is Slice 5).
+- `IGauntletScoringService` (Slice 3): `UpdateScoreAsync(playerId, eventId, deltaScore, hitAt)` (atomic score += delta; tie_break_at advances only on positive delta; wired by S4), `RecomputeRanksAsync(eventId)` (per-league `ROW_NUMBER` snapshot into last_rank; idempotent), `GetLeaderboardAsync(eventId, league, callerId)` → `GauntletLeaderboardResponse` (top `LeaderboardPageSize` by snapshot rank + caller's league-scoped rank/score + total ranked).
+
+### Background services
+- `GauntletRankSnapshotService` (hosted, singleton; DI scope per tick): every `GauntletConfig.ScoreSnapshotSeconds` resolves the active event and calls `RecomputeRanksAsync`; no-op when none active; try/catch never crashes the host.
 
 ### Endpoints
-- `GauntletController` [Authorize]: `GET /api/gauntlet` (overview: event + entry + strike/token/pitchfork balances), `POST /api/gauntlet/join`, `POST /api/gauntlet/strikes/buy`.
+- `GauntletController` [Authorize]: `GET /api/gauntlet` (overview: event + entry + strike/token/pitchfork balances), `GET /api/gauntlet/leaderboard?league=` (Slice 3: snapshot-ranked board + `YourRank`/`YourScore`; 400 invalid/missing league; empty board when no active event), `POST /api/gauntlet/join`, `POST /api/gauntlet/strikes/buy`.
 - `GauntletAdminController` [AdminOnly + DB actor re-verify]: `POST /api/admin/gauntlet/events` (open; 409 on ≤1-active), `POST .../events/{id}/close`, `POST .../events/{id}/settle`.
 - CLI (`AdminCli`): `gauntlet-open`, `gauntlet-close`, `gauntlet-settle`.
 
 ### DTOs (`src/ROTA.Shared/DTOs/GauntletDTOs.cs`)
-GauntletEventResponse, GauntletEntryResponse, GauntletOverviewResponse, StrikeBalanceResponse, GauntletCurrencyBalanceResponse, BuyStrikesRequest, OpenGauntletEventRequest, JoinGauntletResult, BuyStrikesResult, GauntletEventActionResult. Validators: BuyStrikesRequestValidator, OpenGauntletEventRequestValidator.
+GauntletEventResponse, GauntletEntryResponse, GauntletOverviewResponse, StrikeBalanceResponse, GauntletCurrencyBalanceResponse, BuyStrikesRequest, OpenGauntletEventRequest, JoinGauntletResult, BuyStrikesResult, GauntletEventActionResult, GauntletLeaderboardResponse (Slice 3: League/Entries/YourRank/YourScore/TotalRanked), GauntletLeaderboardEntryDto (Rank/PlayerId/DisplayName/Score). Validators: BuyStrikesRequestValidator, OpenGauntletEventRequestValidator.
 
 **Slice 2 scope:** persistence + lifecycle + join + strike economy. No combat changes (scoring + strike spend wired in Slice 4). +38 unit, +10 integration tests.
 
