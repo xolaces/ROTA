@@ -157,6 +157,39 @@ public class GauntletSettlementSummaryResponse
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
+// System 16 Slice 7 — Gauntlet ladder (auto-advance climb) DTO.
+// ──────────────────────────────────────────────────────────────────────────────
+
+/// <summary>
+/// GET /api/gauntlet/ladder — the player's current Gauntlet ladder target. The ladder auto-advances:
+/// after defeating the current stage, the next call lazily spawns the next (tankier) stage. Exactly
+/// one of {NoActiveEvent, JoinedRequired, Complete, ActiveRaid present} describes the state.
+/// </summary>
+public class GauntletLadderResponse
+{
+    /// <summary>The current target stage as a standard raid (null when none — see the flags below).</summary>
+    public ActiveRaidResponse? ActiveRaid { get; init; }
+
+    /// <summary>
+    /// 1-based ladder position of <see cref="ActiveRaid"/> (0 when no current stage is targetable —
+    /// no event / not joined / ladder complete).
+    /// </summary>
+    public int CurrentStage { get; init; }
+
+    /// <summary>Total stages in the ladder (the finite ceiling; tunable via content/gauntlet_raids.json).</summary>
+    public int StageCount { get; init; }
+
+    /// <summary>True when the player has cleared the final stage — nothing left to climb this event.</summary>
+    public bool Complete { get; init; }
+
+    /// <summary>True when there is an active event but the player must join it before climbing.</summary>
+    public bool JoinedRequired { get; init; }
+
+    /// <summary>True when no Gauntlet event is currently active.</summary>
+    public bool NoActiveEvent { get; init; }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
 // System 16 Slice 3 — leaderboard / scoring DTOs.
 // ──────────────────────────────────────────────────────────────────────────────
 

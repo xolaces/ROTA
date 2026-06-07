@@ -22,6 +22,17 @@ public interface IGauntletService
         Guid playerId, Guid gauntletEventId, CancellationToken ct = default);
 
     /// <summary>
+    /// The player's current Gauntlet ladder target for the active event (System 16 Slice 7). The
+    /// ladder auto-advances via lazy spawn: if an active (not defeated, not expired) stage exists it
+    /// is returned; otherwise the next stage above the highest the player has defeated is spawned
+    /// (Personal, GauntletEventId-stamped, MaxHp = that stage's baseHp, no difficulty multiplier) and
+    /// returned. Past the final stage → Complete. Requires a joined GauntletEntry; no active event →
+    /// NoActiveEvent. No new entity / no migration — ladder progress is derived from the player's
+    /// gauntlet ActiveRaids (stage number parsed from RaidDefinitionId "gauntlet_stage_N").
+    /// </summary>
+    Task<GauntletLadderResponse> GetLadderAsync(Guid playerId, CancellationToken ct = default);
+
+    /// <summary>
     /// Buys <paramref name="strikes"/> Strikes for the player using gems
     /// (cost = strikes × StrikeGemPrice). Idempotent on <paramref name="idempotencyKey"/>:
     /// a retry re-credits the same strikes without re-charging gems or double-crediting.

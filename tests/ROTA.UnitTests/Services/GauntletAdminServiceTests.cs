@@ -142,6 +142,86 @@ public class GauntletAdminServiceTests
         b.Events.Verify(r => r.CreateAsync(It.IsAny<GauntletEvent>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
+    // ── Slice 7: cross-event rank-magic consumable hand-off at OPEN ──────────────
+
+    [Fact]
+    public async Task Open_HandsOffRankMagics_FromMostRecentSettledEvent_ToNewEvent()
+    {
+        var b = new Bundle();
+        b.Events.Setup(r => r.GetActiveAsync(It.IsAny<CancellationToken>())).ReturnsAsync((GauntletEvent?)null);
+        GauntletEvent? newEvent = null;
+        b.Events.Setup(r => r.CreateAsync(It.IsAny<GauntletEvent>(), It.IsAny<CancellationToken>()))
+            .Callback((GauntletEvent e, CancellationToken _) => newEvent = e)
+            .ReturnsAsync((GauntletEvent e, CancellationToken _) => e);
+
+        // A prior SETTLED event with a rank-1 (Wrath) and a rank-2 (Blessing) winner + an unranked entry.
+        var prior = EventInState(GauntletEventState.Settled);
+        var rank1 = Guid.NewGuid();
+        var rank2 = Guid.NewGuid();
+        var unranked = Guid.NewGuid();
+        b.Events.Setup(r => r.GetMostRecentSettledAsync(It.IsAny<CancellationToken>())).ReturnsAsync(prior);
+        b.Entries.Setup(e => e.GetForEventAsync(prior.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<GauntletEntry>
+            {
+                RankedEntry(prior.Id, rank1, GauntletLeague.Whelpling, 1),
+                RankedEntry(prior.Id, rank2, GauntletLeague.Whelpling, 2),
+                GauntletEntry.Create(prior.Id, unranked, GauntletLeague.Whelpling), // LastRank null
+            });
+        // No existing grants on the new event.
+        b.EventMagics.Setup(m => m.FindAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerEventMagic?)null);
+
+        var result = await b.Build().OpenEventAsync("Cycle 2", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(7));
+
+        result.Success.Should().BeTrue();
+        newEvent.Should().NotBeNull();
+        // Rank-1 → Wrath on the NEW event; rank-2 → Blessing on the NEW event.
+        b.EventMagics.Verify(m => m.GrantAsync(rank1, newEvent!.Id, "magic_wrath_of_the_ancients", It.IsAny<CancellationToken>()), Times.Once);
+        b.EventMagics.Verify(m => m.GrantAsync(rank2, newEvent.Id, "magic_blessing_of_the_ancients", It.IsAny<CancellationToken>()), Times.Once);
+        // The unranked entry gets nothing.
+        b.EventMagics.Verify(m => m.GrantAsync(unranked, It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Open_HandOff_Idempotent_WhenGrantAlreadyExists_NoReGrant()
+    {
+        var b = new Bundle();
+        b.Events.Setup(r => r.GetActiveAsync(It.IsAny<CancellationToken>())).ReturnsAsync((GauntletEvent?)null);
+        b.Events.Setup(r => r.CreateAsync(It.IsAny<GauntletEvent>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GauntletEvent e, CancellationToken _) => e);
+
+        var prior = EventInState(GauntletEventState.Settled);
+        var rank1 = Guid.NewGuid();
+        b.Events.Setup(r => r.GetMostRecentSettledAsync(It.IsAny<CancellationToken>())).ReturnsAsync(prior);
+        b.Entries.Setup(e => e.GetForEventAsync(prior.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<GauntletEntry> { RankedEntry(prior.Id, rank1, GauntletLeague.Whelpling, 1) });
+        // The grant ALREADY exists on the new event → the pre-check short-circuits.
+        b.EventMagics.Setup(m => m.FindAsync(rank1, It.IsAny<Guid>(), "magic_wrath_of_the_ancients", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(PlayerEventMagic.Create(rank1, Guid.NewGuid(), "magic_wrath_of_the_ancients"));
+
+        var result = await b.Build().OpenEventAsync("Cycle 3", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(7));
+
+        result.Success.Should().BeTrue();
+        b.EventMagics.Verify(m => m.GrantAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never, "an existing grant must not be re-granted (idempotent hand-off)");
+    }
+
+    [Fact]
+    public async Task Open_HandOff_NoOp_WhenNoPriorSettledEvent()
+    {
+        var b = new Bundle();
+        b.Events.Setup(r => r.GetActiveAsync(It.IsAny<CancellationToken>())).ReturnsAsync((GauntletEvent?)null);
+        b.Events.Setup(r => r.CreateAsync(It.IsAny<GauntletEvent>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GauntletEvent e, CancellationToken _) => e);
+        // GetMostRecentSettledAsync defaults to null (Bundle wires nothing) → first-ever event.
+
+        var result = await b.Build().OpenEventAsync("Cycle 1", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(7));
+
+        result.Success.Should().BeTrue();
+        b.EventMagics.Verify(m => m.GrantAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never, "no prior settled event → nobody to hand off to");
+    }
+
     // ── Close: guard Active ─────────────────────────────────────────────────────
 
     [Fact]

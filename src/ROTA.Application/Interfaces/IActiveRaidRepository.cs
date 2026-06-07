@@ -11,6 +11,14 @@ public interface IActiveRaidRepository
     Task<ActiveRaid?> FindByIdWithSummonerAsync(Guid id, CancellationToken ct = default);
 
     Task<IReadOnlyList<ActiveRaid>> GetAllActiveAsync(CancellationToken ct = default);
+
+    // BETA (System 16 Slice 7) — all of a player's Gauntlet ladder raids for one event
+    // (summoned_by_player_id == playerId && gauntlet_event_id == eventId && !is_deleted), regardless
+    // of defeated/expired state. The ladder service reads these to find the current target stage or
+    // derive the next stage to spawn. Not Include()-hydrated (the ladder maps from the entity directly).
+    Task<IReadOnlyList<ActiveRaid>> GetGauntletStagesForPlayerAsync(
+        Guid playerId, Guid gauntletEventId, CancellationToken ct = default);
+
     Task<ActiveRaid> CreateAsync(ActiveRaid raid, CancellationToken ct = default);
     Task UpdateAsync(ActiveRaid raid, CancellationToken ct = default);
 

@@ -95,6 +95,16 @@ public sealed class GauntletController : ControllerBase
         return Ok(board);
     }
 
+    /// <summary>
+    /// The caller's current Gauntlet ladder target (System 16 Slice 7). Auto-advancing: a defeated
+    /// stage means the next is spawned lazily on this call. Always 200 — the response flags
+    /// (NoActiveEvent / JoinedRequired / Complete / ActiveRaid) describe the state.
+    /// </summary>
+    [HttpGet("ladder")]
+    [ProducesResponseType(typeof(GauntletLadderResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetLadder(CancellationToken ct)
+        => Ok(await _gauntlet.GetLadderAsync(PlayerId(), ct));
+
     /// <summary>Joins the active event (idempotent). League is locked at first join.</summary>
     [HttpPost("join")]
     [ProducesResponseType(typeof(GauntletEntryResponse), StatusCodes.Status200OK)]

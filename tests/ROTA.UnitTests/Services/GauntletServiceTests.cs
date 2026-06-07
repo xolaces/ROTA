@@ -32,11 +32,15 @@ public class GauntletServiceTests
         public Mock<IGauntletShopProvider> Shop = new();
         public Mock<ILegionService> Legions = new();
         public Mock<IEquipmentService> Equipment = new();
+        // Slice 7 — ladder summon/auto-advance
+        public Mock<IActiveRaidRepository> Raids = new();
+        public Mock<IRaidService> RaidService = new();
 
         public GauntletService Build()
             => new(Events.Object, Entries.Object, Strikes.Object, Currency.Object,
                    Content.Object, Players.Object, Gems.Object, Audit.Object,
-                   Options.Create(Config), Shop.Object, Legions.Object, Equipment.Object);
+                   Options.Create(Config), Shop.Object, Legions.Object, Equipment.Object,
+                   Raids.Object, RaidService.Object);
     }
 
     // Builds a player at an exact level: each level costs exactly 1 XP, so AddExperience(level-1)
@@ -180,6 +184,208 @@ public class GauntletServiceTests
         // No new entry created, league never recomputed, no player lookup needed.
         b.Entries.Verify(r => r.UpsertAsync(It.IsAny<GauntletEntry>(), It.IsAny<CancellationToken>()), Times.Never);
         b.Content.Verify(c => c.ResolveLeague(It.IsAny<int>()), Times.Never);
+    }
+
+    // ── Slice 7 — ladder summon / auto-advance ──────────────────────────────────
+
+    private const int StageCount = 6;
+
+    // Six rising-HP ladder stages mirroring content/gauntlet_raids.json (relative HP only matters).
+    private static List<GauntletRaidDefinition> LadderStages()
+        => Enumerable.Range(1, StageCount)
+            .Select(n => new GauntletRaidDefinition
+            {
+                Id = $"gauntlet_stage_{n}", Name = $"Stage {n}", Tier = "Event",
+                LadderStage = n, BaseHp = 5000L * n, TimerHours = 24, GauntletScored = true,
+            })
+            .ToList();
+
+    private void WireLadderContent(Bundle b)
+    {
+        var stages = LadderStages();
+        b.Content.Setup(c => c.GetGauntletRaids()).Returns(stages);
+        b.Content.Setup(c => c.GetGauntletRaidByStage(It.IsAny<int>()))
+            .Returns<int>(n => stages.FirstOrDefault(s => s.LadderStage == n));
+    }
+
+    // A gauntlet ladder ActiveRaid for the given stage, optionally already defeated.
+    private static ActiveRaid StageRaid(Guid eventId, Guid playerId, int stage, bool defeated)
+    {
+        var raid = ActiveRaid.Create(
+            $"gauntlet_stage_{stage}", playerId, maxHp: 5000L * stage,
+            expiresAt: DateTimeOffset.UtcNow.AddHours(24),
+            difficulty: RaidDifficulty.Normal, size: RaidSize.Personal);
+        raid.LinkGauntletEvent(eventId);
+        if (defeated) { raid.TakeDamage(raid.MaxHp); raid.MarkDefeated(); }
+        return raid;
+    }
+
+    // Wires the join check + the gauntlet-stages query; returns the captured list so a test can mutate.
+    private List<ActiveRaid> WireJoinedWithStages(Bundle b, GauntletEvent ev, Guid playerId, List<ActiveRaid> stages)
+    {
+        b.Entries.Setup(r => r.FindByEventAndPlayerAsync(ev.Id, playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GauntletEntry.Create(ev.Id, playerId, GauntletLeague.Whelpling));
+        b.Raids.Setup(r => r.GetGauntletStagesForPlayerAsync(playerId, ev.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() => stages);
+        // The projection of the current/spawned raid back to a response (id echoed through).
+        b.RaidService.Setup(s => s.GetRaidByIdAsync(It.IsAny<Guid>(), playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid id, Guid _, CancellationToken _) => new ActiveRaidResponse { ActiveRaidId = id });
+        return stages;
+    }
+
+    [Fact]
+    public async Task GetLadder_NoActiveEvent_ReturnsNoActiveEvent()
+    {
+        var b = new Bundle();
+        WireLadderContent(b);
+        b.Events.Setup(r => r.GetActiveAsync(It.IsAny<CancellationToken>())).ReturnsAsync((GauntletEvent?)null);
+
+        var result = await b.Build().GetLadderAsync(Guid.NewGuid());
+
+        result.NoActiveEvent.Should().BeTrue();
+        result.JoinedRequired.Should().BeFalse();
+        result.Complete.Should().BeFalse();
+        result.ActiveRaid.Should().BeNull();
+        result.StageCount.Should().Be(StageCount);
+        b.Raids.Verify(r => r.CreateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetLadder_NotJoined_ReturnsJoinedRequired_NoSpawn()
+    {
+        var b = new Bundle();
+        var ev = ActiveEvent();
+        WireLadderContent(b);
+        WireActiveEvent(b, ev);
+        b.Entries.Setup(r => r.FindByEventAndPlayerAsync(ev.Id, It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GauntletEntry?)null);
+
+        var result = await b.Build().GetLadderAsync(Guid.NewGuid());
+
+        result.JoinedRequired.Should().BeTrue();
+        result.ActiveRaid.Should().BeNull();
+        b.Raids.Verify(r => r.CreateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetLadder_JoinedFirstCall_SpawnsStage1_PersonalStampedCorrectHp()
+    {
+        var b = new Bundle();
+        var ev = ActiveEvent();
+        var playerId = Guid.NewGuid();
+        WireLadderContent(b);
+        WireActiveEvent(b, ev);
+        WireJoinedWithStages(b, ev, playerId, new List<ActiveRaid>()); // no stages yet
+        ActiveRaid? created = null;
+        b.Raids.Setup(r => r.CreateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()))
+            .Callback((ActiveRaid r, CancellationToken _) => created = r)
+            .ReturnsAsync((ActiveRaid r, CancellationToken _) => r);
+
+        var result = await b.Build().GetLadderAsync(playerId);
+
+        result.CurrentStage.Should().Be(1);
+        result.Complete.Should().BeFalse();
+        result.JoinedRequired.Should().BeFalse();
+        result.ActiveRaid.Should().NotBeNull();
+        created.Should().NotBeNull();
+        created!.RaidDefinitionId.Should().Be("gauntlet_stage_1");
+        created.Size.Should().Be(RaidSize.Personal);
+        created.GauntletEventId.Should().Be(ev.Id, "the spawned stage is stamped with the active event");
+        created.MaxHp.Should().Be(5000L, "stage-1 baseHp with NO difficulty multiplier");
+        created.ExpiresAt.Should().Be(ev.EndsAt, "every stage shares the event window");
+        b.Raids.Verify(r => r.CreateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetLadder_ActiveStageExists_ReturnedAsIs_NotReSpawned()
+    {
+        var b = new Bundle();
+        var ev = ActiveEvent();
+        var playerId = Guid.NewGuid();
+        WireLadderContent(b);
+        WireActiveEvent(b, ev);
+        var active = StageRaid(ev.Id, playerId, stage: 3, defeated: false);
+        WireJoinedWithStages(b, ev, playerId, new List<ActiveRaid> { active });
+
+        var result = await b.Build().GetLadderAsync(playerId);
+
+        result.CurrentStage.Should().Be(3, "the live stage is the current target");
+        result.ActiveRaid!.ActiveRaidId.Should().Be(active.Id);
+        b.Raids.Verify(r => r.CreateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Never,
+            "an already-active stage must never be re-spawned");
+    }
+
+    [Fact]
+    public async Task GetLadder_AfterDefeat_SpawnsNextStage()
+    {
+        var b = new Bundle();
+        var ev = ActiveEvent();
+        var playerId = Guid.NewGuid();
+        WireLadderContent(b);
+        WireActiveEvent(b, ev);
+        // Stage 1 defeated, no active stage → next is stage 2.
+        var stages = new List<ActiveRaid> { StageRaid(ev.Id, playerId, stage: 1, defeated: true) };
+        WireJoinedWithStages(b, ev, playerId, stages);
+        ActiveRaid? created = null;
+        b.Raids.Setup(r => r.CreateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()))
+            .Callback((ActiveRaid r, CancellationToken _) => created = r)
+            .ReturnsAsync((ActiveRaid r, CancellationToken _) => r);
+
+        var result = await b.Build().GetLadderAsync(playerId);
+
+        result.CurrentStage.Should().Be(2);
+        created!.RaidDefinitionId.Should().Be("gauntlet_stage_2");
+        created.MaxHp.Should().Be(10000L, "stage-2 baseHp");
+    }
+
+    [Fact]
+    public async Task GetLadder_ClimbToStage6_ThenComplete()
+    {
+        var b = new Bundle();
+        var ev = ActiveEvent();
+        var playerId = Guid.NewGuid();
+        WireLadderContent(b);
+        WireActiveEvent(b, ev);
+
+        // All six stages defeated → past the final stage → Complete, no spawn.
+        var stages = Enumerable.Range(1, StageCount)
+            .Select(n => StageRaid(ev.Id, playerId, n, defeated: true))
+            .ToList();
+        WireJoinedWithStages(b, ev, playerId, stages);
+
+        var result = await b.Build().GetLadderAsync(playerId);
+
+        result.Complete.Should().BeTrue();
+        result.CurrentStage.Should().Be(0);
+        result.ActiveRaid.Should().BeNull();
+        result.StageCount.Should().Be(StageCount);
+        b.Raids.Verify(r => r.CreateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Never,
+            "nothing spawns past the last stage");
+    }
+
+    [Fact]
+    public async Task GetLadder_DefeatedStage5_SpawnsStage6_NotComplete()
+    {
+        var b = new Bundle();
+        var ev = ActiveEvent();
+        var playerId = Guid.NewGuid();
+        WireLadderContent(b);
+        WireActiveEvent(b, ev);
+        // Stages 1–5 defeated, none active → next is the final stage 6 (boundary: still spawns).
+        var stages = Enumerable.Range(1, 5)
+            .Select(n => StageRaid(ev.Id, playerId, n, defeated: true))
+            .ToList();
+        WireJoinedWithStages(b, ev, playerId, stages);
+        ActiveRaid? created = null;
+        b.Raids.Setup(r => r.CreateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()))
+            .Callback((ActiveRaid r, CancellationToken _) => created = r)
+            .ReturnsAsync((ActiveRaid r, CancellationToken _) => r);
+
+        var result = await b.Build().GetLadderAsync(playerId);
+
+        result.Complete.Should().BeFalse();
+        result.CurrentStage.Should().Be(6);
+        created!.RaidDefinitionId.Should().Be("gauntlet_stage_6");
     }
 
     // ── Buy strikes (gem → strikes) ───────────────────────────────────────────

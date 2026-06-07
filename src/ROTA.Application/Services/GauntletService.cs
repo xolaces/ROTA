@@ -25,6 +25,9 @@ public sealed class GauntletService : IGauntletService
     private readonly IGauntletShopProvider _shop;
     private readonly ILegionService _legions;
     private readonly IEquipmentService _equipment;
+    // Slice 7 — ladder summon/auto-advance
+    private readonly IActiveRaidRepository _raids;
+    private readonly IRaidService _raidService;
 
     public GauntletService(
         IGauntletEventRepository events,
@@ -38,20 +41,24 @@ public sealed class GauntletService : IGauntletService
         IOptions<GauntletConfig> config,
         IGauntletShopProvider shop,
         ILegionService legions,
-        IEquipmentService equipment)
+        IEquipmentService equipment,
+        IActiveRaidRepository raids,
+        IRaidService raidService)
     {
-        _events    = events;
-        _entries   = entries;
-        _strikes   = strikes;
-        _currency  = currency;
-        _content   = content;
-        _players   = players;
-        _gems      = gems;
-        _auditLog  = auditLog;
-        _config    = config.Value;
-        _shop      = shop;
-        _legions   = legions;
-        _equipment = equipment;
+        _events      = events;
+        _entries     = entries;
+        _strikes     = strikes;
+        _currency    = currency;
+        _content     = content;
+        _players     = players;
+        _gems        = gems;
+        _auditLog    = auditLog;
+        _config      = config.Value;
+        _shop        = shop;
+        _legions     = legions;
+        _equipment   = equipment;
+        _raids       = raids;
+        _raidService = raidService;
     }
 
     public async Task<GauntletEventResponse?> GetCurrentEventAsync(CancellationToken ct = default)
@@ -98,6 +105,105 @@ public sealed class GauntletService : IGauntletService
     {
         var entry = await _entries.FindByEventAndPlayerAsync(gauntletEventId, playerId, ct);
         return entry is null ? null : MapEntry(entry);
+    }
+
+    // BETA (System 16 Slice 7) — the ladder summon / auto-advance. The player never manually summons a
+    // Gauntlet raid: the next stage is spawned lazily the first time GetLadder runs after a defeat, so
+    // "defeat a stage → the next is ready" reads as auto-advance. Progress is DERIVED from the player's
+    // gauntlet ActiveRaids (stage number parsed from RaidDefinitionId) — NO new entity, NO migration.
+    public async Task<GauntletLadderResponse> GetLadderAsync(Guid playerId, CancellationToken ct = default)
+    {
+        int stageCount = _content.GetGauntletRaids().Count;
+
+        var active = await _events.GetActiveAsync(ct);
+        if (active is null)
+            return new GauntletLadderResponse { NoActiveEvent = true, StageCount = stageCount };
+
+        // Must have joined the event (a GauntletEntry) before climbing — joining locks the league and
+        // is what makes the player scoreable. Mirrors "you must join to be scored" in the combat hook.
+        var entry = await _entries.FindByEventAndPlayerAsync(active.Id, playerId, ct);
+        if (entry is null)
+            return new GauntletLadderResponse { JoinedRequired = true, StageCount = stageCount };
+
+        var stages = await _raids.GetGauntletStagesForPlayerAsync(playerId, active.Id, ct);
+        var now = DateTimeOffset.UtcNow;
+
+        // (1) An ACTIVE stage (not defeated, not expired) is the current target — return it as-is,
+        //     never re-spawn. A player can hold at most one active stage at a time (we only ever spawn
+        //     the next after the prior is defeated), but if several somehow matched we take the highest.
+        var current = stages
+            .Where(r => !r.IsDefeated && r.ExpiresAt > now)
+            .OrderByDescending(r => StageNumberOf(r.RaidDefinitionId))
+            .FirstOrDefault();
+        if (current is not null)
+            return await BuildLadderForRaidAsync(current, playerId, stageCount, ct);
+
+        // (2) No active stage → auto-advance. nextStage = (highest DEFEATED stage) + 1, or 1 if none.
+        int highestDefeated = stages
+            .Where(r => r.IsDefeated)
+            .Select(r => StageNumberOf(r.RaidDefinitionId))
+            .DefaultIfEmpty(0)
+            .Max();
+        int nextStage = highestDefeated + 1;
+
+        // (3) Past the final stage → the ladder is complete for this event.
+        if (nextStage > stageCount)
+            return new GauntletLadderResponse
+            {
+                Complete     = true,
+                CurrentStage = 0,
+                StageCount   = stageCount,
+            };
+
+        // (4) Spawn the next stage: Personal, GauntletEventId-stamped, MaxHp = stage baseHp (NO
+        //     difficulty multiplier — Gauntlet has no difficulty; Normal is just the enum placeholder).
+        //     ExpiresAt = event end so every stage shares the event window. Persist + audit, then map.
+        var def = _content.GetGauntletRaidByStage(nextStage)
+            ?? throw new InvalidOperationException(
+                $"Gauntlet ladder stage {nextStage} is missing from gauntlet_raids.json.");
+
+        var raid = ActiveRaid.Create(
+            raidDefinitionId: def.Id,
+            summonedByPlayerId: playerId,
+            maxHp: def.BaseHp,
+            expiresAt: active.EndsAt,
+            difficulty: RaidDifficulty.Normal,
+            size: RaidSize.Personal);
+        raid.LinkGauntletEvent(active.Id);
+        await _raids.CreateAsync(raid, ct);
+
+        await _auditLog.AppendAsync(AuditLog.Create(
+            playerId, "GauntletLadderSpawn", null,
+            $"Spawned Gauntlet ladder stage {nextStage} ('{def.Id}', id={raid.Id}) for event {active.Id}. " +
+            $"HP={raid.MaxHp}, expires={raid.ExpiresAt:O}.", null), ct);
+
+        return await BuildLadderForRaidAsync(raid, playerId, stageCount, ct);
+    }
+
+    // Maps a current/just-spawned ladder ActiveRaid onto the ladder response, reusing the canonical
+    // ActiveRaidResponse projection (RaidService.GetRaidByIdAsync). The raid is always active +
+    // Personal + summoned by the caller here, so the join-by-id projection returns it (never null).
+    private async Task<GauntletLadderResponse> BuildLadderForRaidAsync(
+        ActiveRaid raid, Guid playerId, int stageCount, CancellationToken ct)
+    {
+        var response = await _raidService.GetRaidByIdAsync(raid.Id, playerId, ct);
+        return new GauntletLadderResponse
+        {
+            ActiveRaid   = response,
+            CurrentStage = StageNumberOf(raid.RaidDefinitionId),
+            StageCount   = stageCount,
+        };
+    }
+
+    // Parses the 1-based stage number from a "gauntlet_stage_N" definition id. Returns 0 if the id is
+    // not a recognised ladder-stage id (defensive — ladder raids always carry this shape).
+    private static int StageNumberOf(string raidDefinitionId)
+    {
+        const string prefix = "gauntlet_stage_";
+        if (raidDefinitionId.StartsWith(prefix, StringComparison.Ordinal)
+            && int.TryParse(raidDefinitionId.AsSpan(prefix.Length), out var n))
+            return n;
+        return 0;
     }
 
     public async Task<BuyStrikesResult> BuyStrikesAsync(

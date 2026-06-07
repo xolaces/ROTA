@@ -34,6 +34,18 @@ public sealed class ActiveRaidRepository : IActiveRaidRepository
             .Where(r => !r.IsDefeated && !r.IsDeleted && r.ExpiresAt > DateTimeOffset.UtcNow)
             .ToListAsync(ct);
 
+    // System 16 Slice 7 — every Gauntlet ladder raid this player has for the event (any state).
+    // Ordered by CreatedAt so the most recent stage is last; the ladder service re-derives the stage
+    // number from RaidDefinitionId ("gauntlet_stage_N") rather than trusting order.
+    public async Task<IReadOnlyList<ActiveRaid>> GetGauntletStagesForPlayerAsync(
+        Guid playerId, Guid gauntletEventId, CancellationToken ct = default)
+        => await _db.ActiveRaids
+            .Where(r => r.SummonedByPlayerId == playerId
+                        && r.GauntletEventId == gauntletEventId
+                        && !r.IsDeleted)
+            .OrderBy(r => r.CreatedAt)
+            .ToListAsync(ct);
+
     public async Task<ActiveRaid> CreateAsync(ActiveRaid raid, CancellationToken ct = default)
     {
         _db.ActiveRaids.Add(raid);

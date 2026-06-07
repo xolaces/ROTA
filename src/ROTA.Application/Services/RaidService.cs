@@ -183,8 +183,15 @@ public sealed class RaidService : IRaidService
         // Visibility (System 19): list public shared non-Personal raids to everyone, plus the
         // caller's own raids (so they can re-open and share their still-private summons).
         // Private non-Personal raids stay hidden until shared; the raid id remains the invite token.
+        //
+        // System 16 Slice 7 — Gauntlet ladder stages (GauntletEventId != null) are EXCLUDED from the
+        // regular list: they are Personal + caller-owned (so the own-raids branch would otherwise
+        // surface them) but are accessed exclusively via GET /api/gauntlet/ladder. Excluding them
+        // keeps the normal raid screen free of ladder clutter. (Join-by-id is unaffected — a Gauntlet
+        // stage is solo + summoner-gated there too.)
         var activeRaids = allRaids
-            .Where(r => (r.IsPublic && r.Size != RaidSize.Personal) || r.SummonedByPlayerId == playerId)
+            .Where(r => r.GauntletEventId is null
+                        && ((r.IsPublic && r.Size != RaidSize.Personal) || r.SummonedByPlayerId == playerId))
             .ToList();
         var result = new List<ActiveRaidResponse>(activeRaids.Count);
         var now = DateTimeOffset.UtcNow;

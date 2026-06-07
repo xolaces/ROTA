@@ -63,27 +63,28 @@ or procChance ∉ (0,1] / procAmount ≤ 0 / offCap ≠ true; naming guard vs `m
 - **Migration `AddGauntletSystem`** — ONE consolidated migration (not the spec's 8). `dotnet ef database update` NOT run — coordinate with owner.
 
 ### Repositories (scoped)
-- `IGauntletEventRepository`: `GetActiveAsync`, `FindByIdAsync`, `CreateAsync`, `UpdateAsync`.
+- `IGauntletEventRepository`: `GetActiveAsync`, `GetMostRecentSettledAsync` (Slice 7: most recent Settled by SettledAt desc — drives the open hand-off), `FindByIdAsync`, `CreateAsync`, `UpdateAsync`.
 - `IGauntletEntryRepository`: `FindByEventAndPlayerAsync`, `GetForEventAsync`, `UpsertAsync`.
+- `IActiveRaidRepository` (Slice 7 add): `GetGauntletStagesForPlayerAsync(playerId, gauntletEventId)` — all of a player's gauntlet ladder raids for an event (any state), used to derive the current stage / next stage to spawn.
 - `IStrikeRepository`: `GetBalanceAsync`, `CreateAsync`, `ReferenceExistsAsync`, `SpendAsync(playerId, amount, referenceId)`→`StrikeSpendOutcome` (idempotency-first + unique-violation backstop).
 - `IGauntletCurrencyRepository`: `GetBalanceAsync(playerId, currency)`, `CreateAsync`, `ReferenceExistsAsync`, `SpendAsync(playerId, currency, amount, referenceId)`→`GauntletCurrencySpendOutcome`.
 - `IPlayerGauntletTrophyRepository`: `GetForPlayerAsync`, `UpsertAsync`. `IPlayerEventMagicRepository`: `FindAsync`, `GrantAsync`, `RevokeAllForEventAsync`. `IPlayerMagicHonorRepository`: `HasHonorAsync`, `GrantAsync`.
 
 ### Services
-- `IGauntletService`: `GetCurrentEventAsync`, `JoinEventAsync(playerId)` (league locked via `ResolveLeague`; rejects no-event/L<MinEntry/banned/deleted; idempotent), `GetMyEntryAsync(playerId, eventId)`, `BuyStrikesAsync(playerId, strikes, idempotencyKey)` (gem spend → strike credit; referenceId `strikebuy:{playerId}:{key}`; lost-purchase recovery), `GetShopAsync(playerId)` (Slice 6: catalogue + Token/Pitchfork balances + per-entry AlreadyOwned), `BuyFromShopAsync(playerId, shopEntryId)` (Slice 6: ownership pre-check → tri-state currency spend → idempotent grant; refId `gauntletshop:{playerId}:{shopEntryId}`).
-- `IGauntletAdminService`: `OpenEventAsync` (≤1 active), `CloseEventAsync` (must be Active), `SettleEventAsync` (state-only + idempotent; payout is Slice 5).
+- `IGauntletService`: `GetCurrentEventAsync`, `JoinEventAsync(playerId)` (league locked via `ResolveLeague`; rejects no-event/L<MinEntry/banned/deleted; idempotent), `GetMyEntryAsync(playerId, eventId)`, `GetLadderAsync(playerId)` (Slice 7: the auto-advancing ladder target — returns the player's active gauntlet stage, else lazily spawns the next stage above the highest defeated (Personal, GauntletEventId-stamped, MaxHp = stage baseHp, no difficulty mult); `NoActiveEvent`/`JoinedRequired`/`Complete` flags; progress DERIVED from gauntlet ActiveRaids — no entity/migration; reuses RaidService.GetRaidByIdAsync for the projection), `BuyStrikesAsync(playerId, strikes, idempotencyKey)` (gem spend → strike credit; referenceId `strikebuy:{playerId}:{key}`; lost-purchase recovery), `GetShopAsync(playerId)` (Slice 6: catalogue + Token/Pitchfork balances + per-entry AlreadyOwned), `BuyFromShopAsync(playerId, shopEntryId)` (Slice 6: ownership pre-check → tri-state currency spend → idempotent grant; refId `gauntletshop:{playerId}:{shopEntryId}`).
+- `IGauntletAdminService`: `OpenEventAsync` (≤1 active; Slice 7: also hands off the most-recently-settled event's rank winners their per-event consumable — rank-1 Wrath, ranks 2–10 Blessing — scoped to the NEW event, idempotent via FindAsync pre-check + GrantAsync; this is the deferred "spec step 2e"), `CloseEventAsync` (must be Active), `SettleEventAsync` (Slice 5: idempotent prize payout; never grants the next-event consumable — that is the open hand-off).
 - `IGauntletScoringService` (Slice 3): `UpdateScoreAsync(playerId, eventId, deltaScore, hitAt)` (atomic score += delta; tie_break_at advances only on positive delta; wired by S4), `RecomputeRanksAsync(eventId)` (per-league `ROW_NUMBER` snapshot into last_rank; idempotent), `GetLeaderboardAsync(eventId, league, callerId)` → `GauntletLeaderboardResponse` (top `LeaderboardPageSize` by snapshot rank + caller's league-scoped rank/score + total ranked).
 
 ### Background services
 - `GauntletRankSnapshotService` (hosted, singleton; DI scope per tick): every `GauntletConfig.ScoreSnapshotSeconds` resolves the active event and calls `RecomputeRanksAsync`; no-op when none active; try/catch never crashes the host.
 
 ### Endpoints
-- `GauntletController` [Authorize]: `GET /api/gauntlet` (overview: event + entry + strike/token/pitchfork balances), `GET /api/gauntlet/leaderboard?league=` (Slice 3: snapshot-ranked board + `YourRank`/`YourScore`; 400 invalid/missing league; empty board when no active event), `POST /api/gauntlet/join`, `POST /api/gauntlet/strikes/buy`, `GET /api/gauntlet/shop` (Slice 6: catalogue + balances), `POST /api/gauntlet/shop/{entryId}/buy` (Slice 6: Success/AlreadyCharged → 200, AlreadyOwned → 409, InsufficientTokens → 422, unknown entry → 404).
+- `GauntletController` [Authorize]: `GET /api/gauntlet` (overview: event + entry + strike/token/pitchfork balances), `GET /api/gauntlet/ladder` (Slice 7: the auto-advancing ladder target — always 200; flags NoActiveEvent/JoinedRequired/Complete or the current ActiveRaid), `GET /api/gauntlet/leaderboard?league=` (Slice 3: snapshot-ranked board + `YourRank`/`YourScore`; 400 invalid/missing league; empty board when no active event), `POST /api/gauntlet/join`, `POST /api/gauntlet/strikes/buy`, `GET /api/gauntlet/shop` (Slice 6: catalogue + balances), `POST /api/gauntlet/shop/{entryId}/buy` (Slice 6: Success/AlreadyCharged → 200, AlreadyOwned → 409, InsufficientTokens → 422, unknown entry → 404).
 - `GauntletAdminController` [AdminOnly + DB actor re-verify]: `POST /api/admin/gauntlet/events` (open; 409 on ≤1-active), `POST .../events/{id}/close`, `POST .../events/{id}/settle`.
 - CLI (`AdminCli`): `gauntlet-open`, `gauntlet-close`, `gauntlet-settle`.
 
 ### DTOs (`src/ROTA.Shared/DTOs/GauntletDTOs.cs`)
-GauntletEventResponse, GauntletEntryResponse, GauntletOverviewResponse, StrikeBalanceResponse, GauntletCurrencyBalanceResponse, BuyStrikesRequest, OpenGauntletEventRequest, JoinGauntletResult, BuyStrikesResult, GauntletEventActionResult, GauntletLeaderboardResponse (Slice 3: League/Entries/YourRank/YourScore/TotalRanked), GauntletLeaderboardEntryDto (Rank/PlayerId/DisplayName/Score), GauntletShopEntryResponse + GauntletShopResponse + BuyShopResult (Slice 6). Validators: BuyStrikesRequestValidator, OpenGauntletEventRequestValidator.
+GauntletEventResponse, GauntletEntryResponse, GauntletOverviewResponse, StrikeBalanceResponse, GauntletCurrencyBalanceResponse, BuyStrikesRequest, OpenGauntletEventRequest, JoinGauntletResult, BuyStrikesResult, GauntletEventActionResult, GauntletLadderResponse (Slice 7: ActiveRaid?/CurrentStage/StageCount/Complete/JoinedRequired/NoActiveEvent), GauntletLeaderboardResponse (Slice 3: League/Entries/YourRank/YourScore/TotalRanked), GauntletLeaderboardEntryDto (Rank/PlayerId/DisplayName/Score), GauntletShopEntryResponse + GauntletShopResponse + BuyShopResult (Slice 6). Validators: BuyStrikesRequestValidator, OpenGauntletEventRequestValidator.
 
 **Slice 2 scope:** persistence + lifecycle + join + strike economy. No combat changes (scoring + strike spend wired in Slice 4). +38 unit, +10 integration tests.
 
@@ -99,9 +100,10 @@ non-Gauntlet hit is byte-for-byte identical to before). New scoped ctor deps:
 - **(D) Score update** — after the leaderboard hook: `IGauntletScoringService.UpdateScoreAsync(playerId, GauntletEventId, damageFinal, now)` (rides the ambient tx; no-op if unjoined). Non-Gauntlet hits never call it.
 - DTOs: `RaidHitResponse.OffCapAuraBonus` + `NewStrikeBalance` (0 on non-Gauntlet); `RaidHitFailureCode.InsufficientStrikes = 8` → 422.
 
-**Known follow-up (NOT in S1–S6):** the Gauntlet **ladder summon/climb** endpoint + gauntlet-stage
-definition resolution (a real ladder-stage raid won't resolve through `IRaidDefinitionProvider`). Slice 4
-is exercised via seeded ActiveRaids with `GauntletEventId` set + a normal `RaidDefinitionId`.
+**Known follow-up (NOT in S1–S6) — RESOLVED in Slice 7:** the Gauntlet **ladder summon/climb** endpoint +
+gauntlet-stage definition resolution. Slice 4 was exercised via seeded ActiveRaids with `GauntletEventId`
+set + a normal `RaidDefinitionId`; Slice 7 makes a real `gauntlet_stage_N` def resolve through
+`IRaidDefinitionProvider` (see Slice 7 below) and adds the auto-advancing ladder endpoint.
 
 ## System 16 — Gauntlet (Slice 5 — settlement, idempotent)
 
@@ -121,9 +123,9 @@ advisory-lock tx: `+StrikesPerDefeat` strikes (refId `gauntletdefeat:{raidId}:{p
 Token (`…:token`), each ReferenceExists-guarded (idempotent on a re-processed kill). New RaidService dep:
 `IGauntletCurrencyRepository`.
 
-**DEFERRED (follow-up):** spec step 2e — the next-event Wrath/Blessing **consumable** (`PlayerEventMagic`)
-hand-off (contradicts auto-settle-on-close; bundled with the ladder-summon follow-up). Settle writes only
-honor + tokens + pitchfork + trophies. +19 unit, +5 integration tests (incl. settle-twice-pays-once vs real ledger balances).
+**DEFERRED (follow-up) — RESOLVED in Slice 7:** spec step 2e — the next-event Wrath/Blessing
+**consumable** (`PlayerEventMagic`) hand-off now runs in `OpenEventAsync` (the next event exists at open;
+settle still writes only honor + tokens + pitchfork + trophies). +19 unit, +5 integration tests (incl. settle-twice-pays-once vs real ledger balances).
 
 ## System 16 — Gauntlet (Slice 6 — token shop, economy idempotency)
 
@@ -158,6 +160,52 @@ Pitchfork → `InsufficientTokens` (the Token balance is never touched).
 **New `GauntletService` ctor deps:** `IGauntletShopProvider`, `ILegionService`, `IEquipmentService`.
 +11 unit (GauntletService shop) + 7 unit (GauntletShopProvider validation) + 2 integration
 (`GauntletShopIdempotencyTests`: buy-twice-charges-once + currency isolation vs real Postgres ledgers).
+
+## System 16 — Gauntlet (Slice 7 — loop completion: ladder + hand-off)
+
+Makes the Gauntlet **end-to-end playable**. **Zero combat-formula change** — `HitRaidAsync` is untouched.
+
+**(1) Gauntlet-stage definition resolution (no `HitRaidAsync` change).** `RaidDefinitionProvider` now ALSO
+loads `content/gauntlet_raids.json` and maps each `GauntletRaidDefinition` → a plain `RaidDefinition`
+(fields overlap; `lootTableId` is `""` so `DistributeKillRewardsAsync`'s loot pass is benign), registered
+in the same id→def dictionary. So `HitRaidAsync`'s `_raidDefinitions.GetById(raid.RaidDefinitionId) ?? throw`
+(line ~447) resolves a `gauntlet_stage_N` raid **unchanged**. Throws at startup on a stage-id collision with
+a `raids.json` id. The Gauntlet combat behaviour (Strikes/auras/score/defeat-reward) stays gated on
+`ActiveRaid.GauntletEventId`, NOT on the definition — so mapping the stage does not add any combat branch.
+
+**(2) Ladder summon / auto-advance** — `IGauntletService.GetLadderAsync(playerId)`: resolve active event
+(none → `NoActiveEvent`); require a joined `GauntletEntry` (else `JoinedRequired`); read the player's gauntlet
+ladder raids (`IActiveRaidRepository.GetGauntletStagesForPlayerAsync(playerId, eventId)`); if an ACTIVE (not
+defeated, not expired) stage exists → return it; else `nextStage = (highest DEFEATED stage) + 1` (1 if none) —
+if `nextStage > stageCount` → `Complete`, else **lazily spawn** `ActiveRaid.Create(raidDefinitionId =
+"gauntlet_stage_{n}", maxHp = stage.BaseHp, Personal, Normal)` + `LinkGauntletEvent(eventId)`, `ExpiresAt =
+event.EndsAt`, persist + audit (`GauntletLadderSpawn`), return it. **Auto-advance** = the next stage is spawned
+on the next call after a defeat, so the player never manually summons. Stage number parsed from
+`RaidDefinitionId` (`gauntlet_stage_N` → N). **NO new entity / NO migration** — progress is derived from the
+ActiveRaids. The `ActiveRaidResponse` projection reuses `RaidService.GetRaidByIdAsync` (the spawned stage is
+a join-by-id case: active + Personal + summoner = caller). New `GauntletService` ctor deps:
+`IActiveRaidRepository`, `IRaidService`. Endpoint: `GET /api/gauntlet/ladder` [Authorize].
+
+**(3) Regular-list exclusion** — `RaidService.GetActiveRaidsAsync` now excludes raids with
+`GauntletEventId != null` (gauntlet stages are Personal + caller-owned, so the own-raids branch would
+otherwise surface them); they are reached only via `/api/gauntlet/ladder`. Join-by-id is unaffected.
+
+**(4) Cross-event rank-magic consumable hand-off** — `GauntletAdminService.OpenEventAsync`, after creating +
+activating the new event, calls a private `HandOffRankMagicsAsync(newEventId)`:
+`IGauntletEventRepository.GetMostRecentSettledAsync()` → for each of its entries with `LastRank != null` whose
+`GetBandForRank` band has a non-null `MagicId` → `IPlayerEventMagicRepository.GrantAsync(playerId, newEventId,
+magicId)`. Idempotent: `FindAsync` pre-check + `GrantAsync` is itself idempotent. So prior rank-1 holders are
+**current Wrath owners** (×1.25) and ranks 2–10 **current Blessing owners** for the new event (Slice-4 combat
+reads `PlayerEventMagic` for the current event). This is the deferred spec step 2e — it belongs at OPEN (the
+next event exists), not at settle (auto-settle-on-close runs before the next event exists). Audited in the
+`GauntletEventOpen` entry (count of winners handed off).
+
++10 unit (7 `GetLadderAsync` in `GauntletServiceTests`, 3 open-hand-off in `GauntletAdminServiceTests`) +
+6 integration (`GauntletLadderTests`: gauntlet hit resolves end-to-end + spends strikes + moves score; defeat
+reward; list exclusion; ladder spawn-then-return-same; not-joined; open hand-off vs real Postgres). No new migration.
+
+**Finite-6-stage ceiling is TUNABLE** — the ladder length is `content/gauntlet_raids.json`'s stage count
+(currently 6 rising-HP stages). Deeper climbs = add stages (or formula-extend HP) in JSON; no code change.
 
 ## System 17 — Global Leaderboards (Slice 1)
 

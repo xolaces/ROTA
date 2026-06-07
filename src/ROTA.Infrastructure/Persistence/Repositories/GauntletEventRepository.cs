@@ -18,6 +18,14 @@ public sealed class GauntletEventRepository : IGauntletEventRepository
             .FirstOrDefaultAsync(
                 e => e.State == GauntletEventState.Active && !e.IsDeleted, ct);
 
+    // System 16 Slice 7 — most recently settled event (by SettledAt desc). Settled events always have
+    // a non-null SettledAt (stamped by MarkSettled), so ordering is well-defined.
+    public Task<GauntletEvent?> GetMostRecentSettledAsync(CancellationToken ct = default)
+        => _db.GauntletEvents
+            .Where(e => e.State == GauntletEventState.Settled && !e.IsDeleted)
+            .OrderByDescending(e => e.SettledAt)
+            .FirstOrDefaultAsync(ct);
+
     public Task<GauntletEvent?> FindByIdAsync(Guid id, CancellationToken ct = default)
         => _db.GauntletEvents
             .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted, ct);

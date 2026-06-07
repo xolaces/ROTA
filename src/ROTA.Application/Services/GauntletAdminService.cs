@@ -72,11 +72,55 @@ public sealed class GauntletAdminService : IGauntletAdminService
         ev.Activate();
         await _events.CreateAsync(ev, ct);
 
+        // System 16 Slice 7 — cross-event rank-magic consumable hand-off (the deferred "spec step 2e").
+        // It belongs HERE (at open), not at settle: per-event consumables are scoped to the NEXT event,
+        // but auto-settle-on-close runs BEFORE the next event exists. Now that the new event (ev) is
+        // created, grant the most-recently-settled event's rank winners their consumable for ev — so a
+        // prior rank-1 holder is a CURRENT Wrath owner (×1.25) and ranks 2–10 are CURRENT Blessing
+        // owners (×1.10/×1.25 honor logic in Slice 4 combat reads PlayerEventMagic for the active event).
+        int handedOff = await HandOffRankMagicsAsync(ev.Id, ct);
+
         await _auditLog.AppendAsync(AuditLog.Create(
             null, "GauntletEventOpen", null,
-            $"Opened event {ev.Id} '{ev.Name}' [{ev.StartsAt:O}..{ev.EndsAt:O}].", null), ct);
+            $"Opened event {ev.Id} '{ev.Name}' [{ev.StartsAt:O}..{ev.EndsAt:O}]. " +
+            $"Rank-magic consumables handed off to {handedOff} prior winner(s).", null), ct);
 
         return GauntletEventActionResult.Ok(GauntletService.MapEvent(ev));
+    }
+
+    // Grants the most-recently-settled event's rank winners their per-event consumable, scoped to the
+    // NEW event (newEventId). For each settled-event entry with a snapshot rank (LastRank) whose prize
+    // band carries a MagicId, grant PlayerEventMagic(player, newEventId, magicId). Idempotent: a
+    // FindAsync pre-check skips an existing active grant, and PlayerEventMagicRepository.GrantAsync is
+    // itself idempotent (insert-if-absent / restore-if-soft-deleted / no-op-if-active), so a re-opened
+    // (or retried) open never double-grants. Returns the number of grants written this call.
+    private async Task<int> HandOffRankMagicsAsync(Guid newEventId, CancellationToken ct)
+    {
+        var prior = await _events.GetMostRecentSettledAsync(ct);
+        if (prior is null)
+            return 0;   // first-ever event → nobody to hand off to
+
+        var entries = await _entries.GetForEventAsync(prior.Id, ct);
+        int granted = 0;
+
+        foreach (var entry in entries)
+        {
+            if (entry.LastRank is null)
+                continue;   // unranked prior entries earned no rank magic
+
+            var band = _content.GetBandForRank(entry.LastRank.Value);
+            if (band?.MagicId is null)
+                continue;   // band carries no rank magic (only ranks 1 and 2–10 do)
+
+            // Skip if the player already holds this consumable for the new event (idempotent recovery).
+            if (await _eventMagics.FindAsync(entry.PlayerId, newEventId, band.MagicId, ct) is not null)
+                continue;
+
+            await _eventMagics.GrantAsync(entry.PlayerId, newEventId, band.MagicId, ct);
+            granted++;
+        }
+
+        return granted;
     }
 
     public async Task<GauntletEventActionResult> CloseEventAsync(

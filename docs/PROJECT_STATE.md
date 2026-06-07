@@ -156,11 +156,38 @@ tables. Loop works; thin.
   boot validation.) +18 unit + 2 integration (buy-twice-charges-once + currency isolation vs real Postgres
   ledgers). Build 0 errors; **652 unit + 69 integration green**. No new migration.
 
+- **Slice 7 (loop completion)** (branch `feat/system16-gauntlet-s7-loop`): makes the Gauntlet
+  **end-to-end playable** — ladder summon/auto-advance + cross-event rank-magic hand-off. **ZERO
+  combat-formula change** (HitRaidAsync untouched). (1) **Gauntlet-stage def resolution:**
+  `RaidDefinitionProvider` ALSO loads `gauntlet_raids.json` and maps each `GauntletRaidDefinition` →
+  `RaidDefinition` into the same id→def dict, so `HitRaidAsync`'s `GetById(raid.RaidDefinitionId) ?? throw`
+  resolves `gauntlet_stage_N` unchanged (lootTableId "" → benign kill-reward pass; throws on id collision
+  with raids.json). Gauntlet combat stays gated on `ActiveRaid.GauntletEventId`, not the def. (2) **Ladder:**
+  `IGauntletService.GetLadderAsync(playerId)` — active event + joined entry required; returns the player's
+  ACTIVE gauntlet stage, else lazily spawns `nextStage = (highest defeated)+1` (Personal, GauntletEventId-
+  stamped, MaxHp = stage baseHp, NO difficulty mult, ExpiresAt = event end) up to the 6-stage ceiling, else
+  Complete. Auto-advance = next stage spawned on the next call after a defeat; stage # parsed from
+  RaidDefinitionId. **NO new entity / NO migration** (progress derived from ActiveRaids). New repo method
+  `IActiveRaidRepository.GetGauntletStagesForPlayerAsync`. `GET /api/gauntlet/ladder` [Authorize] →
+  `GauntletLadderResponse {ActiveRaid?, CurrentStage, StageCount, Complete, JoinedRequired, NoActiveEvent}`.
+  Projection reuses `RaidService.GetRaidByIdAsync`. New GauntletService ctor deps: `IActiveRaidRepository`,
+  `IRaidService`. (3) **List exclusion:** `GetActiveRaidsAsync` excludes `GauntletEventId != null` (ladder
+  stages reached only via /ladder). (4) **Rank-magic hand-off:** `OpenEventAsync` → after create+activate,
+  `IGauntletEventRepository.GetMostRecentSettledAsync()` → grant its ranked winners (LastRank + band.MagicId)
+  their consumable on the NEW event via `PlayerEventMagic.GrantAsync` (idempotent FindAsync pre-check) — prior
+  rank-1 = current Wrath owner ×1.25, ranks 2–10 = current Blessing owner. This is the deferred spec step 2e
+  (belongs at open, not settle). +10 unit (7 GetLadderAsync + 3 open-hand-off) + 6 integration
+  (`GauntletLadderTests`: gauntlet hit resolves end-to-end + strikes + score; defeat reward; list exclusion;
+  ladder spawn-then-same; not-joined; open hand-off vs real Postgres). Build 0 errors; **662 unit + 75
+  integration green**. No new migration. **The finite-6-stage ladder ceiling is TUNABLE** — add stages /
+  formula-extend HP in `content/gauntlet_raids.json` for deeper climbs (no code change).
+
 ## Not implemented (High)
 Game client (C# SDK = v0.3.0) · discernment quest-drop-quality (later) ·
-moderation (back-burnered) · world chat · guild · gauntlet · gacha/pity ·
+moderation (back-burnered) · world chat · guild · gacha/pity ·
 equipment crafting / consumables · gear set bonuses (Phase 2) ·
 structured log sink / monitoring · background jobs.
+(System 16 Gauntlet is now loop-complete through Slice 7 — see the System 16 section above.)
 
 ## Known issues / debt (High)
 - (Resolved v0.2.5: reward atomicity — stamina spend now inside advisory-lock tx.)
