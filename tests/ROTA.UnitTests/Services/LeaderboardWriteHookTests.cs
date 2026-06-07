@@ -540,6 +540,16 @@ public class LeaderboardWriteHookTests
         var gearDefs       = new Mock<IGearDefinitionProvider>();
         var legionSvc      = new Mock<ILegionService>();
         var leaderboards   = new Mock<ILeaderboardService>();
+        // System 16 Slice 4 — Gauntlet amplifier deps. These tests only exercise non-Gauntlet raids
+        // (GauntletEventId is null), so trophy lookup returns empty and the rest never fire.
+        var trophyRepo        = new Mock<IPlayerGauntletTrophyRepository>();
+        var gauntletContent   = new Mock<IGauntletContentProvider>();
+        var playerEventMagics = new Mock<IPlayerEventMagicRepository>();
+        var playerMagicHonors = new Mock<IPlayerMagicHonorRepository>();
+        var strikes           = new Mock<IStrikeRepository>();
+        var gauntletScoring   = new Mock<IGauntletScoringService>();
+        trophyRepo.Setup(r => r.GetForPlayerAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerGauntletTrophy>());
 
         hitCache.Setup(c => c.TryAcquireSlotAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((true, (RaidHitResponse?)null));
@@ -560,6 +570,7 @@ public class LeaderboardWriteHookTests
                 new EffectiveCombatData(atk, def, null, 0.0));
         raidMagics.Setup(r => r.GetForRaidAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<RaidMagic>());
+        magicDefs.Setup(d => d.GetAll()).Returns(new List<MagicDefinition>());
         magicSvc.Setup(m => m.GrantMagicAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         playerLegions.Setup(r => r.GetActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -579,6 +590,7 @@ public class LeaderboardWriteHookTests
         var magicCfg  = Options.Create(new MagicConfig());
         var legionCfg = Options.Create(new LegionConfig());
         var combatCfg = Options.Create(new CombatConfig());
+        var gauntletCfg = Options.Create(new GauntletConfig());
 
         var service = new RaidService(
             raids.Object, participants.Object, players.Object, resources.Object,
@@ -588,7 +600,10 @@ public class LeaderboardWriteHookTests
             raidMagics.Object, magicDefs.Object, magicSvc.Object, magicCfg,
             playerLegions.Object, legionSlots.Object, unitDefs.Object, legionDefs.Object,
             legionCfg, commanderGear.Object, gearDefs.Object, legionSvc.Object,
-            leaderboards.Object, combatCfg, random);
+            leaderboards.Object, combatCfg,
+            trophyRepo.Object, gauntletContent.Object, playerEventMagics.Object,
+            playerMagicHonors.Object, strikes.Object, gauntletScoring.Object, gauntletCfg,
+            random);
 
         return new RaidBundle(service, raids, participants, players, resources, energy,
             auditLog, definitions, hitCache, equipment, stats, leaderboards);

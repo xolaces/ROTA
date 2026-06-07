@@ -86,6 +86,22 @@ GauntletEventResponse, GauntletEntryResponse, GauntletOverviewResponse, StrikeBa
 
 **Slice 2 scope:** persistence + lifecycle + join + strike economy. No combat changes (scoring + strike spend wired in Slice 4). +38 unit, +10 integration tests.
 
+## System 16 — Gauntlet (Slice 4 — combat integration, DEEP)
+
+Five amplifiers wired into `RaidService.HitRaidAsync` with **NO parallel combat path** (a trophy-less,
+non-Gauntlet hit is byte-for-byte identical to before). New scoped ctor deps:
+`IPlayerGauntletTrophyRepository`, `IGauntletContentProvider`, `IPlayerEventMagicRepository`,
+`IPlayerMagicHonorRepository`, `IStrikeRepository`, `IGauntletScoringService`, `IOptions<GauntletConfig>`.
+- **(A) Trophy multiplier** — inside the active-legion block: `rawLegionPower *= 1 + Max(ownedTrophy.LegionPowerBonusFraction)` (highest-only, NOT additive) **before** `PowerScaling`. Applies to EVERY raid. No trophies → ×1.0; legion-less players skip the query.
+- **(B) Off-cap auras** — Gauntlet raids only (`GauntletEventId != null`): for each `MagicDefinition.OffCap`, current owner (`PlayerEventMagic` for the event) ×1.25 / former owner (`PlayerMagicHonor`) ×1.10 / neither → no aura; roll `min(1, procChance×mult)`, add `procAmount×mult×preProc` to `damageFinal` **before crit**. NEVER folded into the `MaxAggregateProcBonus` cap.
+- **(C) Strike fork** — Gauntlet hits spend **Strikes** (cost by hit size via `GauntletConfig.StrikeRatePerSize`; refId `strikespend:{activeRaidId}:{idempotencyKey}`) instead of Stamina, inside the advisory-lock tx; insufficient → 422 `InsufficientStrikes`. `StrikeRepository.SpendAsync` reimplemented **tx-safe** (raw Npgsql, ambient-tx aware, EXISTS + balance-guarded INSERT, no `ChangeTracker.Clear`).
+- **(D) Score update** — after the leaderboard hook: `IGauntletScoringService.UpdateScoreAsync(playerId, GauntletEventId, damageFinal, now)` (rides the ambient tx; no-op if unjoined). Non-Gauntlet hits never call it.
+- DTOs: `RaidHitResponse.OffCapAuraBonus` + `NewStrikeBalance` (0 on non-Gauntlet); `RaidHitFailureCode.InsufficientStrikes = 8` → 422.
+
+**Known follow-up (NOT in S1–S6):** the Gauntlet **ladder summon/climb** endpoint + gauntlet-stage
+definition resolution (a real ladder-stage raid won't resolve through `IRaidDefinitionProvider`). Slice 4
+is exercised via seeded ActiveRaids with `GauntletEventId` set + a normal `RaidDefinitionId`.
+
 ## System 17 — Global Leaderboards (Slice 1)
 
 ### Enums (`src/ROTA.Domain/Enums/`)

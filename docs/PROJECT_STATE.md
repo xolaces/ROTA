@@ -112,6 +112,17 @@ tables. Loop works; thin.
   DTOs GauntletLeaderboardResponse/GauntletLeaderboardEntryDto. No new migrations (GauntletEntry + ranking
   index already exist). +6 unit + 17 integration. Build 0 errors; **595 unit + 62 integration green**.
 
+- **Slice 4 (DEEP — combat)** (branch `feat/system16-gauntlet-s4-combat`): five amplifiers in
+  HitRaidAsync, no parallel path. (A) highest-only trophy mult on rawLegionPower before PowerScaling
+  (every raid); (B) off-cap Wrath/Blessing auras on Gauntlet raids (current ×1.25 / former-honor ×1.10 /
+  else none), outside MaxAggregateProcBonus, before crit; (C) Gauntlet hits spend Strikes (1/5/20 via
+  GauntletConfig) not Stamina — StrikeRepository.SpendAsync reimplemented tx-safe (raw SQL, ambient-tx,
+  no ChangeTracker.Clear), 422 InsufficientStrikes; (D) GauntletScoringService.UpdateScoreAsync hook
+  (rides ambient tx, no-op if unjoined). RaidHitResponse +OffCapAuraBonus/+NewStrikeBalance;
+  RaidHitFailureCode.InsufficientStrikes=8. 6 new RaidService ctor deps. Trophy-less non-Gauntlet hit
+  byte-identical (regression-proven). +14 test methods. Build 0 errors; **615 unit + 62 integration green**.
+  KNOWN FOLLOW-UP: Gauntlet ladder summon/climb endpoint + gauntlet-stage def resolution (S1–S6 omit it).
+
 ## Not implemented (High)
 Game client (C# SDK = v0.3.0) · discernment quest-drop-quality (later) ·
 moderation (back-burnered) · world chat · guild · gauntlet · gacha/pity ·

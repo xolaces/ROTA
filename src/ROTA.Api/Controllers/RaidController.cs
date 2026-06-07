@@ -128,6 +128,8 @@ public sealed class RaidController : ControllerBase
             RaidHitFailureCode.RaidFull            => Conflict(new { message = result.FailureReason }),
             RaidHitFailureCode.InvalidHitSize      => BadRequest(new { message = result.FailureReason }),
             RaidHitFailureCode.AccessDenied        => StatusCode(StatusCodes.Status403Forbidden, new { message = result.FailureReason }),
+            // InsufficientStamina + InsufficientStrikes (System 16 Slice 4) both map to 422.
+            RaidHitFailureCode.InsufficientStrikes => UnprocessableEntity(new { message = result.FailureReason }),
             _                                      => UnprocessableEntity(new { message = result.FailureReason }),
         };
     }

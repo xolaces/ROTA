@@ -43,9 +43,15 @@ public class RaidServiceTests
         Mock<IPlayerCommanderGearRepository> CommanderGear,
         Mock<IGearDefinitionProvider> GearDefs,
         Mock<ILegionService> LegionService,
-        Mock<ILeaderboardService> Leaderboards);
+        Mock<ILeaderboardService> Leaderboards,
+        Mock<IPlayerGauntletTrophyRepository> TrophyRepo,
+        Mock<IGauntletContentProvider> GauntletContent,
+        Mock<IPlayerEventMagicRepository> PlayerEventMagics,
+        Mock<IPlayerMagicHonorRepository> PlayerMagicHonors,
+        Mock<IStrikeRepository> Strikes,
+        Mock<IGauntletScoringService> GauntletScoring);
 
-    private static ServiceBundle BuildService(Random? random = null, MagicConfig? magicConfig = null, LegionConfig? legionConfig = null, CombatConfig? combatConfig = null)
+    private static ServiceBundle BuildService(Random? random = null, MagicConfig? magicConfig = null, LegionConfig? legionConfig = null, CombatConfig? combatConfig = null, GauntletConfig? gauntletConfig = null)
     {
         var raids          = new Mock<IActiveRaidRepository>();
         var participants   = new Mock<IRaidParticipantRepository>();
@@ -72,6 +78,12 @@ public class RaidServiceTests
         var gearDefs       = new Mock<IGearDefinitionProvider>();
         var legionSvc      = new Mock<ILegionService>();
         var leaderboards   = new Mock<ILeaderboardService>();
+        var trophyRepo       = new Mock<IPlayerGauntletTrophyRepository>();
+        var gauntletContent  = new Mock<IGauntletContentProvider>();
+        var playerEventMagics = new Mock<IPlayerEventMagicRepository>();
+        var playerMagicHonors = new Mock<IPlayerMagicHonorRepository>();
+        var strikes          = new Mock<IStrikeRepository>();
+        var gauntletScoring  = new Mock<IGauntletScoringService>();
 
         hitCache.Setup(c => c.TryAcquireSlotAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((true, (RaidHitResponse?)null));
@@ -96,6 +108,10 @@ public class RaidServiceTests
         // Default: no applied magics — existing tests see zero magic proc bonus
         raidMagics.Setup(r => r.GetForRaidAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<RaidMagic>());
+        // Default: provider exposes no magic definitions (mirrors the real provider, which never
+        // returns null). The off-cap aura loop (System 16 Slice 4) iterates GetAll(); a Gauntlet
+        // hit with no off-cap magics configured must see an empty list, not null.
+        magicDefs.Setup(d => d.GetAll()).Returns(new List<MagicDefinition>());
         // Default: GrantMagicAsync is a no-op (magic drops don't need a real repo in unit tests)
         magicSvc.Setup(m => m.GrantMagicAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -119,10 +135,35 @@ public class RaidServiceTests
         leaderboards.Setup(l => l.RecordRaidHitAsync(
                 It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        // System 16 Slice 4 defaults — a trophy-less, aura-less, non-Gauntlet player: zero amplifiers.
+        // No trophies owned → trophyMult = 1.0 → legion term unchanged.
+        trophyRepo.Setup(r => r.GetForPlayerAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerGauntletTrophy>());
+        // Default content provider: no off-cap magics resolved (GetTrophyById null unless a test sets it).
+        gauntletContent.Setup(c => c.GetTrophyById(It.IsAny<string>()))
+            .Returns((GauntletTrophyDefinition?)null);
+        // No current/former rank-magic ownership by default.
+        playerEventMagics.Setup(r => r.FindAsync(
+                It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerEventMagic?)null);
+        playerMagicHonors.Setup(r => r.HasHonorAsync(
+                It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        // Strikes: charged by default (Gauntlet tests override to Insufficient/AlreadyCharged as needed).
+        strikes.Setup(r => r.SpendAsync(
+                It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(StrikeSpendOutcome.Charged);
+        strikes.Setup(r => r.GetBalanceAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(0L);
+        // Scoring update is a no-op by default; Gauntlet tests verify it fired.
+        gauntletScoring.Setup(s => s.UpdateScoreAsync(
+                It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
 
         var magicCfg  = Options.Create(magicConfig  ?? new MagicConfig());
         var legionCfg = Options.Create(legionConfig ?? new LegionConfig());
         var combatCfg = Options.Create(combatConfig ?? new CombatConfig());
+        var gauntletCfg = Options.Create(gauntletConfig ?? new GauntletConfig());
 
         var service = new RaidService(
             raids.Object, participants.Object, players.Object, resources.Object,
@@ -132,12 +173,16 @@ public class RaidServiceTests
             raidMagics.Object, magicDefs.Object, magicSvc.Object, magicCfg,
             playerLegions.Object, legionSlots.Object, unitDefs.Object, legionDefs.Object,
             legionCfg, commanderGear.Object, gearDefs.Object, legionSvc.Object,
-            leaderboards.Object, combatCfg, random);
+            leaderboards.Object, combatCfg,
+            trophyRepo.Object, gauntletContent.Object, playerEventMagics.Object,
+            playerMagicHonors.Object, strikes.Object, gauntletScoring.Object, gauntletCfg,
+            random);
 
         return new ServiceBundle(service, raids, participants, players, resources, energy, gems,
             stats, inventory, itemDefs, lootTables, auditLog, definitions, hitCache, equipment,
             raidMagics, magicDefs, magicSvc, playerLegions, legionSlots, unitDefs, legionDefs,
-            commanderGear, gearDefs, legionSvc, leaderboards);
+            commanderGear, gearDefs, legionSvc, leaderboards,
+            trophyRepo, gauntletContent, playerEventMagics, playerMagicHonors, strikes, gauntletScoring);
     }
 
     private static Player MakePlayer(long xp = 0)
@@ -2332,5 +2377,621 @@ public class RaidServiceTests
             p => p.GetTopByDamageAsync(raidId, It.Is<int>(t => t == 100), It.IsAny<CancellationToken>()),
             Times.Once,
             "top must be clamped to 100 before reaching the repository");
+    }
+
+    // =======================================================================
+    // System 16 Slice 4 — Gauntlet combat integration
+    //   (A) trophy multiplier on rawLegionPower (highest-only, all raids)
+    //   (B) off-cap Wrath/Blessing auras (Gauntlet raids only, off-cap)
+    //   (C) strike spend forks stamina for Gauntlet raids
+    //   (D) Gauntlet score update after RecordHit
+    //   (E) response surfacing
+    // =======================================================================
+
+    // A Gauntlet-scoped raid: GauntletEventId set + a normal resolvable RaidDefinitionId.
+    private static ActiveRaid MakeGauntletRaid(Guid eventId, long currentHp = 100000, RaidSize size = RaidSize.Large)
+    {
+        var raid = ActiveRaid.Create(
+            "raid_ironcolossus", Guid.NewGuid(), 100000,
+            DateTimeOffset.UtcNow.AddHours(48), RaidDifficulty.Normal, size);
+        raid.LinkGauntletEvent(eventId);
+        if (currentHp < 100000)
+            raid.TakeDamage(100000 - currentHp);
+        return raid;
+    }
+
+    // Build an off-cap (Wrath/Blessing-style) MagicDefinition.
+    private static MagicDefinition MakeOffCapAura(
+        string id, double procChance, double procAmount)
+        => new()
+        {
+            Id         = id,
+            Name       = id,
+            EffectType = MagicEffectType.DamageProc,
+            ProcChance = procChance,
+            ProcAmount = procAmount,
+            OffCap     = true,
+            Stacks     = false,
+            Conditions = new(),
+        };
+
+    // Make a trophy content definition for the highest-only multiplier.
+    private static GauntletTrophyDefinition MakeTrophyDef(string id, GauntletTrophyTier tier, double fraction)
+        => new() { Id = id, Name = id, Tier = tier, LegionPowerBonusFraction = fraction };
+
+    // ── (A) Trophy multiplier on rawLegionPower ─────────────────────────────
+
+    [Fact]
+    public async Task Hit_NoTrophies_TrophyMultIsOne_LegionTermUnchanged()
+    {
+        // Regression-equal: a player with no trophies gets trophyMult = 1.0 → the legion term equals
+        // a baseline hit with no trophy plumbing. Same seed, same legion loadout.
+        var withTrophies = BuildService(new Random(0));   // default: GetForPlayerAsync → empty
+        var baseline     = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+
+        void SetupLegion(ServiceBundle bb)
+        {
+            SetupHitScaffolding(bb, player, raid);
+            var legion  = MakeActiveLegion(player.Id);
+            var legDef  = MakeLegionDef(powerBonus: 50);
+            var unitDef = MakeUnitDef("gen_ironward", UnitType.General, 80, 60, 5);
+            var slot    = PlayerLegionSlot.Create(player.Id, "legion_warband", LegionSlotFamily.General, 0, "gen_ironward");
+            SetupActiveLegion(bb, player.Id, legion, legDef, (slot, unitDef));
+            bb.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((RaidParticipant?)null);
+            bb.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+        }
+        SetupLegion(withTrophies);
+        SetupLegion(baseline);
+
+        var r1 = await withTrophies.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+        var r2 = await baseline.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        r1.Success.Should().BeTrue();
+        r2.Success.Should().BeTrue();
+        r1.Response!.LegionPower.Should().Be(r2.Response!.LegionPower,
+            "no trophies → trophyMult=1.0 → legion term is byte-for-byte unchanged");
+        r1.Response.DamageDealt.Should().Be(r2.Response.DamageDealt);
+    }
+
+    [Fact]
+    public async Task Hit_OneAureateTrophy_MultipliesLegionPower_By1Point25()
+    {
+        // Aureate = +0.25. Same legion + seed as the no-trophy baseline; legion term must be ~1.25×.
+        var withTrophy = BuildService(new Random(0));
+        var baseline   = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+
+        void SetupLegion(ServiceBundle bb)
+        {
+            SetupHitScaffolding(bb, player, raid);
+            var legion  = MakeActiveLegion(player.Id);
+            var legDef  = MakeLegionDef(powerBonus: 50);
+            var unitDef = MakeUnitDef("gen_ironward", UnitType.General, 80, 60, 5);
+            var slot    = PlayerLegionSlot.Create(player.Id, "legion_warband", LegionSlotFamily.General, 0, "gen_ironward");
+            SetupActiveLegion(bb, player.Id, legion, legDef, (slot, unitDef));
+            bb.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((RaidParticipant?)null);
+            bb.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+        }
+        SetupLegion(withTrophy);
+        SetupLegion(baseline);
+
+        // withTrophy owns the Aureate trophy (+0.25).
+        withTrophy.TrophyRepo.Setup(r => r.GetForPlayerAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerGauntletTrophy>
+            {
+                PlayerGauntletTrophy.Create(player.Id, "trophy_aureate"),
+            });
+        withTrophy.GauntletContent.Setup(c => c.GetTrophyById("trophy_aureate"))
+            .Returns(MakeTrophyDef("trophy_aureate", GauntletTrophyTier.Aureate, 0.25));
+
+        var r1 = await withTrophy.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+        var r2 = await baseline.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        r1.Success.Should().BeTrue();
+        r2.Success.Should().BeTrue();
+        // Same RNG multiplier on both → ratio is exactly the trophy factor (±1 for integer truncation).
+        long expected = (long)Math.Round(r2.Response!.LegionPower * 1.25);
+        r1.Response!.LegionPower.Should().BeCloseTo(expected, 1,
+            "Aureate trophy multiplies rawLegionPower by 1.25 before PowerScaling");
+        r1.Response.LegionPower.Should().BeGreaterThan(r2.Response.LegionPower);
+    }
+
+    [Fact]
+    public async Task Hit_MultipleTrophies_AppliesHighestOnly_Not_Additive()
+    {
+        // Owns Aureate(+0.25) + Argent(+0.10) + Bronzed(+0.05). Highest-only → ×1.25, NOT ×1.40.
+        var b        = BuildService(new Random(0));
+        var argentOnly = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+
+        void SetupLegion(ServiceBundle bb)
+        {
+            SetupHitScaffolding(bb, player, raid);
+            var legion  = MakeActiveLegion(player.Id);
+            var legDef  = MakeLegionDef(powerBonus: 50);
+            var unitDef = MakeUnitDef("gen_ironward", UnitType.General, 80, 60, 5);
+            var slot    = PlayerLegionSlot.Create(player.Id, "legion_warband", LegionSlotFamily.General, 0, "gen_ironward");
+            SetupActiveLegion(bb, player.Id, legion, legDef, (slot, unitDef));
+            bb.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((RaidParticipant?)null);
+            bb.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+            bb.GauntletContent.Setup(c => c.GetTrophyById("trophy_aureate"))
+                .Returns(MakeTrophyDef("trophy_aureate", GauntletTrophyTier.Aureate, 0.25));
+            bb.GauntletContent.Setup(c => c.GetTrophyById("trophy_argent"))
+                .Returns(MakeTrophyDef("trophy_argent", GauntletTrophyTier.Argent, 0.10));
+            bb.GauntletContent.Setup(c => c.GetTrophyById("trophy_bronzed"))
+                .Returns(MakeTrophyDef("trophy_bronzed", GauntletTrophyTier.Bronzed, 0.05));
+        }
+        SetupLegion(b);
+        SetupLegion(argentOnly);
+
+        // b owns all three trophies.
+        b.TrophyRepo.Setup(r => r.GetForPlayerAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerGauntletTrophy>
+            {
+                PlayerGauntletTrophy.Create(player.Id, "trophy_bronzed"),
+                PlayerGauntletTrophy.Create(player.Id, "trophy_aureate"),
+                PlayerGauntletTrophy.Create(player.Id, "trophy_argent"),
+            });
+        // argentOnly owns only Argent (+0.10) — used to prove the result is NOT additive (1.40).
+        argentOnly.TrophyRepo.Setup(r => r.GetForPlayerAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerGauntletTrophy>
+            {
+                PlayerGauntletTrophy.Create(player.Id, "trophy_aureate"), // also Aureate → highest 0.25
+            });
+
+        var allThree = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+        var aureate  = await argentOnly.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        allThree.Success.Should().BeTrue();
+        aureate.Success.Should().BeTrue();
+        // Both resolve to ×1.25 (highest-only). If it were additive (1.40) the all-three term would be larger.
+        allThree.Response!.LegionPower.Should().Be(aureate.Response!.LegionPower,
+            "highest-only: owning Aureate+Argent+Bronzed gives ×1.25, identical to Aureate alone — NOT 1.40 additive");
+    }
+
+    [Fact]
+    public async Task Hit_Trophy_AppliesToNonGauntletRaid_Too()
+    {
+        // Trophies boost ALL legion power, not just Gauntlet raids. Use an ordinary raid.
+        var withTrophy = BuildService(new Random(0));
+        var baseline   = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeRaid(); // ordinary raid, GauntletEventId == null
+
+        void SetupLegion(ServiceBundle bb)
+        {
+            SetupHitScaffolding(bb, player, raid);
+            var legion  = MakeActiveLegion(player.Id);
+            var legDef  = MakeLegionDef(powerBonus: 50);
+            var unitDef = MakeUnitDef("gen_ironward", UnitType.General, 80, 60, 5);
+            var slot    = PlayerLegionSlot.Create(player.Id, "legion_warband", LegionSlotFamily.General, 0, "gen_ironward");
+            SetupActiveLegion(bb, player.Id, legion, legDef, (slot, unitDef));
+            bb.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((RaidParticipant?)null);
+            bb.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+        }
+        SetupLegion(withTrophy);
+        SetupLegion(baseline);
+
+        withTrophy.TrophyRepo.Setup(r => r.GetForPlayerAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerGauntletTrophy> { PlayerGauntletTrophy.Create(player.Id, "trophy_aureate") });
+        withTrophy.GauntletContent.Setup(c => c.GetTrophyById("trophy_aureate"))
+            .Returns(MakeTrophyDef("trophy_aureate", GauntletTrophyTier.Aureate, 0.25));
+
+        var r1 = await withTrophy.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+        var r2 = await baseline.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        r1.Success.Should().BeTrue();
+        r1.Response!.LegionPower.Should().BeGreaterThan(r2.Response!.LegionPower,
+            "trophies boost legion power on EVERY raid, not just Gauntlet ones");
+    }
+
+    // ── (B) Off-cap auras (Wrath/Blessing) ──────────────────────────────────
+
+    [Fact]
+    public async Task Hit_NonGauntletRaid_NoOffCapBonus_EvenIfOwner()
+    {
+        // Off-cap auras resolve on GAUNTLET raids only. On an ordinary raid OffCapAuraBonus stays 0
+        // even when the player is a current owner.
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeRaid(); // ordinary raid
+
+        SetupHitScaffolding(b, player, raid);
+        b.MagicDefs.Setup(d => d.GetAll())
+            .Returns(new List<MagicDefinition> { MakeOffCapAura("magic_wrath_of_the_ancients", 1.0, 2.50) });
+        b.PlayerEventMagics.Setup(r => r.FindAsync(player.Id, It.IsAny<Guid>(), "magic_wrath_of_the_ancients", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(PlayerEventMagic.Create(player.Id, Guid.NewGuid(), "magic_wrath_of_the_ancients"));
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.OffCapAuraBonus.Should().Be(0, "off-cap auras never resolve on non-Gauntlet raids");
+    }
+
+    [Fact]
+    public async Task Hit_GauntletRaid_NoOwnershipNoHonor_OffCapBonusZero()
+    {
+        // Neither current nor former owner → NO aura at all ("neither" is not a base grant).
+        var eventId = Guid.NewGuid();
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeGauntletRaid(eventId);
+
+        SetupHitScaffolding(b, player, raid);
+        b.MagicDefs.Setup(d => d.GetAll())
+            .Returns(new List<MagicDefinition> { MakeOffCapAura("magic_wrath_of_the_ancients", 1.0, 2.50) });
+        // default mocks: FindAsync → null, HasHonorAsync → false
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.OffCapAuraBonus.Should().Be(0,
+            "a non-owner / non-former player gets no off-cap aura");
+    }
+
+    [Fact]
+    public async Task Hit_GauntletRaid_CurrentWrathOwner_AppliesOwnerMultiplier_AndExceedsFormer()
+    {
+        // Current owner ×1.25, former owner ×1.10. With procChance 1.0 the aura always fires, so the
+        // current-owner bonus must strictly exceed the former-owner bonus (both > 0).
+        var eventId = Guid.NewGuid();
+        var current = BuildService(new Random(0));
+        var former  = BuildService(new Random(0));
+        var player  = MakePlayer();
+        var raid    = MakeGauntletRaid(eventId);
+
+        void SetupAura(ServiceBundle bb)
+        {
+            SetupHitScaffolding(bb, player, raid);
+            bb.MagicDefs.Setup(d => d.GetAll())
+                .Returns(new List<MagicDefinition> { MakeOffCapAura("magic_wrath_of_the_ancients", 1.0, 2.50) });
+            bb.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((RaidParticipant?)null);
+            bb.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+        }
+        SetupAura(current);
+        SetupAura(former);
+
+        // current = active PlayerEventMagic → ×1.25
+        current.PlayerEventMagics.Setup(r => r.FindAsync(player.Id, eventId, "magic_wrath_of_the_ancients", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(PlayerEventMagic.Create(player.Id, eventId, "magic_wrath_of_the_ancients"));
+        // former = honor only → ×1.10 (FindAsync stays null per default)
+        former.PlayerMagicHonors.Setup(r => r.HasHonorAsync(player.Id, "magic_wrath_of_the_ancients", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var currentResult = await current.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+        var formerResult  = await former.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        currentResult.Success.Should().BeTrue();
+        formerResult.Success.Should().BeTrue();
+        currentResult.Response!.OffCapAuraBonus.Should().BeGreaterThan(0, "Wrath fires at procChance 1.0");
+        formerResult.Response!.OffCapAuraBonus.Should().BeGreaterThan(0);
+        // amount: current = 2.50×1.25 = 3.125; former = 2.50×1.10 = 2.75 → current bonus is larger.
+        currentResult.Response.OffCapAuraBonus.Should().BeGreaterThan(formerResult.Response.OffCapAuraBonus,
+            "current-owner ×1.25 yields a larger amount than former-owner ×1.10 (same preProc/seed)");
+    }
+
+    [Fact]
+    public async Task Hit_GauntletRaid_CurrentOwner_TrumpsFormer()
+    {
+        // A player who is BOTH a current owner and holds the honor record resolves as current (×1.25),
+        // never the former (×1.10). Compare against a pure former-owner.
+        var eventId = Guid.NewGuid();
+        var both   = BuildService(new Random(0));
+        var former = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeGauntletRaid(eventId);
+
+        void SetupAura(ServiceBundle bb)
+        {
+            SetupHitScaffolding(bb, player, raid);
+            bb.MagicDefs.Setup(d => d.GetAll())
+                .Returns(new List<MagicDefinition> { MakeOffCapAura("magic_wrath_of_the_ancients", 1.0, 2.50) });
+            bb.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((RaidParticipant?)null);
+            bb.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+        }
+        SetupAura(both);
+        SetupAura(former);
+
+        both.PlayerEventMagics.Setup(r => r.FindAsync(player.Id, eventId, "magic_wrath_of_the_ancients", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(PlayerEventMagic.Create(player.Id, eventId, "magic_wrath_of_the_ancients"));
+        both.PlayerMagicHonors.Setup(r => r.HasHonorAsync(player.Id, "magic_wrath_of_the_ancients", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);   // also has honor — must be ignored in favour of current
+        former.PlayerMagicHonors.Setup(r => r.HasHonorAsync(player.Id, "magic_wrath_of_the_ancients", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var bothResult   = await both.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+        var formerResult = await former.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        bothResult.Response!.OffCapAuraBonus.Should().BeGreaterThan(formerResult.Response!.OffCapAuraBonus,
+            "current-owner status (×1.25) trumps the former-owner honor echo (×1.10)");
+    }
+
+    [Fact]
+    public async Task Hit_GauntletRaid_OffCapBonus_IsNotGovernedByMagicCap()
+    {
+        // Prove the off-cap aura is added ON TOP of the (clamped) in-cap magic pool — it exceeds the cap.
+        // MaxAggregateProcBonus = 0.5 → in-cap magic pool clamped to 0.5×preProc. Off-cap Wrath at
+        // procChance 1.0, procAmount 5.0 (×1.25 owner = 6.25×preProc) is added uncapped on top.
+        var eventId = Guid.NewGuid();
+        var b = BuildService(new Random(0), magicConfig: new MagicConfig { MaxAggregateProcBonus = 0.5 });
+        var player = MakePlayer();
+        var raid   = MakeGauntletRaid(eventId);
+
+        SetupHitScaffolding(b, player, raid);
+        // An in-cap DamageProc that will be clamped to the cap.
+        SetupMagic(b, raid, ("magic_smite", 1.0, 3.0));
+        // An off-cap aura (current owner).
+        b.MagicDefs.Setup(d => d.GetAll())
+            .Returns(new List<MagicDefinition> { MakeOffCapAura("magic_wrath_of_the_ancients", 1.0, 5.0) });
+        // SetupMagic registers magic_smite on GetById; keep that for the in-cap pool. GetAll only feeds
+        // the off-cap loop, so the two pools never overlap.
+        b.PlayerEventMagics.Setup(r => r.FindAsync(player.Id, eventId, "magic_wrath_of_the_ancients", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(PlayerEventMagic.Create(player.Id, eventId, "magic_wrath_of_the_ancients"));
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        // The in-cap magic pool is clamped to 0.5×preProc; the off-cap bonus must be much larger,
+        // proving it is NOT subject to MaxAggregateProcBonus.
+        result.Response!.OffCapAuraBonus.Should().BeGreaterThan(result.Response.MagicProcBonus,
+            "off-cap aura (6.25×preProc) is added uncapped, exceeding the 0.5×preProc magic cap");
+        result.Response.OffCapAuraBonus.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task Hit_GauntletRaid_BlessingFormerOwner_FiresWithHonorMultiplier()
+    {
+        // Blessing base shape (0.15 / 4.25), former owner via honor → ×1.10. Force fire with chance 1.0.
+        var eventId = Guid.NewGuid();
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeGauntletRaid(eventId);
+
+        SetupHitScaffolding(b, player, raid);
+        b.MagicDefs.Setup(d => d.GetAll())
+            .Returns(new List<MagicDefinition> { MakeOffCapAura("magic_blessing_of_the_ancients", 1.0, 4.25) });
+        b.PlayerMagicHonors.Setup(r => r.HasHonorAsync(player.Id, "magic_blessing_of_the_ancients", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.OffCapAuraBonus.Should().BeGreaterThan(0,
+            "former-owner Blessing fires at procChance 1.0 with the ×1.10 honor multiplier");
+    }
+
+    // ── (C) Strike spend forks stamina ──────────────────────────────────────
+
+    [Theory]
+    [InlineData(1, 1)]    // Small
+    [InlineData(5, 5)]    // Medium
+    [InlineData(20, 20)]  // Large
+    public async Task Hit_GauntletRaid_SpendsStrikes_NotStamina_ByHitSize(int hitSize, int expectedStrikeCost)
+    {
+        var eventId = Guid.NewGuid();
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeGauntletRaid(eventId);
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, hitSize, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        // Strikes spent by hit size; stamina untouched.
+        b.Strikes.Verify(r => r.SpendAsync(player.Id, expectedStrikeCost, It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Once, "Gauntlet hit spends Strikes scaled by hit size (1/5/20)");
+        b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never, "Gauntlet hit must NOT spend stamina");
+    }
+
+    [Fact]
+    public async Task Hit_GauntletRaid_StrikeReferenceId_IsPerHitDeterministic()
+    {
+        var eventId = Guid.NewGuid();
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeGauntletRaid(eventId);
+        var key    = Guid.NewGuid().ToString();
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        await b.Service.HitRaidAsync(player.Id, raid.Id, 1, key);
+
+        var expectedRef = $"strikespend:{raid.Id}:{key}";
+        b.Strikes.Verify(r => r.SpendAsync(player.Id, 1, expectedRef, It.IsAny<CancellationToken>()),
+            Times.Once, "strike referenceId reuses the per-hit idempotency key for tx-atomic idempotency");
+    }
+
+    [Fact]
+    public async Task Hit_GauntletRaid_InsufficientStrikes_Returns422_NoDamage_NoScore()
+    {
+        var eventId = Guid.NewGuid();
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeGauntletRaid(eventId);
+        var hpBefore = raid.CurrentHp;
+
+        SetupHitScaffolding(b, player, raid);
+        b.Strikes.Setup(r => r.SpendAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(StrikeSpendOutcome.Insufficient);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(RaidHitFailureCode.InsufficientStrikes,
+            "a Gauntlet hit with insufficient strikes fails (422 at the controller)");
+        raid.CurrentHp.Should().Be(hpBefore, "no damage on an insufficient-strikes hit");
+        b.Participants.Verify(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()), Times.Never);
+        b.GauntletScoring.Verify(s => s.UpdateScoreAsync(
+            It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()),
+            Times.Never, "no score when the hit is rejected for insufficient strikes");
+        b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never, "insufficient strikes must NOT fall back to spending stamina");
+    }
+
+    [Fact]
+    public async Task Hit_GauntletRaid_SufficientStrikes_DebitsAndSurfacesNewBalance()
+    {
+        var eventId = Guid.NewGuid();
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeGauntletRaid(eventId);
+
+        SetupHitScaffolding(b, player, raid);
+        // Post-spend balance is read back for the response.
+        b.Strikes.Setup(r => r.GetBalanceAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(99L);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.NewStrikeBalance.Should().Be(99, "the response surfaces the post-spend strike balance");
+        b.Strikes.Verify(r => r.SpendAsync(player.Id, 1, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Hit_NonGauntletRaid_NewStrikeBalanceIsZero_StrikesNeverSpent()
+    {
+        // Regression: ordinary raids never touch the strike ledger and report NewStrikeBalance 0.
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.NewStrikeBalance.Should().Be(0);
+        b.Strikes.Verify(r => r.SpendAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never, "non-Gauntlet raids spend stamina, never strikes");
+        b.Energy.Verify(e => e.SpendEnergyAsync(player.Id, ResourceType.Stamina, It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    // ── (D) Gauntlet score update ───────────────────────────────────────────
+
+    [Fact]
+    public async Task Hit_GauntletRaid_UpdatesScore_WithDamageFinal()
+    {
+        var eventId = Guid.NewGuid();
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeGauntletRaid(eventId);
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        b.GauntletScoring.Verify(s => s.UpdateScoreAsync(
+            player.Id, eventId, result.Response!.DamageDealt, It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()),
+            Times.Once, "a Gauntlet hit increments the GauntletEntry score by damageFinal (single participant write)");
+    }
+
+    [Fact]
+    public async Task Hit_NonGauntletRaid_DoesNotUpdateScore()
+    {
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeRaid(); // ordinary raid
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        b.GauntletScoring.Verify(s => s.UpdateScoreAsync(
+            It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()),
+            Times.Never, "non-Gauntlet hits never update a Gauntlet score");
+    }
+
+    // ── Idempotency (Redis cached replay) — no second strike debit, no double score ──
+
+    [Fact]
+    public async Task Hit_GauntletRaid_DuplicateKey_CachedReplay_NoSecondStrikeOrScore()
+    {
+        var eventId = Guid.NewGuid();
+        var b   = BuildService();
+        var key = Guid.NewGuid().ToString();
+        var cached = new RaidHitResponse { Success = true, DamageDealt = 42, NewStrikeBalance = 7 };
+
+        // TryAcquireSlotAsync returns (false, cached) → early return before AtomicApplyHitAsync.
+        b.HitCache.Setup(c => c.TryAcquireSlotAsync(key, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((false, cached));
+
+        var raid = MakeGauntletRaid(eventId);
+        b.Raids.Setup(r => r.FindByIdAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.HitRaidAsync(Guid.NewGuid(), raid.Id, 1, key);
+
+        result.Success.Should().BeTrue();
+        result.Response!.DamageDealt.Should().Be(42);
+        b.Strikes.Verify(r => r.SpendAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never, "cached replay must not debit strikes a second time");
+        b.GauntletScoring.Verify(s => s.UpdateScoreAsync(
+            It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()),
+            Times.Never, "cached replay must not double-score");
+        b.Raids.Verify(r => r.AtomicApplyHitAsync(It.IsAny<Guid>(), It.IsAny<Func<ActiveRaid, Task<bool>>>(), It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 }

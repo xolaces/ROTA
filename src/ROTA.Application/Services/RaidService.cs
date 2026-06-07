@@ -86,6 +86,14 @@ public sealed class RaidService : IRaidService
     // System 17 Slice 4 — leaderboard write hooks
     private readonly ILeaderboardService _leaderboards;
     private readonly CombatConfig _combatConfig;
+    // System 16 Slice 4 — Gauntlet combat amplifiers (trophies, off-cap auras, strikes, scoring).
+    private readonly IPlayerGauntletTrophyRepository _trophyRepo;
+    private readonly IGauntletContentProvider        _gauntletContent;
+    private readonly IPlayerEventMagicRepository      _playerEventMagics;
+    private readonly IPlayerMagicHonorRepository      _playerMagicHonors;
+    private readonly IStrikeRepository                _strikes;
+    private readonly IGauntletScoringService          _gauntletScoring;
+    private readonly GauntletConfig                   _gauntletConfig;
     private readonly Random _random;
 
     public RaidService(
@@ -117,6 +125,13 @@ public sealed class RaidService : IRaidService
         ILegionService legionService,
         ILeaderboardService leaderboards,
         IOptions<CombatConfig> combatConfig,
+        IPlayerGauntletTrophyRepository trophyRepo,
+        IGauntletContentProvider gauntletContent,
+        IPlayerEventMagicRepository playerEventMagics,
+        IPlayerMagicHonorRepository playerMagicHonors,
+        IStrikeRepository strikes,
+        IGauntletScoringService gauntletScoring,
+        IOptions<GauntletConfig> gauntletConfig,
         Random? random = null)
     {
         _raids           = raids;
@@ -147,6 +162,13 @@ public sealed class RaidService : IRaidService
         _legionService   = legionService;
         _leaderboards    = leaderboards;
         _combatConfig    = combatConfig.Value;
+        _trophyRepo        = trophyRepo;
+        _gauntletContent   = gauntletContent;
+        _playerEventMagics = playerEventMagics;
+        _playerMagicHonors = playerMagicHonors;
+        _strikes           = strikes;
+        _gauntletScoring   = gauntletScoring;
+        _gauntletConfig    = gauntletConfig.Value;
         _random          = random ?? Random.Shared;
     }
 
@@ -425,6 +447,19 @@ public sealed class RaidService : IRaidService
         //    even though the actual deduction happens inside the advisory-lock transaction.
         int staminaCost = hitSize * definition.StaminaCostPerHit;
 
+        // 6a. Gauntlet fork (System 16 Slice 4) — Gauntlet raids spend STRIKES (cost scales with hit
+        //     size: Small=1 / Medium=5 / Large=20 from GauntletConfig) instead of Stamina. Non-Gauntlet
+        //     raids keep the exact stamina path above. The actual debit happens inside the advisory-lock
+        //     tx (so it commits atomically with the hit); this only resolves the per-hit cost.
+        bool isGauntlet = raid.GauntletEventId is not null;
+        int strikeCost = hitSize switch
+        {
+            5  => _gauntletConfig.StrikeRatePerSize.Medium,
+            20 => _gauntletConfig.StrikeRatePerSize.Large,
+            _  => _gauntletConfig.StrikeRatePerSize.Small,   // hitSize == 1
+        };
+        string strikeRef = $"strikespend:{activeRaidId}:{idempotencyKey}";
+
         // 7. Apply hit atomically.
         //    AtomicApplyHitAsync begins a PostgreSQL transaction then acquires an advisory
         //    lock on raidId (pg_advisory_xact_lock), which blocks any concurrent call for
@@ -437,6 +472,8 @@ public sealed class RaidService : IRaidService
         //    raid damage commit or roll back together — no phantom stamina loss on crash.
         bool raceCondition       = false;
         bool staminaInsufficient = false;
+        bool strikesInsufficient = false;   // System 16 Slice 4 — Gauntlet strike spend failed
+        long offCapBonus         = 0;       // System 16 Slice 4 — off-cap Wrath/Blessing aura bonus
         long damageFinal         = 0;
         long finalHp             = 0;
         bool finalDefeated       = false;
@@ -470,15 +507,31 @@ public sealed class RaidService : IRaidService
                 return false;
             }
 
-            // Spend stamina inside the advisory-lock transaction.
-            // AtomicUpdateAsync detects the ambient transaction and participates in it,
-            // so a failed or rolled-back hit also rolls back the spend.
-            var staminaSpent = await _energy.SpendEnergyAsync(
-                playerId, ResourceType.Stamina, staminaCost, ct);
-            if (!staminaSpent)
+            // Spend the action currency inside the advisory-lock transaction.
+            // Gauntlet raids (System 16 Slice 4) spend STRIKES via the tx-safe StrikeRepository.SpendAsync
+            // (it participates in this ambient tx, so the debit commits/rolls back atomically with the
+            // hit and never touches the change tracker). Non-Gauntlet raids spend Stamina exactly as
+            // before — AtomicUpdateAsync detects the ambient tx and participates in it, so a failed or
+            // rolled-back hit also rolls back the spend. Only ONE currency is ever spent per hit.
+            if (isGauntlet)
             {
-                staminaInsufficient = true;
-                return false;
+                var strikeOutcome = await _strikes.SpendAsync(playerId, strikeCost, strikeRef, ct);
+                if (strikeOutcome == StrikeSpendOutcome.Insufficient)
+                {
+                    strikesInsufficient = true;
+                    return false;   // no stamina is spent on the Gauntlet path
+                }
+                // Charged (debited now) or AlreadyCharged (idempotent replay within the tx) → proceed.
+            }
+            else
+            {
+                var staminaSpent = await _energy.SpendEnergyAsync(
+                    playerId, ResourceType.Stamina, staminaCost, ct);
+                if (!staminaSpent)
+                {
+                    staminaInsufficient = true;
+                    return false;
+                }
             }
 
             // Load player stats for the damage formula (after successful spend — skipped on failure).
@@ -524,6 +577,22 @@ public sealed class RaidService : IRaidService
 
                 double bonusFraction  = totalLegionBonus / 100.0;
                 double rawLegionPower = unitSum * (1.0 + bonusFraction);
+
+                // (A) Gauntlet Trophy multiplier (System 16 Slice 4) — highest-only, applies to EVERY
+                // raid (DotD: trophies "boost the power of all your legions"). Loaded here, inside the
+                // active-legion block, so legion-less players never run the query (and get zero change).
+                // Own several → only the best fraction applies (NOT additive); no trophies → ×1.0 → a
+                // byte-for-byte unchanged hit. Inserted BEFORE PowerScaling, per the locked spec.
+                var ownedTrophies = await _trophyRepo.GetForPlayerAsync(playerId, ct);
+                double maxTrophyFraction = 0.0;
+                foreach (var owned in ownedTrophies)
+                {
+                    var trophyDef = _gauntletContent.GetTrophyById(owned.GauntletTrophyId);
+                    if (trophyDef is not null && trophyDef.LegionPowerBonusFraction > maxTrophyFraction)
+                        maxTrophyFraction = trophyDef.LegionPowerBonusFraction;
+                }
+                rawLegionPower *= 1.0 + maxTrophyFraction;
+
                 // Apply PowerScaling (combat-only dial); multiply by same hitSize and multiplier.
                 legionPowerTerm = Math.Max(0,
                     (long)(rawLegionPower * _legionConfig.PowerScaling * hitSize * multiplier));
@@ -591,6 +660,37 @@ public sealed class RaidService : IRaidService
             long magicBonusCap = (long)(_magicConfig.MaxAggregateProcBonus * preProc);
             magicProcBonus  = Math.Min(magicBonusRaw, magicBonusCap);
             damageFinal    += magicProcBonus;
+
+            // (B) Off-cap auras — Wrath/Blessing (System 16 Slice 4). GAUNTLET RAIDS ONLY. These are
+            // OUTSIDE the MaxAggregateProcBonus magic cap: their bonus is added directly to damageFinal
+            // and is NEVER folded into magicBonusRaw/the cap above. Added here (before crit) so crit
+            // amplifies it, consistent with mount/magic/unit procs. A non-owner/non-former gets NO aura
+            // ("neither" is not a base grant), so a Gauntlet hit by a player without the rank magic is
+            // unchanged. Ownership multiplier: current owner ×1.25, former owner (honor echo) ×1.10;
+            // current trumps former.
+            if (lockedRaid.GauntletEventId is not null)
+            {
+                foreach (var magicDef in _magicDefs.GetAll())
+                {
+                    if (!magicDef.OffCap) continue;
+
+                    double ownershipMult;
+                    var currentOwner = await _playerEventMagics.FindAsync(
+                        playerId, lockedRaid.GauntletEventId.Value, magicDef.Id, ct);
+                    if (currentOwner is not null)
+                        ownershipMult = 1.25;                                   // current owner
+                    else if (await _playerMagicHonors.HasHonorAsync(playerId, magicDef.Id, ct))
+                        ownershipMult = 1.10;                                   // former owner (honor echo)
+                    else
+                        continue;                                              // not owned → no aura at all
+
+                    double effChance = Math.Min(1.0, magicDef.ProcChance * ownershipMult);
+                    double effAmount = magicDef.ProcAmount * ownershipMult;
+                    if (_random.NextDouble() < effChance)
+                        offCapBonus += Math.Max(0, (long)(effAmount * preProc));
+                }
+                damageFinal += offCapBonus;   // off-cap: NOT clamped by MaxAggregateProcBonus
+            }
 
             // Unit-ability procs — for each filled legion slot whose unit has a non-passive
             // DamageProc-style ability, roll procChance independently. Passive abilities
@@ -711,6 +811,15 @@ public sealed class RaidService : IRaidService
             // computation — damageFinal is the authoritative value already computed above.
             await _leaderboards.RecordRaidHitAsync(playerId, damageFinal, DateTimeOffset.UtcNow, ct);
 
+            // (D) Gauntlet score update (System 16 Slice 4) — GAUNTLET RAIDS ONLY. Rides this ambient
+            // advisory-lock tx (atomic with the hit/RecordHit). Reads nothing extra: damageFinal is the
+            // authoritative value already accumulated into TotalDamageDealt above. No-op if the player
+            // has no GauntletEntry (hasn't joined the event) — correct: you must join to be scored.
+            // Non-Gauntlet hits never call it.
+            if (lockedRaid.GauntletEventId is not null)
+                await _gauntletScoring.UpdateScoreAsync(
+                    playerId, lockedRaid.GauntletEventId.Value, damageFinal, DateTimeOffset.UtcNow, ct);
+
             if (isNew)
                 await _participants.CreateAsync(participantFinal, ct);
             else
@@ -796,6 +905,10 @@ public sealed class RaidService : IRaidService
             if (staminaInsufficient)
                 return HitFail(RaidHitFailureCode.InsufficientStamina, "Insufficient stamina.");
 
+            // System 16 Slice 4 — Gauntlet strike spend rolled back with the tx; no damage, no score.
+            if (strikesInsufficient)
+                return HitFail(RaidHitFailureCode.InsufficientStrikes, "Insufficient strikes.");
+
             return raceCondition
                 ? HitFail(RaidHitFailureCode.RaidAlreadyDefeated,
                     "The creature fell just before your strike landed. The battle is over.")
@@ -810,9 +923,12 @@ public sealed class RaidService : IRaidService
         string legionSuffix    = legionPowerTerm > 0 ? $" LEGION +{legionPowerTerm}" : string.Empty;
         string unitSuffix      = unitProcBonus  > 0 ? $" UNITPROC +{unitProcBonus}({unitProcs.Count})" : string.Empty;
         string commanderSuffix = commanderProcFired ? $" CMDR +{commanderProcBonus}" : string.Empty;
+        // System 16 Slice 4 — Gauntlet off-cap aura + strike-spend audit suffixes (Gauntlet raids only).
+        string offCapSuffix    = offCapBonus > 0 ? $" OFFCAP +{offCapBonus}" : string.Empty;
+        string strikeSuffix    = isGauntlet ? $" STRIKES -{strikeCost}" : string.Empty;
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, "RaidHit", null,
-            $"Hit raid {activeRaidId} ({definition.Name}) [{raid.Difficulty}] for {damageFinal} dmg (x{hitSize}){critSuffix}{procSuffix}{magicSuffix}{legionSuffix}{unitSuffix}{commanderSuffix}. " +
+            $"Hit raid {activeRaidId} ({definition.Name}) [{raid.Difficulty}] for {damageFinal} dmg (x{hitSize}){critSuffix}{procSuffix}{magicSuffix}{legionSuffix}{unitSuffix}{commanderSuffix}{offCapSuffix}{strikeSuffix}. " +
             $"HP: {finalHp}/{raid.MaxHp}. Kill: {finalDefeated}",
             null), ct);
 
@@ -820,6 +936,8 @@ public sealed class RaidService : IRaidService
         var staminaResource = await _resources.GetAsync(playerId, ResourceType.Stamina, ct);
         int newStaminaMax   = staminaResource?.MaxValue ?? 0;
         string callerTier   = rewards?.ContributionTier ?? "Participant";
+        // System 16 Slice 4 — post-spend Strike balance (0 for non-Gauntlet raids; they spend Stamina).
+        long newStrikeBalance = isGauntlet ? await _strikes.GetBalanceAsync(playerId, ct) : 0;
 
         var response = new RaidHitResponse
         {
@@ -857,6 +975,9 @@ public sealed class RaidService : IRaidService
             UnitProcs            = unitProcs,
             CommanderProcFired   = commanderProcFired,
             CommanderProcBonus   = commanderProcBonus,
+            // System 16 Slice 4 — Gauntlet amplifier surfacing (0 on non-Gauntlet raids).
+            OffCapAuraBonus      = offCapBonus,
+            NewStrikeBalance     = newStrikeBalance,
         };
 
         // 10. Store the completed response — replaces the "pending" placeholder.

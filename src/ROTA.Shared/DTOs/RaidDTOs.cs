@@ -72,6 +72,12 @@ public class RaidHitResponse
     // Commander gear proc (Slice 5 — procs-only; stat bonuses are never applied to charBase).
     public bool CommanderProcFired  { get; set; }
     public long CommanderProcBonus  { get; set; }
+    // BETA (System 16 Slice 4) — Gauntlet amplifiers. OffCapAuraBonus = total Wrath/Blessing off-cap
+    // proc damage added this hit (0 on non-Gauntlet raids or when no aura fired); it is NOT governed by
+    // the MaxAggregateProcBonus magic cap. NewStrikeBalance = the player's Strike balance after this
+    // hit's spend (0 on non-Gauntlet raids, which spend Stamina not Strikes).
+    public long OffCapAuraBonus  { get; set; }
+    public long NewStrikeBalance { get; set; }
 }
 
 public class MagicProcDTO
@@ -185,6 +191,7 @@ public enum RaidHitFailureCode
     InsufficientStamina = 5,
     AccessDenied        = 6,  // Personal raid — only the summoner may strike
     RaidFull            = 7,  // Participant cap reached for this raid size
+    InsufficientStrikes = 8,  // BETA (System 16 Slice 4) — Gauntlet raid: not enough Strikes for this hit size
 }
 
 public enum ShareRaidFailureCode
