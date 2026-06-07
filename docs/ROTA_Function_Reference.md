@@ -100,6 +100,22 @@ InsufficientGold/MemberCapReached/PermissionDenied/PolicyForbidsApply/LeaderCann
 | `POST /api/guilds/{id}/members/{playerId}/demote` | `DemoteAsync` | 200, 403, 404, 409 |
 | `POST /api/guilds/{id}/transfer` | `TransferLeadershipAsync` | 200, 403, 404, 409 |
 
+### Guild chat (Slice 2) — additive to the existing `ChatHub`
+Real-time over SignalR `ChatHub` (`/hubs/chat`); world/raid chat unchanged. The caller is in ≤1 guild via
+`Player.GuildId`; the guild group is always resolved server-side from the verified identity, never from a
+client-supplied id. `Scope="Guild"` on the shared `ChatMessageDto`. // BETA
+
+| Hub method (`src/ROTA.Api/SignalR/ChatHub.cs`) | Behavior |
+|---|---|
+| `JoinGuildChannel()` | Resolves caller's `GuildId`; null → `GuildChatUnavailable` to caller; else adds connection to group `guild:{guildId}`. |
+| `LeaveGuildChannel()` | Removes connection from `guild:{guildId}` (no-op if not in a guild). |
+| `SendGuildMessage(string body)` | **Mute-gate** (banned/muted → `Muted`, like world/raid) then **member-gate** (null `GuildId` → `GuildChatUnavailable`); on pass appends to the per-guild ring buffer + broadcasts `GuildMessage` to `guild:{guildId}`. Reuses world-chat trim + 500-char cap. |
+
+| Store / Endpoint | Notes |
+|---|---|
+| `IGuildChatStore` + `RedisGuildChatStore` | Per-guild 100-msg ring buffer, key `chat:guild:{guildId}` (LPUSH→LTRIM, read oldest→newest). Mirrors `RedisWorldChatStore` + a `guildId` arg → isolated per guild. Scoped DI. |
+| `GET /api/chat/guild/history?count=` `[Authorize]` (`ChatController`) | Caller's `GuildId` from JWT sub; member-gated → null GuildId returns 200 + empty list (mirrors world-history). |
+
 ---
 
 ## System 17 — Global Leaderboards (Slice 1)

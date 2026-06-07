@@ -56,6 +56,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISubmissionRateLimiter, SubmissionRateLimiter>();
         // World-chat ring buffer (T36)
         services.AddScoped<IWorldChatStore, RedisWorldChatStore>();
+        // Guild-chat ring buffer (System 21 Slice 2) — per-guild keyed
+        services.AddScoped<IGuildChatStore, RedisGuildChatStore>();
 
         // Content definition providers — singletons: JSON files read once at startup
         services.AddSingleton<IQuestDefinitionProvider>(

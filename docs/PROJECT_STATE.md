@@ -39,6 +39,30 @@ guild chat (S2), no guild raids / sigil economy (S3).
   invite/invites-accept/leave/members-kick|promote|demote/transfer/PUT update/disband). Failure codes →
   400/403/404/409. DTOs in GuildDTOs.cs + validators in GuildValidators.cs (reuse ReservedUsernames).
 
+## System 21 — Guild / Clan Foundations (Slice 2 — guild chat) — 2026-06-07 (branch `feat/system21-guild-s2-chat`)
+Build: 0 errors / no new warnings (4 pre-existing MSB3277). Tests: **563 unit + 39 integration = 602, all
+green** (+10 unit: 4 RedisGuildChatStoreTests + 6 GuildChatHubTests). **No schema change** — Redis-only, no
+migration. Additive to the existing `ChatHub` (world/raid chat untouched). MOTD already surfaced via
+`GuildDetailResponse.Motd` (S1) — no extra work this slice.
+- **`ChatHub` guild methods (`src/ROTA.Api/SignalR/ChatHub.cs`):** `JoinGuildChannel()` /
+  `LeaveGuildChannel()` (group resolved server-side from the caller's verified `Player.GuildId`, never a
+  client-supplied id) and `SendGuildMessage(string)`. **Member-gate + mute-gate** in `SendGuildMessage`:
+  resolves the caller once via `IPlayerRepository.FindByIdAsync(sub)`, rejects a banned/muted player
+  (`"Muted"` event — same rejection world/raid use), then rejects a player with null `GuildId`
+  (`"GuildChatUnavailable"` event). On pass: builds the same `ChatMessageDto` shape as world chat
+  (`Scope="Guild"`, SenderId/SenderName/SenderRole/SentAt), appends to the per-guild ring buffer, and
+  broadcasts `"GuildMessage"` to group `guild:{guildId}`. Reuses the world-chat `Sanitize` (trim + 500-char
+  cap). World/raid methods unchanged.
+- **`IGuildChatStore` + `RedisGuildChatStore`** (`Application/Interfaces` + `Infrastructure/Services`):
+  per-guild 100-message ring buffer, key `chat:guild:{guildId}` (LPUSH newest → LTRIM to cap, read
+  oldest→newest). Exact mirror of `RedisWorldChatStore` plus a `guildId` arg → buffers are isolated per
+  guild. Registered scoped in `ServiceCollectionExtensions` beside the world store.
+- **History endpoint:** `GET /api/chat/guild/history?count=` `[Authorize]` on `ChatController` — resolves
+  the caller's `Player.GuildId` from JWT `sub`; **member-gated** (null GuildId → 200 with empty list,
+  mirroring the always-200 world-history shape) else returns that guild's recent messages from the store.
+- **Out of scope (deferred, per spec):** the Unity SignalR client (like world/raid chat send), guild raids
+  + the sigil economy (S3).
+
 ## Build status (High — earlier sessions, see the dated entries above for the latest)
 - **400 unit + 34 integration = 434 tests pass. 0 warnings, 0 errors.**
 - `main` past tag **v0.2.7-s6** (Legion epic complete) + 3 post-fixes merged & pushed (untagged hardening):
