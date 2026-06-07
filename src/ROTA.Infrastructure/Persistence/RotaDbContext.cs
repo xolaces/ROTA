@@ -47,6 +47,15 @@ public class RotaDbContext : DbContext
     // ----- System 18 — Gear Ownership -----
     public DbSet<PlayerGear> PlayerGear => Set<PlayerGear>();
 
+    // ----- System 16 — Gauntlet (Slice 2) -----
+    public DbSet<GauntletEvent> GauntletEvents => Set<GauntletEvent>();
+    public DbSet<GauntletEntry> GauntletEntries => Set<GauntletEntry>();
+    public DbSet<StrikeTransaction> StrikeTransactions => Set<StrikeTransaction>();
+    public DbSet<GauntletCurrencyTransaction> GauntletCurrencyTransactions => Set<GauntletCurrencyTransaction>();
+    public DbSet<PlayerGauntletTrophy> PlayerGauntletTrophies => Set<PlayerGauntletTrophy>();
+    public DbSet<PlayerEventMagic> PlayerEventMagics => Set<PlayerEventMagic>();
+    public DbSet<PlayerMagicHonor> PlayerMagicHonors => Set<PlayerMagicHonor>();
+
     // ----- Phase 2 — Ops & Social -----
     public DbSet<OutboundEmail> OutboundEmails => Set<OutboundEmail>();
     public DbSet<PinnacleFirstClaim> PinnacleFirstClaims => Set<PinnacleFirstClaim>();

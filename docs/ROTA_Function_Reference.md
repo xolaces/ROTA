@@ -49,6 +49,39 @@ or procChance ∉ (0,1] / procAmount ≤ 0 / offCap ≠ true; naming guard vs `m
 **Slice 1 scope:** content/validation only — NO entities, migrations, DbSets, endpoints, or combat changes
 (deferred to Slices 2/4). 25 unit tests.
 
+## System 16 — Gauntlet (Slice 2 — ledgers + lifecycle + join)
+
+### Entities (`src/ROTA.Domain/Entities/`) + Fluent configs + migration `AddGauntletSystem`
+- `GauntletEvent` { Id, Name, State(GauntletEventState), StartsAt, EndsAt, SettledAt?, +audit }. Guarded transitions (throw on illegal): `Create`→Scheduled, `Activate()`→Active, `Close()`→Closed, `MarkSettled()`→Settled. Index on `state`.
+- `GauntletEntry` { Id, GauntletEventId, PlayerId, League(GauntletLeague, locked at create), Score(long), TieBreakAt, LastRank? }. `Create(eventId, playerId, league)`, `AddScore(delta, hitAt)`, `SetRank(int)`. Unique `(gauntlet_event_id, player_id)`; ranking index `(gauntlet_event_id, league, score)`.
+- `StrikeTransaction` — **append-only ledger** { PlayerId, Amount(int), TransactionType(StrikeTransactionType), ReferenceId?, CreatedAt }. Balance=SUM. Unique partial idx `(player_id, transaction_type, reference_id) WHERE reference_id IS NOT NULL`.
+- `GauntletCurrencyTransaction` — **append-only ledger** { ..., Currency(GauntletCurrency), ... }. Balance per currency=SUM WHERE currency. Unique partial idx `(player_id, currency, transaction_type, reference_id) WHERE reference_id IS NOT NULL`.
+- `PlayerGauntletTrophy` { PlayerId, GauntletTrophyId } unique `(player_id, gauntlet_trophy_id)`; `PlayerEventMagic` { PlayerId, GauntletEventId, MagicDefinitionId } + `Revoke()`, unique triple; `PlayerMagicHonor` { PlayerId, MagicDefinitionId } unique pair.
+- `ActiveRaid.GauntletEventId` (Guid?, additive) + `LinkGauntletEvent(eventId)`; nullable FK + index on `active_raids` (stamped at summon in Slice 4).
+- `GemTransactionType.GauntletStrikePurchase = 11`; `GauntletConfig.StrikeGemPrice` (default 1, tunable). Result enums `StrikeSpendOutcome`/`GauntletCurrencySpendOutcome` { Charged, Insufficient, AlreadyCharged }.
+- **Migration `AddGauntletSystem`** — ONE consolidated migration (not the spec's 8). `dotnet ef database update` NOT run — coordinate with owner.
+
+### Repositories (scoped)
+- `IGauntletEventRepository`: `GetActiveAsync`, `FindByIdAsync`, `CreateAsync`, `UpdateAsync`.
+- `IGauntletEntryRepository`: `FindByEventAndPlayerAsync`, `GetForEventAsync`, `UpsertAsync`.
+- `IStrikeRepository`: `GetBalanceAsync`, `CreateAsync`, `ReferenceExistsAsync`, `SpendAsync(playerId, amount, referenceId)`→`StrikeSpendOutcome` (idempotency-first + unique-violation backstop).
+- `IGauntletCurrencyRepository`: `GetBalanceAsync(playerId, currency)`, `CreateAsync`, `ReferenceExistsAsync`, `SpendAsync(playerId, currency, amount, referenceId)`→`GauntletCurrencySpendOutcome`.
+- `IPlayerGauntletTrophyRepository`: `GetForPlayerAsync`, `UpsertAsync`. `IPlayerEventMagicRepository`: `FindAsync`, `GrantAsync`, `RevokeAllForEventAsync`. `IPlayerMagicHonorRepository`: `HasHonorAsync`, `GrantAsync`.
+
+### Services
+- `IGauntletService`: `GetCurrentEventAsync`, `JoinEventAsync(playerId)` (league locked via `ResolveLeague`; rejects no-event/L<MinEntry/banned/deleted; idempotent), `GetMyEntryAsync(playerId, eventId)`, `BuyStrikesAsync(playerId, strikes, idempotencyKey)` (gem spend → strike credit; referenceId `strikebuy:{playerId}:{key}`; lost-purchase recovery).
+- `IGauntletAdminService`: `OpenEventAsync` (≤1 active), `CloseEventAsync` (must be Active), `SettleEventAsync` (state-only + idempotent; payout is Slice 5).
+
+### Endpoints
+- `GauntletController` [Authorize]: `GET /api/gauntlet` (overview: event + entry + strike/token/pitchfork balances), `POST /api/gauntlet/join`, `POST /api/gauntlet/strikes/buy`.
+- `GauntletAdminController` [AdminOnly + DB actor re-verify]: `POST /api/admin/gauntlet/events` (open; 409 on ≤1-active), `POST .../events/{id}/close`, `POST .../events/{id}/settle`.
+- CLI (`AdminCli`): `gauntlet-open`, `gauntlet-close`, `gauntlet-settle`.
+
+### DTOs (`src/ROTA.Shared/DTOs/GauntletDTOs.cs`)
+GauntletEventResponse, GauntletEntryResponse, GauntletOverviewResponse, StrikeBalanceResponse, GauntletCurrencyBalanceResponse, BuyStrikesRequest, OpenGauntletEventRequest, JoinGauntletResult, BuyStrikesResult, GauntletEventActionResult. Validators: BuyStrikesRequestValidator, OpenGauntletEventRequestValidator.
+
+**Slice 2 scope:** persistence + lifecycle + join + strike economy. No combat changes (scoring + strike spend wired in Slice 4). +38 unit, +10 integration tests.
+
 ## System 17 — Global Leaderboards (Slice 1)
 
 ### Enums (`src/ROTA.Domain/Enums/`)

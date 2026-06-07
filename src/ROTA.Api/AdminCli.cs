@@ -22,6 +22,9 @@ namespace ROTA.Api;
 ///   dotnet run --project src/ROTA.Api -- demote {user|guid} {Role}
 ///   dotnet run --project src/ROTA.Api -- leaderboard-refresh-stat
 ///   dotnet run --project src/ROTA.Api -- grant-gear {user|guid} {gearDefId} [qty]
+///   dotnet run --project src/ROTA.Api -- gauntlet-open {name} {startsAt} {endsAt}
+///   dotnet run --project src/ROTA.Api -- gauntlet-close {eventId}
+///   dotnet run --project src/ROTA.Api -- gauntlet-settle {eventId}
 /// </code>
 /// </remarks>
 public static class AdminCli
@@ -35,6 +38,9 @@ public static class AdminCli
             "demote",
             "leaderboard-refresh-stat",
             "grant-gear",
+            "gauntlet-open",
+            "gauntlet-close",
+            "gauntlet-settle",
         };
 
     /// <summary>Returns true if <paramref name="firstArg"/> is a recognised CLI command.</summary>
@@ -68,6 +74,9 @@ public static class AdminCli
                 "demote"                   => await RunRoleChange(app.Services, args, grant: false),
                 "leaderboard-refresh-stat" => await RunLeaderboardRefreshStat(app.Services),
                 "grant-gear"               => await RunGrantGear(app.Services, args),
+                "gauntlet-open"            => await RunGauntletOpen(app.Services, args),
+                "gauntlet-close"           => await RunGauntletClose(app.Services, args),
+                "gauntlet-settle"          => await RunGauntletSettle(app.Services, args),
                 _                          => UnknownCommand(command),
             };
         }
@@ -195,9 +204,72 @@ public static class AdminCli
         return 0;
     }
 
+    // System 16 Slice 2 — Gauntlet event lifecycle. CLI uses the system bypass (no actor check),
+    // matching the existing promote/demote/grant-gear commands.
+    private static async Task<int> RunGauntletOpen(IServiceProvider services, string[] args)
+    {
+        if (args.Length < 4)
+        {
+            Console.Error.WriteLine("gauntlet-open: usage: gauntlet-open <name> <startsAt> <endsAt>  (ISO-8601 timestamps)");
+            return 1;
+        }
+        var name = args[1];
+        if (!DateTimeOffset.TryParse(args[2], out var startsAt))
+        {
+            Console.Error.WriteLine($"gauntlet-open: invalid startsAt '{args[2]}' (use ISO-8601, e.g. 2026-06-10T00:00:00Z).");
+            return 1;
+        }
+        if (!DateTimeOffset.TryParse(args[3], out var endsAt))
+        {
+            Console.Error.WriteLine($"gauntlet-open: invalid endsAt '{args[3]}' (use ISO-8601, e.g. 2026-06-17T00:00:00Z).");
+            return 1;
+        }
+
+        using var scope = services.CreateScope();
+        var admin = scope.ServiceProvider.GetRequiredService<IGauntletAdminService>();
+        var result = await admin.OpenEventAsync(name, startsAt, endsAt);
+        if (!result.Success)
+        {
+            Console.Error.WriteLine($"gauntlet-open: failed — {result.FailureReason}");
+            return 1;
+        }
+        Console.WriteLine($"gauntlet-open: opened event {result.Event!.Id} '{result.Event.Name}' (state {result.Event.State}).");
+        return 0;
+    }
+
+    private static async Task<int> RunGauntletClose(IServiceProvider services, string[] args)
+        => await RunGauntletLifecycle(services, args, "gauntlet-close", close: true);
+
+    private static async Task<int> RunGauntletSettle(IServiceProvider services, string[] args)
+        => await RunGauntletLifecycle(services, args, "gauntlet-settle", close: false);
+
+    private static async Task<int> RunGauntletLifecycle(
+        IServiceProvider services, string[] args, string verb, bool close)
+    {
+        if (args.Length < 2 || !Guid.TryParse(args[1], out var eventId))
+        {
+            Console.Error.WriteLine($"{verb}: usage: {verb} <eventId>");
+            return 1;
+        }
+
+        using var scope = services.CreateScope();
+        var admin = scope.ServiceProvider.GetRequiredService<IGauntletAdminService>();
+        var result = close
+            ? await admin.CloseEventAsync(eventId)
+            : await admin.SettleEventAsync(eventId);
+
+        if (!result.Success)
+        {
+            Console.Error.WriteLine($"{verb}: failed — {result.FailureReason}");
+            return 1;
+        }
+        Console.WriteLine($"{verb}: event {result.Event!.Id} → state {result.Event.State}.");
+        return 0;
+    }
+
     private static int UnknownCommand(string command)
     {
-        Console.Error.WriteLine($"Unknown command '{command}'. Valid commands: seed-admin, gen-beta-key, promote, demote, leaderboard-refresh-stat, grant-gear.");
+        Console.Error.WriteLine($"Unknown command '{command}'. Valid commands: seed-admin, gen-beta-key, promote, demote, leaderboard-refresh-stat, grant-gear, gauntlet-open, gauntlet-close, gauntlet-settle.");
         return 1;
     }
 }

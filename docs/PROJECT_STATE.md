@@ -85,6 +85,18 @@ tables. Loop works; thin.
   Build 0 errors; **551 unit + 35 integration green**. (NOTE: global counts elsewhere in this doc predate
   Phase 2 / Systems 18–20 and are stale — separate reconciliation pending.)
 
+- **Slice 2** (branch `feat/system16-gauntlet-s2-ledgers`): persistence + ledgers + lifecycle + join.
+  7 entities (GauntletEvent guarded state machine; GauntletEntry league-locked + unique per event/player;
+  StrikeTransaction + GauntletCurrencyTransaction append-only ledgers; PlayerGauntletTrophy, PlayerEventMagic,
+  PlayerMagicHonor) + Fluent configs + ONE consolidated migration `AddGauntletSystem` (DB update NOT run —
+  coordinate). 7 repos with tri-state SpendAsync on both ledgers (idempotency-first + unique-violation
+  backstop; AlreadyCharged ≠ Insufficient). IGauntletService (join: league-lock via ResolveLeague + reject
+  no-event/L<20/banned/deleted + idempotent; gem→strikes buy with client-key lost-purchase recovery).
+  IGauntletAdminService (open ≤1-active / close / idempotent state-only settle — payout = S5). GauntletController
+  [Authorize] + GauntletAdminController [AdminOnly + actor re-verify] + CLI gauntlet-open/close/settle.
+  ActiveRaid.GauntletEventId additive column+FK. GemTransactionType.GauntletStrikePurchase; GauntletConfig.StrikeGemPrice.
+  +38 unit + 10 integration. Build 0 errors; **589 unit + 45 integration green**.
+
 ## Not implemented (High)
 Game client (C# SDK = v0.3.0) · discernment quest-drop-quality (later) ·
 moderation (back-burnered) · world chat · guild · gauntlet · gacha/pity ·

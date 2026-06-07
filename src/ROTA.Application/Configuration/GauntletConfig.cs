@@ -36,6 +36,10 @@ public class GauntletConfig
 
     // Strikes earned per Gauntlet raid stage defeated.
     public int StrikesPerDefeat { get; set; } = 10;
+
+    // BETA (Slice 2) — gem cost per Strike when buying Strikes with gems (uncapped).
+    // Default 1; a tunable balance value (owner to confirm). Total cost = strikes × StrikeGemPrice.
+    public int StrikeGemPrice { get; set; } = 1;
 }
 
 // Inclusive [Min, Max] level band for a league. Max == GauntletConfig.NoMaxLevel means open-ended.

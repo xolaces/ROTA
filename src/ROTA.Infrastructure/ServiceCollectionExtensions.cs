@@ -43,6 +43,15 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBlockRepository, BlockRepository>();
         services.AddScoped<IPrivateMessageRepository, PrivateMessageRepository>();
 
+        // System 16 — Gauntlet (Slice 2) repositories
+        services.AddScoped<IGauntletEventRepository, GauntletEventRepository>();
+        services.AddScoped<IGauntletEntryRepository, GauntletEntryRepository>();
+        services.AddScoped<IStrikeRepository, StrikeRepository>();
+        services.AddScoped<IGauntletCurrencyRepository, GauntletCurrencyRepository>();
+        services.AddScoped<IPlayerGauntletTrophyRepository, PlayerGauntletTrophyRepository>();
+        services.AddScoped<IPlayerEventMagicRepository, PlayerEventMagicRepository>();
+        services.AddScoped<IPlayerMagicHonorRepository, PlayerMagicHonorRepository>();
+
         // Infrastructure services
         services.AddScoped<IAuthLockoutService, AuthLockoutService>();
         services.AddScoped<IRaidHitCache, RaidHitCache>();
@@ -102,6 +111,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmailNotificationService, EmailNotificationService>();
         services.AddScoped<IPinnacleService, PinnacleService>();
         services.AddScoped<ISocialService, SocialService>();
+
+        // System 16 — Gauntlet (Slice 2) services
+        services.AddScoped<IGauntletService, GauntletService>();
+        services.AddScoped<IGauntletAdminService, GauntletAdminService>();
 
         // FluentValidation — scan Application assembly for all IValidator<T> implementations
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();

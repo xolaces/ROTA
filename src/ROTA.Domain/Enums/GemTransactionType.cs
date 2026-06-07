@@ -12,4 +12,6 @@ public enum GemTransactionType
     UnitPurchase    = 8,
     LegionPurchase  = 9,
     PinnacleReward  = 10,
+    // System 16 Slice 2 — gems spent to buy Gauntlet Strikes (uncapped action currency).
+    GauntletStrikePurchase = 11,
 }
