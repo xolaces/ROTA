@@ -1,5 +1,5 @@
 # ROTA Function Reference
-Last updated: 2026-06-06 (System 16 Gauntlet — Slice 1 content/definitions/provider)
+Last updated: 2026-06-07 (System 21 Guild Foundations S1+S2 + System 16 Gauntlet — merged to main)
 Update when adding public methods or entities.
 
 ---
@@ -206,6 +206,122 @@ reward; list exclusion; ladder spawn-then-return-same; not-joined; open hand-off
 
 **Finite-6-stage ceiling is TUNABLE** — the ladder length is `content/gauntlet_raids.json`'s stage count
 (currently 6 rising-HP stages). Deeper climbs = add stages (or formula-extend HP) in JSON; no code change.
+
+---
+
+## System 21 — Guild / Clan Foundations (Slice 1)
+
+Identity + membership + join flow + roles/permissions + lifecycle. No guild chat (S2) or guild raids (S3).
+Migration `AddGuildSystem` (3 tables: `guilds`, `guild_memberships`, `guild_join_requests`).
+
+### Enums (`src/ROTA.Domain/Enums/`)
+| Enum | Values | Notes |
+|------|--------|-------|
+| `GuildRank` | `Member=1, Officer=2, Leader=3` | Permission checks compare by int value. No 0 value → NO store default on the EF int column. |
+| `GuildJoinPolicy` | `Open=0, Application=1, InviteOnly=2` | Per-guild choice; Open = auto-accept to cap. |
+| `GuildJoinRequestKind` | `Application=0, Invite=1` | Application = player→guild; Invite = officer→player. |
+| `GuildJoinRequestStatus` | `Pending=0, Accepted=1, Rejected=2, Withdrawn=3, Expired=4` | |
+
+### Config (`src/ROTA.Application/Configuration/GuildConfig.cs`)
+Bound from appsettings `"GuildConfig"` via `IOptions<GuildConfig>`. `MemberCap` 50, `CreationGoldCost`
+25000 (**TUNABLE — flagged**), `MinCreationLevel` 20, `LeaderInactivityDays` 14, `TagMinLength` 2,
+`TagMaxLength` 5, `NameMaxLength` 32.
+
+### Entities (`src/ROTA.Domain/Entities/`)
+- **`Guild`** — `Id, Name, NameNormalized, Tag, TagNormalized, Description, CrestId?, LeaderId, Motd,
+  MemberCap, Level, Xp, MemberCount, JoinPolicy, +created/updated/IsDeleted`. Methods: `Create`, `Rename`,
+  `SetTag`, `SetDescription`, `SetMotd`, `SetCrest`, `SetJoinPolicy`, `SetLeader`, `AddXp`,
+  `IncrementMemberCount`/`DecrementMemberCount`, `Disband`, static `Normalize(string)`. Name/Tag uniqueness
+  is enforced case-insensitively via the lowercase shadow columns `NameNormalized`/`TagNormalized` under
+  **partial unique indexes** (`HasFilter("is_deleted = false")`) — reuse after disband works.
+- **`GuildMembership`** — `Id, GuildId, PlayerId, Rank, ContributionTotal, JoinedAt, LastActiveAt,
+  +created/updated/IsDeleted`. **Partial unique index on `player_id WHERE is_deleted=false`** (one active
+  guild per player; re-joinable after leave). Methods: `Create(guildId, playerId, rank)`, `SetRank`,
+  `AddContribution`, `TouchActivity`, `SoftDelete`.
+- **`GuildJoinRequest`** — `Id, GuildId, PlayerId, Kind, Status, +created/updated/IsDeleted`. Methods:
+  `Create(guildId, playerId, kind)`, `Accept`, `Reject`, `Withdraw`, `Expire`.
+- **`Player`** additive methods: `JoinGuild(Guid, GuildRank)`, `LeaveGuild()`, `SetGuildRank(GuildRank)` —
+  keep the denormalized `Player.GuildId`/`GuildRank` in sync (membership row is the source of truth).
+
+### Repositories (`Application/Interfaces` + `Infrastructure/.../Repositories/GuildRepositories.cs`, scoped)
+- **IGuildRepository** — `FindByIdAsync`, `FindByNameAsync`(ci), `FindByTagAsync`(ci),
+  `NameExistsAsync`/`TagExistsAsync`(ci, optional exclude id), `CreateAsync`, `UpdateAsync`,
+  `BrowseAsync(query,page,pageSize)` → `GuildBrowseEntry`, `GetRosterAsync(guildId)` → `GuildRosterEntry`.
+- **IGuildMembershipRepository** — `FindByPlayerAsync`, `FindByGuildAndPlayerAsync`, `GetForGuildAsync`,
+  `CountActiveAsync`, `CreateAsync`, `UpdateAsync`.
+- **IGuildJoinRequestRepository** — `FindByIdAsync`, `GetPendingForGuildAsync`, `GetPendingForPlayerAsync`,
+  `FindPendingAsync(guildId, playerId, kind)`, `CreateAsync`, `UpdateAsync`.
+
+### IGuildService (`src/ROTA.Application/Interfaces/IGuildService.cs`)
+Impl: `GuildService` (`src/ROTA.Application/Services/GuildService.cs`). Server-authoritative; every state
+change writes audit_log. Permission rule for kick/promote/demote: **actor.Rank > target.Rank**; promote/
+demote additionally require **resulting rank < actor.Rank** (so in the 3-tier ladder only the Leader changes
+ranks — officers can't create officers). Leader-only: disband, rename/tag/description/join-policy, transfer.
+Officer+: invite, accept/reject application, set MOTD.
+
+| Method | Description |
+|--------|-------------|
+| `CreateGuildAsync(playerId, name, tag, description, joinPolicy)` | Gates: not already in guild, level ≥ MinCreationLevel, gold ≥ CreationGoldCost, name/tag free (ci) + not reserved + tag length. Deducts gold, creates Guild (Leader, count 1) + Leader membership, syncs Player. → `CreateGuildResult`. |
+| `DisbandGuildAsync(playerId, guildId)` | Leader-only. Soft-deletes guild + all memberships; releases every member's Player fields. |
+| `UpdateGuildAsync(actorId, guildId, name?, tag?, description?, motd?, joinPolicy?)` | Leader for name/tag/desc/policy; officer+ for MOTD. Re-validates ci uniqueness/reserved/length on name/tag. |
+| `ApplyAsync(playerId, guildId)` | Open → auto-join (cap-checked); Application → pending request (idempotent); InviteOnly → reject. → `ApplyGuildResult` (Joined / RequestId). |
+| `AcceptApplicationAsync` / `RejectApplicationAsync(actorId, guildId, requestId)` | Officer+. Accept → membership (cap + still-guild-less checks) + mark Accepted. |
+| `InviteAsync(actorId, guildId, targetUsernameOrId)` | Officer+. Target guild-less → pending Invite (idempotent). |
+| `AcceptInviteAsync(playerId, requestId)` | Invited player accepts → membership (cap + still-guild-less). |
+| `LeaveAsync(playerId, guildId)` | Member/officer leaves (Leader cannot — transfer/disband first). |
+| `KickAsync(actorId, guildId, targetPlayerId)` | actor.Rank > target.Rank. |
+| `PromoteAsync` / `DemoteAsync(actorId, guildId, targetPlayerId)` | Member↔Officer within the permission rule; syncs Player rank. |
+| `TransferLeadershipAsync(leaderId, guildId, targetPlayerId)` | Leader-only; target→Leader, old leader→Officer; `Guild.SetLeader`. |
+| `RunInactivitySuccessionAsync(guildId)` | If leader's `LastActiveAt` older than LeaderInactivityDays, promote most-active officer (LastActiveAt desc, ContributionTotal tiebreak). Triggerable now; **scheduled auto-driver is a FOLLOW-UP**. |
+| `GetGuildAsync(guildId, callerId)` | Detail + roster; pending requests included for officer+ callers. → `GuildDetailResponse?`. |
+| `BrowseGuildsAsync(query, page)` | Searchable paged guild list. → `GuildSummaryDto[]`. |
+
+### DTOs (`src/ROTA.Shared/DTOs/GuildDTOs.cs`)
+`GuildFailureCode` (None/NotFound/Validation/AlreadyInGuild/NotInGuild/NameTaken/TagTaken/InsufficientLevel/
+InsufficientGold/MemberCapReached/PermissionDenied/PolicyForbidsApply/LeaderCannotLeave/Conflict);
+`GuildActionResult`, `CreateGuildResult`, `ApplyGuildResult`; requests `CreateGuildRequest`,
+`GuildInviteRequest`, `UpdateGuildRequest`, `TransferLeadershipRequest`; responses `GuildSummaryDto`,
+`GuildMemberDto`, `GuildJoinRequestDto`, `GuildDetailResponse`. Validators in
+`src/ROTA.Application/Validators/GuildValidators.cs` (reuse `ReservedUsernames`).
+
+### GuildController — `api/guilds` [Authorize]
+`src/ROTA.Api/Controllers/GuildController.cs`. PlayerId from JWT sub. Failure codes → 400/403/404/409.
+
+| Endpoint | Service Method | Responses |
+|----------|---------------|-----------|
+| `GET /api/guilds?query=&page=` | `BrowseGuildsAsync` | 200 |
+| `POST /api/guilds` | `CreateGuildAsync` | 201, 400, 409 |
+| `GET /api/guilds/{id}` | `GetGuildAsync` | 200, 404 |
+| `PUT /api/guilds/{id}` | `UpdateGuildAsync` | 200, 400, 403, 404, 409 |
+| `POST /api/guilds/{id}/disband` | `DisbandGuildAsync` | 200, 403, 404 |
+| `POST /api/guilds/{id}/apply` | `ApplyAsync` | 200, 404, 409 |
+| `POST /api/guilds/{id}/requests/{reqId}/accept` | `AcceptApplicationAsync` | 200, 403, 404, 409 |
+| `POST /api/guilds/{id}/requests/{reqId}/reject` | `RejectApplicationAsync` | 200, 403, 404, 409 |
+| `POST /api/guilds/{id}/invite` | `InviteAsync` | 200, 400, 403, 404, 409 |
+| `POST /api/guilds/invites/{reqId}/accept` | `AcceptInviteAsync` | 200, 403, 404, 409 |
+| `POST /api/guilds/{id}/leave` | `LeaveAsync` | 200, 409 |
+| `POST /api/guilds/{id}/members/{playerId}/kick` | `KickAsync` | 200, 403, 404 |
+| `POST /api/guilds/{id}/members/{playerId}/promote` | `PromoteAsync` | 200, 403, 404, 409 |
+| `POST /api/guilds/{id}/members/{playerId}/demote` | `DemoteAsync` | 200, 403, 404, 409 |
+| `POST /api/guilds/{id}/transfer` | `TransferLeadershipAsync` | 200, 403, 404, 409 |
+
+### Guild chat (Slice 2) — additive to the existing `ChatHub`
+Real-time over SignalR `ChatHub` (`/hubs/chat`); world/raid chat unchanged. The caller is in ≤1 guild via
+`Player.GuildId`; the guild group is always resolved server-side from the verified identity, never from a
+client-supplied id. `Scope="Guild"` on the shared `ChatMessageDto`. // BETA
+
+| Hub method (`src/ROTA.Api/SignalR/ChatHub.cs`) | Behavior |
+|---|---|
+| `JoinGuildChannel()` | Resolves caller's `GuildId`; null → `GuildChatUnavailable` to caller; else adds connection to group `guild:{guildId}`. |
+| `LeaveGuildChannel()` | Removes connection from `guild:{guildId}` (no-op if not in a guild). |
+| `SendGuildMessage(string body)` | **Mute-gate** (banned/muted → `Muted`, like world/raid) then **member-gate** (null `GuildId` → `GuildChatUnavailable`); on pass appends to the per-guild ring buffer + broadcasts `GuildMessage` to `guild:{guildId}`. Reuses world-chat trim + 500-char cap. |
+
+| Store / Endpoint | Notes |
+|---|---|
+| `IGuildChatStore` + `RedisGuildChatStore` | Per-guild 100-msg ring buffer, key `chat:guild:{guildId}` (LPUSH→LTRIM, read oldest→newest). Mirrors `RedisWorldChatStore` + a `guildId` arg → isolated per guild. Scoped DI. |
+| `GET /api/chat/guild/history?count=` `[Authorize]` (`ChatController`) | Caller's `GuildId` from JWT sub; member-gated → null GuildId returns 200 + empty list (mirrors world-history). |
+
+---
 
 ## System 17 — Global Leaderboards (Slice 1)
 

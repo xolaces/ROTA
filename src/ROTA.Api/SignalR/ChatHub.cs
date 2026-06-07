@@ -8,8 +8,10 @@ namespace ROTA.Api.SignalR;
 
 /// <summary>
 /// Real-time chat hub. World chat (T36) is broadcast to everyone and persisted to a 100-message Redis
-/// ring buffer; raid chat (T35) is broadcast to a per-raid group and is ephemeral. Muted players (T40)
-/// are rejected. PM delivery (T37) reuses this hub's connection via Clients.User from SocialController.
+/// ring buffer; raid chat (T35) is broadcast to a per-raid group and is ephemeral; guild chat (System 21
+/// Slice 2) is broadcast to a per-guild group and persisted to a per-guild ring buffer, member-gated.
+/// Muted players (T40) are rejected. PM delivery (T37) reuses this hub's connection via Clients.User from
+/// SocialController.
 /// </summary>
 [Authorize]
 public sealed class ChatHub : Hub
@@ -17,11 +19,13 @@ public sealed class ChatHub : Hub
     private const int MaxBody = 500;
 
     private readonly IWorldChatStore _world;
+    private readonly IGuildChatStore _guild;
     private readonly IPlayerRepository _players;
 
-    public ChatHub(IWorldChatStore world, IPlayerRepository players)
+    public ChatHub(IWorldChatStore world, IGuildChatStore guild, IPlayerRepository players)
     {
         _world = world;
+        _guild = guild;
         _players = players;
     }
 
@@ -54,6 +58,49 @@ public sealed class ChatHub : Hub
         await Clients.Group(RaidGroup(raidId)).SendAsync("RaidMessage", msg);
     }
 
+    // ---- guild chat (System 21 Slice 2) ----
+
+    /// <summary>
+    /// Joins the caller to their own guild's chat group. The caller is in ≤1 guild (Player.GuildId);
+    /// not in a guild → no group is joined and the caller is told. Mirrors JoinRaid but the group is
+    /// resolved server-side from the verified identity, never from a client-supplied id.
+    /// </summary>
+    public async Task JoinGuildChannel()
+    {
+        var guildId = await CallerGuildIdAsync();
+        if (guildId is null) { await NotifyNotInGuild(); return; }
+        await Groups.AddToGroupAsync(Context.ConnectionId, GuildGroup(guildId.Value));
+    }
+
+    /// <summary>Leaves the caller's guild chat group (symmetry with LeaveRaid).</summary>
+    public async Task LeaveGuildChannel()
+    {
+        var guildId = await CallerGuildIdAsync();
+        if (guildId is null) return;
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, GuildGroup(guildId.Value));
+    }
+
+    /// <summary>
+    /// Broadcasts a guild-chat message to the caller's guild group and stores it in that guild's ring
+    /// buffer. Member-gated (Player.GuildId must be non-null) and mute-gated (a muted/banned player is
+    /// rejected exactly as in world/raid chat).
+    /// </summary>
+    public async Task SendGuildMessage(string body)
+    {
+        body = Sanitize(body);
+        if (body.Length == 0) return;
+
+        // Resolve the caller once: drives both the mute-gate and the member-gate from the same row.
+        var player = await _players.FindByIdAsync(SenderId());
+        if (player is not null && (player.IsBanned || player.IsMuted)) { await NotifyBlocked(); return; }
+        if (player?.GuildId is null) { await NotifyNotInGuild(); return; }
+
+        var guildId = player.GuildId.Value;
+        var msg = BuildMessage("Guild", null, body);
+        await _guild.AppendAsync(guildId, msg);
+        await Clients.Group(GuildGroup(guildId)).SendAsync("GuildMessage", msg);
+    }
+
     // ---- helpers ----
 
     private ChatMessageDto BuildMessage(string scope, string? raidId, string body) => new()
@@ -84,6 +131,15 @@ public sealed class ChatHub : Hub
 
     private Task NotifyBlocked() => Clients.Caller.SendAsync("Muted", "You cannot send messages right now (muted or banned).");
 
+    /// <summary>Resolves the caller's current guild id from the verified identity; null if not in a guild.</summary>
+    private async Task<Guid?> CallerGuildIdAsync()
+    {
+        var p = await _players.FindByIdAsync(SenderId());
+        return p?.GuildId;
+    }
+
+    private Task NotifyNotInGuild() => Clients.Caller.SendAsync("GuildChatUnavailable", "You are not in a guild.");
+
     private static string Sanitize(string body)
     {
         if (string.IsNullOrWhiteSpace(body)) return string.Empty;
@@ -92,4 +148,6 @@ public sealed class ChatHub : Hub
     }
 
     private static string RaidGroup(string raidId) => $"raid:{raidId}";
+
+    private static string GuildGroup(Guid guildId) => $"guild:{guildId}";
 }

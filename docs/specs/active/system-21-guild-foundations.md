@@ -192,20 +192,33 @@ before Slice 1. They share zero tables, so they can progress independently.
 
 ---
 
-## PART 5 — OPEN DECISIONS (resolve with owner before Slice 1)
-1. **One guild per player?** (recommend **yes** for v1.)
-2. **Member cap** — fixed (e.g. 50) or scales with guild level? (recommend start fixed, scale in Slice 4.)
-3. **Default join model** — application+invite (recommend) vs open vs leader's choice per guild.
-4. **Role tiers** — 3 (Leader/Officer/Member) or 4 (add Recruit)?
-5. **Guild creation cost / gate** — gems? gold? min level? (prevents spam; recommend a gem or gold cost + min level.)
-6. **Inactivity succession** — auto-promote the most-active officer after N days of leader inactivity? (recommend yes, N≈7–14.)
-7. **Guild raid summon** — who (Officer+?) and what gates it: a **guild sigil**, gold/gem cost, or a
-   cooldown? And **GuildStamina cost per hit** (size 1/5/20 → ?).
-8. **Contribution metric** — damage dealt, GuildStamina spent, or a points blend? (recommend damage, reusing the raid tiers.)
-9. **Guild leaderboards** in v1 or deferred? (recommend deferred to after fundamentals.)
-10. **Disband semantics** — leader-only; members released to guild-less; cosmetics/treasury fate.
-11. **Name/tag rules** — length, uniqueness (case-insensitive), profanity/reserved-name filter (reuse the
-    reserved-username validator).
+## PART 5 — DECISIONS (LOCKED 2026-06-06/07 with owner)
+*Owner-set marked [O]; agent-defaulted standard-v1 marked [A] (owner invited to override). Also recorded
+in memory `guild-foundations-decisions.md`.*
+1. **One guild per player** — **YES** [A]. Partial unique index on `player_id` where `is_deleted=false`
+   (re-join after leave — the friendship lesson).
+2. **Member cap** — **50, fixed** [O]. Scaling-with-level deferred to the optional Slice 4.
+3. **Join model** — **per-guild choice** [O]: each leader picks `Open` / `Application` / `InviteOnly`
+   (a `JoinPolicy` field on `Guild`; `Open` = auto-accept up to cap).
+4. **Role tiers** — **3**: `Member` / `Officer` / `Leader` [A].
+5. **Creation gate** — **gold cost + min level 20** [O]. Amounts in `GuildConfig` (tunable; confirm the
+   gold amount).
+6. **Inactivity succession** — **YES, ~14 days** [A]: auto-promote the most-active officer when the
+   leader is inactive ≥ `GuildConfig.LeaderInactivityDays`. (Auto-trigger mechanism = Slice-1 service
+   method; a scheduled background driver may be a follow-up.)
+7. **Guild raid summon** — **guild-sigil gated**, officer+; **GuildStamina/hit = hit size (1/5/20)**
+   [O]. Full **guild-sigil economy** (daily claim 1×/player, guild shop buy ≤3/day/player in placeholder
+   "guild shop tickets", donate ≤3/day/player, guild-pool draw) — Slice 3. **Not in Slice 1.**
+8. **Contribution metric** — **damage dealt** (reuse raid contribution tiers) [A] — Slice 3.
+9. **Guild leaderboards** — **deferred** to after fundamentals [A].
+10. **Disband** — **leader-only**; members released to guild-less [A].
+11. **Name/tag rules** — reuse the **reserved-username validator**; **tag 2–5 chars**; names + tags
+    **unique case-insensitive** [A].
+
+**Open sub-questions for Slice 3 (guild-sigil economy) — confirm before S3:** (a) source of guild shop
+tickets; (b) summon draws from a guild pool vs the summoner's personal sigils; (c) daily limits reset at
+UTC midnight (reuse the gem `daily:{date}` pattern); (d) guild sigil = a new ItemType/entity vs a
+guild-scoped counter.
 
 ---
 

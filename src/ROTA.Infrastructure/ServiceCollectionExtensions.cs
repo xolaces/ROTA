@@ -42,6 +42,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IFriendshipRepository, FriendshipRepository>();
         services.AddScoped<IBlockRepository, BlockRepository>();
         services.AddScoped<IPrivateMessageRepository, PrivateMessageRepository>();
+        // System 21 — Guild Foundations (Slice 1)
+        services.AddScoped<IGuildRepository, GuildRepository>();
+        services.AddScoped<IGuildMembershipRepository, GuildMembershipRepository>();
+        services.AddScoped<IGuildJoinRequestRepository, GuildJoinRequestRepository>();
 
         // System 16 — Gauntlet (Slice 2) repositories
         services.AddScoped<IGauntletEventRepository, GauntletEventRepository>();
@@ -63,6 +67,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISubmissionRateLimiter, SubmissionRateLimiter>();
         // World-chat ring buffer (T36)
         services.AddScoped<IWorldChatStore, RedisWorldChatStore>();
+        // Guild-chat ring buffer (System 21 Slice 2) — per-guild keyed
+        services.AddScoped<IGuildChatStore, RedisGuildChatStore>();
 
         // Content definition providers — singletons: JSON files read once at startup
         services.AddSingleton<IQuestDefinitionProvider>(
@@ -119,6 +125,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmailNotificationService, EmailNotificationService>();
         services.AddScoped<IPinnacleService, PinnacleService>();
         services.AddScoped<ISocialService, SocialService>();
+        services.AddScoped<IGuildService, GuildService>();
 
         // System 16 — Gauntlet (Slice 2) services
         services.AddScoped<IGauntletService, GauntletService>();

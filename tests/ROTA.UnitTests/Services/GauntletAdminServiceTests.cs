@@ -177,7 +177,7 @@ public class GauntletAdminServiceTests
         newEvent.Should().NotBeNull();
         // Rank-1 → Wrath on the NEW event; rank-2 → Blessing on the NEW event.
         b.EventMagics.Verify(m => m.GrantAsync(rank1, newEvent!.Id, "magic_wrath_of_the_ancients", It.IsAny<CancellationToken>()), Times.Once);
-        b.EventMagics.Verify(m => m.GrantAsync(rank2, newEvent.Id, "magic_blessing_of_the_ancients", It.IsAny<CancellationToken>()), Times.Once);
+        b.EventMagics.Verify(m => m.GrantAsync(rank2, newEvent!.Id, "magic_blessing_of_the_ancients", It.IsAny<CancellationToken>()), Times.Once);
         // The unranked entry gets nothing.
         b.EventMagics.Verify(m => m.GrantAsync(unranked, It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }

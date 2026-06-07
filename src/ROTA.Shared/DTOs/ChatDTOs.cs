@@ -8,7 +8,7 @@ public class ChatMessageDto
 {
     public Guid Id { get; init; }
 
-    /// <summary>"World" or "Raid".</summary>
+    /// <summary>"World", "Raid", or "Guild".</summary>
     public string Scope { get; init; } = "World";
 
     /// <summary>The active raid id when <see cref="Scope"/> is "Raid".</summary>

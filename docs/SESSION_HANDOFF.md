@@ -1,157 +1,75 @@
-# ROTA — SESSION HANDOFF → next chat
+# ROTA Session Handoff — 2026-06-07
 
-You are the Opus orchestrator/auditor on ROTA: a server-authoritative .NET 10 backend
-(Dawn-of-the-Dragons-style async RPG) + a Unity 6.4 UI Toolkit client. The OWNER drives the Unity
-Editor + Play (you can't see the Game view). Aggressive autonomy is authorized: use subagents,
-parallelize, run any git / merge / dotnet (incl. `dotnet ef database update`) without asking.
+## TL;DR
+**System 16 Gauntlet is COMPLETE + playable** (7 commits). **System 21 Guild fundamentals S1 (core/membership/join) + S2 (chat) are done** (2 commits). Remaining work = **Guild S3a (sigil economy)** then **S3b (guild raids)** — design is LOCKED below, ready to build. All work is on stacked feature branches off `main` (`b9c2dbd`). See **§Git** for merge/push state. Build is green throughout (0 errors; only 4 pre-existing MSB3277 JWT-version warnings in the test projects). Migrations are added but **NOT applied** — owner coordinates `dotnet ef database update`.
 
-## REPOS & GIT STATE
-- **Backend** (.NET 10): `C:\Users\xolac\OneDrive\Documentos\Projects\ROTA` — git `main`, remote
-  `origin` = github.com/xolaces/ROTA. `main` @ `87ec8e9`, **all pushed**. Docker (pg+redis) up; all
-  migrations applied (latest `AddQuestEverCleared`). **478 unit + 35 integration green.**
-  **Branch `chore/drift-control-tooling` is still UNMERGED** (drift tooling + the `/audit-dtos`
-  command + `audit/` ledgers live there — merge to `main` when ready).
-- **Unity** (6.4 / 6000.4.9f1): `C:\Dev\ROTA.Client6` — git `master` @ `ff90627`, **local-only (no
-  remote)**. Use `git -C`. `Main.unity`'s `useMock` toggle — never commit it.
+---
 
-## READ FIRST
-- `docs/ROTA_Function_Reference.md` (API/DTO contract), `CLAUDE.md` (architecture + security rules),
-  `docs/specs/shipped/` (system specs). Confirm BOTH repos' `git log` before trusting anything.
+## DONE THIS SESSION
 
-## SHIPPED THIS SESSION (T19–T29, all verified + merged)
-- **T20/T21/T22/T24 (level-up cluster):** backend full resource refill + GuildStamina-1:1-to-level
-  on level-up (new `IEnergyService.RefillToMaxAsync`; GuildStamina pool was stuck at max 1). Client
-  `LevelUpOverlay` (tap-to-dismiss) + `MilestoneBanner` (sweep every 2500 levels) via
-  `PlayerState.NotifyLevelUp`.
-- **T26/T29 (correctness):** T29 — `HeaderBar` regen ticker (server regen was correct; the header
-  just never advanced between fetches). T26 — chapter-boss RESET CYCLE: clearing a node now LOCKS it
-  (server `NodeCleared`→409); a boss clear resets the whole chapter. Split `IsCleared` (resettable) /
-  `HasEverCleared` (permanent unlock latch). Migration `AddQuestEverCleared`. **Reverses System 20's
-  "replayable".**
-- **T19/T23/T25 (UI polish):** compact share button; raid countdown timer bar under the HP bar;
-  slimmer profile left column.
-- **T28:** alloc window shows live landing values + live LSI/BSI (BSI = (ATK+DEF)/Level); pool maxima
-  removed from profile (they're in the header), profile shows INDICES instead.
-- **T27:** legion tab selection-first; capacity-matched Generals/Troops slot segments; stub Equipment.
-- **MOCK NOTE:** `MockRotaApi._mockProfile.Level = 2498` (was 67) so milestones are reachable in
-  mock playtest — revert for general mock testing. Mock quest/raid now level up + refill statefully.
+### System 16 — Gauntlet (COMPLETE, end-to-end playable) — 737 tests green
+Stacked branches off main: `feat/system16-gauntlet-s1-content → -s2-ledgers → -s3-leaderboard → -s4-combat → -s5-settlement → -s6-shop → -s7-loop`.
+Commits: `c13fcfa, 3e0e113, c6ca0d0, 999a897, a6ee3d3, a3525d9, ef47c54`. Migration **AddGauntletSystem** (one consolidated; not applied).
+- **S1** enums + GauntletConfig + content (gauntlet_prizes/trophies/raids JSON + 2 off-cap magics in magics.json) + IGauntletContentProvider (startup-validated).
+- **S2** 7 entities (GauntletEvent, GauntletEntry, StrikeTransaction + GauntletCurrencyTransaction append-only ledgers, PlayerGauntletTrophy/PlayerEventMagic/PlayerMagicHonor) + repos + IGauntletService (join w/ league-lock by convergence tier; gem→strikes buy w/ idempotency-key) + IGauntletAdminService (open ≤1-active / close / settle) + GauntletController + GauntletAdminController + CLI `gauntlet-open/close/settle`.
+- **S3** IGauntletScoringService (UpdateScoreAsync atomic SQL increment, ambient-tx-aware; RecomputeRanksAsync per-league ROW_NUMBER snapshot; GetLeaderboardAsync top-200+caller) + GauntletRankSnapshotService (hosted ~60s) + `GET /api/gauntlet/leaderboard`.
+- **S4 (DEEP combat)** in `RaidService.HitRaidAsync`, gated on `ActiveRaid.GauntletEventId`, NO parallel path: (A) trophy mult on rawLegionPower highest-only before PowerScaling (every raid); (B) off-cap Wrath/Blessing auras (current owner ×1.25 / former-honor ×1.10), outside MaxAggregateProcBonus, before crit; (C) strike-spend fork (Gauntlet hits spend Strikes not Stamina; `StrikeRepository.SpendAsync` reimplemented tx-safe raw-SQL, no ChangeTracker.Clear); (D) score-update hook. A trophy-less non-Gauntlet hit is byte-identical to before.
+- **S5** idempotent settlement (tokens/pitchfork/trophies via ledger+unique-index, honor write-back on PlayerEventMagic revoke) + per-defeat strike+token rewards. Settle-twice-pays-once (proven vs real ledgers).
+- **S6** token shop: GauntletShopProvider (startup-validated) + BuyFromShopAsync (tri-state spend, per-kind idempotency, Token-vs-Pitchfork isolation). `GET/POST /api/gauntlet/shop`.
+- **S7 (loop completion)** gauntlet stages resolve as RaidDefinitions (RaidDefinitionProvider also loads gauntlet_raids.json → HitRaidAsync unchanged); `GET /api/gauntlet/ladder` auto-advance lazy spawn (stage 1 on entry, next stage after defeat, Personal+stamped); OpenEventAsync rank-magic consumable hand-off to prior settled event's rank winners (idempotent).
 
-## SHIPPED PRIOR SESSIONS (all verified, all merged)
-Playtest batch T1–T8 (System 19 client + System 20 + class preview) and T9–T18 below.
-- **T9** compact Share pill · **T10** on-hit gold roll 3-8/stamina + combat-log XP/gold + running
-  totals (XP was always firing — confirmed) · **T11** fresh-account quests (was mock seeding) ·
-  **T12** themed dropdowns · **T14** stat-alloc now refreshes header+identity (real fix) ·
-  **T15** global mandatory class gate (`ClassGate`, blocks nav, re-prompts on login) · **T16** raid
-  background layer (placeholder) · **T17** full-background nav tabs.
-- **T13** was a mislabel (its screenshot was really T14) — no separate work.
-- System 20: quest node depletion (100→0, battle −5/boss −2.5, deplete-to-clear), Discernment-scaled
-  drops, Pano Orange 8-piece set. System: class `ChoicePreviews` for the gate.
+### System 21 — Guild (S1 + S2) — 602 tests green
+Branches off main: `feat/system21-guild-s1-core → -s2-chat`. Commits: `a473426, db83faa`. Migration **AddGuildSystem** (not applied).
+- **S1** Guild/GuildMembership/GuildJoinRequest + 4 enums (GuildRank Member/Officer/Leader, GuildJoinPolicy Open/Application/InviteOnly, GuildJoinRequestKind, GuildJoinRequestStatus) + GuildConfig + GuildService (create [gold+L20 gate], disband [leader-only, releases members], per-guild join policy, apply/accept/reject, invite/accept-invite, leave [leader can't], kick, promote/demote, transfer, RunInactivitySuccessionAsync, roster, browse) + GuildController (14 endpoints) + DTOs + validators. One-guild-per-player = partial unique index on `guild_memberships.player_id WHERE is_deleted=false`; CI name/tag uniqueness via normalized shadow columns; permission rule `actor.Rank>target.Rank AND newRank<actor.Rank` (⇒ only Leader changes ranks). Player.GuildId/GuildRank kept in sync.
+- **S2** ChatHub guild channel (JoinGuildChannel/LeaveGuildChannel/SendGuildMessage; mute-gate then member-gate; per-guild group) + IGuildChatStore/RedisGuildChatStore (per-guild 100-msg ring buffer `chat:guild:{id}`) + `GET /api/chat/guild/history`. Additive — world/raid chat unchanged. Unity SignalR client deferred.
 
-## RECURRING LESSON (important)
-Owner playtests in **mock mode** (`useMock=true`). Several "bugs" (stamina, legion-active,
-leaderboard tabs, stat-alloc, fresh quest node) were **stateless-mock artifacts** — the live backend
-was correct. **Mock fidelity is part of every ticket**: a new feature's `MockRotaApi` path must
-mirror live (mutable state), or playtest feedback is noise. Live mode is the real validation.
+---
 
-## Phase 2 — Ops & Social (T30–T40) — BACKEND + CLIENT SHIPPED (2026-06-06)
-**Spec:** `docs/specs/active/phase-2-ops-social.md`. CLAUDE.md has the full shipped summary.
-- **Backend: ALL 8 tickets done on branch `feat/phase2-ops-social`** (off main, UNMERGED, **pushed to
-  origin**) — T39 email backbone, T40 ban/mute, T30 SP delta, T32 pinnacle gems, T33 first-claim +
-  placeholder magics, T38 feedback, T37 friends/PM/report, T35/36 SignalR chat. **526 unit + 35
-  integration green** (+ adversarial multi-agent review pass + fixes). Migrations AddOutboundEmails/
-  AddPlayerMute/AddPinnacleFirstClaims/AddSocialSystem/FriendshipPartialUniqueIndex applied. Merge to main when ready.
-- **React ops dashboard SHIPPED** at **`C:\Dev\rota-ops-dashboard`** (separate local git repo, no remote):
-  Vite+React+TS, mission-control UI, demo-mode default, admin-JWT login, `npm run build` passes. Run
-  `npm install && npm run dev`. Point at the live API in Settings or `.env.local` (VITE_API_BASE).
-- **Email provider deviation:** working provider is **Gmail SMTP** (`SmtpEmailService`; creds in API
-  user-secrets `Email:Username`/`Email:Password` — temporary, owner to rotate), NOT SendGrid. Same
-  `IEmailService` interface keeps SendGrid as the documented swap.
-- **CLIENT (Unity) — BUILT + VERIFIED-COMPILING** on branch `feat/phase2-client-plumbing` (local-only,
-  off master, UNMERGED; headless compile exit 0, zero `error CS`, confirmed twice + independently).
-  Shipped: plumbing/DTO mirror (b49d955) + UI (c4f9882) — T31 scrollbar, T38 bug panel (HeaderBar 🐞),
-  T37 SocialScreen (friends / PM-over-REST / blocks / report; nav entry), T34 raid layout restructure,
-  T32 pinnacle gem callout, T36 world-chat read-only panel + HeaderBar 💬 unread dot. Mocks are stateful.
-  **Merge to master when ready** (close the Editor first; `git -C C:\Dev\ROTA.Client6`). Note: untracked
-  `Assets/_Recovery/` is Unity crash cruft — ignore, don't commit.
-- **CLIENT follow-up (one task): wire a Unity SignalR client to `/hubs/chat`** (events
-  WorldMessage / RaidMessage / PrivateMessage / Muted) to light up **T35 raid chat** + public
-  **world/raid chat SEND** (currently a disabled "Live chat coming soon" box) + live PM push. Private
-  messaging already works over REST. No backend change needed — the hub is live.
-- Backend open follow-up: confirm gem amounts for pinnacle tiers **2000 / 15000 / 25000** (omitted from
-  `LevelingConfig.PinnacleGemRewards` until set); stat-rollback is PHASE-2.
+## NEXT: Guild S3 — DESIGN LOCKED (build S3a, then S3b)
 
-## ⏭️ REMAINING WORK → next session (Phase 2 tail) — START HERE
-Backend + dashboard + most client UI shipped. What's left, in priority order:
+**Owner-set (2026-06-07):** guild-shop-ticket source = **daily ticket grant** (small per-member daily allowance, ~enough for 3 sigil buys/day; placeholder until a real guild currency ships); guild-raid bosses = **NEW guild-specific content** (author e.g. `content/guild_raids.json`, distinct from raids.json; reuse the raid engine); **1 sigil per summon**.
 
-### A. PLAYTEST BUGS — ✅ FIXED 2026-06-06 (client `feat/phase2-client-plumbing` @ `4c144d7`, compile-verified)
-All three were **client + MockRotaApi** issues (live backend was already server-authoritative + tested —
-the recurring `useMock=true` fidelity trap). Fixes below; details kept for reference.
+**Structural (locked — see memory `guild-foundations-decisions.md` + spec §5):**
+- **Sigil flow:** per-player guild-sigil balance (daily claim + shop buy) → **donate to a guild POOL** → officer summons draw from the pool.
+- **Daily caps:** claim **1**/day, buy **≤3**/day, donate **≤3**/day per player; reset at **UTC midnight** (reuse gem `daily:{yyyy-MM-dd}` idempotency).
+- **Model:** guild sigil pool = guild-scoped counter; per-player sigil balance + per-player guild-shop-ticket balance = lightweight per-player ledgers/counters (NOT a full inventory ItemType).
+- **Guild raids:** officer-gated summon consumes **1** pooled sigil; **all guild members** can hit; **GuildStamina/hit = hit size (1/5/20)** (first GuildStamina sink); **contribution-tier rewards via the existing raid engine** + `GuildMembership.ContributionTotal` accrual; scope via new `active_raid.guild_id` (nullable FK + index).
 
-1. **Allocating Energy/Stamina doesn't move the *current* bar (no immediate reward).**
-   - Root cause: `Assets/ROTA.Client/Runtime/Api/MockRotaApi.cs` → `AllocateStatAsync` (~L145–146) raises
-     `MaxEnergy/MaxStamina` + `SetResourceMax(...)` but never bumps the resource **`LiveValue`**. T30
-     credits the delta to *current* on the live server (via `RefillEnergyAsync`, tested) — the mock omits it.
-   - Fix: in `AllocateStatAsync`, for Energy/Stamina also raise that resource's `LiveValue` by `amount`
-     (cap at new max) — add a `BumpResourceLive(type, amount)` helper mirroring `SetResourceMax`.
-   - Live path is fine: `ProfileScreen` re-fetches the profile after alloc (`GetProfileAsync()` → `_state.Set`,
-     ~L955), so the credited current shows once the mock returns it. `AllocateStatResponse` carries new MAX
-     only (no current) — the re-fetch is what surfaces the credit; keep that re-fetch.
+### S3a — Guild sigil economy
+Per-player guild-sigil balance + guild sigil pool + per-player guild-shop-ticket balance (counters/ledgers, idempotent daily refs). Endpoints: daily claim (1/day, idempotent `guildclaim:{playerId}:{date}`), daily ticket grant, shop buy sigils (≤3/day, spends tickets), donate (≤3/day, personal→pool), balances. Audit. Tests: daily caps enforced + idempotent; donation moves personal→pool; ticket spend.
 
-2. **Top-left HeaderBar resource bars don't match the true backend values (display drift).**
-   - Root cause: the T29 per-second regen ticker in `UI/HeaderBar.cs` extrapolates display values and must
-     **snap to server truth on every `PlayerState.Changed`**. It drifts when a spend isn't reconciled into
-     `PlayerState` (so the ticker keeps counting from a stale base), and #1's max-without-current skews the
-     fill ratio.
-   - Fix: make the header derive purely from `PlayerState` (server truth) with the ticker as cosmetic
-     extrapolation that resets to the server value on each fetch; ensure every spend reconciles —
-     after a raid hit patch stamina from the authoritative `RaidHitResponse` (`PlayerState.PatchStamina`
-     exists) and/or re-fetch; same for quest energy. Audit `HeaderBar.RenderResources` + the spend paths.
+### S3b — Guild raids
+`content/guild_raids.json` (new guild bosses) + `active_raid.guild_id` (migration) + officer-gated summon (consumes 1 pooled sigil; reuse the raid summon/engine scoped to guild) + guild-member hit gate + GuildStamina spend (mirror the Gauntlet S4 strike-fork: for guild raids spend `IEnergyService.SpendEnergyAsync(playerId, ResourceType.GuildStamina, hitSize)` instead of Stamina, inside the advisory-lock tx) + contribution-tier rewards (existing engine) + `GuildMembership.ContributionTotal` accrual + guild-raid list endpoint. **Reuse RaidService.HitRaidAsync — NO parallel combat path** (exactly like Gauntlet via GauntletEventId; here gate on guild_id). Tests: access gate, GuildStamina spend/insufficient, contribution accrual, reward idempotency, summon consumes a pooled sigil.
 
-3. **Hit ×20 was allowed with only 10 stamina.**
-   - Root cause: `Screens/RaidCombatView.cs` gates the hit buttons on `!raid.IsDefeated` only
-     (`_hitRow.SetEnabled(...)`, ~L503) — NOT on available stamina, so ×5/×20 are clickable below cost.
-     On live the server rejects (EnergyService → 422); the client let the click through; the mock raid-hit
-     doesn't enforce stamina either.
-   - Fix (client gate): track current stamina; enable each `Hit ×N` button only when `stamina >= N`; refresh
-     gating on the per-second tick, after each hit, and on profile change; surface a clear "not enough
-     stamina" message on a 422. Fix (mock fidelity): `MockRotaApi` raid-hit must reject when current
-     stamina < hitSize and **deduct** stamina on success (mirror the backend) so mock enforces the rule.
+---
 
-### B. Real-time chat — ONE task: a Unity SignalR client → `/hubs/chat`
-Lights up **T35 raid chat** + public **world/raid chat SEND** (today a disabled "Live chat coming soon"
-box) + **live PM push**. PM already works over REST; the hub + auth (JWT-over-querystring) are live on the
-backend — purely a client-side addition. Events to handle: `WorldMessage`, `RaidMessage`, `PrivateMessage`,
-`Muted`. Add a SignalR client (BestHTTP or Microsoft SignalR client DLLs — verify Unity/IL2CPP compatibility).
+## GIT / MERGE STATE
+Two independent stacks, both off `main` (`b9c2dbd`); they share ZERO tables but BOTH regenerated `RotaDbContextModelSnapshot.cs` and both edited `ServiceCollectionExtensions.cs`, `RotaDbContext.cs`, `Program.cs`, `appsettings.json`, `docs/ROTA_Function_Reference.md`, `docs/PROJECT_STATE.md` — so a Gauntlet→main FF then Guild→main merge **conflicts on those files (all additive — take BOTH sides)**.
 
-### C. DECISIONS needed from owner
-- **Pinnacle gem amounts for levels 2000 / 15000 / 25000** — omitted from
-  `appsettings.json` → `LevelingConfig.PinnacleGemRewards` until set (1000/2500/5000/7500/10000 are live).
-- Whether **mute** should cover **PMs** (currently it does — gated in `SocialService.SendMessageAsync`).
+**Recommended integration (EF-correct):**
+1. `git checkout main && git merge --ff-only feat/system16-gauntlet-s7-loop` (clean FF — main = Gauntlet).
+2. Merge Guild **code** (`git merge feat/system21-guild-s2-chat`); resolve additive conflicts by keeping BOTH sides. For the **model snapshot**, the safe path is: keep main's (Gauntlet) snapshot, delete `Migrations/*_AddGuildSystem.*`, reset the snapshot, then `dotnet ef migrations add AddGuildSystem` (regenerates the union against main+Guild-entities). The two `Up()`s are independent + additive, applied in timestamp order.
+3. `dotnet build` (0 errors) + `dotnet test` (Docker up).
+4. Tag per slice (prior scheme `v0.2.8-lb-s*`; suggest `v0.2.9-gauntlet-s1..s6` + `-loop`, `v0.3.0-guild-s1..s2`).
+5. Push `main` + tags + feature branches.
 
-### D. MERGES (all green, owner's call)
-- Backend: **`feat/phase2-ops-social`** pushed to origin — open a PR / merge to `main`.
-- Unity client: **`feat/phase2-client-plumbing`** (local; verified-compiling) — eyeball in Editor, merge to `master`.
-- Dashboard: `C:\Dev\rota-ops-dashboard` (local git, no remote) — add a remote if you want it off-machine.
-- Pre-existing: **`chore/drift-control-tooling`** still unmerged.
+**>>> ACTUAL STATE AT HANDOFF: see the orchestrator's final chat message. If main was not fully merged, follow the steps above. <<<**
 
+---
 
-- **T18** character vector models — DEFERRED (no vector-art pipeline; nav icons are Unicode emoji).
-- **Merge `chore/drift-control-tooling` → `main`** (additive, green).
-- **Content depth** — still 5 quests / 2 raids. Expand the questline.
-- **Malachar raid size** — both raids summon `Small`; bump per-sigil in `content/items.json`.
-- **Gear set bonuses** (PHASE-2); **System 16 Gauntlet** (spec in `docs/specs/active/`, unbuilt).
-- **Live-mode validation pass** of the T19–T29 batch (owner tests in mock; verify server-authoritative).
+## KNOWN FOLLOW-UPS / DEBT
+- **CLAUDE.md not yet updated** with System 16/21 "Current build status" entries (FR + PROJECT_STATE ARE updated). Add them.
+- **Gauntlet ladder double-spawn race:** `GauntletService.GetLadderAsync` spawns without a per-player lock; a rapid double-call after a defeat could spawn duplicate stages (minor score-farm). Harden with an advisory lock or a partial unique index on the active stage per (event, player).
+- **Gauntlet finite 6-stage ladder ceiling** — tunable; add stages or a formula-extension for deeper climbs.
+- **Guild inactivity-succession auto-driver** — `RunInactivitySuccessionAsync` exists; needs a scheduled hosted-service trigger.
+- **Tunable balance values to confirm:** GuildConfig.CreationGoldCost=25000; GuildConfig daily caps; GauntletConfig.StrikeGemPrice=1; gauntlet HP curve; S3a daily ticket allowance.
+- **Migrations NOT applied:** AddGauntletSystem, AddGuildSystem — coordinate `dotnet ef database update`.
+- **Multi-step guild ops** (create) not in one DB tx; benign cap-check TOCTOU — same Phase-2 patterns as gem-buy / raid-cap races.
+- **4 pre-existing MSB3277 JWT-version warnings** in test projects — pre-existing, unrelated.
 
-## DISCIPLINE / GOTCHAS
-- Backend: branch off `main`; JWT `MSB3277` warnings in the test project are pre-existing — IGNORE.
-  `dotnet test` green (Docker up); commit, NO co-author. May `dotnet ef migrations add` + `database update`.
-- A running `ROTA.Api` locks build DLLs (MSB3021/3027) — stop the `dotnet.exe` whose CommandLine
-  matches `ROTA.Api` before building, then the owner can re-run it.
-- Unity: branch off `master`; **Editor MUST be closed** to headless-compile (it conflicts otherwise)
-  — check `Get-Process Unity`, ask the owner to close it. Compile:
-  `& '...\6000.4.9f1\Editor\Unity.exe' -batchmode -quit -nographics -projectPath 'C:\Dev\ROTA.Client6'
-  -logFile <log>` via `Start-Process -Wait`; rm stale `Temp\UnityLockfile` first; grep log for
-  `error CS` (expect 0). Commit incl new `.meta`, NO co-author, never commit `Main.unity`'s `useMock`.
-- **DTO drift** is the recurring failure: client `Assets/ROTA.Client/Runtime/Api/Dtos.cs` must mirror
-  `src/ROTA.Shared/DTOs/*` (camelCase JSON, numeric enums).
-- PowerShell wraps native-exe stderr as `NativeCommandError` even on success — check actual output.
+## WORKING CONVENTIONS (kept this session)
+- Per slice: own branch (stacked), `dotnet build` 0 warnings + `dotnet test` green (Docker: `docker compose up -d`), one commit, **NO co-author trailer**.
+- Heavy subagent use for builds; the orchestrator reviews EVERY diff (esp. combat + idempotency = money-path) and re-runs build+test before committing.
+- Server-authoritative; private setters / no EF attributes; Fluent + snake_case; ledgers append-only (created_at only); FKs indexed; partial unique index where soft-deleted rows recur; idempotent ledgers (referenceId); audit every state change; thin controllers (PlayerId from JWT `sub`); `HasSentinel` only for enum columns with a non-zero store default.
+- LF→CRLF git warnings on Windows are benign.
+- READ FIRST next session: this file, `docs/specs/active/system-21-guild-foundations.md` (§5 LOCKED), `docs/ROTA_Function_Reference.md`, memory `guild-foundations-decisions.md`. Confirm `git log`/`git branch` before trusting anything.
