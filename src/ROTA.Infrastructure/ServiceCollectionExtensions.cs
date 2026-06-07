@@ -40,6 +40,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IFriendshipRepository, FriendshipRepository>();
         services.AddScoped<IBlockRepository, BlockRepository>();
         services.AddScoped<IPrivateMessageRepository, PrivateMessageRepository>();
+        // System 21 — Guild Foundations (Slice 1)
+        services.AddScoped<IGuildRepository, GuildRepository>();
+        services.AddScoped<IGuildMembershipRepository, GuildMembershipRepository>();
+        services.AddScoped<IGuildJoinRequestRepository, GuildJoinRequestRepository>();
 
         // Infrastructure services
         services.AddScoped<IAuthLockoutService, AuthLockoutService>();
@@ -93,6 +97,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmailNotificationService, EmailNotificationService>();
         services.AddScoped<IPinnacleService, PinnacleService>();
         services.AddScoped<ISocialService, SocialService>();
+        services.AddScoped<IGuildService, GuildService>();
 
         // FluentValidation — scan Application assembly for all IValidator<T> implementations
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();

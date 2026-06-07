@@ -179,6 +179,9 @@ builder.Services.Configure<LegionConfig>(
 builder.Services.Configure<EmailConfig>(
     builder.Configuration.GetSection("Email"));
 
+builder.Services.Configure<GuildConfig>(
+    builder.Configuration.GetSection("GuildConfig"));
+
 builder.Services.AddRotaServices(builder.Environment.ContentRootPath);
 
 // Phase 2 (T39): out-of-band sender that drains the email queue without blocking requests.

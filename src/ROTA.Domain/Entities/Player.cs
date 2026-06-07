@@ -205,4 +205,32 @@ public class Player
         Gold += amount;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
+
+    // Guild membership (System 21) — denormalized GuildId/GuildRank kept in sync with the
+    // GuildMembership row for O(1) "what guild am I in / what rank" reads. The guild service is
+    // the single writer; these are additive and never disturb existing player behavior.
+
+    /// <summary>Records that the player joined a guild at the given rank. Sets both GuildId and GuildRank.</summary>
+    public void JoinGuild(Guid guildId, GuildRank rank)
+    {
+        GuildId = guildId;
+        GuildRank = rank.ToString();
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>Clears guild membership (leave / kick / disband). Clears both GuildId and GuildRank.</summary>
+    public void LeaveGuild()
+    {
+        GuildId = null;
+        GuildRank = null;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>Updates the denormalized guild rank (promote / demote / transfer). No-op if not in a guild.</summary>
+    public void SetGuildRank(GuildRank rank)
+    {
+        if (GuildId is null) return;
+        GuildRank = rank.ToString();
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
 }

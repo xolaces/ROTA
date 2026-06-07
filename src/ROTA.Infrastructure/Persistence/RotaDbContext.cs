@@ -54,6 +54,11 @@ public class RotaDbContext : DbContext
     public DbSet<PlayerBlock> PlayerBlocks => Set<PlayerBlock>();
     public DbSet<PrivateMessage> PrivateMessages => Set<PrivateMessage>();
 
+    // ----- System 21 — Guild / Clan Foundations (Slice 1) -----
+    public DbSet<Guild> Guilds => Set<Guild>();
+    public DbSet<GuildMembership> GuildMemberships => Set<GuildMembership>();
+    public DbSet<GuildJoinRequest> GuildJoinRequests => Set<GuildJoinRequest>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
