@@ -74,6 +74,15 @@ public class MasteryRatingRefreshResponse
     public DateTimeOffset SnapshotAt { get; set; }
 }
 
+// ADMIN/DEV force tool (System 22 Phase A) — set one or more Ancients' levels (1..5, up or down).
+// Target null = the calling admin's own account (the common dev-test path).
+public class MasteryForceRequest
+{
+    public string? TargetPlayerIdOrUsername { get; set; }
+    /// <summary>Ancient name → level (1..5). Only listed Ancients are changed.</summary>
+    public Dictionary<string, int> Levels { get; set; } = new();
+}
+
 // ── Re-spec / pledge (Slice 3) ────────────────────────────────────────────────
 
 public enum MasteryRespecFailureCode

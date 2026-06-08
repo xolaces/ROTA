@@ -49,6 +49,13 @@ public interface IMasteryService
     /// after quest completion). Monotonic; audited; may advance several levels at once.
     /// </summary>
     Task EvaluateTierUpsAsync(Guid playerId, CancellationToken ct = default);
+
+    /// <summary>
+    /// ADMIN/DEV ONLY — force one or more Ancients' levels (1..5, up OR down) for testing, bypassing
+    /// the monotonic/challenge rules. Audited. Returns the refreshed overview.
+    /// </summary>
+    Task<MasteryOverviewResponse> ForceLevelsAsync(
+        Guid playerId, IReadOnlyDictionary<MasteryAncient, int> levels, CancellationToken ct = default);
 }
 
 /// <summary>

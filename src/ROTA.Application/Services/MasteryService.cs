@@ -171,6 +171,22 @@ public sealed class MasteryService : IMasteryService
         await EvaluateTierUpsCoreAsync(playerId, counters, ct);
     }
 
+    public async Task<MasteryOverviewResponse> ForceLevelsAsync(
+        Guid playerId, IReadOnlyDictionary<MasteryAncient, int> levels, CancellationToken ct = default)
+    {
+        var masteries = await _masteryRepo.EnsureAllAsync(playerId, ct);
+        foreach (var m in masteries)
+        {
+            if (!levels.TryGetValue(m.Ancient, out var target)) continue;
+            if (target == m.Level) continue;
+            m.ForceSetLevel(target);          // dev/admin — up or down
+            await _masteryRepo.UpsertAsync(m, ct);
+            await _auditLog.AppendAsync(AuditLog.Create(
+                playerId, "MasteryForceLevel", null, $"{m.Ancient} forced to L{m.Level}", null), ct);
+        }
+        return await GetMasteriesAsync(playerId, ct);
+    }
+
     private async Task<Dictionary<MasteryActivityType, long>> LoadCountersAsync(Guid playerId, CancellationToken ct)
         => (await _activityRepo.GetForPlayerAsync(playerId, ct)).ToDictionary(a => a.ActivityType, a => a.Counter);
 

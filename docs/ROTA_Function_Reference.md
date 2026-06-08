@@ -17,6 +17,11 @@ Spec: docs/specs/active/system-22-masteries-core.md. No migration (content-model
 - **Starter ladder:** `mat_iron_shard`→`mat_arcane_dust`, `statbag_minor`→`statbag_major`.
 - **Deferred:** gear-drop + raid-threshold quality-upgrade wiring (Orange-ceiling gear / per-participant kill-loop reads).
 
+### Dev-force (2026-06-08) — client dev tools / local testing
+- `PlayerMastery.ForceSetLevel(int)` (admin/dev; 1..5 up or down, bypasses monotonic guard).
+- `IMasteryService.ForceLevelsAsync(playerId, IReadOnlyDictionary<MasteryAncient,int> levels)` → refreshed overview; audited.
+- `POST /api/admin/masteries/force` [AdminOnly + DB actor re-verify] — `MasteryForceRequest { TargetPlayerIdOrUsername? (null=self), Levels }`; 400/403/404; audited.
+
 **Slice 7 scope:** Discernment drop-quality. +8 unit tests. **System 22 Phase A COMPLETE** — 4 Ancients, level 1→5
 challenge checklists, global+pledge modifiers (Wrath/Bulwark/Hoard/Discernment via existing combat+loot hooks),
 Formula-B Overall Mastery Rating + titles + leaderboard board, lossless re-spec economy. 786 unit + 88 integration green.

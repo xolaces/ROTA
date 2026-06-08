@@ -61,6 +61,58 @@ public sealed class MasteryAdminController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// DEV/ADMIN — force one or more Ancients' levels (1..5, up or down) for testing. Target defaults
+    /// to the calling admin's own account. The client's dev-force tool gates this behind a confirm dialog
+    /// when running live; mock fakes it locally.
+    /// </summary>
+    [HttpPost("force")]
+    [ProducesResponseType(typeof(MasteryOverviewResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ForceLevels([FromBody] MasteryForceRequest request, CancellationToken ct)
+    {
+        var actorId = GetActorId();
+        var actor = await _players.FindByIdAsync(actorId, ct);
+        if (actor is null || !actor.HasRole(PlayerRoles.Admin))
+            return Forbid();
+
+        // Parse + validate the requested levels.
+        var levels = new Dictionary<MasteryAncient, int>();
+        foreach (var (key, value) in request.Levels)
+        {
+            if (!Enum.TryParse<MasteryAncient>(key, ignoreCase: true, out var ancient))
+                return BadRequest(new { message = $"Unknown Ancient '{key}'." });
+            if (value < 1 || value > 5)
+                return BadRequest(new { message = $"Level for '{key}' must be 1..5 (was {value})." });
+            levels[ancient] = value;
+        }
+        if (levels.Count == 0)
+            return BadRequest(new { message = "No levels supplied." });
+
+        // Resolve the target (default: the calling admin).
+        Guid targetId = actorId;
+        if (!string.IsNullOrWhiteSpace(request.TargetPlayerIdOrUsername))
+        {
+            var target = Guid.TryParse(request.TargetPlayerIdOrUsername, out var g)
+                ? await _players.FindByIdAsync(g, ct)
+                : await _players.FindByUsernameAsync(request.TargetPlayerIdOrUsername, ct);
+            if (target is null)
+                return NotFound(new { message = $"Player '{request.TargetPlayerIdOrUsername}' not found." });
+            targetId = target.Id;
+        }
+
+        var overview = await _masteries.ForceLevelsAsync(targetId, levels, ct);
+
+        await _auditLog.AppendAsync(AuditLog.Create(
+            actorId, "MasteryForceLevels", inputHash: null,
+            resultSummary: $"actor={actorId} target={targetId} levels={string.Join(",", levels.Select(kv => $"{kv.Key}:{kv.Value}"))}",
+            ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString()), ct);
+
+        return Ok(overview);
+    }
+
     private Guid GetActorId()
         => Guid.Parse(User.FindFirst(JwtRegisteredClaimNames.Sub)!.Value);
 }

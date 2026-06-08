@@ -391,6 +391,28 @@ public class MasteryServiceTests
     }
 
     [Fact]
+    public async Task ForceLevels_SetsLevelsUpAndDown_LeavesOthersUntouched()
+    {
+        var (svc, masteryRepo, _, players, _) = Build();
+        var pid = Guid.NewGuid();
+        var rows = Rows(pid, 3, 3, 3, 3);
+        masteryRepo.Setup(m => m.EnsureAllAsync(pid, It.IsAny<CancellationToken>())).ReturnsAsync(rows);
+        players.Setup(p => p.FindByIdAsync(pid, It.IsAny<CancellationToken>())).ReturnsAsync((Player?)null);
+
+        var overview = await svc.ForceLevelsAsync(pid, new Dictionary<MasteryAncient, int>
+        {
+            [MasteryAncient.Wrath] = 5,  // up
+            [MasteryAncient.Hoard] = 1,  // down (bypasses monotonic guard)
+        });
+
+        rows.Single(r => r.Ancient == MasteryAncient.Wrath).Level.Should().Be(5);
+        rows.Single(r => r.Ancient == MasteryAncient.Hoard).Level.Should().Be(1);
+        rows.Single(r => r.Ancient == MasteryAncient.Bulwark).Level.Should().Be(3, "untouched");
+        masteryRepo.Verify(m => m.UpsertAsync(It.IsAny<PlayerMastery>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+        overview.Ancients.Single(a => a.Ancient == "Wrath").Level.Should().Be(5);
+    }
+
+    [Fact]
     public async Task GetMasteries_TriggersTierUp_AndReflectsNewLevel()
     {
         var (svc, masteryRepo, activityRepo, players, _) = Build();

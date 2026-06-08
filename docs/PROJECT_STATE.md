@@ -221,6 +221,16 @@ paid weekly via gems, idempotent). Phase B (The Rise) + Phase C (PoE-depth) rema
   kill-loop reads / Orange-ceiling gear); (2) TUNE the magnitudes + challenge thresholds + the (off-by-default) breadth
   micro-bonus; (3) the paid-respec crash-recovery gap (strict weekly cap; PHASE-2 note in MasteryService).
 
+## System 22 — Masteries dev-force endpoint (2026-06-08) — for client dev tools / local testing
+Build: 0 errors. Tests: **787 unit + 88 integration green** (+1 unit ForceLevels). Local DB updated
+(`AddMasterySystem` + `AddMasteryRespecLedger` applied). Supports the Unity client's dev-force panel + Swagger testing.
+- `PlayerMastery.ForceSetLevel(int)` — admin/dev only; sets level 1..5 up OR down (bypasses the monotonic guard).
+- `IMasteryService.ForceLevelsAsync(playerId, levels)` — ensures rows, force-sets, audited (`MasteryForceLevel`),
+  returns the refreshed overview.
+- `POST /api/admin/masteries/force` [AdminOnly + DB actor re-verify] — `MasteryForceRequest { TargetPlayerIdOrUsername?
+  (null=self), Levels (ancient→1..5) }`; 400 bad ancient/level, 403 non-admin, 404 unknown target; audited
+  (`MasteryForceLevels`). The live client dev-tool calls this behind a confirm dialog; mock fakes it locally.
+
 ## Build status (High — earlier sessions, see the dated entries above for the latest)
 - **400 unit + 34 integration = 434 tests pass. 0 warnings, 0 errors.**
 - `main` past tag **v0.2.7-s6** (Legion epic complete) + 3 post-fixes merged & pushed (untagged hardening):

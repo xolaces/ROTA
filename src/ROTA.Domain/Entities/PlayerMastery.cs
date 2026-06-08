@@ -59,5 +59,19 @@ public class PlayerMastery
         Touch();
     }
 
+    /// <summary>
+    /// ADMIN/DEV ONLY — sets the level to any value in 1..<see cref="MaxLevel"/>, bypassing the
+    /// monotonic guard (so dev tooling can force a level up OR down for testing). Never call from
+    /// gameplay; <see cref="SetLevel"/> / <see cref="LevelUp"/> are the player-facing paths.
+    /// </summary>
+    public void ForceSetLevel(int level)
+    {
+        if (level < 1 || level > MaxLevel)
+            throw new ArgumentOutOfRangeException(nameof(level), $"Mastery level must be 1..{MaxLevel}.");
+        if (level == Level) return;
+        Level = level;
+        Touch();
+    }
+
     private void Touch() => UpdatedAt = DateTimeOffset.UtcNow;
 }
