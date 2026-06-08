@@ -89,6 +89,9 @@ public static class ServiceCollectionExtensions
             _ => new UnitDefinitionProvider(contentRootPath));
         services.AddSingleton<ILegionDefinitionProvider>(
             _ => new LegionDefinitionProvider(contentRootPath));
+        // System 22 Phase A (Masteries) — the four Ancient definitions; throws at startup on bad content.
+        services.AddSingleton<IMasteryDefinitionProvider>(
+            _ => new MasteryDefinitionProvider(contentRootPath));
         // System 16 Slice 1 — depends on the magic provider (validates Gauntlet magics +
         // prize magicId refs) and IOptions<GauntletConfig> (validates league bounds).
         services.AddSingleton<IGauntletContentProvider>(sp =>

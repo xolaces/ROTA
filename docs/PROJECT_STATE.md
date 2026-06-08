@@ -63,6 +63,31 @@ migration. Additive to the existing `ChatHub` (world/raid chat untouched). MOTD 
 - **Out of scope (deferred, per spec):** the Unity SignalR client (like world/raid chat send), guild raids
   + the sigil economy (S3).
 
+## System 22 — Masteries Core (Phase A, Slice 1 — content/definitions) — 2026-06-07 (branch `feat/system22-masteries-s1`)
+Build: 0 errors / no new warnings (4 pre-existing MSB3277 in IntegrationTests). Tests: **737 unit, all green**
+(+15 unit MasteryDefinitionProviderTests; integration suite unchanged — Slice 1 touches no DB/infra). Spec:
+docs/specs/active/system-22-masteries-core.md (decisions LOCKED + owner-confirmed 2026-06-07). **Scope = content
++ definitions + config only** — NO entities/migrations/endpoints/combat (Slices 2–7). The progression spine of the
+"collective vs individual" Ancients design: 4 pledgeable Ancients, each leveled 1→5 by challenge checklists, each
+granting an always-on global + an amplified pledge modifier through EXISTING combat/loot hooks (no new path).
+- **Enums (Domain):** `MasteryAncient {Wrath=0, Bulwark=1, Hoard=2, Discernment=3}`, `MasteryActivityType`
+  (11 deterministic counters: RaidHit/RaidDamageDealt/RaidKill/QuestNodeCleared/QuestBossCleared/
+  GuildRaidContribution/GauntletRankEarned/LevelGained/EnergySpent/StaminaSpent/GoldEarned). Persisted as int — append, never renumber.
+- **Content models (Application/Models):** `AncientDefinition` (Ancient, name/theme/desc, `GlobalPercentByLevel[5]`,
+  `TierChallenges[4]`, iconKey) + `MasteryTierChallenge {FromLevel, Checklist}` + `MasteryChallengeItem {ActivityType, Threshold}`.
+- **Config:** `MasteryConfig` (IOptions, appsettings `"MasteryConfig"`): PledgeMultiplier 2.0, BulwarkMaxGuildDamagePercent 1.0
+  (hard cap), RespecGemCost 150 (TUNE), IncludeWeakestPillarFloor false, BreadthMicroBonusPercent 0.0 (off)/Max 2.0,
+  SigilFindAppliesToFirstClear false. Per-Ancient per-level magnitudes live in JSON; this holds only scalar dials.
+- **Provider:** `IMasteryDefinitionProvider` + `MasteryDefinitionProvider` (Infrastructure singleton, eager-constructed
+  in Program.cs). Loads `content/masteries.json`; **throws at startup** on ≠4 Ancients / duplicate / bad magnitude table
+  (length≠5, negative, non-decreasing) / bad tier checklist (count≠4, fromLevel gap, empty, threshold≤0, unknown
+  activityType) / final tier not spanning ≥2 activity types (breadth curve). Methods GetAll/Get/GlobalPercent/GetTierChallenge.
+- **Content:** `content/masteries.json` — 4 Ancients with locked magnitudes (Wrath 0.5→2.5 / Bulwark 0.1→0.5 /
+  Hoard & Discernment 0.8→4.0) + cross-system challenge checklists (late tiers require raid + guild + gauntlet effort).
+- DI wiring in ServiceCollectionExtensions; Configure<MasteryConfig> + eager construct in Program.cs; appsettings section.
+- **Deviation noted:** `GemTransactionType.MasteryRespec=13`, `MasteryRespecKind`, and the `LeaderboardBoard.MasteryRating*`
+  values are added in their consuming slices (S3/S2) rather than S1, to avoid unused symbols — cleaner per-slice diffs.
+
 ## Build status (High — earlier sessions, see the dated entries above for the latest)
 - **400 unit + 34 integration = 434 tests pass. 0 warnings, 0 errors.**
 - `main` past tag **v0.2.7-s6** (Legion epic complete) + 3 post-fixes merged & pushed (untagged hardening):

@@ -1,6 +1,42 @@
 # ROTA Function Reference
-Last updated: 2026-06-07 (System 21 Guild Foundations S1+S2 + System 16 Gauntlet — merged to main)
+Last updated: 2026-06-07 (System 22 Masteries Phase A — Slice 1: content/definitions)
 Update when adding public methods or entities.
+
+---
+
+## System 22 — Masteries Core (Phase A, Slice 1 — content + definitions)
+
+Spec: docs/specs/active/system-22-masteries-core.md. Scope = content/config/provider only (no DB/endpoints/combat).
+
+### Enums (`src/ROTA.Domain/Enums/`)
+| Enum | Values |
+|------|--------|
+| `MasteryAncient` | `Wrath=0, Bulwark=1, Hoard=2, Discernment=3` — the four pledgeable Ancients (level 1→5). |
+| `MasteryActivityType` | `RaidHit=0, RaidDamageDealt=1, RaidKill=2, QuestNodeCleared=3, QuestBossCleared=4, GuildRaidContribution=5, GauntletRankEarned=6, LevelGained=7, EnergySpent=8, StaminaSpent=9, GoldEarned=10` — deterministic challenge-checklist counters (fed at chokepoints in Slice 4). |
+
+### Config — `MasteryConfig` (`src/ROTA.Application/Configuration/MasteryConfig.cs`)
+`IOptions<MasteryConfig>`, bound from appsettings `"MasteryConfig"`. `PledgeMultiplier` 2.0 (pledged = global×this),
+`BulwarkMaxGuildDamagePercent` 1.0 (hard cap), `RespecGemCost` 150 (TUNE), `IncludeWeakestPillarFloor` false,
+`BreadthMicroBonusPercent` 0.0 / `BreadthMicroBonusMaxPercent` 2.0, `SigilFindAppliesToFirstClear` false. Per-Ancient
+per-level magnitudes live in `content/masteries.json`; this holds only scalar dials.
+
+### Content models (`src/ROTA.Application/Models/AncientDefinition.cs`)
+- `AncientDefinition { Ancient (MasteryAncient), Name, Theme, Description, double[] GlobalPercentByLevel (5), List<MasteryTierChallenge> TierChallenges (4), IconKey }`.
+- `MasteryTierChallenge { int FromLevel (1..4), List<MasteryChallengeItem> Checklist }`.
+- `MasteryChallengeItem { MasteryActivityType ActivityType, long Threshold }`.
+
+### IMasteryDefinitionProvider (`src/ROTA.Application/Interfaces/`)
+Singleton; eager-constructed in `Program.cs`; reads `content/masteries.json` at startup; throws `InvalidOperationException`
+on invalid content (≠4 Ancients/duplicate; magnitude table length≠5/negative/non-decreasing; tier count≠4/fromLevel gap/
+empty checklist/threshold≤0/unknown activityType; final tier not spanning ≥2 activity types). Methods: `GetAll()`,
+`Get(MasteryAncient)`, `GlobalPercent(MasteryAncient, int level)`, `GetTierChallenge(MasteryAncient, int fromLevel)`.
+Impl `MasteryDefinitionProvider` (`src/ROTA.Infrastructure/Services/`).
+
+### Content (`src/ROTA.Api/content/masteries.json`)
+4 Ancients. Global magnitude %/level: Wrath [0.5,1,1.5,2,2.5], Bulwark [0.1,0.2,0.3,0.4,0.5], Hoard & Discernment
+[0.8,1.6,2.4,3.2,4.0]. Challenge checklists: early tiers single-system; T4→5 cross-system (raid + guild + gauntlet).
+
+**Slice 1 scope:** content/validation only — no entities/migrations/endpoints/combat (Slices 2–7). +15 unit tests.
 
 ---
 

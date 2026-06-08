@@ -1,0 +1,91 @@
+[
+  {
+    "ancient": "Wrath",
+    "name": "Wrath, the Wrathfire",
+    "theme": "rage / war",
+    "description": "Devotion to Wrath sharpens your war-host. Each level adds a permanent global bonus to your Legion's power; pledging Wrath roughly doubles it. Never touches the Gauntlet.",
+    "globalPercentByLevel": [0.5, 1.0, 1.5, 2.0, 2.5],
+    "iconKey": "mastery_wrath",
+    "tierChallenges": [
+      { "fromLevel": 1, "checklist": [ { "activityType": "RaidHit", "threshold": 100 } ] },
+      { "fromLevel": 2, "checklist": [ { "activityType": "RaidDamageDealt", "threshold": 5000000 } ] },
+      { "fromLevel": 3, "checklist": [
+          { "activityType": "RaidKill", "threshold": 25 },
+          { "activityType": "RaidDamageDealt", "threshold": 50000000 }
+      ] },
+      { "fromLevel": 4, "checklist": [
+          { "activityType": "RaidKill", "threshold": 100 },
+          { "activityType": "GauntletRankEarned", "threshold": 3 },
+          { "activityType": "GuildRaidContribution", "threshold": 20000000 }
+      ] }
+    ]
+  },
+  {
+    "ancient": "Bulwark",
+    "name": "Bulwark, the Mountain",
+    "theme": "guild / defence",
+    "description": "Devotion to Bulwark hardens your guild's assaults. Each level adds a tiny permanent bonus to guild-raid damage; pledging Bulwark roughly doubles it, up to a strict hard cap. Guild raids only.",
+    "globalPercentByLevel": [0.1, 0.2, 0.3, 0.4, 0.5],
+    "iconKey": "mastery_bulwark",
+    "tierChallenges": [
+      { "fromLevel": 1, "checklist": [ { "activityType": "GuildRaidContribution", "threshold": 1000000 } ] },
+      { "fromLevel": 2, "checklist": [ { "activityType": "GuildRaidContribution", "threshold": 10000000 } ] },
+      { "fromLevel": 3, "checklist": [
+          { "activityType": "GuildRaidContribution", "threshold": 50000000 },
+          { "activityType": "RaidKill", "threshold": 25 }
+      ] },
+      { "fromLevel": 4, "checklist": [
+          { "activityType": "GuildRaidContribution", "threshold": 150000000 },
+          { "activityType": "QuestBossCleared", "threshold": 20 },
+          { "activityType": "RaidKill", "threshold": 100 }
+      ] }
+    ]
+  },
+  {
+    "ancient": "Hoard",
+    "name": "Hoard, the Greed",
+    "theme": "plunder",
+    "description": "Devotion to Hoard swells your plunder. Each level adds a permanent global bonus to drop rate and gold; pledging Hoard roughly doubles it.",
+    "globalPercentByLevel": [0.8, 1.6, 2.4, 3.2, 4.0],
+    "iconKey": "mastery_hoard",
+    "tierChallenges": [
+      { "fromLevel": 1, "checklist": [ { "activityType": "QuestNodeCleared", "threshold": 50 } ] },
+      { "fromLevel": 2, "checklist": [ { "activityType": "GoldEarned", "threshold": 1000000 } ] },
+      { "fromLevel": 3, "checklist": [
+          { "activityType": "QuestNodeCleared", "threshold": 320 },
+          { "activityType": "QuestBossCleared", "threshold": 10 }
+      ] },
+      { "fromLevel": 4, "checklist": [
+          { "activityType": "QuestNodeCleared", "threshold": 1000 },
+          { "activityType": "GoldEarned", "threshold": 25000000 },
+          { "activityType": "GauntletRankEarned", "threshold": 3 }
+      ] }
+    ]
+  },
+  {
+    "ancient": "Discernment",
+    "name": "Discernment, the Veiled Eye",
+    "theme": "sight / discovery",
+    "description": "Devotion to Discernment sharpens your eye for treasure. Each level adds a permanent global bonus to drop quality (rarity-upgrade) and sigil find; pledging Discernment roughly doubles it.",
+    "globalPercentByLevel": [0.8, 1.6, 2.4, 3.2, 4.0],
+    "iconKey": "mastery_discernment",
+    "tierChallenges": [
+      { "fromLevel": 1, "checklist": [ { "activityType": "QuestNodeCleared", "threshold": 50 } ] },
+      { "fromLevel": 2, "checklist": [
+          { "activityType": "RaidKill", "threshold": 10 },
+          { "activityType": "QuestBossCleared", "threshold": 5 }
+      ] },
+      { "fromLevel": 3, "checklist": [
+          { "activityType": "RaidKill", "threshold": 30 },
+          { "activityType": "QuestBossCleared", "threshold": 15 },
+          { "activityType": "GuildRaidContribution", "threshold": 5000000 }
+      ] },
+      { "fromLevel": 4, "checklist": [
+          { "activityType": "RaidKill", "threshold": 75 },
+          { "activityType": "QuestBossCleared", "threshold": 30 },
+          { "activityType": "GuildRaidContribution", "threshold": 30000000 },
+          { "activityType": "GauntletRankEarned", "threshold": 3 }
+      ] }
+    ]
+  }
+]

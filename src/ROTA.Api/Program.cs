@@ -185,6 +185,9 @@ builder.Services.Configure<EmailConfig>(
 builder.Services.Configure<GuildConfig>(
     builder.Configuration.GetSection("GuildConfig"));
 
+builder.Services.Configure<MasteryConfig>(
+    builder.Configuration.GetSection("MasteryConfig"));
+
 builder.Services.AddRotaServices(builder.Environment.ContentRootPath);
 
 // Phase 2 (T39): out-of-band sender that drains the email queue without blocking requests.
@@ -236,6 +239,10 @@ app.Services.GetRequiredService<IGauntletContentProvider>();
 // (payloadId referential integrity, price > 0, currency valid, no duplicate ids, bundle/refill
 // amount > 0) throws at boot rather than on first purchase.
 app.Services.GetRequiredService<IGauntletShopProvider>();
+
+// System 22 Phase A — eagerly construct the mastery definition provider so its content validation
+// (4 Ancients, magnitude tables, tier checklists, breadth curve) throws at boot rather than on first use.
+app.Services.GetRequiredService<IMasteryDefinitionProvider>();
 
 // Dev-only auto-migrate: keeps a fresh local DB in sync without a manual
 // `dotnet ef database update`. Idempotent — safe to run even when the schema
