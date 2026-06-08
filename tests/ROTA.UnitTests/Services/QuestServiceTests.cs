@@ -645,6 +645,93 @@ public class QuestServiceTests
     // -----------------------------------------------------------------------
 
     // -----------------------------------------------------------------------
+    // System 22 Phase A Slice 7 — Discernment drop-quality (rarity-upgrade)
+    // -----------------------------------------------------------------------
+
+    private QuestDefinition ChanceDropQuest(string lootTableId = "lt_qual") => new()
+    {
+        Id = "q_qual", Name = "Quality Quest", Chapter = 1, BaseEnergyCost = 5,
+        GoldReward = 100, ExperienceReward = 50, LootTableId = lootTableId,
+    };
+
+    private void SetupChanceDropLoot(ServiceBundle b, string itemId, string? upgradesTo, string lootTableId = "lt_qual")
+    {
+        var lootTable = new LootTableDefinition
+        {
+            Id = lootTableId, Type = "Quest",
+            Difficulties = new Dictionary<string, LootTableDifficulty>
+            {
+                ["Normal"] = new()
+                {
+                    ChanceDrops = new List<ItemDropChance> { new() { ItemId = itemId, Quantity = 1, Chance = 1.0 } },
+                },
+            },
+        };
+        b.LootTables.Setup(l => l.GetById(lootTableId)).Returns(lootTable);
+        b.ItemDefs.Setup(d => d.GetById(itemId)).Returns(new ItemDefinition
+        {
+            Id = itemId, Name = itemId, Rarity = ItemRarity.Grey, Type = ItemType.Material, UpgradesTo = upgradesTo,
+        });
+        if (upgradesTo is not null)
+            b.ItemDefs.Setup(d => d.GetById(upgradesTo)).Returns(new ItemDefinition
+            {
+                Id = upgradesTo, Name = upgradesTo, Rarity = ItemRarity.White, Type = ItemType.Material,
+            });
+    }
+
+    [Fact]
+    public async Task AttemptQuest_DiscernmentQuality_UpgradesFiredChanceDrop()
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+        b.Definitions.Setup(d => d.GetById("q_qual")).Returns(ChanceDropQuest());
+        SetupPlayerAndEnergy(b, player);
+        SetupChanceDropLoot(b, "mat_base", upgradesTo: "mat_upgraded");
+        // Quality ×1.0 → a fired drop always upgrades.
+        b.Mastery.Setup(m => m.GetLootModifiersAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MasteryLootModifiers(1.0, 1.0, 1.0, 1.0));
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q_qual", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue();
+        result.ItemsGranted.Should().ContainSingle(i => i.ItemId == "mat_upgraded", "quality roll upgrades the drop");
+        result.ItemsGranted.Should().NotContain(i => i.ItemId == "mat_base");
+    }
+
+    [Fact]
+    public async Task AttemptQuest_DiscernmentQuality_NoUpgradesTo_GrantsBase()
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+        b.Definitions.Setup(d => d.GetById("q_qual")).Returns(ChanceDropQuest());
+        SetupPlayerAndEnergy(b, player);
+        SetupChanceDropLoot(b, "mat_base", upgradesTo: null); // no upgrade path
+        b.Mastery.Setup(m => m.GetLootModifiersAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MasteryLootModifiers(1.0, 1.0, 1.0, 1.0));
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q_qual", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue();
+        result.ItemsGranted.Should().ContainSingle(i => i.ItemId == "mat_base", "no upgradesTo → never upgrades");
+    }
+
+    [Fact]
+    public async Task AttemptQuest_DiscernmentQuality_ZeroChance_GrantsBase()
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+        b.Definitions.Setup(d => d.GetById("q_qual")).Returns(ChanceDropQuest());
+        SetupPlayerAndEnergy(b, player);
+        SetupChanceDropLoot(b, "mat_base", upgradesTo: "mat_upgraded");
+        // Default neutral loot mods (DiscernmentQualityChance = 0) → no upgrade.
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q_qual", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue();
+        result.ItemsGranted.Should().ContainSingle(i => i.ItemId == "mat_base", "zero quality chance → base item");
+    }
+
+    // -----------------------------------------------------------------------
     // System 22 Phase A Slice 6 — Hoard (gold) + Discernment (sigil-find)
     // -----------------------------------------------------------------------
 

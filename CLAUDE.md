@@ -381,6 +381,37 @@ Gauntlet's individual one). Memory: guild-foundations-decisions.md.
   not in one tx (debit is atomic, no overspend — accepted Phase-2 pattern); guild-raid item loot tables;
   confirm tunable balances (CreationGoldCost, daily caps, ticket allowance).
 
+## System 22 — Masteries Core (Phase A, 2026-06-08) — COMPLETE (7 slices, merged to main)
+Spec: docs/specs/active/system-22-masteries-core.md. The **individual horizontal-progression spine**: 4 Ancients
+(**Wrath** +% legion power · **Bulwark** +% guild-raid dmg, ~1% cap · **Hoard** +% drop/gold · **Discernment** +%
+drop-quality + sigil-find), each leveled 1→5 by per-Ancient challenge checklists, with an always-on global + a pledge
+(≈×2) modifier — all through EXISTING combat/loot hooks, **NO new combat path**. Modifiers are a dedicated
+`IMasteryService` (per-player DB level-state), NOT `ConditionalBonus` rows.
+- **S1** content/defs: `MasteryAncient`/`MasteryActivityType` enums, `AncientDefinition`+tier-challenge models,
+  `MasteryConfig`, `IMasteryDefinitionProvider` (eager singleton, startup-validated), `content/masteries.json`.
+- **S2** state+read: `PlayerMastery`/`PlayerMasteryActivity`/`MasteryActivityEvent` + `Player.ActivePledgeAncient` +
+  migration **AddMasterySystem**; `GET /api/masteries`; Formula-B `ComputeRating` (Active==Lifetime, monotonic) +
+  derived titles; `LeaderboardBoard.MasteryRating{Active,Lifetime}` + admin refresh + CLI `mastery-refresh-rating`;
+  profile gains ActivePledge + MasteryRatingActive.
+- **S3** re-spec: `MasteryRespecTransaction` ledger + migration **AddMasteryRespecLedger**; `POST /api/masteries/pledge`
+  — LOSSLESS (free first-pledge-per-Ancient → free monthly → paid weekly: Redis cap `IMasteryRespecCapStore` + idempotent
+  `GemTransactionType.MasteryRespec=13`). Only flips the pledge; levels never touched.
+- **S4** leveling: `RecordActivityAsync` (raw ON CONFLICT increment + idempotency event ledger) wired at 8 chokepoints
+  (raid hit/kill/guild-contribution/gold enlisted; quest node/boss/gold + GauntletRank settle best-effort);
+  off-hot-path tier-up evaluation (on read + post-quest).
+- **S5** combat: Wrath into `totalLegionBonus` (single-touch, active-legion-gated, never Gauntlet); Bulwark into
+  `FlatDamagePercent` gated `lockedRaid.GuildId!=null` (hard-capped). Mastery-less hit byte-for-byte unchanged.
+- **S6** loot: combined `GetModifiersAsync` (one read/hit); Hoard drop-rate (quest `Scale`) + gold (quest+raid on-hit);
+  Discernment sigil-find (post-first-clear, clamp ≤1.0). 
+- **S7** drop-quality: opt-in `Item/GearDefinition.UpgradesTo` (startup-validated: resolves + strictly-higher rarity ≤
+  Orange); quest item chance-drops roll a Discernment-scaled rarity-upgrade; starter ladder seeded.
+- **786 unit + 88 integration = 874 green; 0 errors, 0 CS warnings.** Migrations **AddMasterySystem** +
+  **AddMasteryRespecLedger** NOT applied — owner runs `dotnet ef database update`.
+- KNOWN FOLLOW-UPS: raid threshold-drop Hoard scaling + gear/raid quality-upgrade wiring (deferred — per-participant
+  kill-loop reads / Orange-ceiling gear); TUNE magnitudes + challenge thresholds + the off-by-default breadth
+  micro-bonus; paid-respec crash-recovery gap (strict weekly cap, PHASE-2 note). Phase B (The Rise) + Phase C
+  (PoE-depth) stay in backlog.
+
 ## PHASE-2 Deferred Items
 - DiscernmentInvestment effect: quest drop quality (raid crit shipped v0.2.3)
 - Explicit DB transaction scope for QUEST reward steps (energy committed but rewards not atomic; raids fixed v0.2.5)

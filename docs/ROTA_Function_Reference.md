@@ -1,6 +1,25 @@
 # ROTA Function Reference
-Last updated: 2026-06-08 (System 22 Masteries Phase A — Slice 6: loot — Hoard + Discernment sigil-find)
+Last updated: 2026-06-08 (System 22 Masteries Phase A — Slice 7: Discernment drop-quality — PHASE A COMPLETE)
 Update when adding public methods or entities.
+
+---
+
+## System 22 — Masteries Core (Phase A, Slice 7 — Discernment drop-quality / rarity-upgrade)
+
+Spec: docs/specs/active/system-22-masteries-core.md. No migration (content-model field only).
+
+- **`ItemDefinition.UpgradesTo` / `GearDefinition.UpgradesTo`** (`string?`) — next-tier-up id; null = never. Validated
+  at startup by `ItemDefinitionProvider` / `GearDefinitionProvider`: resolves + strictly higher rarity (Orange = ceiling).
+  ItemDefinitionProvider also added a duplicate-id guard.
+- **Quest item quality-upgrade (wired):** `QuestService.ProcessQuestLootAsync(... discernmentQualityChance ...)` — a fired
+  chance drop rolls the chance; on success `ResolveQualityUpgrade` substitutes the item's `UpgradesTo` (single step).
+  Guaranteed drops never upgrade.
+- **Starter ladder:** `mat_iron_shard`→`mat_arcane_dust`, `statbag_minor`→`statbag_major`.
+- **Deferred:** gear-drop + raid-threshold quality-upgrade wiring (Orange-ceiling gear / per-participant kill-loop reads).
+
+**Slice 7 scope:** Discernment drop-quality. +8 unit tests. **System 22 Phase A COMPLETE** — 4 Ancients, level 1→5
+challenge checklists, global+pledge modifiers (Wrath/Bulwark/Hoard/Discernment via existing combat+loot hooks),
+Formula-B Overall Mastery Rating + titles + leaderboard board, lossless re-spec economy. 786 unit + 88 integration green.
 
 ---
 

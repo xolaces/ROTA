@@ -26,7 +26,27 @@ public sealed class ItemDefinitionProvider : IItemDefinitionProvider
         };
         var list = JsonSerializer.Deserialize<List<ItemDefinition>>(json, options)
             ?? throw new InvalidOperationException("items.json deserialized to null.");
-        _items = list.ToDictionary(i => i.Id, i => i);
+
+        var byId = new Dictionary<string, ItemDefinition>(StringComparer.Ordinal);
+        foreach (var i in list)
+        {
+            if (!byId.TryAdd(i.Id, i))
+                throw new InvalidOperationException($"items.json: duplicate id '{i.Id}'.");
+        }
+
+        // System 22 Phase A (Slice 7) — validate the Discernment quality-upgrade ladder.
+        foreach (var i in list)
+        {
+            if (string.IsNullOrEmpty(i.UpgradesTo)) continue;
+            if (!byId.TryGetValue(i.UpgradesTo, out var target))
+                throw new InvalidOperationException(
+                    $"items.json: '{i.Id}' upgradesTo '{i.UpgradesTo}' which does not exist.");
+            if (target.Rarity <= i.Rarity)
+                throw new InvalidOperationException(
+                    $"items.json: '{i.Id}' ({i.Rarity}) upgradesTo '{i.UpgradesTo}' ({target.Rarity}) must be strictly higher rarity.");
+        }
+
+        _items = byId;
     }
 
     public ItemDefinition? GetById(string id)

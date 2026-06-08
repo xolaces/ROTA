@@ -273,7 +273,8 @@ public sealed class QuestService : IQuestService
             {
                 var stats = await _stats.GetStatsAsync(playerId, ct);
                 int discernment = stats?.DiscernmentInvestment ?? 0;
-                await ProcessQuestLootAsync(playerId, diffLoot, discernment, lootMods.HoardDropMultiplier, itemsGranted, ct);
+                await ProcessQuestLootAsync(playerId, diffLoot, discernment,
+                    lootMods.HoardDropMultiplier, lootMods.DiscernmentQualityChance, itemsGranted, ct);
             }
         }
 
@@ -384,6 +385,7 @@ public sealed class QuestService : IQuestService
         Application.Models.LootTableDifficulty loot,
         int discernmentInvestment,
         double hoardDropMultiplier,
+        double discernmentQualityChance,
         List<ItemGrantDTO> itemsGranted,
         CancellationToken ct)
     {
@@ -409,7 +411,12 @@ public sealed class QuestService : IQuestService
             foreach (var drop in loot.ChanceDrops)
             {
                 if (_random.NextDouble() < Scale(drop.Chance))
-                    await GrantItemAsync(playerId, drop.ItemId, drop.Quantity, itemsGranted, ct);
+                {
+                    // System 22 Phase A (Slice 7) — Discernment drop-quality: a successful roll upgrades a
+                    // fired chance drop to its next-tier item (never a guaranteed drop).
+                    var itemId = ResolveQualityUpgrade(drop.ItemId, discernmentQualityChance);
+                    await GrantItemAsync(playerId, itemId, drop.Quantity, itemsGranted, ct);
+                }
             }
         }
 
@@ -443,13 +450,24 @@ public sealed class QuestService : IQuestService
             }
         }
 
-        // Gear drops — idempotent upsert.
+        // Gear drops — idempotent upsert. (Discernment quality-upgrade for gear is deferred with the
+        // raid-threshold loot work; current quest gear is the Orange-ceiling Pano set, no upgrade headroom.)
         if (loot.GearDrops is not null)
         {
             foreach (var drop in loot.GearDrops)
                 if (_random.NextDouble() < Scale(drop.Chance))
                     await _equipment.GrantGearAsync(playerId, drop.GearDefinitionId, drop.Quantity, ct);
         }
+    }
+
+    // System 22 Phase A (Slice 7) — resolve a fired chance-drop to its upgraded item on a successful
+    // Discernment-quality roll. Returns the original id when there's no upgrade or the roll misses.
+    private string ResolveQualityUpgrade(string itemId, double qualityChance)
+    {
+        if (qualityChance <= 0) return itemId;
+        var def = _itemDefs.GetById(itemId);
+        if (def is null || string.IsNullOrEmpty(def.UpgradesTo)) return itemId;
+        return _random.NextDouble() < qualityChance ? def.UpgradesTo : itemId;
     }
 
     private async Task GrantItemAsync(

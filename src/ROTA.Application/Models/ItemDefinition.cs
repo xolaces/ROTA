@@ -16,4 +16,9 @@ public class ItemDefinition
     public string? SummonDifficulty { get; set; }  // stored as string, parsed to RaidDifficulty at use time
     public string? SummonSize { get; set; }         // stored as string, parsed to RaidSize at use time; null → Personal
     public List<string> Tags { get; set; } = new(); // used by OwnedTypeCount conditional bonus lookups
+
+    // System 22 Phase A (Slice 7) — Discernment drop-quality. The next-tier-up item this can upgrade
+    // into on a successful Discernment-scaled roll at drop-resolution; null = never upgrades. Validated
+    // at startup to resolve + be strictly higher rarity (≤ Orange).
+    public string? UpgradesTo { get; set; }
 }

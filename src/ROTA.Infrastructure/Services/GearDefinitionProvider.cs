@@ -33,6 +33,19 @@ public sealed class GearDefinitionProvider : IGearDefinitionProvider
         }
 
         _gear = list.ToDictionary(g => g.Id, g => g);
+
+        // System 22 Phase A (Slice 7) — validate the Discernment quality-upgrade ladder (resolves +
+        // strictly higher rarity). The gear-drop upgrade roll is wired with the deferred raid-threshold work.
+        foreach (var g in list)
+        {
+            if (string.IsNullOrEmpty(g.UpgradesTo)) continue;
+            if (!_gear.TryGetValue(g.UpgradesTo, out var target))
+                throw new InvalidOperationException(
+                    $"gear.json: '{g.Id}' upgradesTo '{g.UpgradesTo}' which does not exist.");
+            if (target.Rarity <= g.Rarity)
+                throw new InvalidOperationException(
+                    $"gear.json: '{g.Id}' ({g.Rarity}) upgradesTo '{g.UpgradesTo}' ({target.Rarity}) must be strictly higher rarity.");
+        }
     }
 
     public GearDefinition? GetById(string id)

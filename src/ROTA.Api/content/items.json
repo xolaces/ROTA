@@ -10,7 +10,8 @@
     "isCraftingIngredient": true,
     "summonRaidId": null,
     "summonDifficulty": null,
-    "summonSize": null
+    "summonSize": null,
+    "upgradesTo": "mat_arcane_dust"
   },
   {
     "id": "mat_arcane_dust",
@@ -36,7 +37,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": null,
     "summonDifficulty": null,
-    "summonSize": null
+    "summonSize": null,
+    "upgradesTo": "statbag_major"
   },
   {
     "id": "statbag_major",

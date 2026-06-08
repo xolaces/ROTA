@@ -197,6 +197,30 @@ Discernment sigil-find, Hoard raid on-hit gold). No migration.
   kill (up to 250 for a world raid) → per-participant mastery reads on the kill; deferred to avoid that on the combat
   kill path. Hoard's drop benefit applies to the quest pipeline; flagged for owner confirmation.
 
+## System 22 — Masteries Core (Phase A, Slice 7 — Discernment drop-quality) — 2026-06-08 (branch `feat/system22-masteries-s7`)
+Build: 0 errors / no new warnings. Tests: **786 unit + 88 integration = 874 green** (+8 unit: 5 ItemDefinitionProvider
+validation, 3 QuestService quality-upgrade). No migration (content-model field only).
+- **Opt-in content field:** `ItemDefinition.UpgradesTo` + `GearDefinition.UpgradesTo` (next-tier item/gear id; null =
+  never). `ItemDefinitionProvider` + `GearDefinitionProvider` now validate at startup: upgradesTo resolves + is
+  STRICTLY higher rarity (Orange items can't upgrade — the ceiling). ItemDefinitionProvider also gained a duplicate-id guard.
+- **Quest item quality-upgrade (wired):** in `ProcessQuestLootAsync`, a FIRED chance drop rolls `DiscernmentQualityChance`;
+  on success, `ResolveQualityUpgrade` substitutes the item's `UpgradesTo` (single step). Guaranteed drops never upgrade.
+- **Starter ladder (content):** `mat_iron_shard` (Grey)→`mat_arcane_dust` (White); `statbag_minor` (Green)→`statbag_major` (Blue).
+- **Deferred (documented):** gear-drop quality-upgrade wiring (current quest gear is the Orange-ceiling Pano set — no
+  headroom) + raid threshold-drop quality, bundled with the S6 raid-threshold follow-up. The `GearDefinition.UpgradesTo`
+  field + validation ship now so the wiring is a pure code change later.
+
+## System 22 — Masteries Core (Phase A) — COMPLETE (2026-06-08) — all 7 slices merged to main
+Spec: docs/specs/active/system-22-masteries-core.md. **786 unit + 88 integration = 874 green; 0 errors, 0 CS warnings.**
+Migrations generated, NOT applied (owner runs `dotnet ef database update`): **AddMasterySystem**, **AddMasteryRespecLedger**.
+The months-long horizontal progression spine: 4 Ancients (Wrath/Bulwark/Hoard/Discernment) leveled 1→5 by per-Ancient
+challenge checklists; always-on global + pledge (≈×2) modifiers through EXISTING combat/loot hooks (no new combat path);
+Formula-B Overall Mastery Rating + derived titles + leaderboard board; lossless re-spec economy (free unlock/monthly +
+paid weekly via gems, idempotent). Phase B (The Rise) + Phase C (PoE-depth) remain in backlog.
+- **Owner follow-ups to confirm:** (1) raid threshold-drop Hoard scaling + gear quality-upgrade (deferred — per-participant
+  kill-loop reads / Orange-ceiling gear); (2) TUNE the magnitudes + challenge thresholds + the (off-by-default) breadth
+  micro-bonus; (3) the paid-respec crash-recovery gap (strict weekly cap; PHASE-2 note in MasteryService).
+
 ## Build status (High — earlier sessions, see the dated entries above for the latest)
 - **400 unit + 34 integration = 434 tests pass. 0 warnings, 0 errors.**
 - `main` past tag **v0.2.7-s6** (Legion epic complete) + 3 post-fixes merged & pushed (untagged hardening):
