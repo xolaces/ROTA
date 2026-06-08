@@ -90,6 +90,10 @@ public class Player
     public Guid? GuildId { get; private set; }
     public string? GuildRank { get; private set; }
 
+    // Masteries (System 22) — denormalized active pledge; null until the player pledges an Ancient.
+    // MasteryService is the single writer. The four mastery LEVELS live in player_masteries rows.
+    public MasteryAncient? ActivePledgeAncient { get; private set; }
+
     // Status
     public bool IsBanned { get; private set; } = false;
     public string? BanReason { get; private set; }
@@ -231,6 +235,24 @@ public class Player
     {
         if (GuildId is null) return;
         GuildRank = rank.ToString();
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    // Masteries (System 22) — the active pledge is a denormalized pointer; MasteryService is the
+    // single writer (mirrors the GuildId/GuildRank convention). Re-pledging is lossless — only this
+    // pointer changes; the four mastery level tracks are untouched.
+
+    /// <summary>Sets the player's currently-pledged Ancient (the amplified mastery).</summary>
+    public void SetPledge(MasteryAncient ancient)
+    {
+        ActivePledgeAncient = ancient;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>Clears the active pledge (no Ancient amplified; all globals still apply).</summary>
+    public void ClearPledge()
+    {
+        ActivePledgeAncient = null;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 }

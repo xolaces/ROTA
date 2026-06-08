@@ -61,17 +61,19 @@ public class LeaderboardServiceTests
     // ── GetBoardsAsync ────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task GetBoardsAsync_ReturnsAllSixBoards()
+    public async Task GetBoardsAsync_ReturnsAllBoards()
     {
         var (service, _, _, _) = Build();
 
         var boards = await service.GetBoardsAsync();
 
-        boards.Should().HaveCount(6);
+        // 6 base boards + System 22 MasteryRating Active/Lifetime.
+        boards.Should().HaveCount(8);
         boards.Select(b => b.Board).Should().Contain(new[]
         {
             "StatAttack", "StatDefense", "StatDiscernment",
             "EnergySpent", "DamageDealt", "LargestHit",
+            "MasteryRatingActive", "MasteryRatingLifetime",
         });
     }
 

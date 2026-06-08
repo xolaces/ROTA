@@ -1,0 +1,44 @@
+using ROTA.Domain.Enums;
+using ROTA.Shared.DTOs;
+
+namespace ROTA.Application.Interfaces;
+
+/// <summary>
+/// System 22 Phase A — the Masteries read/compute service. Combat/loot consumers (Slices 5/6) read
+/// plain modifier values from here at their existing hooks; masteries are never modelled as
+/// <c>ConditionalBonus</c> rows (they are per-player DB level-state, not content/inventory bonuses).
+/// </summary>
+public interface IMasteryService
+{
+    /// <summary>Full overview for GET /api/masteries (ensures level-1 rows; rating, titles, per-Ancient progress).</summary>
+    Task<MasteryOverviewResponse> GetMasteriesAsync(Guid playerId, CancellationToken ct = default);
+
+    /// <summary>Wrath (+% legion power) + Bulwark (+% guild-raid damage) modifiers for the combat hooks (Slice 5).</summary>
+    Task<MasteryCombatModifiers> GetCombatModifiersAsync(Guid playerId, CancellationToken ct = default);
+
+    /// <summary>Hoard (drop/gold) + Discernment (sigil-find/quality) modifiers for the loot hooks (Slices 6/7).</summary>
+    Task<MasteryLootModifiers> GetLootModifiersAsync(Guid playerId, CancellationToken ct = default);
+
+    /// <summary>Refreshes the MasteryRating leaderboard boards (Live snapshot). Returns the count snapshotted.</summary>
+    Task<int> SnapshotRatingBoardAsync(CancellationToken ct = default);
+
+    /// <summary>Pure Overall Mastery Rating (Formula B). Missing Ancients default to level 1.</summary>
+    int ComputeRating(IReadOnlyDictionary<MasteryAncient, int> levels);
+}
+
+/// <summary>
+/// Combat modifiers. <see cref="WrathLegionPercent"/> is a PERCENT added into the legion bonus sum
+/// (pre /100, like a General's LegionBonus). <see cref="BulwarkGuildDamageFraction"/> is a FRACTION
+/// (already hard-capped) added to FlatDamagePercent, applied on guild raids only.
+/// </summary>
+public sealed record MasteryCombatModifiers(double WrathLegionPercent, double BulwarkGuildDamageFraction);
+
+/// <summary>
+/// Loot modifiers. Drop/gold/sigil-find values are MULTIPLIERS (≥ 1.0). <see cref="DiscernmentQualityChance"/>
+/// is a FRACTION (the rarity-upgrade roll chance, consumed in Slice 7).
+/// </summary>
+public sealed record MasteryLootModifiers(
+    double HoardDropMultiplier,
+    double HoardGoldMultiplier,
+    double DiscernmentSigilFindMultiplier,
+    double DiscernmentQualityChance);

@@ -70,6 +70,11 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
             .HasColumnName("guild_rank")
             .HasMaxLength(20);
 
+        // Masteries (System 22) — denormalized active pledge; nullable enum stored as nullable int
+        // (Npgsql default, like the ledger enums). Null until the player pledges an Ancient.
+        builder.Property(p => p.ActivePledgeAncient)
+            .HasColumnName("active_pledge_ancient");
+
         builder.Property(p => p.IsBanned)
             .HasColumnName("is_banned")
             .HasDefaultValue(false);

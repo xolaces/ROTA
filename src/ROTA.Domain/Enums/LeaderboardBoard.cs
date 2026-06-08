@@ -10,4 +10,8 @@ public enum LeaderboardBoard
     EnergySpent      = 3,
     DamageDealt      = 4,
     LargestHit       = 5,
+    // System 22 Phase A — Overall Mastery Rating (Formula B). Active = live from current levels;
+    // Lifetime = high-water tenure marker (equal to Active in Phase A — levels are monotonic).
+    MasteryRatingActive   = 6,
+    MasteryRatingLifetime = 7,
 }

@@ -33,7 +33,15 @@ public class PlayerServiceTests
             .ReturnsAsync((Guid _, int atk, int def, CancellationToken _) =>
                 new EffectiveCombatData(atk, def, null, 0.0));
 
-        var service = new PlayerService(players.Object, energy.Object, auditLog.Object, equipment.Object);
+        // Masteries (System 22) — default: no mastery rows; rating compute stubbed.
+        var masteryRepo = new Mock<IPlayerMasteryRepository>();
+        masteryRepo.Setup(m => m.GetForPlayerAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerMastery>());
+        var mastery = new Mock<IMasteryService>();
+
+        var service = new PlayerService(
+            players.Object, energy.Object, auditLog.Object, equipment.Object,
+            masteryRepo.Object, mastery.Object);
         return (service, players, energy, auditLog);
     }
 

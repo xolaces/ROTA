@@ -1,6 +1,58 @@
 # ROTA Function Reference
-Last updated: 2026-06-07 (System 22 Masteries Phase A — Slice 1: content/definitions)
+Last updated: 2026-06-08 (System 22 Masteries Phase A — Slice 2: state + read API + rating)
 Update when adding public methods or entities.
+
+---
+
+## System 22 — Masteries Core (Phase A, Slice 2 — state + read API + rating)
+
+Spec: docs/specs/active/system-22-masteries-core.md. Migration `AddMasterySystem` (NOT applied).
+
+### Entities (`src/ROTA.Domain/Entities/`)
+- `PlayerMastery` { Id, PlayerId, Ancient (MasteryAncient), Level (1..5), +audit }. `Create`→L1, `LevelUp()`,
+  `SetLevel(int)` (monotonic — throws on decrease). Unique `(player_id, ancient)`. `MaxLevel=5`.
+- `PlayerMasteryActivity` { Id, PlayerId, ActivityType, Counter (long), +audit }. `Create`, `Add(long)`. Unique
+  `(player_id, activity_type)` (non-partial — the ON CONFLICT target for the Slice 4 race-safe increment).
+- `MasteryActivityEvent` — append-only idempotency ledger { Id, PlayerId, ActivityType, ReferenceId, CreatedAt }.
+  Unique partial `(player_id, activity_type, reference_id) WHERE reference_id IS NOT NULL`.
+- `Player` additive: `MasteryAncient? ActivePledgeAncient` + `SetPledge(MasteryAncient)` / `ClearPledge()`
+  (MasteryService sole writer; mirrors GuildId/GuildRank denorm).
+
+### Repositories (scoped)
+- `IPlayerMasteryRepository`: `GetForPlayerAsync`, `FindAsync(playerId, ancient)`, `UpsertAsync`,
+  `EnsureAllAsync(playerId)` (lazy-creates the four L1 rows; returns all four), `GetAllRatingsAsync()` (rating-board
+  snapshot source). Record `PlayerMasteryRatingRow(PlayerId, IReadOnlyDictionary<MasteryAncient,int> Levels)`.
+- `IPlayerMasteryActivityRepository`: `GetForPlayerAsync` (Increment/event added in Slice 4).
+- Impl `PlayerMasteryRepository` + `PlayerMasteryActivityRepository` (`Infrastructure/.../Repositories/MasteryRepositories.cs`).
+
+### IMasteryService (`src/ROTA.Application/Interfaces/IMasteryService.cs`) + `MasteryService`
+| Method | Description |
+|--------|-------------|
+| `GetMasteriesAsync(playerId)` | → `MasteryOverviewResponse` — ensures L1 rows; per-Ancient level/global%/effective% (pledged ×PledgeMultiplier, Bulwark clamped) + next-tier X/Y progress; rating; titles; respec status. |
+| `GetCombatModifiersAsync(playerId)` | → `MasteryCombatModifiers(WrathLegionPercent, BulwarkGuildDamageFraction)` — Slice 5 hooks. |
+| `GetLootModifiersAsync(playerId)` | → `MasteryLootModifiers(HoardDropMultiplier, HoardGoldMultiplier, DiscernmentSigilFindMultiplier, DiscernmentQualityChance)` — Slice 6/7 hooks. |
+| `SnapshotRatingBoardAsync()` | Live snapshot of MasteryRatingActive/Lifetime via `ILeaderboardEntryRepository.SetValueAsync`; returns count. |
+| `int ComputeRating(levels)` | Pure Formula B (Σ + breadth thresholds {≥2:+3,≥3:+5,≥4:+8,≥5:+12} + 2×count(L5) [+ 2×min if config]); missing→L1. |
+
+Ctor: `(IMasteryDefinitionProvider, IPlayerMasteryRepository, IPlayerMasteryActivityRepository, IPlayerRepository,
+ILeaderboardEntryRepository, IOptions<MasteryConfig>)`. Titles derived (no entity): breadth (Touched Everything/
+Well-Rounded/Paragon/Ascendant) + `Master of <Ancient>` per maxed Ancient. Active==Lifetime in Phase A (monotonic levels).
+
+### Enums / boards
+`LeaderboardBoard.MasteryRatingActive=6`, `MasteryRatingLifetime=7` (Live period; registered in `LeaderboardService.AllBoards`).
+
+### Endpoints / CLI
+- `GET /api/masteries` [Authorize] → `MasteryOverviewResponse` (`MasteryController`).
+- `POST /api/admin/masteries/rating/refresh` [AdminOnly + DB actor re-verify, audited] → `MasteryRatingRefreshResponse`
+  (`MasteryAdminController`). CLI `mastery-refresh-rating`.
+- `PlayerProfileResponse` gains `ActivePledge` (string?) + `MasteryRatingActive` (int); hydrated in `PlayerService.GetProfileAsync`.
+
+### DTOs (`src/ROTA.Shared/DTOs/MasteryDTOs.cs`)
+MasteryOverviewResponse, MasteryAncientDto, MasteryTierProgressDto, MasteryChecklistItemDto, MasteryRatingDto,
+MasteryTitlesDto, MasteryRespecStatusDto, MasteryRatingRefreshResponse.
+
+**Slice 2 scope:** state + read API + rating; no pledge/respec (Slice 3), no activity counters/leveling (Slice 4),
+no combat/loot wiring (Slices 5–7). +13 unit tests.
 
 ---
 

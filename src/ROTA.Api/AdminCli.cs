@@ -21,6 +21,7 @@ namespace ROTA.Api;
 ///   dotnet run --project src/ROTA.Api -- promote {user|guid} {Role}
 ///   dotnet run --project src/ROTA.Api -- demote {user|guid} {Role}
 ///   dotnet run --project src/ROTA.Api -- leaderboard-refresh-stat
+///   dotnet run --project src/ROTA.Api -- mastery-refresh-rating
 ///   dotnet run --project src/ROTA.Api -- grant-gear {user|guid} {gearDefId} [qty]
 ///   dotnet run --project src/ROTA.Api -- gauntlet-open {name} {startsAt} {endsAt}
 ///   dotnet run --project src/ROTA.Api -- gauntlet-close {eventId}
@@ -37,6 +38,7 @@ public static class AdminCli
             "promote",
             "demote",
             "leaderboard-refresh-stat",
+            "mastery-refresh-rating",
             "grant-gear",
             "gauntlet-open",
             "gauntlet-close",
@@ -73,6 +75,7 @@ public static class AdminCli
                 "promote"                  => await RunRoleChange(app.Services, args, grant: true),
                 "demote"                   => await RunRoleChange(app.Services, args, grant: false),
                 "leaderboard-refresh-stat" => await RunLeaderboardRefreshStat(app.Services),
+                "mastery-refresh-rating"   => await RunMasteryRefreshRating(app.Services),
                 "grant-gear"               => await RunGrantGear(app.Services, args),
                 "gauntlet-open"            => await RunGauntletOpen(app.Services, args),
                 "gauntlet-close"           => await RunGauntletClose(app.Services, args),
@@ -170,6 +173,17 @@ public static class AdminCli
         var count = await leaderboardService.SnapshotStatBoardAsync();
 
         Console.WriteLine($"leaderboard-refresh-stat: complete. {count} player(s) snapshotted across StatAttack, StatDefense, StatDiscernment boards.");
+        return 0;
+    }
+
+    private static async Task<int> RunMasteryRefreshRating(IServiceProvider services)
+    {
+        using var scope = services.CreateScope();
+        var masteryService = scope.ServiceProvider.GetRequiredService<IMasteryService>();
+
+        var count = await masteryService.SnapshotRatingBoardAsync();
+
+        Console.WriteLine($"mastery-refresh-rating: complete. {count} player(s) snapshotted onto the MasteryRating boards.");
         return 0;
     }
 
@@ -274,7 +288,7 @@ public static class AdminCli
 
     private static int UnknownCommand(string command)
     {
-        Console.Error.WriteLine($"Unknown command '{command}'. Valid commands: seed-admin, gen-beta-key, promote, demote, leaderboard-refresh-stat, grant-gear, gauntlet-open, gauntlet-close, gauntlet-settle.");
+        Console.Error.WriteLine($"Unknown command '{command}'. Valid commands: seed-admin, gen-beta-key, promote, demote, leaderboard-refresh-stat, mastery-refresh-rating, grant-gear, gauntlet-open, gauntlet-close, gauntlet-settle.");
         return 1;
     }
 }

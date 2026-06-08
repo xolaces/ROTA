@@ -48,6 +48,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IGuildJoinRequestRepository, GuildJoinRequestRepository>();
         // System 21 — Guild sigil economy (Slice 3a)
         services.AddScoped<IGuildEconomyRepository, GuildEconomyRepository>();
+        // System 22 — Masteries Core (Phase A)
+        services.AddScoped<IPlayerMasteryRepository, PlayerMasteryRepository>();
+        services.AddScoped<IPlayerMasteryActivityRepository, PlayerMasteryActivityRepository>();
 
         // System 16 — Gauntlet (Slice 2) repositories
         services.AddScoped<IGauntletEventRepository, GauntletEventRepository>();
@@ -132,6 +135,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISocialService, SocialService>();
         services.AddScoped<IGuildService, GuildService>();
         services.AddScoped<IGuildEconomyService, GuildEconomyService>();
+        services.AddScoped<IMasteryService, MasteryService>();
 
         // System 16 — Gauntlet (Slice 2) services
         services.AddScoped<IGauntletService, GauntletService>();

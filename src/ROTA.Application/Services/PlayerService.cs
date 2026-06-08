@@ -11,17 +11,23 @@ public sealed class PlayerService : IPlayerService
     private readonly IEnergyService _energy;
     private readonly IAuditLogRepository _auditLog;
     private readonly IEquipmentService _equipment;
+    private readonly IPlayerMasteryRepository _masteryRepo;
+    private readonly IMasteryService _mastery;
 
     public PlayerService(
         IPlayerRepository players,
         IEnergyService energy,
         IAuditLogRepository auditLog,
-        IEquipmentService equipment)
+        IEquipmentService equipment,
+        IPlayerMasteryRepository masteryRepo,
+        IMasteryService mastery)
     {
-        _players   = players;
-        _energy    = energy;
-        _auditLog  = auditLog;
-        _equipment = equipment;
+        _players     = players;
+        _energy      = energy;
+        _auditLog    = auditLog;
+        _equipment   = equipment;
+        _masteryRepo = masteryRepo;
+        _mastery     = mastery;
     }
 
     public async Task<PlayerProfileResponse?> GetProfileAsync(Guid playerId, CancellationToken ct = default)
@@ -57,6 +63,12 @@ public sealed class PlayerService : IPlayerService
             effDef = combat.EffectiveDefense;
         }
 
+        // Masteries (System 22) — pledge is free from the loaded player; rating from current levels
+        // (no row writes on a profile GET; missing levels default to 1 inside ComputeRating).
+        var masteryLevels = (await _masteryRepo.GetForPlayerAsync(playerId, ct))
+            .ToDictionary(m => m.Ancient, m => m.Level);
+        int masteryRating = _mastery.ComputeRating(masteryLevels);
+
         return new PlayerProfileResponse
         {
             Id               = player.Id,
@@ -74,6 +86,8 @@ public sealed class PlayerService : IPlayerService
             Resources        = resources,
             EffectiveAttack  = effAtk,
             EffectiveDefense = effDef,
+            ActivePledge        = player.ActivePledgeAncient?.ToString(),
+            MasteryRatingActive = masteryRating,
         };
     }
 

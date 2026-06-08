@@ -27,6 +27,9 @@ public sealed class LeaderboardService : ILeaderboardService
             [LeaderboardBoard.EnergySpent]     = new("Top Questers",         new[] { LeaderboardPeriod.Weekly, LeaderboardPeriod.Monthly }),
             [LeaderboardBoard.DamageDealt]     = new("Top Raiders",          new[] { LeaderboardPeriod.Weekly, LeaderboardPeriod.Monthly }),
             [LeaderboardBoard.LargestHit]      = new("Largest Single Hit",   new[] { LeaderboardPeriod.Daily }),
+            // System 22 Phase A — Overall Mastery Rating (Live snapshot; Active == Lifetime in Phase A).
+            [LeaderboardBoard.MasteryRatingActive]   = new("Mastery Rating",            new[] { LeaderboardPeriod.Live }),
+            [LeaderboardBoard.MasteryRatingLifetime] = new("Mastery Rating (Lifetime)", new[] { LeaderboardPeriod.Live }),
         };
 
     public LeaderboardService(

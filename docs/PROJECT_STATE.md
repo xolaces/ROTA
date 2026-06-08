@@ -88,6 +88,30 @@ granting an always-on global + an amplified pledge modifier through EXISTING com
 - **Deviation noted:** `GemTransactionType.MasteryRespec=13`, `MasteryRespecKind`, and the `LeaderboardBoard.MasteryRating*`
   values are added in their consuming slices (S3/S2) rather than S1, to avoid unused symbols — cleaner per-slice diffs.
 
+## System 22 — Masteries Core (Phase A, Slice 2 — state + read API + rating) — 2026-06-08 (branch `feat/system22-masteries-s2`)
+Build: 0 errors / no new warnings. Tests: **750 unit + 84 integration = 834 green** (+13 unit MasteryServiceTests;
+PlayerService/Leaderboard tests updated for the new ctor dep + 2 boards). Migration **AddMasterySystem** generated —
+**`dotnet ef database update` NOT run** (owner coordinates). Integration suite re-run green (migration applies on a
+fresh Testcontainers DB; Player profile + leaderboard flows intact).
+- **Entities + Fluent + DbSets:** `PlayerMastery` (monotonic Level 1..5, unique (player_id, ancient)),
+  `PlayerMasteryActivity` (cumulative Counter, unique (player_id, activity_type) — the ON CONFLICT target for S4),
+  `MasteryActivityEvent` (append-only idempotency ledger, partial unique (player_id, activity_type, reference_id)).
+  `Player.ActivePledgeAncient` (nullable enum) + SetPledge/ClearPledge (MasteryService sole writer; GuildId-style denorm).
+- **Enums:** `LeaderboardBoard.MasteryRatingActive=6`, `MasteryRatingLifetime=7` (appended).
+- **Repos (scoped):** `IPlayerMasteryRepository` (GetForPlayer/Find/Upsert/**EnsureAllAsync** lazy-create-4-L1/**GetAllRatingsAsync**),
+  `IPlayerMasteryActivityRepository` (GetForPlayer; Increment/event in S4). `PlayerMasteryRatingRow` record.
+- **Service:** `IMasteryService` + `MasteryService` — `GetMasteriesAsync` (ensure L1 rows, per-Ancient global%/effective%
+  (pledged ×2, Bulwark clamped), checklist X/Y progress, rating, titles), `ComputeRating` (pure **Formula B**, no
+  weakest-floor by default — worked examples 10/14/56 asserted), `GetCombatModifiersAsync`/`GetLootModifiersAsync`
+  (plain modifiers for S5/S6; Wrath percent / Bulwark fraction-capped / Hoard+Disc multipliers + Disc quality chance),
+  `SnapshotRatingBoardAsync` (Live snapshot via ILeaderboardEntryRepository.SetValueAsync). Titles derived (no entity):
+  Touched Everything/Well-Rounded/Paragon/Ascendant + Master of <Ancient>. Active==Lifetime in Phase A (monotonic).
+- **API:** `GET /api/masteries` (`MasteryController [Authorize]`); `POST /api/admin/masteries/rating/refresh`
+  (`MasteryAdminController [AdminOnly]` + DB actor re-verify + audit); CLI `mastery-refresh-rating`. Board metadata
+  added to `LeaderboardService.AllBoards` (GET /api/leaderboards now lists 8). DTOs in MasteryDTOs.cs.
+- **Profile:** `PlayerProfileResponse.ActivePledge` + `MasteryRatingActive`; `PlayerService` hydrates them (pledge free
+  from the loaded player; rating from current levels — no row writes on a GET). PlayerService ctor += IPlayerMasteryRepository, IMasteryService.
+
 ## Build status (High — earlier sessions, see the dated entries above for the latest)
 - **400 unit + 34 integration = 434 tests pass. 0 warnings, 0 errors.**
 - `main` past tag **v0.2.7-s6** (Legion epic complete) + 3 post-fixes merged & pushed (untagged hardening):

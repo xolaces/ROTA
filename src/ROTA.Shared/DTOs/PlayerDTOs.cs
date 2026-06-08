@@ -17,6 +17,9 @@ public class PlayerProfileResponse
     public IReadOnlyList<ResourceValueResponse> Resources { get; set; } = [];
     public int EffectiveAttack  { get; set; }
     public int EffectiveDefense { get; set; }
+    // Masteries (System 22 Phase A) — the active pledge name (null if unpledged) + live Overall Mastery Rating.
+    public string? ActivePledge { get; set; }
+    public int MasteryRatingActive { get; set; }
 }
 
 public class ResourceValueResponse

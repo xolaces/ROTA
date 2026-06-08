@@ -72,6 +72,11 @@ public class RotaDbContext : DbContext
     public DbSet<GuildCurrencyTransaction> GuildCurrencyTransactions => Set<GuildCurrencyTransaction>();
     public DbSet<GuildSigilPoolTransaction> GuildSigilPoolTransactions => Set<GuildSigilPoolTransaction>();
 
+    // ----- System 22 — Masteries Core (Phase A) -----
+    public DbSet<PlayerMastery> PlayerMasteries => Set<PlayerMastery>();
+    public DbSet<PlayerMasteryActivity> PlayerMasteryActivities => Set<PlayerMasteryActivity>();
+    public DbSet<MasteryActivityEvent> MasteryActivityEvents => Set<MasteryActivityEvent>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
