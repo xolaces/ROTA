@@ -68,6 +68,9 @@ public class MasteryServiceTests
         [MasteryAncient.Discernment] = disc,
     };
 
+    private static List<PlayerMasteryActivity> Activities(Guid p, params (MasteryActivityType type, long count)[] items)
+        => items.Select(i => PlayerMasteryActivity.Create(p, i.type, i.count)).ToList();
+
     // ── ComputeRating — Formula B worked examples ─────────────────────────────
 
     [Theory]
@@ -234,6 +237,171 @@ public class MasteryServiceTests
             LeaderboardPeriod.Live, "live", 56, It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()), Times.Once);
         leaderboard.Verify(l => l.SetValueAsync(p2, LeaderboardBoard.MasteryRatingActive,
             LeaderboardPeriod.Live, "live", 5, It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    // ── Activity recording (Slice 4) ──────────────────────────────────────────
+
+    [Fact]
+    public async Task RecordActivity_NoReference_Increments()
+    {
+        var (svc, _, activityRepo, _, _) = Build();
+        var pid = Guid.NewGuid();
+
+        await svc.RecordActivityAsync(pid, MasteryActivityType.RaidHit, 5);
+
+        activityRepo.Verify(a => a.IncrementAsync(pid, MasteryActivityType.RaidHit, 5, It.IsAny<CancellationToken>()), Times.Once);
+        activityRepo.Verify(a => a.RecordEventAsync(It.IsAny<Guid>(), It.IsAny<MasteryActivityType>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task RecordActivity_WithReference_NotSeen_RecordsEventThenIncrements()
+    {
+        var (svc, _, activityRepo, _, _) = Build();
+        var pid = Guid.NewGuid();
+        activityRepo.Setup(a => a.HasEventAsync(pid, MasteryActivityType.RaidKill, "k1", It.IsAny<CancellationToken>())).ReturnsAsync(false);
+
+        await svc.RecordActivityAsync(pid, MasteryActivityType.RaidKill, 1, "k1");
+
+        activityRepo.Verify(a => a.RecordEventAsync(pid, MasteryActivityType.RaidKill, "k1", It.IsAny<CancellationToken>()), Times.Once);
+        activityRepo.Verify(a => a.IncrementAsync(pid, MasteryActivityType.RaidKill, 1, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RecordActivity_WithReference_AlreadySeen_SkipsBoth()
+    {
+        var (svc, _, activityRepo, _, _) = Build();
+        var pid = Guid.NewGuid();
+        activityRepo.Setup(a => a.HasEventAsync(pid, MasteryActivityType.RaidKill, "k1", It.IsAny<CancellationToken>())).ReturnsAsync(true);
+
+        await svc.RecordActivityAsync(pid, MasteryActivityType.RaidKill, 1, "k1");
+
+        activityRepo.Verify(a => a.RecordEventAsync(It.IsAny<Guid>(), It.IsAny<MasteryActivityType>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        activityRepo.Verify(a => a.IncrementAsync(It.IsAny<Guid>(), It.IsAny<MasteryActivityType>(), It.IsAny<long>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task RecordActivity_NonPositiveAmount_NoOp()
+    {
+        var (svc, _, activityRepo, _, _) = Build();
+        await svc.RecordActivityAsync(Guid.NewGuid(), MasteryActivityType.RaidHit, 0);
+        activityRepo.Verify(a => a.IncrementAsync(It.IsAny<Guid>(), It.IsAny<MasteryActivityType>(), It.IsAny<long>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    // ── Tier-up leveling (Slice 4) ────────────────────────────────────────────
+
+    private void SetupTierUp(Mock<IPlayerMasteryRepository> masteryRepo, Mock<IPlayerMasteryActivityRepository> activityRepo,
+        Guid pid, List<PlayerMastery> rows, List<PlayerMasteryActivity> activities)
+    {
+        masteryRepo.Setup(m => m.EnsureAllAsync(pid, It.IsAny<CancellationToken>())).ReturnsAsync(rows);
+        activityRepo.Setup(a => a.GetForPlayerAsync(pid, It.IsAny<CancellationToken>())).ReturnsAsync(activities);
+    }
+
+    [Fact]
+    public async Task EvaluateTierUps_AdvancesOneTier_WhenChecklistMet()
+    {
+        var (svc, masteryRepo, activityRepo, _, _) = Build();
+        var pid = Guid.NewGuid();
+        var rows = Rows(pid, 1, 1, 1, 1);
+        // Wrath T1->2 = RaidHit 100; T2->3 = RaidDamageDealt 5M (not met) → stops at L2.
+        SetupTierUp(masteryRepo, activityRepo, pid, rows, Activities(pid, (MasteryActivityType.RaidHit, 100)));
+
+        await svc.EvaluateTierUpsAsync(pid);
+
+        rows.Single(r => r.Ancient == MasteryAncient.Wrath).Level.Should().Be(2);
+        masteryRepo.Verify(m => m.UpsertAsync(It.Is<PlayerMastery>(p => p.Ancient == MasteryAncient.Wrath), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task EvaluateTierUps_DoesNotAdvance_WhenChecklistUnmet()
+    {
+        var (svc, masteryRepo, activityRepo, _, _) = Build();
+        var pid = Guid.NewGuid();
+        var rows = Rows(pid, 1, 1, 1, 1);
+        SetupTierUp(masteryRepo, activityRepo, pid, rows, Activities(pid, (MasteryActivityType.RaidHit, 99)));
+
+        await svc.EvaluateTierUpsAsync(pid);
+
+        rows.Single(r => r.Ancient == MasteryAncient.Wrath).Level.Should().Be(1);
+        masteryRepo.Verify(m => m.UpsertAsync(It.IsAny<PlayerMastery>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task EvaluateTierUps_JumpsMultipleTiers_FromCumulativeCounters()
+    {
+        var (svc, masteryRepo, activityRepo, _, _) = Build();
+        var pid = Guid.NewGuid();
+        var rows = Rows(pid, 1, 1, 1, 1);
+        // Wrath: T1 RaidHit 100 ✓, T2 RaidDamageDealt 5M ✓, T3 RaidKill 25 + RaidDamageDealt 50M ✓ → L4.
+        // T4 needs RaidKill 100 (have 25) → stops at L4.
+        SetupTierUp(masteryRepo, activityRepo, pid, rows, Activities(pid,
+            (MasteryActivityType.RaidHit, 100),
+            (MasteryActivityType.RaidDamageDealt, 50_000_000),
+            (MasteryActivityType.RaidKill, 25)));
+
+        await svc.EvaluateTierUpsAsync(pid);
+
+        rows.Single(r => r.Ancient == MasteryAncient.Wrath).Level.Should().Be(4);
+    }
+
+    [Fact]
+    public async Task EvaluateTierUps_FinalTier_BlockedUntilAllCrossSystemCountersMet()
+    {
+        var (svc, masteryRepo, activityRepo, _, _) = Build();
+        var pid = Guid.NewGuid();
+        // Wrath at L4; T4->5 = RaidKill 100 + GauntletRankEarned 3 + GuildRaidContribution 20M.
+        var rows = Rows(pid, wrath: 4, bulwark: 1, hoard: 1, disc: 1);
+        // Missing GauntletRankEarned → stays at L4.
+        SetupTierUp(masteryRepo, activityRepo, pid, rows, Activities(pid,
+            (MasteryActivityType.RaidKill, 100),
+            (MasteryActivityType.GuildRaidContribution, 20_000_000)));
+
+        await svc.EvaluateTierUpsAsync(pid);
+        rows.Single(r => r.Ancient == MasteryAncient.Wrath).Level.Should().Be(4);
+    }
+
+    [Fact]
+    public async Task EvaluateTierUps_FinalTier_AdvancesToFive_WhenAllMet()
+    {
+        var (svc, masteryRepo, activityRepo, _, _) = Build();
+        var pid = Guid.NewGuid();
+        var rows = Rows(pid, wrath: 4, bulwark: 1, hoard: 1, disc: 1);
+        SetupTierUp(masteryRepo, activityRepo, pid, rows, Activities(pid,
+            (MasteryActivityType.RaidKill, 100),
+            (MasteryActivityType.GauntletRankEarned, 3),
+            (MasteryActivityType.GuildRaidContribution, 20_000_000)));
+
+        await svc.EvaluateTierUpsAsync(pid);
+        rows.Single(r => r.Ancient == MasteryAncient.Wrath).Level.Should().Be(5);
+    }
+
+    [Fact]
+    public async Task EvaluateTierUps_AtMaxLevel_NoChangeNoWrite()
+    {
+        var (svc, masteryRepo, activityRepo, _, _) = Build();
+        var pid = Guid.NewGuid();
+        var rows = Rows(pid, 5, 5, 5, 5);
+        SetupTierUp(masteryRepo, activityRepo, pid, rows, Activities(pid,
+            (MasteryActivityType.RaidHit, 999_999),
+            (MasteryActivityType.GuildRaidContribution, 999_999_999)));
+
+        await svc.EvaluateTierUpsAsync(pid);
+
+        rows.All(r => r.Level == 5).Should().BeTrue();
+        masteryRepo.Verify(m => m.UpsertAsync(It.IsAny<PlayerMastery>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetMasteries_TriggersTierUp_AndReflectsNewLevel()
+    {
+        var (svc, masteryRepo, activityRepo, players, _) = Build();
+        var pid = Guid.NewGuid();
+        var rows = Rows(pid, 1, 1, 1, 1);
+        SetupTierUp(masteryRepo, activityRepo, pid, rows, Activities(pid, (MasteryActivityType.RaidHit, 100)));
+        players.Setup(p => p.FindByIdAsync(pid, It.IsAny<CancellationToken>())).ReturnsAsync((Player?)null);
+
+        var overview = await svc.GetMasteriesAsync(pid);
+
+        overview.Ancients.Single(a => a.Ancient == "Wrath").Level.Should().Be(2);
     }
 
     private static string FindApiContentRoot()

@@ -595,6 +595,7 @@ public class LeaderboardWriteHookTests
         var legionCfg = Options.Create(new LegionConfig());
         var combatCfg = Options.Create(new CombatConfig());
         var gauntletCfg = Options.Create(new GauntletConfig());
+        var mastery = new Mock<IMasteryService>();
 
         var service = new RaidService(
             raids.Object, participants.Object, players.Object, resources.Object,
@@ -607,7 +608,7 @@ public class LeaderboardWriteHookTests
             leaderboards.Object, combatCfg,
             trophyRepo.Object, gauntletContent.Object, playerEventMagics.Object,
             playerMagicHonors.Object, strikes.Object, gauntletScoring.Object, gauntletCfg,
-            gauntletCurrency.Object, guildMemberships.Object, guildEconomy.Object, random);
+            gauntletCurrency.Object, guildMemberships.Object, guildEconomy.Object, mastery.Object, random);
 
         return new RaidBundle(service, raids, participants, players, resources, energy,
             auditLog, definitions, hitCache, equipment, stats, leaderboards);

@@ -31,6 +31,20 @@ public interface IMasteryService
 
     /// <summary>Pure Overall Mastery Rating (Formula B). Missing Ancients default to level 1.</summary>
     int ComputeRating(IReadOnlyDictionary<MasteryAncient, int> levels);
+
+    /// <summary>
+    /// Records mastery challenge-counter activity (Slice 4). Best-effort at chokepoints. When
+    /// <paramref name="referenceId"/> is supplied the increment is exactly-once (idempotency ledger).
+    /// Does NOT evaluate tier-ups (that runs off the hot path).
+    /// </summary>
+    Task RecordActivityAsync(Guid playerId, MasteryActivityType activityType, long amount = 1,
+        string? referenceId = null, CancellationToken ct = default);
+
+    /// <summary>
+    /// Evaluates and persists any earned tier-ups for the player (off the hot path — called on read +
+    /// after quest completion). Monotonic; audited; may advance several levels at once.
+    /// </summary>
+    Task EvaluateTierUpsAsync(Guid playerId, CancellationToken ct = default);
 }
 
 /// <summary>

@@ -137,6 +137,30 @@ Build: 0 errors / no new warnings. Tests: **760 unit + 85 integration = 845 gree
 - **Integration proof:** with the cap store stubbed to no-op (the "Redis flushed" case), two paid swaps the same ISO
   week charge gems EXACTLY ONCE via the gem-ledger week refId — verified vs real Postgres.
 
+## System 22 — Masteries Core (Phase A, Slice 4 — activity counters + tier-up leveling) — 2026-06-08 (branch `feat/system22-masteries-s4`)
+Build: 0 errors / no new warnings. Tests: **771 unit + 88 integration = 859 green** (+11 unit MasteryServiceTests,
++3 integration MasteryActivityRepositoryTests). No new migration (tables exist from S2). The progression spine now moves.
+- **Repo (raw SQL):** `IPlayerMasteryActivityRepository.IncrementAsync` (clone of LeaderboardEntryRepository — raw
+  ON CONFLICT upsert-increment, ambient-tx aware so it rides the raid advisory-lock tx) + `HasEventAsync` /
+  `RecordEventAsync` (the idempotency event ledger; pre-check avoids a unique-violation that would poison an ambient tx).
+- **Service:** `MasteryService.RecordActivityAsync(playerId, activityType, amount, referenceId?)` (no ref → increment;
+  ref → HasEvent pre-check → RecordEvent + increment, exactly-once). `EvaluateTierUpsAsync` (off the hot path): ensures
+  L1 rows, compares cumulative counters to the per-tier checklist, advances `PlayerMastery.Level` (monotonic, audited
+  `MasteryLevelUp`, may jump several tiers). Triggered from `GetMasteriesAsync` (read) + end of `AttemptQuestAsync`.
+- **Chokepoints wired** (the 8 counters the shipped checklists use — EnergySpent/StaminaSpent/LevelGained are reserved
+  enum values, intentionally UNWIRED until a checklist needs them):
+  - `RaidService.HitRaidAsync` (enlisted in the advisory-lock tx, like the leaderboard hook): RaidHit + RaidDamageDealt
+    (after RecordHit), GuildRaidContribution (guild fork), GoldEarned (on-hit gold), RaidKill (isKill block, idempotent
+    `mastery:kill:{raid}:{player}`). Redis cached-replay can't double-count (early-return fires before the tx).
+  - `QuestService.AttemptQuestAsync` (best-effort try/catch — quest rewards are non-tx): GoldEarned, QuestNodeCleared
+    (gated on `nodeJustCleared`), QuestBossCleared (boss + just-cleared), then `EvaluateTierUpsAsync`.
+  - `GauntletAdminService.SettleEventAsync` (best-effort + idempotent `mastery:rank:{event}:{player}`): GauntletRankEarned.
+- New ctor deps: `IMasteryService` on RaidService, QuestService, GauntletAdminService. Cycle-free (MasteryService
+  injects none of them). Unit harnesses for those three + the leaderboard-hook test updated with a mock.
+- **Tests:** RecordActivity (ref/no-ref/already-seen/non-positive); tier-up (advance, blocked, multi-jump, breadth
+  curve blocks final tier until all cross-system counters met, max-level no-op); GetMasteries triggers tier-up;
+  integration: ON CONFLICT create-then-accumulate, separate-types-separate-rows, event-ledger guard.
+
 ## Build status (High — earlier sessions, see the dated entries above for the latest)
 - **400 unit + 34 integration = 434 tests pass. 0 warnings, 0 errors.**
 - `main` past tag **v0.2.7-s6** (Legion epic complete) + 3 post-fixes merged & pushed (untagged hardening):

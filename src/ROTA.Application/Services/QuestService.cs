@@ -61,6 +61,7 @@ public sealed class QuestService : IQuestService
     private readonly IMagicService _magicService;
     private readonly ILegionService _legionService;
     private readonly IEquipmentService _equipment;
+    private readonly IMasteryService _mastery;
     private readonly QuestConfig _questConfig;
     private readonly Random _random;
 
@@ -79,6 +80,7 @@ public sealed class QuestService : IQuestService
         IMagicService magicService,
         ILegionService legionService,
         IEquipmentService equipment,
+        IMasteryService mastery,
         IOptions<QuestConfig> questConfig,
         Random? random = null)
     {
@@ -96,6 +98,7 @@ public sealed class QuestService : IQuestService
         _magicService      = magicService;
         _legionService     = legionService;
         _equipment         = equipment;
+        _mastery           = mastery;
         _questConfig       = questConfig.Value;
         _random            = random ?? Random.Shared;
     }
@@ -295,6 +298,23 @@ public sealed class QuestService : IQuestService
             await _difficultyProgress.CreateAsync(diffProg, ct);
         else
             await _difficultyProgress.UpdateAsync(diffProg, ct);
+
+        // 14b. System 22 Phase A — mastery challenge counters + tier-up evaluation. BEST-EFFORT: the
+        //      quest reward path is non-transactional by design, so a counter/leveling failure must
+        //      never fail the attempt. Node/boss clears gate on the just-cleared transition (counted
+        //      once per clear cycle). This is one of the two off-hot-path tier-up trigger points.
+        try
+        {
+            await _mastery.RecordActivityAsync(playerId, MasteryActivityType.GoldEarned, goldReward, ct: ct);
+            if (nodeJustCleared)
+            {
+                await _mastery.RecordActivityAsync(playerId, MasteryActivityType.QuestNodeCleared, 1, ct: ct);
+                if (quest.IsBoss)
+                    await _mastery.RecordActivityAsync(playerId, MasteryActivityType.QuestBossCleared, 1, ct: ct);
+            }
+            await _mastery.EvaluateTierUpsAsync(playerId, ct);
+        }
+        catch (Exception) when (!ct.IsCancellationRequested) { /* best-effort — never break the attempt */ }
 
         // 15. Audit log
         await _auditLog.AppendAsync(AuditLog.Create(

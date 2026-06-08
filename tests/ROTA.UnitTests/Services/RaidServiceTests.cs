@@ -198,6 +198,7 @@ public class RaidServiceTests
         var legionCfg = Options.Create(legionConfig ?? new LegionConfig());
         var combatCfg = Options.Create(combatConfig ?? new CombatConfig());
         var gauntletCfg = Options.Create(gauntletConfig ?? new GauntletConfig());
+        var mastery = new Mock<IMasteryService>();
 
         var service = new RaidService(
             raids.Object, participants.Object, players.Object, resources.Object,
@@ -210,7 +211,7 @@ public class RaidServiceTests
             leaderboards.Object, combatCfg,
             trophyRepo.Object, gauntletContent.Object, playerEventMagics.Object,
             playerMagicHonors.Object, strikes.Object, gauntletScoring.Object, gauntletCfg,
-            gauntletCurrency.Object, guildMemberships.Object, guildEconomy.Object, random);
+            gauntletCurrency.Object, guildMemberships.Object, guildEconomy.Object, mastery.Object, random);
 
         return new ServiceBundle(service, raids, participants, players, resources, energy, gems,
             stats, inventory, itemDefs, lootTables, auditLog, definitions, hitCache, equipment,

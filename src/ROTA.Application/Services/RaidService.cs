@@ -99,6 +99,8 @@ public sealed class RaidService : IRaidService
     // System 21 Slice 3b — guild raids: membership gate + contribution accrual; pooled-sigil summon.
     private readonly IGuildMembershipRepository _guildMemberships;
     private readonly IGuildEconomyRepository    _guildEconomy;
+    // System 22 Phase A — mastery challenge-counter hooks (enlisted in the advisory-lock tx).
+    private readonly IMasteryService _mastery;
     private readonly Random _random;
 
     public RaidService(
@@ -140,6 +142,7 @@ public sealed class RaidService : IRaidService
         IGauntletCurrencyRepository gauntletCurrency,
         IGuildMembershipRepository guildMemberships,
         IGuildEconomyRepository guildEconomy,
+        IMasteryService mastery,
         Random? random = null)
     {
         _raids           = raids;
@@ -180,6 +183,7 @@ public sealed class RaidService : IRaidService
         _gauntletCurrency  = gauntletCurrency;
         _guildMemberships  = guildMemberships;
         _guildEconomy      = guildEconomy;
+        _mastery           = mastery;
         _random          = random ?? Random.Shared;
     }
 
@@ -934,6 +938,12 @@ public sealed class RaidService : IRaidService
             // computation — damageFinal is the authoritative value already computed above.
             await _leaderboards.RecordRaidHitAsync(playerId, damageFinal, DateTimeOffset.UtcNow, ct);
 
+            // System 22 Phase A — mastery challenge counters (RaidHit + RaidDamageDealt), enlisted in
+            // this advisory-lock tx exactly like the leaderboard hook. Replay-safe for free: the Redis
+            // cached-replay early-return fires before AtomicApplyHitAsync is entered.
+            await _mastery.RecordActivityAsync(playerId, MasteryActivityType.RaidHit, 1, ct: ct);
+            await _mastery.RecordActivityAsync(playerId, MasteryActivityType.RaidDamageDealt, damageFinal, ct: ct);
+
             // (D) Gauntlet score update (System 16 Slice 4) — GAUNTLET RAIDS ONLY. Rides this ambient
             // advisory-lock tx (atomic with the hit/RecordHit). Reads nothing extra: damageFinal is the
             // authoritative value already accumulated into TotalDamageDealt above. No-op if the player
@@ -960,6 +970,9 @@ public sealed class RaidService : IRaidService
                 {
                     contributor.AddContribution(damageFinal);
                     await _guildMemberships.UpdateAsync(contributor, ct);
+                    // System 22 Phase A — guild-raid contribution mastery counter (enlisted in this tx).
+                    await _mastery.RecordActivityAsync(
+                        playerId, MasteryActivityType.GuildRaidContribution, damageFinal, ct: ct);
                 }
             }
 
@@ -1009,6 +1022,9 @@ public sealed class RaidService : IRaidService
             player.AddGold(goldGained);
             await _players.UpdateAsync(player, ct);
 
+            // System 22 Phase A — gold-earned mastery counter (on-hit gold, enlisted in this tx).
+            await _mastery.RecordActivityAsync(playerId, MasteryActivityType.GoldEarned, goldGained, ct: ct);
+
             // Fire level-up side effects for each level gained (mirrors DistributeKillRewardsAsync)
             foreach (var newLevel in hitLevelUps)
                 await _stats.GrantLevelUpPointsAsync(playerId, newLevel, ct);
@@ -1019,6 +1035,11 @@ public sealed class RaidService : IRaidService
             if (isKill)
             {
                 lockedRaid.MarkDefeated();
+
+                // System 22 Phase A — RaidKill mastery counter for the killer (caller). Idempotent via a
+                // per-(raid,player) referenceId so a re-processed kill never double-counts; enlisted in this tx.
+                await _mastery.RecordActivityAsync(
+                    playerId, MasteryActivityType.RaidKill, 1, $"mastery:kill:{activeRaidId}:{playerId}", ct);
 
                 // System 16 Slice 5 — per-Gauntlet-raid-defeat reward. GAUNTLET RAIDS ONLY (gated on
                 // GauntletEventId). Gauntlet raids are Personal/solo, so the killer is the lone

@@ -1,5 +1,8 @@
+using System.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
+using NpgsqlTypes;
 using ROTA.Application.Interfaces;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
@@ -91,6 +94,43 @@ public sealed class PlayerMasteryActivityRepository : IPlayerMasteryActivityRepo
         => await _db.PlayerMasteryActivities.AsNoTracking()
             .Where(a => a.PlayerId == playerId && !a.IsDeleted)
             .ToListAsync(ct);
+
+    public async Task IncrementAsync(Guid playerId, MasteryActivityType activityType, long delta, CancellationToken ct = default)
+    {
+        if (delta <= 0) return;
+
+        // Raw ON CONFLICT upsert-increment — row-level atomic, no advisory lock needed.
+        // Mirrors LeaderboardEntryRepository.IncrementAsync; participates in the ambient tx when open.
+        var conn = (NpgsqlConnection)_db.Database.GetDbConnection();
+        if (conn.State != ConnectionState.Open) await conn.OpenAsync(ct);
+        var dbTx = _db.Database.CurrentTransaction?.GetDbTransaction() as NpgsqlTransaction;
+
+        const string sql = """
+            INSERT INTO player_mastery_activities
+                (id, player_id, activity_type, counter, created_at, updated_at, is_deleted)
+            VALUES
+                (gen_random_uuid(), @playerId, @activityType, @delta, NOW(), NOW(), false)
+            ON CONFLICT (player_id, activity_type) DO UPDATE
+                SET counter    = player_mastery_activities.counter + EXCLUDED.counter,
+                    updated_at = NOW()
+            """;
+
+        await using var cmd = new NpgsqlCommand(sql, conn, dbTx);
+        cmd.Parameters.AddWithValue("playerId",     NpgsqlDbType.Uuid,    playerId);
+        cmd.Parameters.AddWithValue("activityType", NpgsqlDbType.Integer, (int)activityType);
+        cmd.Parameters.AddWithValue("delta",        NpgsqlDbType.Bigint,  delta);
+        await cmd.ExecuteNonQueryAsync(ct);
+    }
+
+    public Task<bool> HasEventAsync(Guid playerId, MasteryActivityType activityType, string referenceId, CancellationToken ct = default)
+        => _db.MasteryActivityEvents
+            .AnyAsync(e => e.PlayerId == playerId && e.ActivityType == activityType && e.ReferenceId == referenceId, ct);
+
+    public async Task RecordEventAsync(Guid playerId, MasteryActivityType activityType, string referenceId, CancellationToken ct = default)
+    {
+        _db.MasteryActivityEvents.Add(MasteryActivityEvent.Create(playerId, activityType, referenceId));
+        await _db.SaveChangesAsync(ct);
+    }
 }
 
 public sealed class MasteryRespecRepository : IMasteryRespecRepository

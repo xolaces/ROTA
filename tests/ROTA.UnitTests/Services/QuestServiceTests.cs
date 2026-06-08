@@ -83,13 +83,14 @@ public class QuestServiceTests
             .Returns(Task.CompletedTask);
 
         var questConfig = Options.Create(new QuestConfig());
+        var mastery = new Mock<IMasteryService>();
 
         var service = new QuestService(
             definitions.Object, questProgress.Object, difficultyProgress.Object,
             players.Object, energy.Object, gems.Object,
             stats.Object, lootTables.Object, itemDefs.Object, inventory.Object,
             auditLog.Object, magicService.Object, legionService.Object, equipment.Object,
-            questConfig, random);
+            mastery.Object, questConfig, random);
 
         return new ServiceBundle(service, definitions, questProgress, difficultyProgress,
             players, energy, gems, stats, lootTables, itemDefs, inventory, auditLog, magicService,

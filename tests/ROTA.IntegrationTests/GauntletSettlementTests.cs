@@ -68,8 +68,10 @@ public class GauntletSettlementTests : IAsyncLifetime
         var evMagics = new PlayerEventMagicRepository(db);
         var honors   = new PlayerMagicHonorRepository(db);
         var audit    = new AuditLogRepository(db);
+        // Mastery rank-counter hook is best-effort + not under test here — stub it.
+        var mastery  = new Moq.Mock<ROTA.Application.Interfaces.IMasteryService>().Object;
         return new GauntletAdminService(
-            events, scoring, entries, content, currency, trophies, evMagics, honors, audit, ConfigOpts());
+            events, scoring, entries, content, currency, trophies, evMagics, honors, audit, mastery, ConfigOpts());
     }
 
     private async Task<Guid> SeedPlayerAsync()

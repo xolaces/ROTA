@@ -28,6 +28,7 @@ public sealed class GauntletAdminService : IGauntletAdminService
     private readonly IPlayerEventMagicRepository _eventMagics;
     private readonly IPlayerMagicHonorRepository _magicHonors;
     private readonly IAuditLogRepository _auditLog;
+    private readonly IMasteryService _mastery;
     private readonly GauntletConfig _config;
 
     public GauntletAdminService(
@@ -40,6 +41,7 @@ public sealed class GauntletAdminService : IGauntletAdminService
         IPlayerEventMagicRepository eventMagics,
         IPlayerMagicHonorRepository magicHonors,
         IAuditLogRepository auditLog,
+        IMasteryService mastery,
         IOptions<GauntletConfig> config)
     {
         _events      = events;
@@ -51,6 +53,7 @@ public sealed class GauntletAdminService : IGauntletAdminService
         _eventMagics = eventMagics;
         _magicHonors = magicHonors;
         _auditLog    = auditLog;
+        _mastery     = mastery;
         _config      = config.Value;
     }
 
@@ -186,6 +189,17 @@ public sealed class GauntletAdminService : IGauntletAdminService
                 continue;   // rank not covered by any band → nothing to grant
 
             ranksSettled++;
+
+            // System 22 Phase A — GauntletRankEarned mastery counter (a prize-ranked placement).
+            // Best-effort + idempotent (per-(event,player) referenceId), so a re-settle never
+            // double-counts and a counter failure never blocks the payout. No ambient tx here.
+            try
+            {
+                await _mastery.RecordActivityAsync(
+                    entry.PlayerId, MasteryActivityType.GauntletRankEarned, 1,
+                    $"mastery:rank:{eventId}:{entry.PlayerId}", ct);
+            }
+            catch (Exception) when (!ct.IsCancellationRequested) { /* best-effort */ }
 
             // (a) Tokens — idempotent via referenceId + the currency ledger's unique partial index.
             //     ReferenceExistsAsync is the pre-check; the unique index is the hard backstop.

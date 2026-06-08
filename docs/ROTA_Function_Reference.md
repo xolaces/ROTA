@@ -1,6 +1,37 @@
 # ROTA Function Reference
-Last updated: 2026-06-08 (System 22 Masteries Phase A — Slice 3: pledge + re-spec economy)
+Last updated: 2026-06-08 (System 22 Masteries Phase A — Slice 4: activity counters + tier-up leveling)
 Update when adding public methods or entities.
+
+---
+
+## System 22 — Masteries Core (Phase A, Slice 4 — activity counters + tier-up leveling)
+
+Spec: docs/specs/active/system-22-masteries-core.md. No new migration (uses S2 tables).
+
+### IPlayerMasteryActivityRepository (Slice 4 adds)
+| Method | Description |
+|--------|-------------|
+| `IncrementAsync(playerId, activityType, delta)` | Raw ON CONFLICT upsert-increment (clones LeaderboardEntryRepository); ambient-tx aware (rides the raid advisory-lock tx). |
+| `HasEventAsync(playerId, activityType, referenceId)` | Idempotency-ledger existence check (pre-check before insert). |
+| `RecordEventAsync(playerId, activityType, referenceId)` | Inserts the idempotency event row. |
+
+### IMasteryService (Slice 4 adds)
+| Method | Description |
+|--------|-------------|
+| `RecordActivityAsync(playerId, activityType, amount=1, referenceId=null)` | Counter increment; exactly-once when referenceId supplied (HasEvent pre-check → RecordEvent → Increment). Best-effort at chokepoints. |
+| `EvaluateTierUpsAsync(playerId)` | Off-hot-path: advances `PlayerMastery.Level` (monotonic, audited `MasteryLevelUp`, multi-tier) where cumulative counters meet the per-tier checklist. Triggered on read + after quest completion. |
+
+### Chokepoints (the 8 counters the shipped checklists use)
+- `RaidService.HitRaidAsync` (enlisted in advisory-lock tx): `RaidHit`+`RaidDamageDealt` (after RecordHit),
+  `GuildRaidContribution` (guild fork), `GoldEarned` (on-hit gold), `RaidKill` (isKill, idempotent `mastery:kill:{raid}:{player}`).
+- `QuestService.AttemptQuestAsync` (best-effort): `GoldEarned`, `QuestNodeCleared` (just-cleared), `QuestBossCleared`
+  (boss+just-cleared) + `EvaluateTierUpsAsync`.
+- `GauntletAdminService.SettleEventAsync` (best-effort + idempotent `mastery:rank:{event}:{player}`): `GauntletRankEarned`.
+- New `IMasteryService` ctor dep on RaidService / QuestService / GauntletAdminService.
+- **Reserved-but-unwired counters:** `EnergySpent`, `StaminaSpent`, `LevelGained` (no shipped checklist uses them yet).
+
+**Slice 4 scope:** activity counters + tier-up leveling. Combat/loot modifier *consumption* is Slices 5–7.
++11 unit, +3 integration.
 
 ---
 

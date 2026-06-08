@@ -60,11 +60,10 @@ public sealed class MasteryService : IMasteryService
         var player = await _players.FindByIdAsync(playerId, ct);
         var pledge = player?.ActivePledgeAncient;
 
-        var masteries = await _masteryRepo.EnsureAllAsync(playerId, ct);
+        var counters = await LoadCountersAsync(playerId, ct);
+        // Evaluate earned tier-ups off the hot path (this read is one of the two trigger points).
+        var masteries = await EvaluateTierUpsCoreAsync(playerId, counters, ct);
         var levels = masteries.ToDictionary(m => m.Ancient, m => m.Level);
-
-        var activities = await _activityRepo.GetForPlayerAsync(playerId, ct);
-        var counters = activities.ToDictionary(a => a.ActivityType, a => a.Counter);
 
         var ancientDtos = new List<MasteryAncientDto>(AllAncients.Length);
         foreach (var ancient in AllAncients)
@@ -140,6 +139,57 @@ public sealed class MasteryService : IMasteryService
                 LeaderboardPeriod.Live, LiveKey, rating, now, ct);
         }
         return ratings.Count;
+    }
+
+    // ── Activity recording + tier-up leveling (Slice 4) ───────────────────────
+
+    public async Task RecordActivityAsync(Guid playerId, MasteryActivityType activityType, long amount = 1,
+        string? referenceId = null, CancellationToken ct = default)
+    {
+        if (amount <= 0) return;
+
+        if (referenceId is not null)
+        {
+            // Exactly-once: pre-check the idempotency ledger (avoids a unique-violation that would
+            // poison an ambient tx — e.g. the raid advisory-lock tx). Insert + increment ride that tx.
+            if (await _activityRepo.HasEventAsync(playerId, activityType, referenceId, ct)) return;
+            await _activityRepo.RecordEventAsync(playerId, activityType, referenceId, ct);
+        }
+
+        await _activityRepo.IncrementAsync(playerId, activityType, amount, ct);
+    }
+
+    public async Task EvaluateTierUpsAsync(Guid playerId, CancellationToken ct = default)
+    {
+        var counters = await LoadCountersAsync(playerId, ct);
+        await EvaluateTierUpsCoreAsync(playerId, counters, ct);
+    }
+
+    private async Task<Dictionary<MasteryActivityType, long>> LoadCountersAsync(Guid playerId, CancellationToken ct)
+        => (await _activityRepo.GetForPlayerAsync(playerId, ct)).ToDictionary(a => a.ActivityType, a => a.Counter);
+
+    private async Task<IReadOnlyList<PlayerMastery>> EvaluateTierUpsCoreAsync(
+        Guid playerId, IReadOnlyDictionary<MasteryActivityType, long> counters, CancellationToken ct)
+    {
+        var masteries = await _masteryRepo.EnsureAllAsync(playerId, ct);
+        foreach (var m in masteries)
+        {
+            // Cumulative counters vs increasing per-tier thresholds — a veteran may jump several tiers.
+            while (m.Level < PlayerMasteryMax)
+            {
+                var tier = _defs.GetTierChallenge(m.Ancient, m.Level);
+                if (tier is null) break;
+                bool met = tier.Checklist.All(c =>
+                    (counters.TryGetValue(c.ActivityType, out var cur) ? cur : 0) >= c.Threshold);
+                if (!met) break;
+
+                m.LevelUp();
+                await _masteryRepo.UpsertAsync(m, ct);
+                await _auditLog.AppendAsync(AuditLog.Create(
+                    playerId, "MasteryLevelUp", null, $"{m.Ancient} -> L{m.Level}", null), ct);
+            }
+        }
+        return masteries;
     }
 
     // ── Re-spec (LOSSLESS pledge change) ──────────────────────────────────────
