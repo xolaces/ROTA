@@ -33,12 +33,14 @@ queue a build agent works against; it stays as the historical decision record af
 |---|---|---|---|
 | `system-16-gauntlet.md` | System 16 | **Decision-complete — ready to build (6 slices)** | Competitive Gauntlet event: leagues, Strikes ledger, Wrath/Blessing off-cap auras, trophies, two-currency token shop. Slice 4 = deep combat/money. |
 | `system-21-guild-foundations.md` | System 21 | **Design — open decisions pending (§5); fundamentals-first** | Guild/clan: cross-game design study + ROTA fundamentals (identity, membership, roles, guild chat, guild raids). Campaigns + async guild wars on the roadmap. Reuses raid/contribution engine + GuildStamina + chat hub. |
+| `system-22-masteries-core.md` | System 22 — **Phase A** | **Decision-complete — building (7 slices)** | Masteries core: 4 Ancients (Wrath/Bulwark/Hoard/Discernment) leveled 1→5 via challenge checklists; always-on global + pledge (≈×2) flat modifiers via `IMasteryService` at existing combat/loot hooks (no new path); Formula-B Overall Mastery Rating + derived titles; lossless re-spec economy. Phase B (The Rise) + Phase C (PoE-depth) stay in backlog. |
 
 ## Backlog (`backlog/`)
 
 | File | System | Status | Purpose |
 |---|---|---|---|
 | `SYSTEM_13_MODERATION.md` | Moderation (drafted under "13") | **Deferred** | Moderator powers — world-chat mute, temp bans ≤3 days, reason-required, punishment logging. Not built (no chat/players yet). |
+| `system-22-ancients-rise-and-masteries.md` | System 22 | **Draft — open decisions pending (§Open decisions); phased** | Makes the title literal: **The Rise** (server collectively wakes Ancients → community-damage Ancient Raids, ED two-axis rewards) + **Masteries** (4 Ancients, global+active modifier buffs, 1–5 over 3–6mo, Overall Mastery Rating). Research-grounded; gate-don't-fork; PoE-depth layers deferred for content runway. |
 
 ## Naming convention going forward
 
