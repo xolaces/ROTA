@@ -1,6 +1,28 @@
 # ROTA Function Reference
-Last updated: 2026-06-08 (System 22 Masteries Phase A — Slice 5: combat — Wrath + Bulwark)
+Last updated: 2026-06-08 (System 22 Masteries Phase A — Slice 6: loot — Hoard + Discernment sigil-find)
 Update when adding public methods or entities.
+
+---
+
+## System 22 — Masteries Core (Phase A, Slice 6 — loot: Hoard + Discernment sigil-find)
+
+Spec: docs/specs/active/system-22-masteries-core.md. No migration.
+
+### IMasteryService (Slice 6 add)
+| Method | Description |
+|--------|-------------|
+| `GetModifiersAsync(playerId)` | → `MasteryModifiers(Combat, Loot)` — both modifier sets from ONE mastery-state load. The raid hit path uses this (one read/hit instead of two). |
+
+### Loot hooks
+- **Quest (`QuestService.AttemptQuestAsync`):** `GetLootModifiersAsync` fetched best-effort (try/catch → neutral).
+  Hoard `goldReward × HoardGoldMultiplier`; Hoard drop-rate folded into `ProcessQuestLootAsync`'s `Scale` closure
+  (× `hoardDropMultiplier`, inside the 0.95 cap); Discernment post-first-clear sigil chance
+  `× DiscernmentSigilFindMultiplier` (clamp ≤ 1.0; guaranteed first drop never scaled).
+- **Raid (`RaidService.HitRaidAsync`):** on-hit gold `× masteryMods.Loot.HoardGoldMultiplier` (one combined read).
+- **Deferred:** raid threshold-drop (kill-loot) Hoard scaling (per-participant reads on the kill path) — follow-up.
+
+**Slice 6 scope:** Hoard (drop/gold) + Discernment sigil-find. Discernment drop-quality (rarity-upgrade) is Slice 7.
++3 unit tests.
 
 ---
 

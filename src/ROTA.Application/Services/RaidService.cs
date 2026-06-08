@@ -671,10 +671,10 @@ public sealed class RaidService : IRaidService
             var combat = await _equipment.GetEffectiveCombatDataAsync(
                 playerId, player.Stats!.BaseAttack, player.Stats.BaseDefense, ct);
 
-            // System 22 Phase A — mastery combat modifiers (Wrath +% legion power, Bulwark +% guild-raid
-            // damage). Plain numbers consumed at the existing hooks; a mastery-less player gets all-zero
-            // here → a byte-for-byte unchanged hit.
-            var masteryMods = await _mastery.GetCombatModifiersAsync(playerId, ct);
+            // System 22 Phase A — mastery modifiers (combat: Wrath +% legion power, Bulwark +% guild-raid
+            // damage; loot: Hoard +% gold). ONE mastery-state read for the whole hit; a mastery-less player
+            // gets all-neutral → a byte-for-byte unchanged hit.
+            var masteryMods = await _mastery.GetModifiersAsync(playerId, ct);
 
             var multiplier = 0.85 + _random.NextDouble() * 0.30; // uniform [0.85, 1.15]
             long baseValue = (combat.EffectiveAttack * 4L) + combat.EffectiveDefense;
@@ -712,7 +712,7 @@ public sealed class RaidService : IRaidService
                 // (Wrath, System 22 Phase A) — adds its percent into the legion bonus sum, exactly like a
                 // General's LegionBonus, so it flows once through bonusFraction (additive; never the Gauntlet).
                 // Applied BEFORE the trophy stage + PowerScaling so it touches legion power exactly once.
-                totalLegionBonus += masteryMods.WrathLegionPercent;
+                totalLegionBonus += masteryMods.Combat.WrathLegionPercent;
 
                 double bonusFraction  = totalLegionBonus / 100.0;
                 double rawLegionPower = unitSum * (1.0 + bonusFraction);
@@ -738,7 +738,7 @@ public sealed class RaidService : IRaidService
 
                 // Wrath marginal (display only): rawLegionPower is linear in bonusFraction, so Wrath's
                 // contribution is unitSum × (wrathPercent/100) carried through the same trophy + scaling stages.
-                wrathLegionBonus = Math.Max(0, (long)(unitSum * (masteryMods.WrathLegionPercent / 100.0)
+                wrathLegionBonus = Math.Max(0, (long)(unitSum * (masteryMods.Combat.WrathLegionPercent / 100.0)
                     * (1.0 + maxTrophyFraction) * _legionConfig.PowerScaling * hitSize * multiplier));
             }
 
@@ -929,7 +929,7 @@ public sealed class RaidService : IRaidService
 
             // Conditional flat damage percent — applied last, after crit. (Bulwark, System 22 Phase A)
             // stacks additively here on GUILD RAIDS ONLY, already hard-capped in GetCombatModifiersAsync.
-            double bulwarkFraction = lockedRaid.GuildId is not null ? masteryMods.BulwarkGuildDamageFraction : 0.0;
+            double bulwarkFraction = lockedRaid.GuildId is not null ? masteryMods.Combat.BulwarkGuildDamageFraction : 0.0;
             double flatDamageFraction = combat.FlatDamagePercent + bulwarkFraction;
             if (flatDamageFraction > 0)
             {
@@ -1012,7 +1012,9 @@ public sealed class RaidService : IRaidService
             double goldMin  = _combatConfig.GoldPerStaminaRollMin;
             double goldMax  = _combatConfig.GoldPerStaminaRollMax;
             double goldRoll = goldMin + _random.NextDouble() * (goldMax - goldMin);
-            goldGained = Math.Max(1, (long)Math.Round(staminaCost * goldRoll));
+            // System 22 Phase A — Hoard +% gold (global). Applied to the on-hit gold; the GoldEarned
+            // mastery counter below then reflects the boosted amount. Neutral (×1.0) for non-Hoard players.
+            goldGained = Math.Max(1, (long)Math.Round(staminaCost * goldRoll * masteryMods.Loot.HoardGoldMultiplier));
 
             // GoldProc and XpProc magics — modify grants before they're applied.
             // Stacks=false: only the first proc of that effectType is applied per hit.

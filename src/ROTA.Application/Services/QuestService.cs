@@ -188,11 +188,17 @@ public sealed class QuestService : IQuestService
         if (player.IsBanned)
             return Fail(QuestFailureCode.PlayerBanned, "Account is banned.");
 
+        // System 22 Phase A — mastery loot modifiers (Hoard +% drop/gold, Discernment sigil-find).
+        // Best-effort: a fetch failure falls back to neutral so the player still gets base rewards.
+        MasteryLootModifiers lootMods;
+        try { lootMods = await _mastery.GetLootModifiersAsync(playerId, ct); }
+        catch (Exception) when (!ct.IsCancellationRequested) { lootMods = new MasteryLootModifiers(1.0, 1.0, 1.0, 0.0); }
+
         // 5. Compute scaled costs and rewards
         float energyMult  = EnergyMultipliers[difficulty];
         float rewardMult  = RewardMultipliers[difficulty];
         int energyCost    = (int)Math.Ceiling(quest.BaseEnergyCost * energyMult);
-        int goldReward    = (int)(quest.GoldReward * rewardMult);
+        int goldReward    = (int)(quest.GoldReward * rewardMult * lootMods.HoardGoldMultiplier);
         int xpReward      = (int)(quest.ExperienceReward * rewardMult);
         int gemReward     = (int)Math.Round(quest.GemReward * rewardMult);
 
@@ -267,7 +273,7 @@ public sealed class QuestService : IQuestService
             {
                 var stats = await _stats.GetStatsAsync(playerId, ct);
                 int discernment = stats?.DiscernmentInvestment ?? 0;
-                await ProcessQuestLootAsync(playerId, diffLoot, discernment, itemsGranted, ct);
+                await ProcessQuestLootAsync(playerId, diffLoot, discernment, lootMods.HoardDropMultiplier, itemsGranted, ct);
             }
         }
 
@@ -279,12 +285,15 @@ public sealed class QuestService : IQuestService
 
             if (!diffProg.FirstSigilDropped)
             {
+                // Guaranteed first-per-difficulty drop — never scaled (locked: SigilFindAppliesToFirstClear=false).
                 dropSigil = true;
                 diffProg.MarkSigilDropped();
             }
             else if (quest.SigilDropChance > 0)
             {
-                dropSigil = _random.NextDouble() < quest.SigilDropChance;
+                // System 22 Phase A — Discernment "sigil find" scales the post-first-clear chance (clamped ≤ 1.0).
+                double sigilChance = Math.Min(1.0, quest.SigilDropChance * lootMods.DiscernmentSigilFindMultiplier);
+                dropSigil = _random.NextDouble() < sigilChance;
             }
 
             if (dropSigil)
@@ -374,15 +383,17 @@ public sealed class QuestService : IQuestService
         Guid playerId,
         Application.Models.LootTableDifficulty loot,
         int discernmentInvestment,
+        double hoardDropMultiplier,
         List<ItemGrantDTO> itemsGranted,
         CancellationToken ct)
     {
         // Discernment raises every chance-drop's effective rate, capped at MaxDropChance — but the
         // cap never *lowers* a base that's already high (a base 1.0 "always" drop stays 1.0). It only
-        // bounds the Discernment boost on low-base drops. Guaranteed drops never pass through here.
+        // bounds the boost on low-base drops. Guaranteed drops never pass through here.
+        // System 22 Phase A — Hoard +% drop rate stacks multiplicatively into the same scaled chance.
         double Scale(double baseChance)
         {
-            double boosted = baseChance * (1 + discernmentInvestment * _questConfig.DiscernmentDropMultiplier);
+            double boosted = baseChance * (1 + discernmentInvestment * _questConfig.DiscernmentDropMultiplier) * hoardDropMultiplier;
             double cap = Math.Max(baseChance, _questConfig.MaxDropChance);
             return Math.Min(boosted, cap);
         }

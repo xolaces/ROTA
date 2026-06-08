@@ -32,7 +32,8 @@ public class QuestServiceTests
         Mock<IAuditLogRepository> AuditLog,
         Mock<IMagicService> MagicService,
         Mock<ILegionService> LegionService,
-        Mock<IEquipmentService> Equipment);
+        Mock<IEquipmentService> Equipment,
+        Mock<IMasteryService> Mastery);
 
     private static ServiceBundle BuildService(Random? random = null)
     {
@@ -84,6 +85,9 @@ public class QuestServiceTests
 
         var questConfig = Options.Create(new QuestConfig());
         var mastery = new Mock<IMasteryService>();
+        // Neutral loot modifiers by default → quest rewards/drops unchanged unless a test overrides.
+        mastery.Setup(m => m.GetLootModifiersAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MasteryLootModifiers(1.0, 1.0, 1.0, 0.0));
 
         var service = new QuestService(
             definitions.Object, questProgress.Object, difficultyProgress.Object,
@@ -94,7 +98,7 @@ public class QuestServiceTests
 
         return new ServiceBundle(service, definitions, questProgress, difficultyProgress,
             players, energy, gems, stats, lootTables, itemDefs, inventory, auditLog, magicService,
-            legionService, equipment);
+            legionService, equipment, mastery);
     }
 
     private static IReadOnlyList<QuestDefinition> TwoQuestChain() => new List<QuestDefinition>
@@ -639,6 +643,64 @@ public class QuestServiceTests
     // -----------------------------------------------------------------------
     // AttemptQuestAsync — sigil drop (Boss node subsequent — uses RNG)
     // -----------------------------------------------------------------------
+
+    // -----------------------------------------------------------------------
+    // System 22 Phase A Slice 6 — Hoard (gold) + Discernment (sigil-find)
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task AttemptQuest_HoardGoldMultiplier_BoostsGoldReward()
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+        var quest = TwoQuestChain()[0]; // GoldReward = 100
+        b.Definitions.Setup(d => d.GetById("q001")).Returns(quest);
+        SetupPlayerAndEnergy(b, player);
+        // Hoard gold ×2 (the other lanes neutral).
+        b.Mastery.Setup(m => m.GetLootModifiersAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MasteryLootModifiers(1.0, 2.0, 1.0, 0.0));
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q001", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue();
+        result.GoldGranted.Should().Be(200, "Hoard ×2 on a 100-gold quest");
+    }
+
+    [Fact]
+    public async Task AttemptQuest_DiscernmentSigilFind_RaisesPostFirstClearChanceToGuaranteed()
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+        // Base 0.5 (RNG-dependent on its own) × 2.0 sigil-find → effective min(1.0, 1.0) = guaranteed drop.
+        var boss = new QuestDefinition
+        {
+            Id = "q_boss", Name = "Boss Quest", Chapter = 1, BaseEnergyCost = 8,
+            NodeType = "Boss", GoldReward = 200, ExperienceReward = 100,
+            SigilDropChance = 0.5f,
+            Sigils = new Dictionary<string, string> { ["Normal"] = "sigil_ironcolossus_normal" },
+        };
+        b.Definitions.Setup(d => d.GetById("q_boss")).Returns(boss);
+        SetupPlayerAndEnergy(b, player);
+
+        var priorDiff = PlayerQuestDifficultyProgress.Create(player.Id, "q_boss", QuestDifficulty.Normal);
+        priorDiff.RecordCompletion();
+        priorDiff.MarkSigilDropped(); // first-clear sigil already taken → exercises the chance path
+        b.DifficultyProgress.Setup(r => r.GetAsync(player.Id, "q_boss", QuestDifficulty.Normal, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(priorDiff);
+        b.ItemDefs.Setup(d => d.GetById("sigil_ironcolossus_normal")).Returns(new ItemDefinition
+        {
+            Id = "sigil_ironcolossus_normal", Name = "Iron Sigil", Rarity = ItemRarity.Green, Type = ItemType.Sigil,
+        });
+        // Discernment sigil-find ×2 → 0.5 base becomes a guaranteed (clamped 1.0) drop.
+        b.Mastery.Setup(m => m.GetLootModifiersAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MasteryLootModifiers(1.0, 1.0, 2.0, 0.0));
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q_boss", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue();
+        result.ItemsGranted.Should().ContainSingle(i => i.ItemId == "sigil_ironcolossus_normal",
+            "sigil-find ×2 raises the 0.5 base chance to a guaranteed drop");
+    }
 
     [Fact]
     public async Task AttemptQuest_BossNode_DropsSignil_OnRepeatCompletion_WhenChanceIs100Pct()

@@ -124,6 +124,12 @@ public sealed class MasteryService : IMasteryService
         return ComputeLootModifiers(levels, pledge);
     }
 
+    public async Task<MasteryModifiers> GetModifiersAsync(Guid playerId, CancellationToken ct = default)
+    {
+        var (levels, pledge) = await LoadLevelsAndPledgeAsync(playerId, ct);
+        return new MasteryModifiers(ComputeCombatModifiers(levels, pledge), ComputeLootModifiers(levels, pledge));
+    }
+
     // ── Rating-board snapshot ─────────────────────────────────────────────────
 
     public async Task<int> SnapshotRatingBoardAsync(CancellationToken ct = default)

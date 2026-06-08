@@ -201,8 +201,8 @@ public class RaidServiceTests
         var gauntletCfg = Options.Create(gauntletConfig ?? new GauntletConfig());
         var mastery = new Mock<IMasteryService>();
         // Neutral mastery modifiers by default → a mastery-less hit is byte-for-byte unchanged.
-        mastery.Setup(m => m.GetCombatModifiersAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new MasteryCombatModifiers(0.0, 0.0));
+        mastery.Setup(m => m.GetModifiersAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MasteryModifiers(new MasteryCombatModifiers(0.0, 0.0), new MasteryLootModifiers(1.0, 1.0, 1.0, 0.0)));
 
         var service = new RaidService(
             raids.Object, participants.Object, players.Object, resources.Object,
@@ -3420,8 +3420,8 @@ public class RaidServiceTests
         SetupLegionForMasteryTest(baseline, player, raid);
 
         // +5% legion power (e.g. pledged Wrath @ L5). bonusFraction 0.55 → 0.60.
-        withWrath.Mastery.Setup(m => m.GetCombatModifiersAsync(player.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new MasteryCombatModifiers(5.0, 0.0));
+        withWrath.Mastery.Setup(m => m.GetModifiersAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MasteryModifiers(new MasteryCombatModifiers(5.0, 0.0), new MasteryLootModifiers(1.0, 1.0, 1.0, 0.0)));
 
         var r1 = await withWrath.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
         var r2 = await baseline.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
@@ -3447,8 +3447,8 @@ public class RaidServiceTests
         b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
         // Wrath set, but no active legion (default bundle has none) → nothing to scale.
-        b.Mastery.Setup(m => m.GetCombatModifiersAsync(player.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new MasteryCombatModifiers(5.0, 0.0));
+        b.Mastery.Setup(m => m.GetModifiersAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MasteryModifiers(new MasteryCombatModifiers(5.0, 0.0), new MasteryLootModifiers(1.0, 1.0, 1.0, 0.0)));
 
         var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
 
@@ -3483,8 +3483,8 @@ public class RaidServiceTests
 
         // Large fraction (0.25) for unambiguous observability at low base damage — the real ~1% cap
         // is enforced in MasteryService (Slice 2) and tested there; this proves the combat hook applies it.
-        withBulwark.Mastery.Setup(m => m.GetCombatModifiersAsync(player.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new MasteryCombatModifiers(0.0, 0.25));
+        withBulwark.Mastery.Setup(m => m.GetModifiersAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MasteryModifiers(new MasteryCombatModifiers(0.0, 0.25), new MasteryLootModifiers(1.0, 1.0, 1.0, 0.0)));
 
         var r1 = await withBulwark.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
         var r2 = await baseline.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
@@ -3508,12 +3508,43 @@ public class RaidServiceTests
         b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
         // Bulwark fraction set, but the raid is not a guild raid → must NOT apply.
-        b.Mastery.Setup(m => m.GetCombatModifiersAsync(player.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new MasteryCombatModifiers(0.0, 0.25));
+        b.Mastery.Setup(m => m.GetModifiersAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MasteryModifiers(new MasteryCombatModifiers(0.0, 0.25), new MasteryLootModifiers(1.0, 1.0, 1.0, 0.0)));
 
         var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
 
         result.Success.Should().BeTrue();
         result.Response!.BulwarkBonus.Should().Be(0, "Bulwark applies to guild raids only (GuildId != null)");
+    }
+
+    [Fact]
+    public async Task Hit_Hoard_BoostsOnHitGold()
+    {
+        var withHoard = BuildService(new Random(0));
+        var baseline  = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+
+        void Setup(ServiceBundle bb)
+        {
+            SetupHitScaffolding(bb, player, raid);
+            bb.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((RaidParticipant?)null);
+            bb.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+        }
+        Setup(withHoard);
+        Setup(baseline);
+
+        // Hoard gold ×2 (same RNG seed → same gold roll, then doubled).
+        withHoard.Mastery.Setup(m => m.GetModifiersAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MasteryModifiers(new MasteryCombatModifiers(0.0, 0.0), new MasteryLootModifiers(1.0, 2.0, 1.0, 0.0)));
+
+        var r1 = await withHoard.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+        var r2 = await baseline.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        r1.Success.Should().BeTrue();
+        r2.Success.Should().BeTrue();
+        r1.Response!.GoldGained.Should().BeGreaterThan(r2.Response!.GoldGained, "Hoard ×2 boosts on-hit gold");
     }
 }

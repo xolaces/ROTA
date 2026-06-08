@@ -179,6 +179,24 @@ tests; the 700+ existing hit tests run with neutral mods → byte-for-byte regre
 - **Tests:** Wrath comparison (bonusFraction 0.55→0.60 ratio), Wrath no-legion → 0, Bulwark guild-raid adds damage,
   Bulwark non-guild → not applied. Existing RaidService/leaderboard hit harnesses given a neutral-mods mastery mock.
 
+## System 22 — Masteries Core (Phase A, Slice 6 — loot: Hoard + Discernment sigil-find) — 2026-06-08 (branch `feat/system22-masteries-s6`)
+Build: 0 errors / no new warnings. Tests: **778 unit + 88 integration = 866 green** (+3 unit: Hoard quest gold,
+Discernment sigil-find, Hoard raid on-hit gold). No migration.
+- **Combined read (perf):** new `IMasteryService.GetModifiersAsync` returns combat + loot mods from ONE
+  (levels+pledge) load. `RaidService.HitRaidAsync` now calls it once (replaces the S5 GetCombatModifiersAsync call) —
+  one mastery-state read per hit, not two — and uses `.Combat.*` (Wrath/Bulwark) + `.Loot.HoardGoldMultiplier`.
+- **Hoard (+% drop rate / gold):** quest drop-rate folded into `ProcessQuestLootAsync`'s `Scale` closure (multiplicative,
+  inside the existing 0.95 cap); quest gold `goldReward × HoardGoldMultiplier`; raid on-hit gold
+  `goldGained × HoardGoldMultiplier` (the S4 GoldEarned counter then reflects the boosted amount).
+- **Discernment sigil-find:** post-first-clear sigil chance `× DiscernmentSigilFindMultiplier` (clamp ≤ 1.0);
+  the guaranteed first-per-difficulty drop is never scaled (`SigilFindAppliesToFirstClear=false`).
+- **Best-effort fetch (quest):** `GetLootModifiersAsync` wrapped in try/catch → neutral on failure, so a mastery read
+  error never denies base rewards. Loot quality (rarity-upgrade) is the Slice 7 piece (DiscernmentQualityChance unused here).
+- **NOTE — deferred to a follow-up:** raid *threshold-drop* (kill-loot) Hoard scaling. Quest drops (the canonical
+  System-20 loot pipeline) + quest/raid gold + sigil-find are delivered. Raid threshold drops fire per-participant on a
+  kill (up to 250 for a world raid) → per-participant mastery reads on the kill; deferred to avoid that on the combat
+  kill path. Hoard's drop benefit applies to the quest pipeline; flagged for owner confirmation.
+
 ## Build status (High — earlier sessions, see the dated entries above for the latest)
 - **400 unit + 34 integration = 434 tests pass. 0 warnings, 0 errors.**
 - `main` past tag **v0.2.7-s6** (Legion epic complete) + 3 post-fixes merged & pushed (untagged hardening):

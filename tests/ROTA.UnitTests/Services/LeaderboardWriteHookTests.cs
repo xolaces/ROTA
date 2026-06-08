@@ -596,8 +596,8 @@ public class LeaderboardWriteHookTests
         var combatCfg = Options.Create(new CombatConfig());
         var gauntletCfg = Options.Create(new GauntletConfig());
         var mastery = new Mock<IMasteryService>();
-        mastery.Setup(m => m.GetCombatModifiersAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new MasteryCombatModifiers(0.0, 0.0));
+        mastery.Setup(m => m.GetModifiersAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MasteryModifiers(new MasteryCombatModifiers(0.0, 0.0), new MasteryLootModifiers(1.0, 1.0, 1.0, 0.0)));
 
         var service = new RaidService(
             raids.Object, participants.Object, players.Object, resources.Object,

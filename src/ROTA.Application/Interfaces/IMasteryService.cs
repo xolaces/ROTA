@@ -19,6 +19,10 @@ public interface IMasteryService
     /// <summary>Hoard (drop/gold) + Discernment (sigil-find/quality) modifiers for the loot hooks (Slices 6/7).</summary>
     Task<MasteryLootModifiers> GetLootModifiersAsync(Guid playerId, CancellationToken ct = default);
 
+    /// <summary>Both combat + loot modifiers from ONE load of (levels + pledge) — used by the raid hit path
+    /// (Slice 6) so the money path reads mastery state once, not twice.</summary>
+    Task<MasteryModifiers> GetModifiersAsync(Guid playerId, CancellationToken ct = default);
+
     /// <summary>Refreshes the MasteryRating leaderboard boards (Live snapshot). Returns the count snapshotted.</summary>
     Task<int> SnapshotRatingBoardAsync(CancellationToken ct = default);
 
@@ -63,3 +67,6 @@ public sealed record MasteryLootModifiers(
     double HoardGoldMultiplier,
     double DiscernmentSigilFindMultiplier,
     double DiscernmentQualityChance);
+
+/// <summary>Combat + loot modifiers together (one mastery-state load).</summary>
+public sealed record MasteryModifiers(MasteryCombatModifiers Combat, MasteryLootModifiers Loot);
