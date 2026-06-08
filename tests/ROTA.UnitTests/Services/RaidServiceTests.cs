@@ -52,7 +52,8 @@ public class RaidServiceTests
         Mock<IGauntletScoringService> GauntletScoring,
         Mock<IGauntletCurrencyRepository> GauntletCurrency,
         Mock<IGuildMembershipRepository> GuildMemberships,
-        Mock<IGuildEconomyRepository> GuildEconomy);
+        Mock<IGuildEconomyRepository> GuildEconomy,
+        Mock<IMasteryService> Mastery);
 
     private static ServiceBundle BuildService(Random? random = null, MagicConfig? magicConfig = null, LegionConfig? legionConfig = null, CombatConfig? combatConfig = null, GauntletConfig? gauntletConfig = null)
     {
@@ -199,6 +200,9 @@ public class RaidServiceTests
         var combatCfg = Options.Create(combatConfig ?? new CombatConfig());
         var gauntletCfg = Options.Create(gauntletConfig ?? new GauntletConfig());
         var mastery = new Mock<IMasteryService>();
+        // Neutral mastery modifiers by default → a mastery-less hit is byte-for-byte unchanged.
+        mastery.Setup(m => m.GetCombatModifiersAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MasteryCombatModifiers(0.0, 0.0));
 
         var service = new RaidService(
             raids.Object, participants.Object, players.Object, resources.Object,
@@ -218,7 +222,7 @@ public class RaidServiceTests
             raidMagics, magicDefs, magicSvc, playerLegions, legionSlots, unitDefs, legionDefs,
             commanderGear, gearDefs, legionSvc, leaderboards,
             trophyRepo, gauntletContent, playerEventMagics, playerMagicHonors, strikes, gauntletScoring,
-            gauntletCurrency, guildMemberships, guildEconomy);
+            gauntletCurrency, guildMemberships, guildEconomy, mastery);
     }
 
     private static Player MakePlayer(long xp = 0)
@@ -3383,5 +3387,133 @@ public class RaidServiceTests
         result.Success.Should().BeFalse();
         result.FailureCode.Should().Be(GuildRaidFailureCode.DefinitionNotFound);
         b.GuildEconomy.Verify(e => e.TrySpendPoolAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    // =======================================================================
+    // System 22 Phase A Slice 5 — Masteries combat: Wrath (+% legion power) +
+    // Bulwark (+% guild-raid damage). (The 700+ existing hit tests run with neutral
+    // mastery mods, proving a mastery-less hit is byte-for-byte unchanged.)
+    // =======================================================================
+
+    private void SetupLegionForMasteryTest(ServiceBundle bb, Player player, ActiveRaid raid)
+    {
+        SetupHitScaffolding(bb, player, raid);
+        var legion  = MakeActiveLegion(player.Id);
+        var legDef  = MakeLegionDef(powerBonus: 50);
+        var unitDef = MakeUnitDef("gen_ironward", UnitType.General, 80, 60, 5);
+        var slot    = PlayerLegionSlot.Create(player.Id, "legion_warband", LegionSlotFamily.General, 0, "gen_ironward");
+        SetupActiveLegion(bb, player.Id, legion, legDef, (slot, unitDef));
+        bb.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        bb.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+    }
+
+    [Fact]
+    public async Task Hit_Wrath_AddsToLegionBonusFraction_AboveBaseline()
+    {
+        var withWrath = BuildService(new Random(0));
+        var baseline  = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeRaid();
+        SetupLegionForMasteryTest(withWrath, player, raid);
+        SetupLegionForMasteryTest(baseline, player, raid);
+
+        // +5% legion power (e.g. pledged Wrath @ L5). bonusFraction 0.55 → 0.60.
+        withWrath.Mastery.Setup(m => m.GetCombatModifiersAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MasteryCombatModifiers(5.0, 0.0));
+
+        var r1 = await withWrath.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+        var r2 = await baseline.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        r1.Success.Should().BeTrue();
+        r2.Success.Should().BeTrue();
+        long expected = (long)Math.Round(r2.Response!.LegionPower * (1.60 / 1.55));
+        r1.Response!.LegionPower.Should().BeCloseTo(expected, 1, "Wrath +5% is added into the legion bonus fraction");
+        r1.Response.LegionPower.Should().BeGreaterThan(r2.Response.LegionPower);
+        r1.Response.WrathLegionBonus.Should().BeGreaterThan(0);
+        r2.Response.WrathLegionBonus.Should().Be(0, "no Wrath → no marginal");
+    }
+
+    [Fact]
+    public async Task Hit_Wrath_NoActiveLegion_NoBonus()
+    {
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid = MakeRaid();
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+        // Wrath set, but no active legion (default bundle has none) → nothing to scale.
+        b.Mastery.Setup(m => m.GetCombatModifiersAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MasteryCombatModifiers(5.0, 0.0));
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.LegionPower.Should().Be(0);
+        result.Response.WrathLegionBonus.Should().Be(0, "Wrath only scales an active legion");
+    }
+
+    private void SetupGuildHitForMasteryTest(ServiceBundle bb, Player player, Guid guildId, ActiveRaid raid)
+    {
+        SetupHitScaffolding(bb, player, raid);
+        bb.GuildMemberships.Setup(r => r.FindByGuildAndPlayerAsync(guildId, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GuildMembership.Create(guildId, player.Id, GuildRank.Member));
+        bb.Energy.Setup(e => e.SpendEnergyAsync(player.Id, ResourceType.GuildStamina, It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        bb.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        bb.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+    }
+
+    [Fact]
+    public async Task Hit_Bulwark_GuildRaid_AddsDamage()
+    {
+        var withBulwark = BuildService(new Random(0));
+        var baseline    = BuildService(new Random(0));
+        var player = MakePlayer();
+        var guildId = Guid.NewGuid();
+        var raid = MakeGuildRaid(guildId);
+        SetupGuildHitForMasteryTest(withBulwark, player, guildId, raid);
+        SetupGuildHitForMasteryTest(baseline, player, guildId, raid);
+
+        // Large fraction (0.25) for unambiguous observability at low base damage — the real ~1% cap
+        // is enforced in MasteryService (Slice 2) and tested there; this proves the combat hook applies it.
+        withBulwark.Mastery.Setup(m => m.GetCombatModifiersAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MasteryCombatModifiers(0.0, 0.25));
+
+        var r1 = await withBulwark.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+        var r2 = await baseline.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        r1.Success.Should().BeTrue();
+        r2.Success.Should().BeTrue();
+        r1.Response!.DamageDealt.Should().BeGreaterThan(r2.Response!.DamageDealt, "Bulwark adds flat damage on a guild raid");
+        r1.Response.BulwarkBonus.Should().BeGreaterThan(0);
+        r2.Response.BulwarkBonus.Should().Be(0, "no Bulwark → no marginal");
+    }
+
+    [Fact]
+    public async Task Hit_Bulwark_NonGuildRaid_NotApplied()
+    {
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid = MakeRaid(); // ordinary raid — GuildId is null
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+        // Bulwark fraction set, but the raid is not a guild raid → must NOT apply.
+        b.Mastery.Setup(m => m.GetCombatModifiersAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MasteryCombatModifiers(0.0, 0.25));
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.BulwarkBonus.Should().Be(0, "Bulwark applies to guild raids only (GuildId != null)");
     }
 }

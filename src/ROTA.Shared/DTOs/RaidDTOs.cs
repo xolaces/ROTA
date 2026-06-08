@@ -78,6 +78,12 @@ public class RaidHitResponse
     // hit's spend (0 on non-Gauntlet raids, which spend Stamina not Strikes).
     public long OffCapAuraBonus  { get; set; }
     public long NewStrikeBalance { get; set; }
+
+    // System 22 Phase A — mastery combat surfacing. WrathLegionBonus = marginal legion power added by
+    // the Wrath mastery this hit (0 with no active legion / no Wrath level). BulwarkBonus = marginal
+    // damage added by the Bulwark mastery (0 on non-guild raids; hard-capped).
+    public long WrathLegionBonus { get; set; }
+    public long BulwarkBonus     { get; set; }
 }
 
 public class MagicProcDTO

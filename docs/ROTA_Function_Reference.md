@@ -1,6 +1,22 @@
 # ROTA Function Reference
-Last updated: 2026-06-08 (System 22 Masteries Phase A — Slice 4: activity counters + tier-up leveling)
+Last updated: 2026-06-08 (System 22 Masteries Phase A — Slice 5: combat — Wrath + Bulwark)
 Update when adding public methods or entities.
+
+---
+
+## System 22 — Masteries Core (Phase A, Slice 5 — combat: Wrath + Bulwark)
+
+Spec: docs/specs/active/system-22-masteries-core.md. No migration. No new combat path.
+
+`RaidService.HitRaidAsync` loads `IMasteryService.GetCombatModifiersAsync(playerId)` once per hit (mastery-less → `(0,0)`):
+- **Wrath:** `WrathLegionPercent` added into `totalLegionBonus` before the `bonusFraction` divide (additive with
+  PowerBonus + General.LegionBonus; single-touch, ahead of the trophy stage + PowerScaling). Active-legion-gated; never Gauntlet.
+- **Bulwark:** at the post-crit FlatDamagePercent stage, `flatDamageFraction = combat.FlatDamagePercent +
+  (lockedRaid.GuildId != null ? BulwarkGuildDamageFraction : 0)`. Guild raids only; hard-capped in MasteryService; stacks additively with gear flat.
+- **`RaidHitResponse`** gains `long WrathLegionBonus` + `long BulwarkBonus` (marginal display amounts; 0 when N/A).
+
+**Slice 5 scope:** Wrath + Bulwark combat. Loot (Hoard + Discernment) is Slices 6–7. +4 unit tests; 700+ existing
+hit tests run with neutral mods (byte-for-byte regression proof).
 
 ---
 

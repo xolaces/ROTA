@@ -599,6 +599,8 @@ public sealed class RaidService : IRaidService
         var  magicProcs          = new List<MagicProcDTO>();
         double magicCritBonus    = 0.0; // flat crit-chance addition from CritChanceFlat magics
         long legionPowerTerm        = 0;   // scaled legion contribution added to preProc
+        long wrathLegionBonus       = 0;   // System 22 — Wrath mastery's marginal legion power (display)
+        long bulwarkBonus           = 0;   // System 22 — Bulwark mastery's marginal guild-raid damage (display)
         long unitProcBonus          = 0;   // capped total unit-ability proc bonus
         var  unitProcs              = new List<MagicProcDTO>();
         bool commanderProcFired     = false;
@@ -669,6 +671,11 @@ public sealed class RaidService : IRaidService
             var combat = await _equipment.GetEffectiveCombatDataAsync(
                 playerId, player.Stats!.BaseAttack, player.Stats.BaseDefense, ct);
 
+            // System 22 Phase A — mastery combat modifiers (Wrath +% legion power, Bulwark +% guild-raid
+            // damage). Plain numbers consumed at the existing hooks; a mastery-less player gets all-zero
+            // here → a byte-for-byte unchanged hit.
+            var masteryMods = await _mastery.GetCombatModifiersAsync(playerId, ct);
+
             var multiplier = 0.85 + _random.NextDouble() * 0.30; // uniform [0.85, 1.15]
             long baseValue = (combat.EffectiveAttack * 4L) + combat.EffectiveDefense;
             long charBase  = Math.Max(1, (long)(baseValue * hitSize * multiplier));
@@ -702,6 +709,11 @@ public sealed class RaidService : IRaidService
                         totalLegionBonus += unitDef.LegionBonus;
                 }
 
+                // (Wrath, System 22 Phase A) — adds its percent into the legion bonus sum, exactly like a
+                // General's LegionBonus, so it flows once through bonusFraction (additive; never the Gauntlet).
+                // Applied BEFORE the trophy stage + PowerScaling so it touches legion power exactly once.
+                totalLegionBonus += masteryMods.WrathLegionPercent;
+
                 double bonusFraction  = totalLegionBonus / 100.0;
                 double rawLegionPower = unitSum * (1.0 + bonusFraction);
 
@@ -723,6 +735,11 @@ public sealed class RaidService : IRaidService
                 // Apply PowerScaling (combat-only dial); multiply by same hitSize and multiplier.
                 legionPowerTerm = Math.Max(0,
                     (long)(rawLegionPower * _legionConfig.PowerScaling * hitSize * multiplier));
+
+                // Wrath marginal (display only): rawLegionPower is linear in bonusFraction, so Wrath's
+                // contribution is unitSum × (wrathPercent/100) carried through the same trophy + scaling stages.
+                wrathLegionBonus = Math.Max(0, (long)(unitSum * (masteryMods.WrathLegionPercent / 100.0)
+                    * (1.0 + maxTrophyFraction) * _legionConfig.PowerScaling * hitSize * multiplier));
             }
 
             // preProc = charBase + legionPower. Mount proc, magic procs, and unit procs all
@@ -910,9 +927,17 @@ public sealed class RaidService : IRaidService
                 appliedCritMult = 1.0;
             }
 
-            // Conditional flat damage percent — applied last, after crit.
-            if (combat.FlatDamagePercent > 0)
-                damageFinal = Math.Max(1, (long)(damageFinal * (1.0 + combat.FlatDamagePercent)));
+            // Conditional flat damage percent — applied last, after crit. (Bulwark, System 22 Phase A)
+            // stacks additively here on GUILD RAIDS ONLY, already hard-capped in GetCombatModifiersAsync.
+            double bulwarkFraction = lockedRaid.GuildId is not null ? masteryMods.BulwarkGuildDamageFraction : 0.0;
+            double flatDamageFraction = combat.FlatDamagePercent + bulwarkFraction;
+            if (flatDamageFraction > 0)
+            {
+                long beforeFlat = damageFinal;
+                damageFinal = Math.Max(1, (long)(damageFinal * (1.0 + flatDamageFraction)));
+                // Bulwark marginal (display only): the flat bonuses are additive in the multiplier.
+                bulwarkBonus = bulwarkFraction > 0 ? (long)(beforeFlat * bulwarkFraction) : 0;
+            }
 
             lockedRaid.TakeDamage(damageFinal);
 
@@ -1172,6 +1197,9 @@ public sealed class RaidService : IRaidService
             // System 16 Slice 4 — Gauntlet amplifier surfacing (0 on non-Gauntlet raids).
             OffCapAuraBonus      = offCapBonus,
             NewStrikeBalance     = newStrikeBalance,
+            // System 22 Phase A — mastery combat surfacing (0 when no Wrath legion bonus / non-guild raid).
+            WrathLegionBonus     = wrathLegionBonus,
+            BulwarkBonus         = bulwarkBonus,
         };
 
         // 10. Store the completed response — replaces the "pending" placeholder.

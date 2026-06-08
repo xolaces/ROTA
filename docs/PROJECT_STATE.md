@@ -161,6 +161,24 @@ Build: 0 errors / no new warnings. Tests: **771 unit + 88 integration = 859 gree
   curve blocks final tier until all cross-system counters met, max-level no-op); GetMasteries triggers tier-up;
   integration: ON CONFLICT create-then-accumulate, separate-types-separate-rows, event-ledger guard.
 
+## System 22 — Masteries Core (Phase A, Slice 5 — combat: Wrath + Bulwark) — 2026-06-08 (branch `feat/system22-masteries-s5`)
+Build: 0 errors / no new warnings. Tests: **775 unit + 88 integration = 863 green** (+4 unit Wrath/Bulwark combat
+tests; the 700+ existing hit tests run with neutral mods → byte-for-byte regression proof). No migration. DEEP slice
+(combat money path) — NO new combat path; reuses the existing legion-bonus + FlatDamagePercent hooks.
+- **One per-hit read:** `RaidService.HitRaidAsync` loads `IMasteryService.GetCombatModifiersAsync(playerId)` once
+  (next to the `combat`/legion loads). Mastery-less player → `(0,0)` → unchanged hit.
+- **Wrath (+% legion power, never Gauntlet):** `masteryMods.WrathLegionPercent` added into `totalLegionBonus` BEFORE
+  the `bonusFraction` divide (composes additively with `PowerBonus` + Σ General.LegionBonus; flows once through
+  rawLegionPower, ahead of the trophy `*=` stage + PowerScaling — single-touch). Gated by an active legion (no legion
+  → no-op). Marginal captured for display.
+- **Bulwark (+% guild-raid damage, hard-capped, guild raids only):** at the post-crit FlatDamagePercent stage,
+  `flatDamageFraction = combat.FlatDamagePercent + (lockedRaid.GuildId != null ? BulwarkGuildDamageFraction : 0)`;
+  the `> 0` guard now tests the combined value so Bulwark fires even when gear flat is 0. Stacks additively with gear
+  flat. The ~1% cap is enforced in MasteryService (S2); the hook just applies the fraction.
+- **DTO:** `RaidHitResponse.WrathLegionBonus` + `BulwarkBonus` (marginal display amounts; 0 when N/A).
+- **Tests:** Wrath comparison (bonusFraction 0.55→0.60 ratio), Wrath no-legion → 0, Bulwark guild-raid adds damage,
+  Bulwark non-guild → not applied. Existing RaidService/leaderboard hit harnesses given a neutral-mods mastery mock.
+
 ## Build status (High — earlier sessions, see the dated entries above for the latest)
 - **400 unit + 34 integration = 434 tests pass. 0 warnings, 0 errors.**
 - `main` past tag **v0.2.7-s6** (Legion epic complete) + 3 post-fixes merged & pushed (untagged hardening):
