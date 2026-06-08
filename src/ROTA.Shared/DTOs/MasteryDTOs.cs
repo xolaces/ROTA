@@ -73,3 +73,38 @@ public class MasteryRatingRefreshResponse
     public int PlayersSnapshotted { get; set; }
     public DateTimeOffset SnapshotAt { get; set; }
 }
+
+// ── Re-spec / pledge (Slice 3) ────────────────────────────────────────────────
+
+public enum MasteryRespecFailureCode
+{
+    None = 0,
+    AncientNotFound,
+    AlreadyPledged,
+    WeeklyCapReached,
+    InsufficientGems,
+    PlayerNotFound,
+}
+
+public class PledgeRequest
+{
+    /// <summary>The Ancient to pledge (Wrath/Bulwark/Hoard/Discernment).</summary>
+    public string Ancient { get; set; } = string.Empty;
+}
+
+public class MasteryRespecResult
+{
+    public bool Success { get; init; }
+    public MasteryRespecFailureCode FailureCode { get; init; }
+    public string? FailureReason { get; init; }
+    /// <summary>How the swap was paid for (Paid / FreeMonthly / NewAncientUnlock).</summary>
+    public string? Kind { get; init; }
+    public int GemSpent { get; init; }
+    public string? NewPledge { get; init; }
+
+    public static MasteryRespecResult Ok(string kind, int gemSpent, string newPledge)
+        => new() { Success = true, Kind = kind, GemSpent = gemSpent, NewPledge = newPledge };
+
+    public static MasteryRespecResult Fail(MasteryRespecFailureCode code, string reason)
+        => new() { Success = false, FailureCode = code, FailureReason = reason };
+}

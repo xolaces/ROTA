@@ -22,6 +22,13 @@ public interface IMasteryService
     /// <summary>Refreshes the MasteryRating leaderboard boards (Live snapshot). Returns the count snapshotted.</summary>
     Task<int> SnapshotRatingBoardAsync(CancellationToken ct = default);
 
+    /// <summary>
+    /// LOSSLESS pledge change (Slice 3). Resolves the cheapest eligible path — free first-pledge to the
+    /// Ancient → free monthly → paid weekly (gems, Redis-capped) — then flips the active pledge. Mastery
+    /// levels are never touched.
+    /// </summary>
+    Task<MasteryRespecResult> RespecAsync(Guid playerId, MasteryAncient toAncient, CancellationToken ct = default);
+
     /// <summary>Pure Overall Mastery Rating (Formula B). Missing Ancients default to level 1.</summary>
     int ComputeRating(IReadOnlyDictionary<MasteryAncient, int> levels);
 }

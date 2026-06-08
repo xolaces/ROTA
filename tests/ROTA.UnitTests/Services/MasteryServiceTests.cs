@@ -30,8 +30,17 @@ public class MasteryServiceTests
         activityRepo.Setup(a => a.GetForPlayerAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<PlayerMasteryActivity>());
 
+        // Slice 3 deps — defaults: no respec rows, cap not used, gems unused here.
+        var respec = new Mock<IMasteryRespecRepository>();
+        respec.Setup(r => r.ReferenceExistsAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        var gems = new Mock<IGemService>();
+        var auditLog = new Mock<IAuditLogRepository>();
+        var capStore = new Mock<IMasteryRespecCapStore>();
+
         var svc = new MasteryService(
             Defs, masteryRepo.Object, activityRepo.Object, players.Object, leaderboard.Object,
+            respec.Object, gems.Object, capStore.Object, auditLog.Object,
             Options.Create(config ?? new MasteryConfig()));
         return (svc, masteryRepo, activityRepo, players, leaderboard);
     }

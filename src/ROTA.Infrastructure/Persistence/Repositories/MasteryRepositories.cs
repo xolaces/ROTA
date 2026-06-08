@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using ROTA.Application.Interfaces;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
@@ -90,4 +91,32 @@ public sealed class PlayerMasteryActivityRepository : IPlayerMasteryActivityRepo
         => await _db.PlayerMasteryActivities.AsNoTracking()
             .Where(a => a.PlayerId == playerId && !a.IsDeleted)
             .ToListAsync(ct);
+}
+
+public sealed class MasteryRespecRepository : IMasteryRespecRepository
+{
+    private readonly RotaDbContext _db;
+    public MasteryRespecRepository(RotaDbContext db) => _db = db;
+
+    public Task<bool> ReferenceExistsAsync(Guid playerId, string referenceId, CancellationToken ct = default)
+        => _db.MasteryRespecTransactions
+            .AnyAsync(t => t.PlayerId == playerId && t.ReferenceId == referenceId, ct);
+
+    public async Task<bool> CreateAsync(MasteryRespecTransaction tx, CancellationToken ct = default)
+    {
+        _db.MasteryRespecTransactions.Add(tx);
+        try
+        {
+            await _db.SaveChangesAsync(ct);
+            return true;
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException
+        {
+            SqlState: PostgresErrorCodes.UniqueViolation
+        })
+        {
+            _db.ChangeTracker.Clear();
+            return false;
+        }
+    }
 }

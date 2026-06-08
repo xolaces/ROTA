@@ -1,6 +1,47 @@
 # ROTA Function Reference
-Last updated: 2026-06-08 (System 22 Masteries Phase A — Slice 2: state + read API + rating)
+Last updated: 2026-06-08 (System 22 Masteries Phase A — Slice 3: pledge + re-spec economy)
 Update when adding public methods or entities.
+
+---
+
+## System 22 — Masteries Core (Phase A, Slice 3 — pledge + re-spec economy)
+
+Spec: docs/specs/active/system-22-masteries-core.md. Migration `AddMasteryRespecLedger` (NOT applied).
+
+### Enums
+`GemTransactionType.MasteryRespec=13`. `MasteryRespecKind { Paid=0, FreeMonthly=1, NewAncientUnlock=2 }`.
+
+### Entity (`src/ROTA.Domain/Entities/MasteryRespecTransaction.cs`)
+Append-only `{ Id, PlayerId, Kind (MasteryRespecKind), FromAncient (MasteryAncient?), ToAncient (MasteryAncient),
+GemCost (int), ReferenceId, CreatedAt }`. Table `mastery_respec_transactions`; FK index on player_id; unique
+`(player_id, reference_id)` (the period-cap + idempotency backstop). RefIds: paid `respec:paid:{p}:{isoYear}-Www`,
+free-monthly `respec:free:{p}:{yyyy-MM}`, unlock `respec:unlock:{p}:{ancient}`.
+
+### Cap store + repo (scoped)
+- `IMasteryRespecCapStore` (Application) + `MasteryRespecCapStore` (Infrastructure, IConnectionMultiplexer):
+  `IsPaidWeeklyUsedAsync` / `MarkPaidWeeklyUsedAsync` — Redis key `respec:paid:week:{p}`, TTL to next Monday 00:00 UTC.
+- `IMasteryRespecRepository` + `MasteryRespecRepository`: `ReferenceExistsAsync(playerId, referenceId)`,
+  `CreateAsync` (returns false on unique-violation).
+
+### IMasteryService (Slice 3 add)
+| Method | Description |
+|--------|-------------|
+| `RespecAsync(playerId, toAncient)` | → `MasteryRespecResult`. LOSSLESS pledge change; resolves free-unlock → free-monthly → paid-weekly; only flips the pledge (levels untouched); audited. |
+
+`MasteryService` ctor gains: `IMasteryRespecRepository`, `IGemService`, `IMasteryRespecCapStore`, `IAuditLogRepository`.
+`GetMasteriesAsync` RespecStatus now reflects real availability (free-monthly + paid-weekly unused?).
+
+### Endpoint
+`POST /api/masteries/pledge` [Authorize] (`MasteryController`) — `PledgeRequest { Ancient }` →
+`MasteryRespecResult`. Maps: AncientNotFound/PlayerNotFound 404, AlreadyPledged/WeeklyCapReached 409,
+InsufficientGems 422, Success 200. Validator `PledgeRequestValidator` (`MasteryValidators.cs`).
+
+### DTOs (added to MasteryDTOs.cs)
+`PledgeRequest`, `MasteryRespecResult` (Ok/Fail factories), `MasteryRespecFailureCode {None, AncientNotFound,
+AlreadyPledged, WeeklyCapReached, InsufficientGems, PlayerNotFound}`.
+
+**Slice 3 scope:** pledge + re-spec economy. No activity counters/leveling (Slice 4), no combat/loot (Slices 5–7).
++10 unit, +1 integration (paid-twice-charges-once vs real gem ledger).
 
 ---
 

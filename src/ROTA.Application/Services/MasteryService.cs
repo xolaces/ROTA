@@ -1,6 +1,8 @@
+using System.Globalization;
 using Microsoft.Extensions.Options;
 using ROTA.Application.Configuration;
 using ROTA.Application.Interfaces;
+using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
 using ROTA.Shared.DTOs;
 
@@ -21,6 +23,10 @@ public sealed class MasteryService : IMasteryService
     private readonly IPlayerMasteryActivityRepository _activityRepo;
     private readonly IPlayerRepository _players;
     private readonly ILeaderboardEntryRepository _leaderboard;
+    private readonly IMasteryRespecRepository _respec;
+    private readonly IGemService _gems;
+    private readonly IMasteryRespecCapStore _capStore;
+    private readonly IAuditLogRepository _auditLog;
     private readonly MasteryConfig _config;
 
     public MasteryService(
@@ -29,6 +35,10 @@ public sealed class MasteryService : IMasteryService
         IPlayerMasteryActivityRepository activityRepo,
         IPlayerRepository players,
         ILeaderboardEntryRepository leaderboard,
+        IMasteryRespecRepository respec,
+        IGemService gems,
+        IMasteryRespecCapStore capStore,
+        IAuditLogRepository auditLog,
         IOptions<MasteryConfig> config)
     {
         _defs         = defs;
@@ -36,6 +46,10 @@ public sealed class MasteryService : IMasteryService
         _activityRepo = activityRepo;
         _players      = players;
         _leaderboard  = leaderboard;
+        _respec       = respec;
+        _gems         = gems;
+        _capStore     = capStore;
+        _auditLog     = auditLog;
         _config       = config.Value;
     }
 
@@ -81,13 +95,19 @@ public sealed class MasteryService : IMasteryService
             ActivePledge = pledge?.ToString(),
             Rating       = new MasteryRatingDto { Active = rating, Lifetime = rating },
             Titles       = BuildTitles(levels),
-            // Re-spec availability is refined in Slice 3 (needs the respec ledger); GemCost is real now.
-            RespecStatus = new MasteryRespecStatusDto
-            {
-                FreeMonthlyAvailable = true,
-                PaidWeeklyAvailable  = true,
-                GemCost              = _config.RespecGemCost,
-            },
+            RespecStatus = await BuildRespecStatusAsync(playerId, DateTimeOffset.UtcNow, ct),
+        };
+    }
+
+    private async Task<MasteryRespecStatusDto> BuildRespecStatusAsync(Guid playerId, DateTimeOffset now, CancellationToken ct)
+    {
+        bool freeMonthly = !await _respec.ReferenceExistsAsync(playerId, MonthlyRef(playerId, now), ct);
+        bool paidWeekly  = !await _respec.ReferenceExistsAsync(playerId, PaidRef(playerId, now), ct);
+        return new MasteryRespecStatusDto
+        {
+            FreeMonthlyAvailable = freeMonthly,
+            PaidWeeklyAvailable  = paidWeekly,
+            GemCost              = _config.RespecGemCost,
         };
     }
 
@@ -121,6 +141,81 @@ public sealed class MasteryService : IMasteryService
         }
         return ratings.Count;
     }
+
+    // ── Re-spec (LOSSLESS pledge change) ──────────────────────────────────────
+
+    public async Task<MasteryRespecResult> RespecAsync(Guid playerId, MasteryAncient toAncient, CancellationToken ct = default)
+    {
+        if (_defs.Get(toAncient) is null)
+            return MasteryRespecResult.Fail(MasteryRespecFailureCode.AncientNotFound, $"Unknown Ancient '{toAncient}'.");
+
+        var player = await _players.FindByIdAsync(playerId, ct);
+        if (player is null)
+            return MasteryRespecResult.Fail(MasteryRespecFailureCode.PlayerNotFound, "Player not found.");
+
+        if (player.ActivePledgeAncient == toAncient)
+            return MasteryRespecResult.Fail(MasteryRespecFailureCode.AlreadyPledged, $"Already pledged to {toAncient}.");
+
+        var from = player.ActivePledgeAncient;
+        var now  = DateTimeOffset.UtcNow;
+
+        // 1. Free first pledge to this Ancient (one per Ancient, ever — also covers a future awakened Ancient).
+        var unlockRef = $"respec:unlock:{playerId}:{toAncient}";
+        if (!await _respec.ReferenceExistsAsync(playerId, unlockRef, ct))
+            return await ApplySwapAsync(player, from, toAncient, MasteryRespecKind.NewAncientUnlock, 0, unlockRef, ct);
+
+        // 2. Free monthly swap.
+        var monthRef = MonthlyRef(playerId, now);
+        if (!await _respec.ReferenceExistsAsync(playerId, monthRef, ct))
+            return await ApplySwapAsync(player, from, toAncient, MasteryRespecKind.FreeMonthly, 0, monthRef, ct);
+
+        // 3. Paid weekly swap. The cap store is the fast gate; the gem week-bucket refId is the hard backstop.
+        if (await _capStore.IsPaidWeeklyUsedAsync(playerId, ct))
+            return MasteryRespecResult.Fail(MasteryRespecFailureCode.WeeklyCapReached, "Paid re-spec already used this week.");
+
+        var paidRef = PaidRef(playerId, now);
+        var outcome = await _gems.SpendGemsAsync(playerId, _config.RespecGemCost, GemTransactionType.MasteryRespec, paidRef, ct);
+        switch (outcome)
+        {
+            case GemSpendOutcome.InsufficientBalance:
+                return MasteryRespecResult.Fail(MasteryRespecFailureCode.InsufficientGems,
+                    $"Insufficient gems (need {_config.RespecGemCost}).");
+
+            case GemSpendOutcome.AlreadyProcessed:
+                // The gem ledger already holds this week's paid charge → cap reached. Sync the fast gate.
+                // PHASE-2: a crash between the gem charge and the pledge commit leaves the charge banked
+                // without the swap until next week (rare; the strict cap is the deliberate priority).
+                await _capStore.MarkPaidWeeklyUsedAsync(playerId, ct);
+                return MasteryRespecResult.Fail(MasteryRespecFailureCode.WeeklyCapReached, "Paid re-spec already used this week.");
+
+            case GemSpendOutcome.Charged:
+                await _capStore.MarkPaidWeeklyUsedAsync(playerId, ct);
+                return await ApplySwapAsync(player, from, toAncient, MasteryRespecKind.Paid, _config.RespecGemCost, paidRef, ct);
+
+            default:
+                return MasteryRespecResult.Fail(MasteryRespecFailureCode.None, "Unexpected re-spec outcome.");
+        }
+    }
+
+    private async Task<MasteryRespecResult> ApplySwapAsync(
+        Player player, MasteryAncient? from, MasteryAncient to,
+        MasteryRespecKind kind, int gemCost, string referenceId, CancellationToken ct)
+    {
+        // LOSSLESS: only the pledge pointer changes; the four mastery level tracks are untouched.
+        await _respec.CreateAsync(MasteryRespecTransaction.Create(player.Id, kind, from, to, gemCost, referenceId), ct);
+        player.SetPledge(to);
+        await _players.UpdateAsync(player, ct);
+
+        await _auditLog.AppendAsync(AuditLog.Create(
+            player.Id, $"MasteryRespec:{kind}", null,
+            $"pledge {(from?.ToString() ?? "none")} -> {to} (cost={gemCost}, ref={referenceId})", null), ct);
+
+        return MasteryRespecResult.Ok(kind.ToString(), gemCost, to.ToString());
+    }
+
+    private static string MonthlyRef(Guid playerId, DateTimeOffset now) => $"respec:free:{playerId}:{now.UtcDateTime:yyyy-MM}";
+    private static string PaidRef(Guid playerId, DateTimeOffset now)
+        => $"respec:paid:{playerId}:{ISOWeek.GetYear(now.UtcDateTime)}-W{ISOWeek.GetWeekOfYear(now.UtcDateTime):D2}";
 
     // ── Overall Mastery Rating — Formula B (pure) ─────────────────────────────
 

@@ -51,6 +51,8 @@ public static class ServiceCollectionExtensions
         // System 22 — Masteries Core (Phase A)
         services.AddScoped<IPlayerMasteryRepository, PlayerMasteryRepository>();
         services.AddScoped<IPlayerMasteryActivityRepository, PlayerMasteryActivityRepository>();
+        services.AddScoped<IMasteryRespecRepository, MasteryRespecRepository>();
+        services.AddScoped<IMasteryRespecCapStore, MasteryRespecCapStore>();
 
         // System 16 — Gauntlet (Slice 2) repositories
         services.AddScoped<IGauntletEventRepository, GauntletEventRepository>();

@@ -76,6 +76,7 @@ public class RotaDbContext : DbContext
     public DbSet<PlayerMastery> PlayerMasteries => Set<PlayerMastery>();
     public DbSet<PlayerMasteryActivity> PlayerMasteryActivities => Set<PlayerMasteryActivity>();
     public DbSet<MasteryActivityEvent> MasteryActivityEvents => Set<MasteryActivityEvent>();
+    public DbSet<MasteryRespecTransaction> MasteryRespecTransactions => Set<MasteryRespecTransaction>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

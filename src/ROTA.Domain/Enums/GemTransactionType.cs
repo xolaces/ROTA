@@ -17,4 +17,6 @@ public enum GemTransactionType
     // System 16 Slice 6 — gems GRANTED from a Gauntlet token-shop GemBundle purchase
     // (a +credit on the gem ledger, idempotent via the shop referenceId).
     GauntletShopReward = 12,
+    // System 22 Phase A — gems spent on a paid (weekly-capped) mastery re-spec.
+    MasteryRespec = 13,
 }

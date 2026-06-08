@@ -112,6 +112,31 @@ fresh Testcontainers DB; Player profile + leaderboard flows intact).
 - **Profile:** `PlayerProfileResponse.ActivePledge` + `MasteryRatingActive`; `PlayerService` hydrates them (pledge free
   from the loaded player; rating from current levels — no row writes on a GET). PlayerService ctor += IPlayerMasteryRepository, IMasteryService.
 
+## System 22 — Masteries Core (Phase A, Slice 3 — pledge + re-spec economy) — 2026-06-08 (branch `feat/system22-masteries-s3`)
+Build: 0 errors / no new warnings. Tests: **760 unit + 85 integration = 845 green** (+10 unit MasteryRespecTests,
++1 integration MasteryRespecIdempotencyTests). Migration **AddMasteryRespecLedger** generated — NOT applied.
+- **Enums:** `GemTransactionType.MasteryRespec=13`; `MasteryRespecKind {Paid, FreeMonthly, NewAncientUnlock}`.
+- **Entity + Fluent + DbSet + migration:** `MasteryRespecTransaction` (append-only; Kind/From?/To/GemCost/ReferenceId;
+  unique (player_id, reference_id) — the hard cap + idempotency backstop). Table `mastery_respec_transactions`.
+- **Cap store (ROTA Redis pattern):** `IMasteryRespecCapStore` (Application) + `MasteryRespecCapStore` (Infrastructure,
+  IConnectionMultiplexer) — key `respec:paid:week:{p}` set-on-use, TTL to next Monday 00:00 UTC (mirrors
+  AuthLockoutService). Keeps StackExchange.Redis out of Application (like ISubmissionRateLimiter).
+- **Repo:** `IMasteryRespecRepository` (ReferenceExistsAsync + CreateAsync → false on unique-violation).
+- **Service:** `MasteryService.RespecAsync(playerId, toAncient)` — eligibility resolved cheapest-first:
+  **(1) free first-pledge** to an Ancient (no `respec:unlock:{p}:{ancient}` row → free; also auto-covers a future
+  awakened Ancient, so NO explicit grant hook needed), **(2) free monthly** (`respec:free:{p}:{yyyy-MM}`),
+  **(3) paid weekly** — cap-store fast gate → `IGemService.SpendGemsAsync(MasteryRespec, refId=respec:paid:{p}:{isoYear}-Www)`
+  (Charged → swap + mark cap; AlreadyProcessed → WeeklyCapReached + sync cap; Insufficient → InsufficientGems).
+  **LOSSLESS + idempotent** — only flips `Player.SetPledge`; mastery levels never touched (unit-asserted: never calls
+  masteryRepo). Audited `MasteryRespec:{Kind}`. GetMasteries RespecStatus now reflects real availability.
+  **PHASE-2 noted:** a crash between the paid gem charge and the pledge commit banks the charge until next week (rare;
+  strict cap is the deliberate priority).
+- **API:** `POST /api/masteries/pledge` (PledgeRequest + PledgeRequestValidator) → 200/400/404/409/422
+  (AncientNotFound/PlayerNotFound 404, AlreadyPledged/WeeklyCapReached 409, InsufficientGems 422). DTOs
+  MasteryRespecResult + MasteryRespecFailureCode in MasteryDTOs.cs.
+- **Integration proof:** with the cap store stubbed to no-op (the "Redis flushed" case), two paid swaps the same ISO
+  week charge gems EXACTLY ONCE via the gem-ledger week refId — verified vs real Postgres.
+
 ## Build status (High — earlier sessions, see the dated entries above for the latest)
 - **400 unit + 34 integration = 434 tests pass. 0 warnings, 0 errors.**
 - `main` past tag **v0.2.7-s6** (Legion epic complete) + 3 post-fixes merged & pushed (untagged hardening):
