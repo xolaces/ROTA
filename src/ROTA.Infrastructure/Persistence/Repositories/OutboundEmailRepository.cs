@@ -33,6 +33,8 @@ public sealed class OutboundEmailRepository : IOutboundEmailRepository
         string? search,
         int page,
         int pageSize,
+        EmailPriority? priority = null,
+        string? sort = null,
         CancellationToken ct = default)
     {
         if (page < 1) page = 1;
@@ -42,15 +44,21 @@ public sealed class OutboundEmailRepository : IOutboundEmailRepository
 
         if (type.HasValue) q = q.Where(e => e.Type == type.Value);
         if (reviewStatus.HasValue) q = q.Where(e => e.ReviewStatus == reviewStatus.Value);
+        if (priority.HasValue) q = q.Where(e => e.Priority == priority.Value);
         if (!string.IsNullOrWhiteSpace(search))
         {
             var s = search.Trim();
             q = q.Where(e => EF.Functions.ILike(e.Subject, $"%{s}%") || EF.Functions.ILike(e.Summary, $"%{s}%"));
         }
 
+        // T52 — default sort is priority-first (High → Low), newest within each band; "created" sorts
+        // purely by recency (the pre-T52 behaviour).
+        var ordered = string.Equals(sort, "created", StringComparison.OrdinalIgnoreCase)
+            ? q.OrderByDescending(e => e.CreatedAt)
+            : q.OrderByDescending(e => e.Priority).ThenByDescending(e => e.CreatedAt);
+
         var total = await q.CountAsync(ct);
-        var items = await q
-            .OrderByDescending(e => e.CreatedAt)
+        var items = await ordered
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(ct);

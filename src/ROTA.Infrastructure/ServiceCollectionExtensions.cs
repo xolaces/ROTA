@@ -53,6 +53,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPlayerMasteryActivityRepository, PlayerMasteryActivityRepository>();
         services.AddScoped<IMasteryRespecRepository, MasteryRespecRepository>();
         services.AddScoped<IMasteryRespecCapStore, MasteryRespecCapStore>();
+        // TICKET 46 — Achievement Points
+        services.AddScoped<IAchievementProgressRepository, AchievementProgressRepository>();
+        services.AddScoped<IAchievementAwardRepository, AchievementAwardRepository>();
+        services.AddScoped<IAchievementProgressEventRepository, AchievementProgressEventRepository>();
 
         // System 16 — Gauntlet (Slice 2) repositories
         services.AddScoped<IGauntletEventRepository, GauntletEventRepository>();
@@ -97,6 +101,12 @@ public static class ServiceCollectionExtensions
         // System 22 Phase A (Masteries) — the four Ancient definitions; throws at startup on bad content.
         services.AddSingleton<IMasteryDefinitionProvider>(
             _ => new MasteryDefinitionProvider(contentRootPath));
+        // TICKET 46 (Achievements) — the achievement roster; throws at startup on bad content.
+        services.AddSingleton<IAchievementDefinitionProvider>(
+            _ => new AchievementDefinitionProvider(contentRootPath));
+        // T52 — subject catalog (bug/report subject lists + feedback category); throws at startup on bad content.
+        services.AddSingleton<ISubjectCatalogProvider>(
+            _ => new SubjectCatalogProvider(contentRootPath));
         // System 16 Slice 1 — depends on the magic provider (validates Gauntlet magics +
         // prize magicId refs) and IOptions<GauntletConfig> (validates league bounds).
         services.AddSingleton<IGauntletContentProvider>(sp =>
@@ -138,6 +148,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IGuildService, GuildService>();
         services.AddScoped<IGuildEconomyService, GuildEconomyService>();
         services.AddScoped<IMasteryService, MasteryService>();
+        services.AddScoped<IAchievementService, AchievementService>();
 
         // System 16 — Gauntlet (Slice 2) services
         services.AddScoped<IGauntletService, GauntletService>();

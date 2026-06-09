@@ -30,9 +30,16 @@ public interface IRaidService
     // or when it's a Personal raid the caller did not summon (avoids leaking others' solo raids).
     Task<ActiveRaidResponse?> GetRaidByIdAsync(Guid activeRaidId, Guid callerId, CancellationToken ct = default);
 
-    // Summoner-only publish to the public list. Sets IsPublic, writes audit_log, returns the
-    // updated raid. Fails NotFound (missing/expired), NotSummoner, or CannotSharePersonal.
-    Task<ShareRaidResult> ShareRaidAsync(Guid callerId, Guid activeRaidId, CancellationToken ct = default);
+    // Summoner-only publish to a visibility tier (Ticket 50). Sets Visibility, writes audit_log, returns
+    // the updated raid. Fails NotFound (missing/expired), NotSummoner, CannotSharePersonal, or NotInGuild
+    // (GuildOnly target while guild-less). The currently-shipped client passes RaidVisibility.Public.
+    Task<ShareRaidResult> ShareRaidAsync(
+        Guid callerId, Guid activeRaidId, RaidVisibility visibility = RaidVisibility.Public, CancellationToken ct = default);
+
+    // Summoner-only dismiss of a defeated raid (Ticket 50). Rewards were already granted on the killing
+    // hit — this only removes the raid from all indexes (Lootable → Looted; IsDeleted untouched). Fails
+    // NotFound (missing/already-looted), NotSummoner, or NotLootable (still Active / not yet defeated).
+    Task<LootRaidResult> LootRaidAsync(Guid callerId, Guid activeRaidId, CancellationToken ct = default);
 
     Task<IReadOnlyList<RaidParticipantRankDto>> GetParticipantsAsync(Guid activeRaidId, int top, CancellationToken ct = default);
 }

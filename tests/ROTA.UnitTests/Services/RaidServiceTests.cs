@@ -53,7 +53,9 @@ public class RaidServiceTests
         Mock<IGauntletCurrencyRepository> GauntletCurrency,
         Mock<IGuildMembershipRepository> GuildMemberships,
         Mock<IGuildEconomyRepository> GuildEconomy,
-        Mock<IMasteryService> Mastery);
+        Mock<IMasteryService> Mastery,
+        Mock<IAchievementService> Achievements,
+        Mock<IFriendshipRepository> Friendships);
 
     private static ServiceBundle BuildService(Random? random = null, MagicConfig? magicConfig = null, LegionConfig? legionConfig = null, CombatConfig? combatConfig = null, GauntletConfig? gauntletConfig = null)
     {
@@ -195,6 +197,13 @@ public class RaidServiceTests
         strikes.Setup(r => r.CreateAsync(It.IsAny<StrikeTransaction>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
+        // Ticket 50 — friendship repo for the FriendsOnly visibility tier. Default: no accepted friends
+        // (so FriendsOnly raids never list for an arbitrary caller). Visibility tests override per-test.
+        var friendships = new Mock<IFriendshipRepository>();
+        friendships.Setup(r => r.ListForPlayerAsync(
+                It.IsAny<Guid>(), It.IsAny<FriendshipStatus?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Friendship>());
+
         var magicCfg  = Options.Create(magicConfig  ?? new MagicConfig());
         var legionCfg = Options.Create(legionConfig ?? new LegionConfig());
         var combatCfg = Options.Create(combatConfig ?? new CombatConfig());
@@ -203,6 +212,7 @@ public class RaidServiceTests
         // Neutral mastery modifiers by default → a mastery-less hit is byte-for-byte unchanged.
         mastery.Setup(m => m.GetModifiersAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new MasteryModifiers(new MasteryCombatModifiers(0.0, 0.0), new MasteryLootModifiers(1.0, 1.0, 1.0, 0.0)));
+        var achievements = new Mock<IAchievementService>();
 
         var service = new RaidService(
             raids.Object, participants.Object, players.Object, resources.Object,
@@ -215,14 +225,15 @@ public class RaidServiceTests
             leaderboards.Object, combatCfg,
             trophyRepo.Object, gauntletContent.Object, playerEventMagics.Object,
             playerMagicHonors.Object, strikes.Object, gauntletScoring.Object, gauntletCfg,
-            gauntletCurrency.Object, guildMemberships.Object, guildEconomy.Object, mastery.Object, random);
+            gauntletCurrency.Object, guildMemberships.Object, guildEconomy.Object, mastery.Object,
+            achievements.Object, friendships.Object, random);
 
         return new ServiceBundle(service, raids, participants, players, resources, energy, gems,
             stats, inventory, itemDefs, lootTables, auditLog, definitions, hitCache, equipment,
             raidMagics, magicDefs, magicSvc, playerLegions, legionSlots, unitDefs, legionDefs,
             commanderGear, gearDefs, legionSvc, leaderboards,
             trophyRepo, gauntletContent, playerEventMagics, playerMagicHonors, strikes, gauntletScoring,
-            gauntletCurrency, guildMemberships, guildEconomy, mastery);
+            gauntletCurrency, guildMemberships, guildEconomy, mastery, achievements, friendships);
     }
 
     private static Player MakePlayer(long xp = 0)
@@ -510,6 +521,55 @@ public class RaidServiceTests
         result.Response.Rewards.TierMultiplier.Should().Be(1.50m);
         result.Response.Rewards.GoldGranted.Should().Be(750);
         result.Response.Rewards.ExperienceGranted.Should().Be(450);
+    }
+
+    // TICKET 46 — a kill records the RaidCompletions achievement counter for the killer, idempotent
+    // via a per-(raid,player) referenceId (mirrors the mastery RaidKill hook).
+    [Fact]
+    public async Task Hit_Kill_RecordsRaidCompletionAchievement_ForKiller()
+    {
+        var b = BuildService(new Random(0));
+        var attacker = MakePlayer();
+        var raid = MakeRaid(currentHp: 1);
+
+        SetupHitScaffolding(b, attacker, raid);
+        var attackerPart = RaidParticipant.Create(raid.Id, attacker.Id);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, attacker.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(attackerPart);
+        b.Participants.Setup(p => p.UpdateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipant> { attackerPart });
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var result = await b.Service.HitRaidAsync(attacker.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        b.Achievements.Verify(a => a.RecordProgressAsync(
+            attacker.Id, AchievementMetric.RaidCompletions, 1,
+            $"ach:raidkill:{raid.Id}:{attacker.Id}", It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Hit_NoKill_RecordsNoRaidCompletionAchievement()
+    {
+        var b = BuildService(new Random(0));
+        var attacker = MakePlayer();
+        var raid = MakeRaid(currentHp: 1_000_000); // survives the hit
+
+        SetupHitScaffolding(b, attacker, raid);
+        var attackerPart = RaidParticipant.Create(raid.Id, attacker.Id);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, attacker.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(attackerPart);
+        b.Participants.Setup(p => p.UpdateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        await b.Service.HitRaidAsync(attacker.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        b.Achievements.Verify(a => a.RecordProgressAsync(
+            It.IsAny<Guid>(), AchievementMetric.RaidCompletions, It.IsAny<long>(),
+            It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     // -----------------------------------------------------------------------
@@ -1087,11 +1147,11 @@ public class RaidServiceTests
         var summonerId  = Guid.NewGuid();
         var otherPlayer = Guid.NewGuid();
 
-        // A private (un-shared) Large raid — IsPublic defaults to false.
+        // A private (un-shared) Large raid — Visibility defaults to Private.
         var privateLargeRaid = ActiveRaid.Create(
             "raid_ironcolossus", summonerId, 100000,
             DateTimeOffset.UtcNow.AddHours(48), RaidDifficulty.Normal, RaidSize.Large);
-        privateLargeRaid.IsPublic.Should().BeFalse("new summons start private");
+        privateLargeRaid.Visibility.Should().Be(RaidVisibility.Private, "new summons start private");
 
         b.Raids.Setup(r => r.GetAllActiveAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ActiveRaid> { privateLargeRaid });
@@ -1170,8 +1230,10 @@ public class RaidServiceTests
         var b = BuildService();
         var caller = Guid.NewGuid();
 
+        // Ticket 50 — the caller is NOT the summoner: a defeated (Lootable) raid is not joinable by a
+        // non-summoner (only the summoner may resolve their own Lootable raid for the loot screen).
         var raid = ActiveRaid.Create(
-            "raid_ironcolossus", caller, 100000,
+            "raid_ironcolossus", Guid.NewGuid(), 100000,
             DateTimeOffset.UtcNow.AddHours(expired ? -1 : 48), RaidDifficulty.Normal, RaidSize.Large);
         if (defeated) raid.MarkDefeated();
 
@@ -1264,10 +1326,11 @@ public class RaidServiceTests
 
         result.Success.Should().BeTrue();
         result.Raid.Should().NotBeNull();
-        result.Raid!.IsPublic.Should().BeTrue("sharing flips the visibility flag");
-        raid.IsPublic.Should().BeTrue("the domain entity is mutated via Share()");
+        result.Raid!.IsPublic.Should().BeTrue("sharing to Public flips the derived IsPublic flag");
+        result.Raid.Visibility.Should().Be("Public");
+        raid.Visibility.Should().Be(RaidVisibility.Public, "the domain entity is mutated via ShareTo()");
 
-        b.Raids.Verify(r => r.UpdateAsync(It.Is<ActiveRaid>(x => x.Id == raid.Id && x.IsPublic),
+        b.Raids.Verify(r => r.UpdateAsync(It.Is<ActiveRaid>(x => x.Id == raid.Id && x.Visibility == RaidVisibility.Public),
             It.IsAny<CancellationToken>()), Times.Once, "the shared state must be persisted");
         b.AuditLog.Verify(a => a.AppendAsync(
             It.Is<AuditLog>(l => l.Action == "RaidShared"), It.IsAny<CancellationToken>()),
@@ -1292,7 +1355,7 @@ public class RaidServiceTests
 
         result.Success.Should().BeFalse();
         result.FailureCode.Should().Be(ShareRaidFailureCode.NotSummoner);
-        raid.IsPublic.Should().BeFalse("a non-summoner cannot change visibility");
+        raid.Visibility.Should().Be(RaidVisibility.Private, "a non-summoner cannot change visibility");
         b.Raids.Verify(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -1314,7 +1377,7 @@ public class RaidServiceTests
         result.Success.Should().BeFalse();
         result.FailureCode.Should().Be(ShareRaidFailureCode.CannotSharePersonal,
             "a solo (Personal) raid cannot be shared");
-        personalRaid.IsPublic.Should().BeFalse();
+        personalRaid.Visibility.Should().Be(RaidVisibility.Private);
         b.Raids.Verify(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -1349,6 +1412,446 @@ public class RaidServiceTests
 
         result.Success.Should().BeFalse();
         result.FailureCode.Should().Be(ShareRaidFailureCode.NotFound);
+    }
+
+    // =======================================================================
+    // Ticket 50 — Raid Visibility & Indexing model
+    // =======================================================================
+
+    // Attaches a populated SummonedByPlayer nav to a raid (the repo Include-loads it live; in unit
+    // tests we set the private-set nav via reflection — the established pattern in this suite).
+    private static void SetSummoner(ActiveRaid raid, Player summoner)
+        => typeof(ActiveRaid).GetProperty(nameof(ActiveRaid.SummonedByPlayer))!.SetValue(raid, summoner);
+
+    private static ActiveRaid MakeVisRaid(
+        Guid summonerId, RaidVisibility visibility, RaidSize size = RaidSize.Large)
+    {
+        var raid = ActiveRaid.Create(
+            "raid_ironcolossus", summonerId, 100000,
+            DateTimeOffset.UtcNow.AddHours(48), RaidDifficulty.Normal, size);
+        if (visibility != RaidVisibility.Private)
+            raid.ShareTo(visibility);
+        return raid;
+    }
+
+    // ── Summon defaults ────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task Summon_NewRaid_IsPrivate_AndActive()
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+        b.Players.Setup(p => p.FindByIdAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+        ActiveRaid? captured = null;
+        b.Raids.Setup(r => r.CreateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()))
+            .Callback<ActiveRaid, CancellationToken>((r, _) => captured = r)
+            .ReturnsAsync((ActiveRaid r, CancellationToken _) => r);
+
+        var result = await b.Service.SummonRaidAsync(player.Id, "raid_ironcolossus", RaidDifficulty.Normal);
+
+        result.Success.Should().BeTrue();
+        captured.Should().NotBeNull();
+        captured!.Visibility.Should().Be(RaidVisibility.Private, "new summons start private");
+        captured.LifecycleState.Should().Be(RaidLifecycleState.Active, "new summons start active");
+    }
+
+    // ── GetActiveRaidsAsync — visibility tiers ───────────────────────────────
+
+    [Fact]
+    public async Task GetActiveRaids_GuildOnly_VisibleToSameGuild_HiddenFromOthers()
+    {
+        var b = BuildService();
+        var guildId      = Guid.NewGuid();
+        var summonerId   = Guid.NewGuid();
+        var sameGuildId  = Guid.NewGuid();
+        var otherGuildId = Guid.NewGuid();
+        var guildlessId  = Guid.NewGuid();
+
+        // Summoner is in `guildId` — the GuildOnly filter compares SummonedByPlayer.GuildId.
+        var summoner = MakePlayer();
+        summoner.JoinGuild(guildId, GuildRank.Member);
+        var raid = MakeVisRaid(summonerId, RaidVisibility.GuildOnly);
+        SetSummoner(raid, summoner);
+
+        b.Raids.Setup(r => r.GetAllActiveAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ActiveRaid> { raid });
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        // Same-guild caller → membership in guildId → sees the raid.
+        b.GuildMemberships.Setup(r => r.FindByPlayerAsync(sameGuildId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GuildMembership.Create(guildId, sameGuildId, GuildRank.Member));
+        var sameGuildResult = await b.Service.GetActiveRaidsAsync(sameGuildId);
+        sameGuildResult.Should().ContainSingle(r => r.ActiveRaidId == raid.Id,
+            "a GuildOnly raid lists for members of the summoner's guild");
+        sameGuildResult[0].Visibility.Should().Be("GuildOnly");
+
+        // Different-guild caller → not the summoner's guild → hidden.
+        b.GuildMemberships.Setup(r => r.FindByPlayerAsync(otherGuildId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GuildMembership.Create(otherGuildId, otherGuildId, GuildRank.Member));
+        var otherGuildResult = await b.Service.GetActiveRaidsAsync(otherGuildId);
+        otherGuildResult.Should().BeEmpty("a GuildOnly raid is hidden from a different guild");
+
+        // Guild-less caller → no membership → hidden.
+        var guildlessResult = await b.Service.GetActiveRaidsAsync(guildlessId);
+        guildlessResult.Should().BeEmpty("a GuildOnly raid is hidden from a guild-less player");
+    }
+
+    [Fact]
+    public async Task GetActiveRaids_FriendsOnly_VisibleToAcceptedFriend_HiddenFromNonFriend()
+    {
+        var b = BuildService();
+        var summonerId = Guid.NewGuid();
+        var friendId   = Guid.NewGuid();
+        var strangerId = Guid.NewGuid();
+
+        var raid = MakeVisRaid(summonerId, RaidVisibility.FriendsOnly);
+
+        b.Raids.Setup(r => r.GetAllActiveAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ActiveRaid> { raid });
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        // Friend caller: an accepted friendship with the summoner exists → sees the raid.
+        b.Friendships.Setup(r => r.ListForPlayerAsync(friendId, FriendshipStatus.Accepted, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Friendship> { Friendship.Create(summonerId, friendId) });
+        var friendResult = await b.Service.GetActiveRaidsAsync(friendId);
+        friendResult.Should().ContainSingle(r => r.ActiveRaidId == raid.Id,
+            "a FriendsOnly raid lists for the summoner's accepted friends");
+        friendResult[0].Visibility.Should().Be("FriendsOnly");
+
+        // Stranger caller: no accepted friendship (default empty) → hidden.
+        var strangerResult = await b.Service.GetActiveRaidsAsync(strangerId);
+        strangerResult.Should().BeEmpty("a FriendsOnly raid is hidden from a non-friend");
+    }
+
+    [Fact]
+    public async Task GetActiveRaids_LootableAndLooted_NeverListed()
+    {
+        var b = BuildService();
+        var otherPlayer = Guid.NewGuid();
+
+        // Two PUBLIC raids that would normally list, but defeated → Lootable, and then Looted.
+        var lootable = MakeVisRaid(Guid.NewGuid(), RaidVisibility.Public);
+        lootable.MarkDefeated();   // Active → Lootable
+        var looted = MakeVisRaid(Guid.NewGuid(), RaidVisibility.Public);
+        looted.MarkDefeated();
+        looted.Loot();             // Lootable → Looted
+
+        b.Raids.Setup(r => r.GetAllActiveAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ActiveRaid> { lootable, looted });
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.GetActiveRaidsAsync(otherPlayer);
+        result.Should().BeEmpty("only Active-lifecycle raids list — Lootable/Looted never do");
+    }
+
+    // ── ShareRaidAsync — tiers + NotInGuild ──────────────────────────────────
+
+    [Theory]
+    [InlineData(RaidVisibility.Public)]
+    [InlineData(RaidVisibility.FriendsOnly)]
+    public async Task ShareRaid_BySummoner_ToTier_SetsVisibility(RaidVisibility target)
+    {
+        var b = BuildService();
+        var summonerId = Guid.NewGuid();
+        var raid = MakeVisRaid(summonerId, RaidVisibility.Private);
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(raid);
+        b.Raids.Setup(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.ShareRaidAsync(summonerId, raid.Id, target);
+
+        result.Success.Should().BeTrue();
+        raid.Visibility.Should().Be(target);
+        result.Raid!.Visibility.Should().Be(target.ToString());
+        b.AuditLog.Verify(a => a.AppendAsync(
+            It.Is<AuditLog>(l => l.Action == "RaidShared"), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ShareRaid_GuildOnly_BySummonerInGuild_Succeeds()
+    {
+        var b = BuildService();
+        var summonerId = Guid.NewGuid();
+        var raid = MakeVisRaid(summonerId, RaidVisibility.Private);
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(raid);
+        b.Raids.Setup(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+        b.GuildMemberships.Setup(r => r.FindByPlayerAsync(summonerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GuildMembership.Create(Guid.NewGuid(), summonerId, GuildRank.Member));
+
+        var result = await b.Service.ShareRaidAsync(summonerId, raid.Id, RaidVisibility.GuildOnly);
+
+        result.Success.Should().BeTrue();
+        raid.Visibility.Should().Be(RaidVisibility.GuildOnly);
+    }
+
+    [Fact]
+    public async Task ShareRaid_GuildOnly_BySummonerNotInGuild_ReturnsNotInGuild()
+    {
+        var b = BuildService();
+        var summonerId = Guid.NewGuid();
+        var raid = MakeVisRaid(summonerId, RaidVisibility.Private);
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(raid);
+        // Default guildMemberships mock returns null → guild-less.
+
+        var result = await b.Service.ShareRaidAsync(summonerId, raid.Id, RaidVisibility.GuildOnly);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(ShareRaidFailureCode.NotInGuild);
+        raid.Visibility.Should().Be(RaidVisibility.Private, "a guild-less summoner cannot share GuildOnly");
+        b.Raids.Verify(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData(RaidVisibility.Public)]
+    [InlineData(RaidVisibility.GuildOnly)]
+    [InlineData(RaidVisibility.FriendsOnly)]
+    public async Task ShareRaid_ByNonSummoner_ReturnsNotSummoner_ForAnyTier(RaidVisibility target)
+    {
+        var b = BuildService();
+        var summonerId  = Guid.NewGuid();
+        var otherPlayer = Guid.NewGuid();
+        var raid = MakeVisRaid(summonerId, RaidVisibility.Private);
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(raid);
+
+        var result = await b.Service.ShareRaidAsync(otherPlayer, raid.Id, target);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(ShareRaidFailureCode.NotSummoner);
+        b.Raids.Verify(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData(RaidVisibility.Public)]
+    [InlineData(RaidVisibility.GuildOnly)]
+    [InlineData(RaidVisibility.FriendsOnly)]
+    public async Task ShareRaid_PersonalRaid_ReturnsCannotSharePersonal_ForAnyTier(RaidVisibility target)
+    {
+        var b = BuildService();
+        var summonerId = Guid.NewGuid();
+        var raid = MakeVisRaid(summonerId, RaidVisibility.Private, RaidSize.Personal);
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(raid);
+
+        var result = await b.Service.ShareRaidAsync(summonerId, raid.Id, target);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(ShareRaidFailureCode.CannotSharePersonal);
+        b.Raids.Verify(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    // ── LootRaidAsync ────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task LootRaid_BySummoner_OnLootable_Succeeds_AndMarksLooted()
+    {
+        var b = BuildService();
+        var summonerId = Guid.NewGuid();
+        var raid = MakeVisRaid(summonerId, RaidVisibility.Public);
+        raid.MarkDefeated();   // Active → Lootable
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(raid);
+        b.Raids.Setup(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.LootRaidAsync(summonerId, raid.Id);
+
+        result.Success.Should().BeTrue();
+        raid.LifecycleState.Should().Be(RaidLifecycleState.Looted);
+        raid.IsDeleted.Should().BeFalse("loot dismisses from indexes but never soft-deletes");
+        result.Raid!.LifecycleState.Should().Be("Looted");
+        b.Raids.Verify(r => r.UpdateAsync(It.Is<ActiveRaid>(
+            x => x.Id == raid.Id && x.LifecycleState == RaidLifecycleState.Looted),
+            It.IsAny<CancellationToken>()), Times.Once);
+        b.AuditLog.Verify(a => a.AppendAsync(
+            It.Is<AuditLog>(l => l.Action == "RaidLooted"), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task LootRaid_ByNonSummoner_ReturnsNotSummoner_NoStateChange()
+    {
+        var b = BuildService();
+        var summonerId  = Guid.NewGuid();
+        var otherPlayer = Guid.NewGuid();
+        var raid = MakeVisRaid(summonerId, RaidVisibility.Public);
+        raid.MarkDefeated();
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(raid);
+
+        var result = await b.Service.LootRaidAsync(otherPlayer, raid.Id);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(LootRaidFailureCode.NotSummoner);
+        raid.LifecycleState.Should().Be(RaidLifecycleState.Lootable, "a non-summoner cannot dismiss the raid");
+        b.Raids.Verify(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task LootRaid_StillActiveRaid_ReturnsNotLootable()
+    {
+        var b = BuildService();
+        var summonerId = Guid.NewGuid();
+        var raid = MakeVisRaid(summonerId, RaidVisibility.Public);   // Active, not defeated
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(raid);
+
+        var result = await b.Service.LootRaidAsync(summonerId, raid.Id);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(LootRaidFailureCode.NotLootable);
+        raid.LifecycleState.Should().Be(RaidLifecycleState.Active);
+        b.Raids.Verify(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task LootRaid_AlreadyLooted_ReturnsNotFound()
+    {
+        var b = BuildService();
+        var summonerId = Guid.NewGuid();
+        var raid = MakeVisRaid(summonerId, RaidVisibility.Public);
+        raid.MarkDefeated();
+        raid.Loot();   // already Looted
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(raid);
+
+        var result = await b.Service.LootRaidAsync(summonerId, raid.Id);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(LootRaidFailureCode.NotFound,
+            "an already-looted raid is gone from the player's perspective");
+    }
+
+    [Fact]
+    public async Task LootRaid_MissingRaid_ReturnsNotFound()
+    {
+        var b = BuildService();
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ActiveRaid?)null);
+
+        var result = await b.Service.LootRaidAsync(Guid.NewGuid(), Guid.NewGuid());
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(LootRaidFailureCode.NotFound);
+    }
+
+    // ── GetRaidByIdAsync — Lootable resolution ───────────────────────────────
+
+    [Fact]
+    public async Task GetRaidById_SummonerResolvesOwnLootableRaid()
+    {
+        var b = BuildService();
+        var summonerId = Guid.NewGuid();
+        var raid = MakeVisRaid(summonerId, RaidVisibility.Public);
+        raid.MarkDefeated();   // Lootable
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.GetRaidByIdAsync(raid.Id, summonerId);
+
+        result.Should().NotBeNull("the summoner may resolve their own Lootable raid for the loot screen");
+        result!.LifecycleState.Should().Be("Lootable");
+    }
+
+    [Fact]
+    public async Task GetRaidById_LootedRaid_ReturnsNull()
+    {
+        var b = BuildService();
+        var summonerId = Guid.NewGuid();
+        var raid = MakeVisRaid(summonerId, RaidVisibility.Public);
+        raid.MarkDefeated();
+        raid.Loot();   // Looted
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(raid);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.GetRaidByIdAsync(raid.Id, summonerId);
+
+        result.Should().BeNull("a looted (dismissed) raid resolves for no one");
+    }
+
+    [Fact]
+    public async Task GetRaidById_OthersLootableRaid_ReturnsNull()
+    {
+        var b = BuildService();
+        var summonerId  = Guid.NewGuid();
+        var otherPlayer = Guid.NewGuid();
+        var raid = MakeVisRaid(summonerId, RaidVisibility.Public);
+        raid.MarkDefeated();   // Lootable
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(raid);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.GetRaidByIdAsync(raid.Id, otherPlayer);
+
+        result.Should().BeNull("only the summoner may resolve a Lootable raid; others see a defeated raid as gone");
+    }
+
+    // ── REGRESSION — kill still grants rewards + sets Lootable ────────────────
+
+    [Fact]
+    public async Task Hit_KillingBlow_MarksRaidLootable_AndStillGrantsRewards()
+    {
+        // A single big hit kills a low-HP raid. Regression guard: the kill path still produces full
+        // rewards (DistributeKillRewardsAsync), AND the lifecycle flips Active → Lootable.
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid = MakeRaid(currentHp: 1);   // one hit kills it
+
+        SetupHitScaffolding(b, player, raid);
+        var participant = RaidParticipant.Create(raid.Id, player.Id);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+        b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipant> { participant });
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(),
+                It.IsAny<GemTransactionType>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 20, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.IsDefeated.Should().BeTrue("the killing blow defeats the raid");
+        result.Response.Rewards.Should().NotBeNull("kill rewards are granted on the killing hit");
+        raid.LifecycleState.Should().Be(RaidLifecycleState.Lootable,
+            "a defeated raid transitions to Lootable so the summoner can dismiss it");
     }
 
     // -----------------------------------------------------------------------

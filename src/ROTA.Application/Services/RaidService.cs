@@ -99,8 +99,12 @@ public sealed class RaidService : IRaidService
     // System 21 Slice 3b — guild raids: membership gate + contribution accrual; pooled-sigil summon.
     private readonly IGuildMembershipRepository _guildMemberships;
     private readonly IGuildEconomyRepository    _guildEconomy;
+    // Ticket 50 — accepted-friend lookup for the FriendsOnly visibility tier in GetActiveRaidsAsync.
+    private readonly IFriendshipRepository _friendships;
     // System 22 Phase A — mastery challenge-counter hooks (enlisted in the advisory-lock tx).
     private readonly IMasteryService _mastery;
+    // TICKET 46 — achievement metric hook (RaidCompletions, recorded on a kill inside the tx).
+    private readonly IAchievementService _achievements;
     private readonly Random _random;
 
     public RaidService(
@@ -143,6 +147,8 @@ public sealed class RaidService : IRaidService
         IGuildMembershipRepository guildMemberships,
         IGuildEconomyRepository guildEconomy,
         IMasteryService mastery,
+        IAchievementService achievements,
+        IFriendshipRepository friendships,
         Random? random = null)
     {
         _raids           = raids;
@@ -184,6 +190,8 @@ public sealed class RaidService : IRaidService
         _guildMemberships  = guildMemberships;
         _guildEconomy      = guildEconomy;
         _mastery           = mastery;
+        _achievements      = achievements;
+        _friendships       = friendships;
         _random          = random ?? Random.Shared;
     }
 
@@ -191,19 +199,44 @@ public sealed class RaidService : IRaidService
         Guid playerId, CancellationToken ct = default)
     {
         var allRaids = await _raids.GetAllActiveAsync(ct);
-        // Visibility (System 19): list public shared non-Personal raids to everyone, plus the
-        // caller's own raids (so they can re-open and share their still-private summons).
-        // Private non-Personal raids stay hidden until shared; the raid id remains the invite token.
+
+        // Ticket 50 — visibility TIERS replace the old IsPublic bool. The list is the set of raids
+        // INDEXED for this caller. NOTE: "active raid" (alive + hittable by its GUID) is DISTINCT from
+        // "listed raid" — a Private/GuildOnly/FriendsOnly raid is still joinable by id (the invite token),
+        // it just doesn't appear in someone else's list. The id-join path is GetRaidByIdAsync.
         //
+        // Tiers (a non-Personal raid in Active lifecycle, plus the caller's own raids):
+        //   Public       → everyone
+        //   GuildOnly    → members of the summoner's guild (compared in-memory off the Include-loaded
+        //                  SummonedByPlayer.GuildId — zero extra per-raid queries)
+        //   FriendsOnly  → the summoner's accepted friends
+        //   own raid     → always visible to the summoner (so they can re-open/share their private summons)
+        //
+        // The caller's guildId + accepted-friend set are resolved ONCE here, before the in-memory filter.
+        // Lootable/Looted raids never list (LifecycleState == Active gate).
+        var callerMembership = await _guildMemberships.FindByPlayerAsync(playerId, ct);
+        Guid? callerGuildId  = callerMembership?.GuildId;
+
+        var acceptedFriends = await _friendships.ListForPlayerAsync(playerId, FriendshipStatus.Accepted, ct);
+        var acceptedFriendIds = new HashSet<Guid>(acceptedFriends.Select(f => f.OtherSide(playerId)));
+
         // System 16 Slice 7 — Gauntlet ladder stages (GauntletEventId != null) are EXCLUDED from the
         // regular list: they are Personal + caller-owned (so the own-raids branch would otherwise
         // surface them) but are accessed exclusively via GET /api/gauntlet/ladder. Excluding them
         // keeps the normal raid screen free of ladder clutter. (Join-by-id is unaffected — a Gauntlet
-        // stage is solo + summoner-gated there too.)
+        // stage is solo + summoner-gated there too.) Guild raids likewise live on the guild screen.
         var activeRaids = allRaids
             .Where(r => r.GauntletEventId is null
-                        && r.GuildId is null   // System 21 Slice 3b — guild raids live on the guild screen
-                        && ((r.IsPublic && r.Size != RaidSize.Personal) || r.SummonedByPlayerId == playerId))
+                        && r.GuildId is null
+                        && r.LifecycleState == RaidLifecycleState.Active
+                        && (r.SummonedByPlayerId == playerId   // own raids always visible (any tier)
+                            || (r.Size != RaidSize.Personal
+                                && (r.Visibility == RaidVisibility.Public
+                                    || (r.Visibility == RaidVisibility.GuildOnly
+                                        && callerGuildId is not null
+                                        && r.SummonedByPlayer?.GuildId == callerGuildId)
+                                    || (r.Visibility == RaidVisibility.FriendsOnly
+                                        && acceptedFriendIds.Contains(r.SummonedByPlayerId))))))
             .ToList();
         var result = new List<ActiveRaidResponse>(activeRaids.Count);
         var now = DateTimeOffset.UtcNow;
@@ -243,7 +276,11 @@ public sealed class RaidService : IRaidService
             DifficultyColor       = DifficultyColors[raid.Difficulty],
             Size                  = raid.Size.ToString(),
             YourCurrentTier       = ComputeTier(participant?.TotalDamageDealt ?? 0, totalParticipants, participant, null),
-            IsPublic              = raid.IsPublic,
+            // Ticket 50 — visibility tier + lifecycle state on the wire; IsPublic kept as a derived
+            // convenience (= Visibility == Public) so the currently-shipped client keeps working.
+            Visibility            = raid.Visibility.ToString(),
+            LifecycleState        = raid.LifecycleState.ToString(),
+            IsPublic              = raid.Visibility == RaidVisibility.Public,
         };
     }
 
@@ -416,12 +453,23 @@ public sealed class RaidService : IRaidService
     public async Task<ActiveRaidResponse?> GetRaidByIdAsync(
         Guid activeRaidId, Guid callerId, CancellationToken ct = default)
     {
-        // Join-by-UID: the GUID is the access token, so visibility (IsPublic) is NOT checked here.
+        // Join-by-UID: the GUID is the access token, so the visibility TIER is NOT checked here.
         var raid = await _raids.FindByIdWithSummonerAsync(activeRaidId, ct);
 
-        // Not joinable: missing / deleted (repo already filters IsDeleted) / defeated / expired.
-        if (raid is null || raid.IsDeleted || raid.IsDefeated || raid.ExpiresAt <= DateTimeOffset.UtcNow)
+        // Not resolvable at all: missing / deleted (repo already filters IsDeleted) / expired.
+        if (raid is null || raid.IsDeleted || raid.ExpiresAt <= DateTimeOffset.UtcNow)
             return null;
+
+        // Ticket 50 — a defeated raid is normally not joinable, BUT the summoner may resolve a Lootable
+        // raid so the client can show the loot/dismiss screen. Looted raids resolve for no one (they've
+        // been dismissed). Non-summoners still get null on any defeated raid.
+        if (raid.IsDefeated)
+        {
+            bool summonerViewingLootable =
+                raid.LifecycleState == RaidLifecycleState.Lootable && raid.SummonedByPlayerId == callerId;
+            if (!summonerViewingLootable)
+                return null;
+        }
 
         // Don't leak someone else's Personal (solo) raid — only the summoner may resolve it.
         if (raid.Size == RaidSize.Personal && raid.SummonedByPlayerId != callerId)
@@ -431,7 +479,8 @@ public sealed class RaidService : IRaidService
     }
 
     public async Task<ShareRaidResult> ShareRaidAsync(
-        Guid callerId, Guid activeRaidId, CancellationToken ct = default)
+        Guid callerId, Guid activeRaidId, RaidVisibility visibility = RaidVisibility.Public,
+        CancellationToken ct = default)
     {
         var raid = await _raids.FindByIdWithSummonerAsync(activeRaidId, ct);
 
@@ -457,16 +506,80 @@ public sealed class RaidService : IRaidService
                 FailureReason = "Personal raids are solo and cannot be shared.",
             };
 
-        raid.Share();
+        // Ticket 50 — there is no un-share path: sharing only moves between Public/GuildOnly/FriendsOnly.
+        // A Private target is meaningless here (the raid is already effectively private when unshared);
+        // coerce it to Public for back-compat with the no-body share call.
+        if (visibility == RaidVisibility.Private)
+            visibility = RaidVisibility.Public;
+
+        // GuildOnly requires the summoner to actually be in a guild (resolved server-side, never trusted
+        // from the client). Friends/Public have no such precondition.
+        if (visibility == RaidVisibility.GuildOnly)
+        {
+            var membership = await _guildMemberships.FindByPlayerAsync(callerId, ct);
+            if (membership is null)
+                return new ShareRaidResult
+                {
+                    FailureCode   = ShareRaidFailureCode.NotInGuild,
+                    FailureReason = "You must be in a guild to share a raid guild-only.",
+                };
+        }
+
+        raid.ShareTo(visibility);
         await _raids.UpdateAsync(raid, ct);
 
         await _auditLog.AppendAsync(AuditLog.Create(
             callerId, "RaidShared", null,
-            $"Shared raid {raid.Id} ({raid.RaidDefinitionId}) [{raid.Size}] to the public list.",
+            $"Shared raid {raid.Id} ({raid.RaidDefinitionId}) [{raid.Size}] to the [{visibility}] list.",
             null), ct);
 
         var response = await MapToResponseAsync(raid, callerId, totalParticipants: 1, DateTimeOffset.UtcNow, ct);
         return new ShareRaidResult { Success = true, Raid = response };
+    }
+
+    // Ticket 50 — summoner-only dismiss of a defeated raid. Rewards were already granted on the killing
+    // hit (DistributeKillRewardsAsync) — there is NO unclaimed-reward state — so this is purely a
+    // remove-from-all-indexes action (Lootable → Looted). IsDeleted is left false so raid_participants
+    // and the completed-raid history stay intact.
+    public async Task<LootRaidResult> LootRaidAsync(
+        Guid callerId, Guid activeRaidId, CancellationToken ct = default)
+    {
+        var raid = await _raids.FindByIdWithSummonerAsync(activeRaidId, ct);
+
+        // Missing / deleted / already-looted → NotFound (an already-looted raid is gone from the player's
+        // perspective, so we don't distinguish it from a missing one).
+        if (raid is null || raid.IsDeleted || raid.LifecycleState == RaidLifecycleState.Looted)
+            return new LootRaidResult
+            {
+                FailureCode   = LootRaidFailureCode.NotFound,
+                FailureReason = "Raid not found.",
+            };
+
+        if (raid.SummonedByPlayerId != callerId)
+            return new LootRaidResult
+            {
+                FailureCode   = LootRaidFailureCode.NotSummoner,
+                FailureReason = "Only the summoner can dismiss this raid.",
+            };
+
+        // Still Active (not yet defeated) → can't loot/dismiss it.
+        if (raid.LifecycleState != RaidLifecycleState.Lootable)
+            return new LootRaidResult
+            {
+                FailureCode   = LootRaidFailureCode.NotLootable,
+                FailureReason = "This raid is still active and cannot be dismissed yet.",
+            };
+
+        raid.Loot();
+        await _raids.UpdateAsync(raid, ct);
+
+        await _auditLog.AppendAsync(AuditLog.Create(
+            callerId, "RaidLooted", null,
+            $"Dismissed defeated raid {raid.Id} ({raid.RaidDefinitionId}) [{raid.Size}] from all lists.",
+            null), ct);
+
+        var response = await MapToResponseAsync(raid, callerId, totalParticipants: 1, DateTimeOffset.UtcNow, ct);
+        return new LootRaidResult { Success = true, Raid = response };
     }
 
     public async Task<IReadOnlyList<RaidParticipantRankDto>> GetParticipantsAsync(
@@ -1067,6 +1180,11 @@ public sealed class RaidService : IRaidService
                 // per-(raid,player) referenceId so a re-processed kill never double-counts; enlisted in this tx.
                 await _mastery.RecordActivityAsync(
                     playerId, MasteryActivityType.RaidKill, 1, $"mastery:kill:{activeRaidId}:{playerId}", ct);
+
+                // TICKET 46 — RaidCompletions achievement counter for the killer, mirroring the mastery
+                // kill hook. Idempotent via the same per-(raid,player) referenceId; enlisted in this tx.
+                await _achievements.RecordProgressAsync(
+                    playerId, AchievementMetric.RaidCompletions, 1, $"ach:raidkill:{activeRaidId}:{playerId}", ct);
 
                 // System 16 Slice 5 — per-Gauntlet-raid-defeat reward. GAUNTLET RAIDS ONLY (gated on
                 // GauntletEventId). Gauntlet raids are Personal/solo, so the killer is the lone

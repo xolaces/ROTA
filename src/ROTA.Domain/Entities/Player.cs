@@ -101,6 +101,15 @@ public class Player
     /// <summary>UTC instant the chat mute expires; null when the player has never been muted (T40).</summary>
     public DateTimeOffset? MuteExpiresAt { get; private set; }
 
+    // Achievements (TICKET 46) — days-played tracking. DaysPlayed counts DISTINCT UTC calendar days
+    // the player has logged in; LastLoginDate is the last calendar day already counted (so a same-day
+    // re-login never double-counts). MasteryService-style single writer: AuthService on login.
+    /// <summary>The last UTC calendar day already counted toward <see cref="DaysPlayed"/>; null before first login.</summary>
+    public DateOnly? LastLoginDate { get; private set; }
+
+    /// <summary>Distinct UTC calendar days the player has logged in (the DaysPlayed achievement metric).</summary>
+    public int DaysPlayed { get; private set; }
+
     /// <summary>True while an unexpired mute is in effect. Derived — not mapped (Ignore in config).</summary>
     public bool IsMuted => MuteExpiresAt.HasValue && MuteExpiresAt.Value > DateTimeOffset.UtcNow;
 
@@ -254,5 +263,22 @@ public class Player
     {
         ActivePledgeAncient = null;
         UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    // Achievements (TICKET 46) — days-played login hook.
+
+    /// <summary>
+    /// Records a login on <paramref name="today"/> (UTC calendar day). Increments
+    /// <see cref="DaysPlayed"/> ONLY when the day advances past <see cref="LastLoginDate"/>, so
+    /// multiple logins on the same day count once. Returns true when a new distinct day was counted.
+    /// </summary>
+    public bool RecordLogin(DateOnly today)
+    {
+        if (LastLoginDate.HasValue && LastLoginDate.Value >= today)
+            return false;
+        LastLoginDate = today;
+        DaysPlayed++;
+        UpdatedAt = DateTimeOffset.UtcNow;
+        return true;
     }
 }

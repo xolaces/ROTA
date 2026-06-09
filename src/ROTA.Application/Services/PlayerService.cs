@@ -13,6 +13,7 @@ public sealed class PlayerService : IPlayerService
     private readonly IEquipmentService _equipment;
     private readonly IPlayerMasteryRepository _masteryRepo;
     private readonly IMasteryService _mastery;
+    private readonly IAchievementService _achievements;
 
     public PlayerService(
         IPlayerRepository players,
@@ -20,14 +21,16 @@ public sealed class PlayerService : IPlayerService
         IAuditLogRepository auditLog,
         IEquipmentService equipment,
         IPlayerMasteryRepository masteryRepo,
-        IMasteryService mastery)
+        IMasteryService mastery,
+        IAchievementService achievements)
     {
-        _players     = players;
-        _energy      = energy;
-        _auditLog    = auditLog;
-        _equipment   = equipment;
-        _masteryRepo = masteryRepo;
-        _mastery     = mastery;
+        _players      = players;
+        _energy       = energy;
+        _auditLog     = auditLog;
+        _equipment    = equipment;
+        _masteryRepo  = masteryRepo;
+        _mastery      = mastery;
+        _achievements = achievements;
     }
 
     public async Task<PlayerProfileResponse?> GetProfileAsync(Guid playerId, CancellationToken ct = default)
@@ -69,6 +72,19 @@ public sealed class PlayerService : IPlayerService
             .ToDictionary(m => m.Ancient, m => m.Level);
         int masteryRating = _mastery.ComputeRating(masteryLevels);
 
+        // Achievements (TICKET 46) — profile read is one of the two completion-evaluation trigger
+        // points (mirrors masteries). Best-effort: a failure here must never break the profile load.
+        int achievementPoints = 0;
+        try
+        {
+            await _achievements.EvaluateCompletionsAsync(playerId, ct);
+            achievementPoints = await _achievements.GetTotalPointsAsync(playerId, ct);
+        }
+        catch
+        {
+            // swallow — AP display is non-critical to the profile load
+        }
+
         return new PlayerProfileResponse
         {
             Id               = player.Id,
@@ -86,8 +102,9 @@ public sealed class PlayerService : IPlayerService
             Resources        = resources,
             EffectiveAttack  = effAtk,
             EffectiveDefense = effDef,
-            ActivePledge        = player.ActivePledgeAncient?.ToString(),
-            MasteryRatingActive = masteryRating,
+            ActivePledge            = player.ActivePledgeAncient?.ToString(),
+            MasteryRatingActive     = masteryRating,
+            TotalAchievementPoints  = achievementPoints,
         };
     }
 

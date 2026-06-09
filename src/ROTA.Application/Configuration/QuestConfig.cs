@@ -15,4 +15,22 @@ public class QuestConfig
     // k 0.03 → 0.05 × (1 + 30×0.03) = 0.05 × 1.9 = 0.095.
     public double DiscernmentDropMultiplier { get; set; } = 0.03;
     public double MaxDropChance { get; set; } = 0.95;
+
+    // T44 — zone-indexed XP formula. ExperienceReward in quests.json is the per-node BASE that the
+    // zone ratio and the per-chapter scalar multiply (alongside the difficulty reward multiplier).
+    // A battle node's ratio scales with its depth in the chapter (XpZoneRatioBase + ZoneIndex ×
+    // XpZoneRatioPerZone); a boss node always uses XpBossRatio regardless of zone. ChapterXpScalars
+    // then make late chapters award meaningfully more (early LOW, late HIGH).
+    public double XpZoneRatioBase { get; set; } = 1.2;
+    public double XpZoneRatioPerZone { get; set; } = 0.05;
+    public double XpBossRatio { get; set; } = 2.0;
+    public Dictionary<int, double> ChapterXpScalars { get; set; } = new()
+    {
+        [1] = 1.0,
+        [2] = 1.6,
+        [3] = 2.6,
+        [4] = 4.2,
+        [5] = 7.0,
+        [6] = 11.0,
+    };
 }

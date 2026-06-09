@@ -30,6 +30,7 @@ public sealed class AuthService : IAuthService
     private readonly IAuthLockoutService _lockout;
     private readonly IAuditLogRepository _auditLog;
     private readonly IBetaKeyRepository _betaKeys;
+    private readonly IAchievementService _achievements;
 
     public AuthService(
         IPlayerRepository players,
@@ -37,7 +38,8 @@ public sealed class AuthService : IAuthService
         IConfiguration config,
         IAuthLockoutService lockout,
         IAuditLogRepository auditLog,
-        IBetaKeyRepository betaKeys)
+        IBetaKeyRepository betaKeys,
+        IAchievementService achievements)
     {
         _players = players;
         _refreshTokens = refreshTokens;
@@ -45,6 +47,7 @@ public sealed class AuthService : IAuthService
         _lockout = lockout;
         _auditLog = auditLog;
         _betaKeys = betaKeys;
+        _achievements = achievements;
     }
 
     // -------------------------------------------------------------------
@@ -165,6 +168,26 @@ public sealed class AuthService : IAuthService
         await _auditLog.AppendAsync(AuditLog.Create(
             player.Id, "Login", null,
             "Login successful", ipAddress));
+
+        // Achievements (TICKET 46) — days-played login hook. Increment DaysPlayed only when the UTC
+        // calendar day advances (RecordLogin is idempotent per day), then record the metric with a
+        // per-day referenceId so a re-login never double-counts. Best-effort: NEVER blocks login.
+        try
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            if (player.RecordLogin(today))
+            {
+                await _players.UpdateAsync(player);
+                await _achievements.RecordProgressAsync(
+                    player.Id, Domain.Enums.AchievementMetric.DaysPlayed, 1,
+                    $"ach:day:{player.Id}:{today:yyyy-MM-dd}");
+                await _achievements.EvaluateCompletionsAsync(player.Id);
+            }
+        }
+        catch
+        {
+            // swallow — achievement tracking must never break authentication
+        }
 
         return await IssueTokenPairAsync(player, ipAddress);
     }

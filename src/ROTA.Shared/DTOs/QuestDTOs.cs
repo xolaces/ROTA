@@ -5,6 +5,11 @@ public class QuestAvailabilityResponse
     public string Id { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public int Chapter { get; set; }
+    // T45 — Chapter → Zone → Node hierarchy. ZoneIndex/NodeIndex are 0-based; the boss is the last
+    // NodeIndex in its zone. The client groups nodes by chapter→zone for the map view.
+    public int ZoneIndex { get; set; }
+    public string ZoneName { get; set; } = string.Empty;
+    public int NodeIndex { get; set; }
     public string NodeType { get; set; } = string.Empty;
     public int BaseEnergyCost { get; set; }
     public int GoldReward { get; set; }
@@ -59,9 +64,10 @@ public class QuestResultResponse
     public double NodeProgress { get; set; }
     public bool NodeCleared { get; set; }
     public bool NodeJustCleared { get; set; }
-    // T26: true when this attempt completed a chapter boss and reset the whole chapter's nodes to
-    // fresh (the deplete→clear→boss→reset farming cycle).
-    public bool ChapterReset { get; set; }
+    // T44/45 (revises T26): true when this attempt completed a ZONE boss and reset that zone's nodes
+    // back to fresh (the deplete→clear→boss→reset farming cycle, now scoped to the boss's own zone
+    // rather than the whole chapter).
+    public bool ZoneReset { get; set; }
 }
 
 public enum QuestFailureCode
@@ -73,6 +79,9 @@ public enum QuestFailureCode
     PlayerNotFound     = 4,
     PlayerBanned       = 5,
     DifficultyLocked   = 6,
-    // T26: the node is cleared (locked) and can't be attempted until the chapter boss resets it.
+    // T26: the node is cleared (locked) and can't be attempted until the zone boss resets it.
     NodeCleared        = 7,
+    // T45: a zone boss can't be attempted until every preceding NON-boss node in its zone has been
+    // cleared (HasEverCleared). Guard runs before any energy spend.
+    ZoneBossLocked     = 8,
 }

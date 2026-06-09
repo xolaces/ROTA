@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using ROTA.Application.Configuration;
 using ROTA.Application.Interfaces;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
@@ -9,7 +11,13 @@ namespace ROTA.Infrastructure.Persistence.Repositories;
 public sealed class GuildRepository : IGuildRepository
 {
     private readonly RotaDbContext _db;
-    public GuildRepository(RotaDbContext db) => _db = db;
+    private readonly string _devGuildTagNormalized;
+
+    public GuildRepository(RotaDbContext db, IOptions<GuildConfig> guildConfig)
+    {
+        _db = db;
+        _devGuildTagNormalized = Guild.Normalize(guildConfig.Value.DevGuildTag);
+    }
 
     public Task<Guild?> FindByIdAsync(Guid id, CancellationToken ct = default)
         => _db.Guilds.FirstOrDefaultAsync(g => g.Id == id && !g.IsDeleted, ct);
@@ -57,6 +65,11 @@ public sealed class GuildRepository : IGuildRepository
         string? query, int page, int pageSize, CancellationToken ct = default)
     {
         var q = _db.Guilds.AsNoTracking().Where(g => !g.IsDeleted);
+
+        // T43: hide the Dev guild ("The Dev Coffee Shop") from the public browse list. Filtering on the
+        // base IQueryable (before Skip/Take) keeps paging correct — the hidden row never counts.
+        if (!string.IsNullOrWhiteSpace(_devGuildTagNormalized))
+            q = q.Where(g => g.TagNormalized != _devGuildTagNormalized);
 
         if (!string.IsNullOrWhiteSpace(query))
         {

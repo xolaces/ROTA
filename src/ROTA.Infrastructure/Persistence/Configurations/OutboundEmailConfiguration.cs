@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ROTA.Domain.Entities;
+using ROTA.Domain.Enums;
 
 namespace ROTA.Infrastructure.Persistence.Configurations;
 
@@ -40,6 +41,16 @@ public class OutboundEmailConfiguration : IEntityTypeConfiguration<OutboundEmail
         builder.Property(e => e.Summary)
             .HasColumnName("summary")
             .HasMaxLength(1024)
+            .IsRequired();
+
+        // T52 — operator-triage priority (Low/Normal/High). The DB default (Normal) backfills any legacy
+        // row; the sentinel is set out of the enum range so an explicit Low(0) — the CLR default — is
+        // still written on INSERT instead of being mistaken for "unset" and falling back to the default.
+        builder.Property(e => e.Priority)
+            .HasColumnName("priority")
+            .HasConversion<int>()
+            .HasDefaultValue(EmailPriority.Normal)
+            .HasSentinel((EmailPriority)(-1))
             .IsRequired();
 
         // Structured payloads — jsonb so the dashboard can pretty-print and (future) query them.
@@ -93,6 +104,8 @@ public class OutboundEmailConfiguration : IEntityTypeConfiguration<OutboundEmail
         builder.HasIndex(e => e.CreatedAt);
         builder.HasIndex(e => e.TriggeringPlayerId);
         builder.HasIndex(e => e.ReviewedBy);
+        // T52 — the dashboard filters/sorts on priority.
+        builder.HasIndex(e => e.Priority);
 
         // FK → players (nullable; players are soft-deleted, so SetNull is a defensive default).
         builder.HasOne<Player>()

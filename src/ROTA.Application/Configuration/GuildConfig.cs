@@ -50,4 +50,18 @@ public class GuildConfig
 
     /// <summary>Max guild sigils a player can donate to the pool per UTC day (decision §7). LOCKED at 3.</summary>
     public int DailyDonateCap { get; set; } = 3;
+
+    // ── Dev guild ("The Dev Coffee Shop", T43) — the hidden developers-only guild ──
+
+    /// <summary>
+    /// Tag of the hidden Dev guild. The single source of identity: BrowseAsync hides this tag from
+    /// non-devs, and the service confines Developer-flagged accounts to the guild with this tag.
+    /// </summary>
+    public string DevGuildTag { get; set; } = "DEV";
+
+    /// <summary>Display name of the Dev guild, used when it is auto-seeded at startup.</summary>
+    public string DevGuildName { get; set; } = "The Dev Coffee Shop";
+
+    /// <summary>Description of the Dev guild, used when it is auto-seeded at startup.</summary>
+    public string DevGuildDescription { get; set; } = "Developers only.";
 }

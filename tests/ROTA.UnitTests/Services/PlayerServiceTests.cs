@@ -38,10 +38,12 @@ public class PlayerServiceTests
         masteryRepo.Setup(m => m.GetForPlayerAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<PlayerMastery>());
         var mastery = new Mock<IMasteryService>();
+        // Achievements (TICKET 46) — default: zero AP, no-op evaluation.
+        var achievements = new Mock<IAchievementService>();
 
         var service = new PlayerService(
             players.Object, energy.Object, auditLog.Object, equipment.Object,
-            masteryRepo.Object, mastery.Object);
+            masteryRepo.Object, mastery.Object, achievements.Object);
         return (service, players, energy, auditLog);
     }
 

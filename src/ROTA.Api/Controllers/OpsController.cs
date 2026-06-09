@@ -38,13 +38,16 @@ public sealed class OpsController : ControllerBase
         [FromQuery] string? type,
         [FromQuery] string? reviewStatus,
         [FromQuery] string? search,
+        [FromQuery] string? priority,
+        [FromQuery] string? sort,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 50)
     {
         EmailType? typeFilter = Enum.TryParse<EmailType>(type, ignoreCase: true, out var t) ? t : null;
         EmailReviewStatus? reviewFilter = Enum.TryParse<EmailReviewStatus>(reviewStatus, ignoreCase: true, out var r) ? r : null;
+        EmailPriority? priorityFilter = Enum.TryParse<EmailPriority>(priority, ignoreCase: true, out var p) ? p : null;
 
-        var result = await _emails.ListAsync(typeFilter, reviewFilter, search, page, pageSize);
+        var result = await _emails.ListAsync(typeFilter, reviewFilter, search, page, pageSize, priorityFilter, sort);
 
         return Ok(new OutboundEmailListResponse
         {
@@ -138,6 +141,7 @@ public sealed class OpsController : ControllerBase
         TriggeringPlayerId = e.TriggeringPlayerId,
         TriggeringSystem = e.TriggeringSystem,
         Summary = e.Summary,
+        Priority = e.Priority.ToString(),
         Detail = e.DetailJson,
         Metadata = e.MetadataJson,
         SendStatus = e.SendStatus.ToString(),

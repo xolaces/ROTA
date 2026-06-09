@@ -48,7 +48,7 @@ public class EquipmentServiceTests
             .ReturnsAsync(new List<PlayerEquipment>().AsReadOnly());
 
         var service = new EquipmentService(
-            repo.Object, gearDefs.Object, auditLog.Object, inventory.Object, itemDefs.Object, gearRepo.Object);
+            repo.Object, gearDefs.Object, auditLog.Object, inventory.Object, itemDefs.Object, gearRepo.Object, new Mock<IAchievementService>().Object);
         return (service, repo, gearDefs, auditLog, inventory, itemDefs, gearRepo);
     }
 
@@ -487,7 +487,7 @@ public class EquipmentServiceTests
             .ReturnsAsync(new List<PlayerEquipment>());
 
         var service = new EquipmentService(
-            equipRepo.Object, gearDefs.Object, auditLog.Object, inventory.Object, itemDefs.Object, gearRepo.Object);
+            equipRepo.Object, gearDefs.Object, auditLog.Object, inventory.Object, itemDefs.Object, gearRepo.Object, new Mock<IAchievementService>().Object);
         return (service, gearRepo, equipRepo, gearDefs);
     }
 
@@ -580,7 +580,7 @@ public class EquipmentServiceTests
         var gearRepo  = new Mock<IPlayerGearRepository>();
 
         var service = new EquipmentService(
-            equipRepo.Object, gearDefs.Object, auditLog.Object, inventory.Object, itemDefs.Object, gearRepo.Object);
+            equipRepo.Object, gearDefs.Object, auditLog.Object, inventory.Object, itemDefs.Object, gearRepo.Object, new Mock<IAchievementService>().Object);
         return (service, gearRepo);
     }
 
@@ -620,6 +620,41 @@ public class EquipmentServiceTests
         existing.Quantity.Should().Be(5, "2 existing + 3 granted = 5");
         gearRepo.Verify(g => g.UpdateAsync(existing, It.IsAny<CancellationToken>()), Times.Once);
         gearRepo.Verify(g => g.CreateAsync(It.IsAny<PlayerGear>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    // TICKET 46 — granting gear recounts the ABSOLUTE owned total (SUM of quantities) and writes the
+    // EquipmentPiecesOwned achievement counter, so the counter can never drift on a re-grant.
+    [Fact]
+    public async Task GrantGearAsync_RecountsEquipmentPiecesOwned_Absolute()
+    {
+        var equipRepo = new Mock<IPlayerEquipmentRepository>();
+        var gearDefs  = new Mock<IGearDefinitionProvider>();
+        var auditLog  = new Mock<IAuditLogRepository>();
+        var inventory = new Mock<IPlayerInventoryRepository>();
+        var itemDefs  = new Mock<IItemDefinitionProvider>();
+        var gearRepo  = new Mock<IPlayerGearRepository>();
+        var achievements = new Mock<IAchievementService>();
+        var playerId = Guid.NewGuid();
+
+        gearRepo.Setup(g => g.GetAsync(playerId, "gear_iron_ring", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerGear?)null);
+        gearRepo.Setup(g => g.CreateAsync(It.IsAny<PlayerGear>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        // After the grant, the owned bag totals 25 pieces (e.g. 20 + 5) → absolute recount = 25.
+        gearRepo.Setup(g => g.GetOwnedAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerGear>
+            {
+                PlayerGear.Create(playerId, "gear_a", 20),
+                PlayerGear.Create(playerId, "gear_iron_ring", 5),
+            });
+
+        var service = new EquipmentService(
+            equipRepo.Object, gearDefs.Object, auditLog.Object, inventory.Object, itemDefs.Object, gearRepo.Object, achievements.Object);
+
+        await service.GrantGearAsync(playerId, "gear_iron_ring", 5);
+
+        achievements.Verify(a => a.SetCounterAsync(
+            playerId, AchievementMetric.EquipmentPiecesOwned, 25, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     // -----------------------------------------------------------------------

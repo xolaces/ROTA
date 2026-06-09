@@ -89,6 +89,8 @@ public class GuildChatHubTests
             {
                 new Claim("sub", caller.Id.ToString()),
                 new Claim("display_name", caller.DisplayName),
+                // The "name" claim carries Player.Username — the hub copies it to SenderUsername (T51).
+                new Claim("name", caller.Username),
             });
             ctx.Setup(c => c.User).Returns(new ClaimsPrincipal(identity));
             ctx.Setup(c => c.ConnectionId).Returns("conn-1");
@@ -122,9 +124,12 @@ public class GuildChatHubTests
         // Broadcast to the per-guild group.
         h.LastGroupName.Should().Be($"guild:{guildId}");
         h.GroupProxy.Verify(p => p.SendCoreAsync("GuildMessage", It.IsAny<object?[]>(), It.IsAny<CancellationToken>()), Times.Once);
-        // Landed in that guild's ring buffer.
+        // Landed in that guild's ring buffer with both the display name and the stable username handle.
         var history = await h.Store.GetRecentAsync(guildId, 100);
-        history.Should().ContainSingle().Which.Body.Should().Be("hello guild");
+        var persisted = history.Should().ContainSingle().Subject;
+        persisted.Body.Should().Be("hello guild");
+        persisted.SenderName.Should().Be(member.DisplayName);
+        persisted.SenderUsername.Should().Be(member.Username, "the hub copies Player.Username from the 'name' claim for moderation targeting");
         h.LastCallerEvent.Should().BeNull("a member is not blocked");
     }
 

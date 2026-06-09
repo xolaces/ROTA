@@ -20,7 +20,12 @@ public class ActiveRaidResponse
     public string DifficultyColor { get; set; } = string.Empty;
     public string Size { get; set; } = string.Empty;
     public string YourCurrentTier { get; set; } = string.Empty;
-    // Visibility — false until the summoner shares the raid to the public list.
+    // Visibility tier (Ticket 50) — "Private" | "Public" | "GuildOnly" | "FriendsOnly".
+    public string Visibility { get; set; } = string.Empty;
+    // Lifecycle state (Ticket 50) — "Active" | "Lootable" | "Looted".
+    public string LifecycleState { get; set; } = string.Empty;
+    // Derived convenience (Ticket 50) — IsPublic = (Visibility == Public). KEPT on the wire so the
+    // currently-shipped client (which reads IsPublic and shares with no visibility) keeps working.
     public bool IsPublic { get; set; }
 }
 
@@ -180,6 +185,22 @@ public class ShareRaidResult
     public ActiveRaidResponse? Raid { get; set; }
 }
 
+// Ticket 50 — body for POST /api/raids/{id}/share. Optional: omitting it (or sending no body) defaults
+// to "Public" for back-compat with the currently-shipped client. Valid: Public | GuildOnly | FriendsOnly.
+public class ShareRaidRequest
+{
+    public string Visibility { get; set; } = "Public";
+}
+
+// Ticket 50 — result of the summoner-only loot (dismiss) action.
+public class LootRaidResult
+{
+    public bool Success { get; set; }
+    public LootRaidFailureCode FailureCode { get; set; }
+    public string? FailureReason { get; set; }
+    public ActiveRaidResponse? Raid { get; set; }
+}
+
 public enum SummonRaidFailureCode
 {
     None                = 0,
@@ -207,6 +228,16 @@ public enum ShareRaidFailureCode
     NotFound            = 1,  // raid missing / deleted / expired
     NotSummoner         = 2,  // caller did not summon this raid
     CannotSharePersonal = 3,  // Personal (solo) raids can't be shared
+    NotInGuild          = 4,  // Ticket 50 — GuildOnly target but the summoner is not in a guild
+}
+
+// Ticket 50 — loot (dismiss) failure reasons.
+public enum LootRaidFailureCode
+{
+    None        = 0,
+    NotFound    = 1,  // raid missing / deleted / already looted
+    NotSummoner = 2,  // caller did not summon this raid
+    NotLootable = 3,  // raid is still Active (not yet defeated)
 }
 
 public class RaidParticipantRankDto

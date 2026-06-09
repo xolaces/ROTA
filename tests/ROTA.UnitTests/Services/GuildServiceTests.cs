@@ -133,6 +133,30 @@ public class GuildServiceTests
             r.Success.Should().BeTrue(r.FailureReason);
             return r.GuildId!.Value;
         }
+
+        // ── T43 dev-guild test helpers ──
+
+        /// <summary>Adds a player and flags them as a Developer (mirrors the seed/CLI flag grant).</summary>
+        public Player AddDevPlayer(string username, int level = 30, long gold = 100000)
+        {
+            var p = AddPlayer(username, level, gold);
+            p.GrantRole(ROTA.Domain.Enums.PlayerRoles.Developer);
+            return p;
+        }
+
+        /// <summary>
+        /// Seeds the Dev guild ("The Dev Coffee Shop", tag DEV) directly into the fakes, led by
+        /// <paramref name="leader"/> (who must be a dev). Bypasses the service create-gate (devs can't create).
+        /// </summary>
+        public Guid FoundDevGuild(Player leader, GuildConfig config)
+        {
+            var guild = Guild.Create(leader.Id, config.DevGuildName, config.DevGuildTag,
+                config.DevGuildDescription, GuildJoinPolicy.InviteOnly, config.MemberCap);
+            Guilds.Guilds.Add(guild);
+            Memberships.Rows.Add(GuildMembership.Create(guild.Id, leader.Id, GuildRank.Leader));
+            leader.JoinGuild(guild.Id, GuildRank.Leader);
+            return guild.Id;
+        }
     }
 
     // ════════════════════════════════════════════════════════════ Create
@@ -581,6 +605,124 @@ public class GuildServiceTests
         var r = await h.Service.RunInactivitySuccessionAsync(gid);
         r.Success.Should().BeFalse();
         h.Guilds.Guilds.Single().LeaderId.Should().Be(leader.Id);
+    }
+
+    // ════════════════════════════════════════════════════════════ T43 — Dev guild gates
+
+    [Fact]
+    public async Task Create_ByDeveloperAccount_RejectedDevGuildRestricted()
+    {
+        var h = new Harness();
+        var dev = h.AddDevPlayer("nathan");
+
+        var r = await h.Service.CreateGuildAsync(dev.Id, "Knights", "KN", "d", GuildJoinPolicy.Open);
+
+        r.Success.Should().BeFalse();
+        r.FailureCode.Should().Be(GuildFailureCode.DevGuildRestricted);
+        dev.GuildId.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Apply_DeveloperToNormalGuild_RejectedDevGuildRestricted()
+    {
+        var h = new Harness();
+        var leader = h.AddPlayer("alice");
+        var dev = h.AddDevPlayer("nathan");
+        var gid = await h.Found(leader, policy: GuildJoinPolicy.Open);
+
+        var r = await h.Service.ApplyAsync(dev.Id, gid);
+
+        r.Success.Should().BeFalse();
+        r.FailureCode.Should().Be(GuildFailureCode.DevGuildRestricted);
+        dev.GuildId.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Apply_NonDeveloperToDevGuild_RejectedDevGuildRestricted()
+    {
+        var config = new GuildConfig();
+        var h = new Harness(config);
+        var devLeader = h.AddDevPlayer("nathan");
+        var outsider = h.AddPlayer("bob");
+        var gid = h.FoundDevGuild(devLeader, config);
+
+        var r = await h.Service.ApplyAsync(outsider.Id, gid);
+
+        r.Success.Should().BeFalse();
+        r.FailureCode.Should().Be(GuildFailureCode.DevGuildRestricted);
+        outsider.GuildId.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task AcceptInvite_DeveloperToNormalGuild_RejectedDevGuildRestricted()
+    {
+        var h = new Harness();
+        var leader = h.AddPlayer("alice");
+        var dev = h.AddDevPlayer("nathan");
+        var gid = await h.Found(leader, policy: GuildJoinPolicy.InviteOnly);
+
+        // An officer of a normal guild crafts an invite directly (the dev isn't yet blocked from receiving
+        // an invite row). Accept must enforce the boundary on the invite's guild.
+        var req = GuildJoinRequest.Create(gid, dev.Id, GuildJoinRequestKind.Invite);
+        h.Requests.Rows.Add(req);
+
+        var r = await h.Service.AcceptInviteAsync(dev.Id, req.Id);
+
+        r.Success.Should().BeFalse();
+        r.FailureCode.Should().Be(GuildFailureCode.DevGuildRestricted);
+        dev.GuildId.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Invite_NonDeveloperIntoDevGuild_RejectedDevGuildRestricted()
+    {
+        var config = new GuildConfig();
+        var h = new Harness(config);
+        var devLeader = h.AddDevPlayer("nathan");
+        var outsider = h.AddPlayer("bob");
+        var gid = h.FoundDevGuild(devLeader, config);
+
+        var r = await h.Service.InviteAsync(devLeader.Id, gid, "bob");
+
+        r.Success.Should().BeFalse();
+        r.FailureCode.Should().Be(GuildFailureCode.DevGuildRestricted);
+        h.Requests.Rows.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task AcceptApplication_NonDeveloperIntoDevGuild_RejectedDevGuildRestricted()
+    {
+        var config = new GuildConfig();
+        var h = new Harness(config);
+        var devLeader = h.AddDevPlayer("nathan");
+        var outsider = h.AddPlayer("bob");
+        var gid = h.FoundDevGuild(devLeader, config);
+
+        // A non-dev application row sneaks in (e.g. policy change); accept must still reject it.
+        var req = GuildJoinRequest.Create(gid, outsider.Id, GuildJoinRequestKind.Application);
+        h.Requests.Rows.Add(req);
+
+        var r = await h.Service.AcceptApplicationAsync(devLeader.Id, gid, req.Id);
+
+        r.Success.Should().BeFalse();
+        r.FailureCode.Should().Be(GuildFailureCode.DevGuildRestricted);
+        outsider.GuildId.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetGuild_DevGuildByNonDeveloper_ReturnsNull()
+    {
+        var config = new GuildConfig();
+        var h = new Harness(config);
+        var devLeader = h.AddDevPlayer("nathan");
+        var outsider = h.AddPlayer("bob");
+        var gid = h.FoundDevGuild(devLeader, config);
+
+        var byOutsider = await h.Service.GetGuildAsync(gid, outsider.Id);
+        byOutsider.Should().BeNull("the dev guild is invisible to non-devs");
+
+        var byDev = await h.Service.GetGuildAsync(gid, devLeader.Id);
+        byDev.Should().NotBeNull("a developer can see the dev guild detail");
     }
 
     // LastActiveAt has a private setter (the entity exposes TouchActivity for "now"); tests need

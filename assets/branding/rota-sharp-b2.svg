@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 470" width="780" height="470">
+  <defs>
+    <linearGradient id="gold" x1="80" y1="120" x2="730" y2="400" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F5CE88"/>
+      <stop offset="0.5" stop-color="#E89A50"/>
+      <stop offset="1" stop-color="#C66E2A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- DRAGON TAIL as a carved serpent ledge under the whole word -->
+  <path fill="none" stroke="url(#gold)" stroke-width="16" stroke-linejoin="miter" stroke-linecap="butt"
+        d="M 150 356 C 130 392 140 424 170 430 C 280 448 400 450 520 446 C 624 443 690 438 726 420"/>
+  <!-- spade flick past the A -->
+  <path fill="url(#gold)" d="M 762 404 L 724 414 L 740 426 Z"/>
+  <!-- underside spines -->
+  <path fill="url(#gold)" d="M 300 448 L 312 470 L 326 449 Z"/>
+  <path fill="url(#gold)" d="M 520 446 L 532 468 L 546 446 Z"/>
+
+  <!-- HUGE R (no back-tail; the ledge above is the tail) -->
+  <g transform="translate(-14,-24)">
+    <g fill="none" stroke="url(#gold)" stroke-width="56" stroke-linejoin="miter" stroke-linecap="butt" stroke-miterlimit="10">
+      <path d="M180 138 L180 404"/>
+      <path d="M180 140 L300 140 L350 190 L350 214 L300 262 L186 262"/>
+      <path d="M198 256 L354 404"/>
+    </g>
+  </g>
+
+  <!-- "ota" following -->
+  <g fill="none" stroke="url(#gold)" stroke-width="26" stroke-linejoin="miter" stroke-linecap="butt" stroke-miterlimit="10">
+    <path d="M430 260 L474 260 L502 288 L502 348 L474 376 L430 376 L402 348 L402 288 Z"/>
+    <path d="M530 262 L636 262"/>
+    <path d="M583 262 L583 376"/>
+    <path d="M652 376 L694 258 L736 376"/>
+    <path d="M674 330 L714 330"/>
+  </g>
+</svg>

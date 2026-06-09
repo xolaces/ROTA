@@ -3,6 +3,14 @@
 *Status: SHIPPED 2026-06-04 — all three slices complete (backend core, sigil size, client UI).
 §5 decision resolved. Traced against current raid code 2026-06-04.*
 
+> **SUPERSEDED IN PART by System 23 / Ticket 50** (`../active/system-23-raid-visibility-lifecycle.md`).
+> The boolean `ActiveRaid.IsPublic` + `Share()` described below were replaced by a `RaidVisibility`
+> tier enum (Private/Public/GuildOnly/FriendsOnly) + a `RaidLifecycleState` enum
+> (Active/Lootable/Looted) with a summoner-only `POST /api/raids/{id}/loot` (dismiss). `IsPublic`
+> remains on the wire as a **derived** read-only field (`= Visibility == Public`) for back-compat.
+> The "active raid (hittable by id) ≠ public raid (listed)" distinction first noted here is now
+> made explicit in code.
+
 ## Goal (owner)
 Summoned raids are **private until shared to public**. Two ways to join someone's raid:
 1. **Direct raid UID** — paste a raid's id to join it.

@@ -59,11 +59,18 @@ public class ActiveRaidConfiguration : IEntityTypeConfiguration<ActiveRaid>
             .HasDefaultValue(RaidSize.Large)
             .HasSentinel(RaidSize.Large);
 
-        // Visibility — summons start private. No HasDefaultValue: the store default (false) equals
-        // the CLR default (false), so the app always writes the column and no sentinel is needed
-        // (unlike Size, whose store default Large differs from the CLR default Personal).
-        builder.Property(r => r.IsPublic)
-            .HasColumnName("is_public");
+        // Visibility (Ticket 50) — replaces the old is_public bool. Store default Private(0) equals the
+        // CLR default, so the app always writes the column; no sentinel needed (unlike Size, whose store
+        // default Large differs from the CLR default Personal).
+        builder.Property(r => r.Visibility)
+            .HasColumnName("visibility")
+            .HasDefaultValue(RaidVisibility.Private);
+
+        // Lifecycle state (Ticket 50) — Active(0) → Lootable(1) → Looted(2). Store default Active(0)
+        // equals the CLR default, so no sentinel is needed.
+        builder.Property(r => r.LifecycleState)
+            .HasColumnName("lifecycle_state")
+            .HasDefaultValue(RaidLifecycleState.Active);
 
         builder.Property(r => r.ParticipantCount)
             .HasColumnName("participant_count")
@@ -114,5 +121,12 @@ public class ActiveRaidConfiguration : IEntityTypeConfiguration<ActiveRaid>
 
         builder.HasIndex(r => r.GuildId)
             .HasDatabaseName("ix_active_raids_guild_id");
+
+        // Ticket 50 — the list query filters by Visibility + LifecycleState (every queried column is
+        // indexed). Filtered to live rows (not defeated, not deleted) since the list only ever surfaces
+        // Active raids; the partial index keeps it small and matches the query's predicate shape.
+        builder.HasIndex(r => new { r.Visibility, r.LifecycleState })
+            .HasDatabaseName("ix_active_raids_visibility_lifecycle")
+            .HasFilter("is_defeated = false AND is_deleted = false");
     }
 }

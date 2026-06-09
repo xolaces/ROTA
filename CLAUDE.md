@@ -412,6 +412,146 @@ drop-quality + sigil-find), each leveled 1→5 by per-Ancient challenge checklis
   micro-bonus; paid-respec crash-recovery gap (strict weekly cap, PHASE-2 note). Phase B (The Rise) + Phase C
   (PoE-depth) stay in backlog.
 
+## Ticket 52 — Subject Enforcement + Email Priority (2026-06-08) — BACKEND COMPLETE (migration NOT applied)
+Replaces free-typed subjects with server-validated, config-driven subject lists for Bug + Player reports; Feedback
+stays open-text but is always filed under a fixed "Player Feedback" category. Each outbound email now carries a
+derived priority. Tests: 847 unit + 97 integration green; 0 errors, 0 src warnings.
+- **Config:** `content/subjects.json` ({ bugSubjects, reportSubjects [{key,label}], feedbackCategory }) is the single
+  source of truth, loaded by an eager startup-validated singleton `ISubjectCatalogProvider`/`SubjectCatalogProvider`
+  (mirrors MagicDefinitionProvider — throws at boot on empty list / duplicate key / blank feedbackCategory).
+- **Priority (`EmailPriority {Low=0,Normal=1,High=2}`):** PlayerReport=High, GeneralTicket(feedback)=Low, BugReport=Normal.
+  `OutboundEmail.Priority` + `EmailPayload.Priority` + `priority` int column (migration **AddEmailPriority**, DB default
+  Normal, `HasSentinel((EmailPriority)(-1))` so explicit Low(0) still writes; IX_outbound_emails_priority).
+- **Validation:** `FeedbackRequestValidator`/`ReportPlayerRequestValidator` inject the provider — Bug subject + report
+  reason must be on-list (accept key OR label → 400 otherwise); Feedback subject stays open text.
+- **Normalization:** the LABEL is stored in `OutboundEmail.Subject`; the `subjectKey` is stashed in the detail jsonb.
+- **Endpoint:** `[Authorize] GET /api/subjects` → `SubjectCatalogResponse` (client wiring is a later step).
+- **Ops:** `IOutboundEmailRepository.ListAsync` gains `EmailPriority? priority` filter + `string? sort`
+  ("priority"|"created"); default sort = priority-first then newest. `OpsController.List` accepts `priority`+`sort`
+  query params; `OutboundEmailResponse.Priority` is the string name ("Low"/"Normal"/"High").
+- KNOWN FOLLOW-UPS: client (Unity) + ops-dashboard wiring to GET /api/subjects + the new priority column (later steps).
+
+## System 23 / Ticket 50 — Raid Visibility & Indexing model (2026-06-08) — BACKEND COMPLETE (migration NOT applied)
+Spec: docs/specs/active/system-23-raid-visibility-lifecycle.md. Replaces the boolean `ActiveRaid.IsPublic`
+with a **`RaidVisibility` tier enum** {Private=0,Public=1,GuildOnly=2,FriendsOnly=3} and adds a
+completed→`Lootable`→`Looted` lifecycle (**`RaidLifecycleState`** {Active=0,Lootable=1,Looted=2}). Makes the
+**"active raid (alive + hittable by its GUID) ≠ public raid (indexed in a list)"** split explicit in code.
+- **CRITICAL (verified):** raid rewards are FULLY granted on the killing hit (`DistributeKillRewardsAsync`) —
+  there is NO unclaimed-reward state — so **`Loot()` is a DISMISS / remove-from-all-indexes action, NOT a
+  reward claim.** `MarkDefeated()` also flips lifecycle Active→Lootable; `Loot()` (guarded Lootable-only)
+  flips Lootable→Looted and does NOT soft-delete (`IsDeleted` stays false → raid_participants FK + history intact).
+- `ActiveRaid`: `Visibility`+`LifecycleState` (private set) replace `IsPublic`; `Create(...visibility=Private)`;
+  `ShareTo(RaidVisibility)` + `Share()` back-compat overload (→Public); `Loot()`.
+- `RaidService`: injects `IFriendshipRepository` (accepted-friends via
+  `ListForPlayerAsync(playerId, FriendshipStatus.Accepted)` → `Friendship.OtherSide`). `GetActiveRaidsAsync`
+  resolves caller guildId + accepted-friend set ONCE, then lists `LifecycleState==Active && (own || (non-Personal
+  && (Public || GuildOnly&same-guild via Include-loaded SummonedByPlayer.GuildId || FriendsOnly&accepted-friend)))`.
+  `ShareRaidAsync(callerId, raidId, visibility=Public)` (GuildOnly validates summoner in a guild→`NotInGuild`;
+  Personal→`CannotSharePersonal`; Private coerced→Public). NEW `LootRaidAsync` (summoner-only; NotFound/NotSummoner/
+  NotLootable). `GetRaidByIdAsync` lets the summoner resolve their own `Lootable` raid; `Looted`→null.
+- API: `POST /api/raids/{id}/share` body `ShareRaidRequest{Visibility="Public"}` **optional** (no body→Public,
+  back-compat) → 200/400/403/404/409(Personal or NotInGuild); NEW `POST /api/raids/{id}/loot` → 200/403/404/409.
+- DTOs: `ActiveRaidResponse += Visibility, LifecycleState` (KEEP derived `IsPublic = Visibility==Public` on the
+  wire — shipped client unaffected). `ShareRaidFailureCode += NotInGuild=4`. NEW `ShareRaidRequest`, `LootRaidResult`
+  + `LootRaidFailureCode {None,NotFound,NotSummoner,NotLootable}`.
+- EF: `visibility`+`lifecycle_state` (int, store defaults 0); filtered index `ix_active_raids_visibility_lifecycle`
+  on (visibility, lifecycle_state) WHERE is_defeated=false AND is_deleted=false. Migration **AddRaidVisibilityModel**
+  (add visibility→backfill is_public→drop is_public; add lifecycle_state→backfill is_defeated→Looted; index).
+  **NOT applied** — owner runs `dotnet ef database update`.
+- **830 unit + 94 integration green; 0 errors, 0 CS warnings.** CLIENT MIRROR (ROTA.Client6) is a SEPARATE later step.
+
+## T43 — Dev Guild "The Dev Coffee Shop" (2026-06-08) — COMPLETE (backend, NO migration)
+The hidden developers-only guild. NO schema change — the new `PlayerRoles.Developer = 1 << 3` flag is a
+plain bit in the existing int `roles` column, and the guild reuses the Guild/GuildMembership tables.
+- **Enum/config:** `PlayerRoles.Developer`; new `DeveloperConfig` (bound from `Developer` section:
+  `Usernames[]` + `PlayerIds[]`, **EMPTY by default** — owner adds Nathan's identifier later, nothing
+  hardcoded); `GuildConfig.DevGuildTag="DEV"`/`DevGuildName="The Dev Coffee Shop"`/`DevGuildDescription`.
+- **Seeding:** `SeedData.EnsureDevGuildAsync` (wired in Program.cs right after EnsureAdminAsync) —
+  idempotently grants the Developer flag to allowlisted accounts (by username AND guid), ensures the Dev
+  guild exists (created **led by the first resolvable dev**, JoinPolicy=InviteOnly), and auto-joins devs.
+  OWNER DECISION: if NO dev account resolves, guild creation is SKIPPED with a warning (a guild needs a
+  non-null leader FK and we must never flag/lock the seeded admin Xolaces into it) — it auto-seeds once a
+  dev is added to config and the server restarts. Audit actions: DevFlagGranted / DevGuildSeeded /
+  DevGuildJoined (+ DevFlagRevoked on unflag).
+- **Visibility:** `GuildRepository.BrowseAsync` (injects IOptions<GuildConfig>) excludes the dev tag
+  BEFORE Skip/Take so paging stays correct; `GuildService.GetGuildAsync` returns null (→404) for the dev
+  guild when the caller lacks the Developer flag (hide existence).
+- **Server gates (DB-HasRole-based, not JWT-claim):** new `GuildFailureCode.DevGuildRestricted=14` →403.
+  Dev actors can't create guilds; Apply/AcceptInvite/Invite/AcceptApplication enforce both sides — a dev
+  may ONLY belong to the Dev guild, and a non-dev can NEVER enter it.
+- **CLI:** `flag-dev <user|guid>` (grants flag + ensures guild + auto-joins) / `unflag-dev <user|guid>`
+  (removes from dev guild + revokes flag) via `SeedData.FlagDeveloperAsync`.
+- JWT: AuthService already emits a role claim per set flag, so Developer surfaces automatically.
+- Tests: 7 GuildService gate tests + 4 EnsureDevGuildAsync tests (create/idempotent/by-username+guid/
+  empty-allowlist no-op) + 1 BrowseAsync exclusion (real Postgres). **887 green (794 unit + 93 integration),
+  0 errors, 0 CS warnings.** No EF migration. Developer allowlist is EMPTY (awaiting Nathan's identifier).
+
+## T44 + T45 — Chapter/Zone map + XP rebalance (2026-06-08) — COMPLETE (one coupled job)
+The questing spine becomes a data-driven **Chapter → Zone → Node** hierarchy and the previously-dead
+zone-indexed XP formula is wired so XP scales by chapter + zone depth (early LOW, late HIGH). NO EF
+migration (zone membership lives entirely in JSON; PlayerQuestProgress still keys on quest_id only).
+- **T45 hierarchy/gating:** QuestDefinition + QuestAvailabilityResponse gain `ZoneIndex`/`ZoneName`/
+  `NodeIndex` (0-based; boss is the last NodeIndex in its zone). Ordered chain node→zone→chapter is
+  enforced by `prerequisiteQuestId` (node N requires N−1; a zone's first node requires the previous
+  zone's boss; a chapter's first node requires the previous chapter's final boss). New **zone-boss
+  gate** in AttemptQuestAsync (before any energy spend): a per-zone boss fails
+  `QuestFailureCode.ZoneBossLocked=8` → **409** until every NON-boss node in its zone HasEverCleared.
+  GetAvailableQuestsAsync greys a surfaced-but-zone-incomplete boss (`IsUnlocked=false`).
+- **T44 XP formula:** `xp = ExperienceReward(base) × zoneRatio × chapterScalar × rewardMult`, where a
+  battle's `zoneRatio = XpZoneRatioBase(1.2) + ZoneIndex×XpZoneRatioPerZone(0.05)` and a boss always
+  uses `XpBossRatio(2.0)`. `QuestConfig.ChapterXpScalars {1:1.0,2:1.6,3:2.6,4:4.2,5:7.0,6:11.0}`
+  (appsettings-overridable). XP is NOT Hoard-scaled (only gold/drops are). ExperienceReward in
+  quests.json is now the per-node BASE the ratio multiplies.
+- **OWNER DECISION — REVISES T26:** the per-zone boss now resets only **its own ZONE** (not the whole
+  chapter). `ResetChapterAsync→ResetZoneAsync` (filters Chapter && ZoneIndex);
+  `QuestResultResponse.ChapterReset→ZoneReset`. HasEverCleared still preserved (forward unlocks survive).
+- **content/quests.json — FULL rewrite:** 6 chapters / 25 zones / **136 nodes**. Legacy q001–q005 ids,
+  names, loot-table refs (lt_quest_q001..q005) and sigils are preserved in place (Ch1 Z0 = q001/q002 +
+  q003 boss; Ch2 Z0 = q004 + 2 new battles + q005 boss); all new nodes have `lootTableId: null`.
+  Per-chapter Normal XP-per-node: Ch1 battle 50–90 / boss 180–200; Ch2 105–288 / 384–800; Ch3 218–245 /
+  780; Ch4 453–510 / 1596; Ch5 924–1078 / 3220; Ch6 1716–2002 / 6160 — sane vs
+  XpToNextLevel=round(30·level^0.7) (≈30 @L1 → ≈6135 @L2000).
+- **Client (ROTA.Client6, local mirror — NOT compiled here):** Dtos.cs ChapterReset→ZoneReset + zone
+  fields on QuestAvailabilityResponse; QuestScreen callout "ZONE RESET" + ZoneBossLocked copy;
+  MockRotaApi made zone-aware (zone fields, zone-boss gate, zone-scoped reset) and stateful.
+- **900 green (807 unit + 93 integration); 0 errors, 0 CS warnings.** Tests added: XP-formula theory
+  (zone/chapter/difficulty), zone-boss gate (reject no-energy / succeed), cross-zone ordering, zone-reset
+  scope (other zone untouched), availability zone fields + greyed boss. No new migration.
+
+## Ticket 46 — Achievement Points (2026-06-08) — BACKEND COMPLETE (migration NOT applied)
+Data-driven achievements mirroring System 22 Masteries' architecture (provider / ON-CONFLICT repos /
+unique-violation-idempotent ledger / service / DI / controller). JSON content: category, tracked metric,
+points, threshold, optional tier-chain `nextId`. Per-player counters tracked at the EXISTING combat/loot
+chokepoints + a NEW days-played login hook. **TOTAL AP is SUMMED over an append-only `achievement_awards`
+ledger** (gem-ledger discipline — one award row per achievement via a unique index), never stored.
+Migration **AddAchievementSystem** (achievement_progress + achievement_awards + players.last_login_date +
+players.days_played) **NOT applied** — owner runs `dotnet ef database update`. Client mirror (DTO + 3-way
+API + ProfileScreen AP label) is a SEPARATE later step; only the Shared DTO field exists so far.
+- **Enums:** `AchievementCategory {RaidCompletion,QuestClear,EquipmentOwned,DaysPlayed,Collector}`;
+  `AchievementMetric {RaidCompletions,QuestNodesCleared,QuestBossesCleared,EquipmentPiecesOwned,DaysPlayed,CollectorItemCount}`.
+- **Content/provider:** `content/achievements.json` (≥1 per category) + eager startup-validated
+  `IAchievementDefinitionProvider` (throws on dup id / bad category-metric / points≤0 / threshold≤0 /
+  dangling-or-cyclic NextId / non-increasing-or-metric-mismatched chain / missing CollectorKey).
+- **Entities:** `AchievementProgress` (counter + IsCompleted/CompletedAt latch; UNIQUE player+achievement,
+  ON-CONFLICT target) + append-only `AchievementAward` (Points + ReferenceId; UNIQUE player+achievement +
+  FK index). `Player.LastLoginDate(DateOnly?)`+`DaysPlayed(int)`+`RecordLogin(today)` (increments only on
+  a new UTC day).
+- **Service:** `RecordProgressAsync` (delta; idempotent per (achievement,referenceId)), `SetCounterAsync`
+  (absolute, EquipmentPiecesOwned), `RecountCollectorCountersAsync` (per-key distinct-owned count by item
+  Type/Tags), `EvaluateCompletionsAsync` (awards once + latches + audits "AchievementUnlocked"),
+  `GetForPlayerAsync`/`GetTotalPointsAsync`.
+- **Hooks (best-effort):** RaidService isKill → RaidCompletions (idempotent `ach:raidkill:{raid}:{player}`,
+  inside the advisory-lock tx); QuestService node/boss clear → QuestNodes/BossesCleared + evaluate; quest
+  item grant (new distinct) → Collector recount; EquipmentService.GrantGearAsync → absolute
+  EquipmentPiecesOwned recount; AuthService.LoginAsync → DaysPlayed once/day (`ach:day:{player}:{date}`);
+  PlayerService.GetProfileAsync → evaluate + hydrate `PlayerProfileResponse.TotalAchievementPoints`.
+- **Endpoint:** `[Authorize] GET /api/achievements` → `AchievementOverviewResponse {TotalPoints, Achievements[]}`.
+- **885 unit + 102 integration = 987 green; 0 errors, 0 CS warnings.** DECISIONS: AP summed (not stored);
+  EquipmentPiecesOwned + Collector RECOUNTED absolute on grant (no drift); ship AP-on-profile + endpoint now,
+  defer browse screen; days-played = distinct UTC days via Player.RecordLogin; completed_at latches on first
+  award. KNOWN FOLLOW-UPS: client mirror; TUNE rosters/points/thresholds; repeatable achievements (PHASE-2);
+  raid item-loot / threshold-drop Collector hooks (only quest item grants recount Collector today).
+
 ## PHASE-2 Deferred Items
 - DiscernmentInvestment effect: quest drop quality (raid crit shipped v0.2.3)
 - Explicit DB transaction scope for QUEST reward steps (energy committed but rewards not atomic; raids fixed v0.2.5)

@@ -22,6 +22,155 @@ namespace ROTA.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("ROTA.Domain.Entities.AchievementAward", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<string>("AchievementId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("achievement_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("player_id");
+
+                    b.Property<int>("Points")
+                        .HasColumnType("integer")
+                        .HasColumnName("points");
+
+                    b.Property<string>("ReferenceId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("reference_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId")
+                        .HasDatabaseName("ix_achievement_awards_player_id");
+
+                    b.HasIndex("PlayerId", "AchievementId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_achievement_awards_player_achievement");
+
+                    b.ToTable("achievement_awards", (string)null);
+                });
+
+            modelBuilder.Entity("ROTA.Domain.Entities.AchievementProgress", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<string>("AchievementId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("achievement_id");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<bool>("IsCompleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_completed");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_deleted");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("player_id");
+
+                    b.Property<long>("ProgressValue")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L)
+                        .HasColumnName("progress_value");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId", "AchievementId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_achievement_progress_player_achievement");
+
+                    b.ToTable("achievement_progress", (string)null);
+                });
+
+            modelBuilder.Entity("ROTA.Domain.Entities.AchievementProgressEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<string>("AchievementId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("achievement_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("player_id");
+
+                    b.Property<string>("ReferenceId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("reference_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId")
+                        .HasDatabaseName("ix_achievement_progress_events_player_id");
+
+                    b.HasIndex("PlayerId", "AchievementId", "ReferenceId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_achievement_progress_events_idempotency");
+
+                    b.ToTable("achievement_progress_events", (string)null);
+                });
+
             modelBuilder.Entity("ROTA.Domain.Entities.ActiveRaid", b =>
                 {
                     b.Property<Guid>("Id")
@@ -70,9 +219,11 @@ namespace ROTA.Infrastructure.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("is_deleted");
 
-                    b.Property<bool>("IsPublic")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_public");
+                    b.Property<int>("LifecycleState")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("lifecycle_state");
 
                     b.Property<long>("MaxHp")
                         .HasColumnType("bigint")
@@ -106,6 +257,12 @@ namespace ROTA.Infrastructure.Migrations
                         .HasColumnName("updated_at")
                         .HasDefaultValueSql("NOW()");
 
+                    b.Property<int>("Visibility")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("visibility");
+
                     b.HasKey("Id");
 
                     b.HasIndex("GauntletEventId")
@@ -116,6 +273,10 @@ namespace ROTA.Infrastructure.Migrations
 
                     b.HasIndex("SummonedByPlayerId")
                         .HasDatabaseName("ix_active_raids_summoned_by_player_id");
+
+                    b.HasIndex("Visibility", "LifecycleState")
+                        .HasDatabaseName("ix_active_raids_visibility_lifecycle")
+                        .HasFilter("is_defeated = false AND is_deleted = false");
 
                     b.HasIndex("IsDefeated", "IsDeleted", "ExpiresAt")
                         .HasDatabaseName("ix_active_raids_status");
@@ -1035,6 +1196,12 @@ namespace ROTA.Infrastructure.Migrations
                         .HasColumnType("jsonb")
                         .HasColumnName("metadata");
 
+                    b.Property<int>("Priority")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1)
+                        .HasColumnName("priority");
+
                     b.Property<string>("Recipient")
                         .IsRequired()
                         .HasMaxLength(256)
@@ -1097,6 +1264,8 @@ namespace ROTA.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedAt");
+
+                    b.HasIndex("Priority");
 
                     b.HasIndex("ReviewStatus");
 
@@ -1187,6 +1356,12 @@ namespace ROTA.Infrastructure.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("NOW()");
 
+                    b.Property<int>("DaysPlayed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("days_played");
+
                     b.Property<string>("DisplayName")
                         .IsRequired()
                         .HasMaxLength(48)
@@ -1231,6 +1406,10 @@ namespace ROTA.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
                         .HasColumnName("is_deleted");
+
+                    b.Property<DateOnly?>("LastLoginDate")
+                        .HasColumnType("date")
+                        .HasColumnName("last_login_date");
 
                     b.Property<int>("Level")
                         .ValueGeneratedOnAdd()

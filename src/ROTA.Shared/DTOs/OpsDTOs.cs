@@ -11,6 +11,9 @@ public class OutboundEmailResponse
     public string? TriggeringSystem { get; init; }
     public string Summary { get; init; } = string.Empty;
 
+    /// <summary>Operator-triage priority name (T52): "Low" | "Normal" | "High".</summary>
+    public string Priority { get; init; } = string.Empty;
+
     /// <summary>Raw JSON string (the row's jsonb detail) — the dashboard pretty-prints it.</summary>
     public string? Detail { get; init; }
     public string? Metadata { get; init; }

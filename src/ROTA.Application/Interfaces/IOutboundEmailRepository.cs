@@ -16,6 +16,8 @@ public interface IOutboundEmailRepository
         string? search,
         int page,
         int pageSize,
+        EmailPriority? priority = null,
+        string? sort = null,
         CancellationToken ct = default);
 
     Task<OutboundEmailStats> GetStatsAsync(CancellationToken ct = default);

@@ -78,6 +78,11 @@ public class RotaDbContext : DbContext
     public DbSet<MasteryActivityEvent> MasteryActivityEvents => Set<MasteryActivityEvent>();
     public DbSet<MasteryRespecTransaction> MasteryRespecTransactions => Set<MasteryRespecTransaction>();
 
+    // ----- TICKET 46 — Achievement Points -----
+    public DbSet<AchievementProgress> AchievementProgress => Set<AchievementProgress>();
+    public DbSet<AchievementAward> AchievementAwards => Set<AchievementAward>();
+    public DbSet<AchievementProgressEvent> AchievementProgressEvents => Set<AchievementProgressEvent>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

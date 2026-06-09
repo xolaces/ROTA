@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="gold" x1="120" y1="110" x2="380" y2="430" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F4CD86"/>
+      <stop offset="0.55" stop-color="#EFB16A"/>
+      <stop offset="1" stop-color="#E89B55"/>
+    </linearGradient>
+  </defs>
+
+  <!-- DRAGON TAIL (drawn first so its root tucks behind the R's stem) -->
+  <!-- spade tip -->
+  <path fill="url(#gold)" d="M 124 336 L 96 370 L 82 326 Z"/>
+  <!-- outer spine -->
+  <path fill="url(#gold)" d="M 96 486 L 120 486 L 108 504 Z"/>
+  <!-- flowing tail body -->
+  <path fill="none" stroke="url(#gold)" stroke-width="40" stroke-linecap="round"
+        d="M 180 396 C 178 444 148 472 108 470 C 70 468 46 442 48 406 C 49 378 64 357 90 348"/>
+
+  <!-- THE R -->
+  <g fill="none" stroke="url(#gold)" stroke-width="60" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M180 146 L180 396"/>
+    <path d="M180 148 C 270 148 354 174 354 208 C 354 246 300 270 184 270"/>
+    <path d="M198 264 L338 396"/>
+  </g>
+</svg>

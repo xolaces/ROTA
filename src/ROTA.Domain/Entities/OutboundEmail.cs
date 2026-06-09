@@ -19,7 +19,8 @@ public class OutboundEmail
         Guid? triggeringPlayerId,
         string? triggeringSystem,
         string? detailJson,
-        string? metadataJson)
+        string? metadataJson,
+        EmailPriority priority = EmailPriority.Normal)
         => new OutboundEmail
         {
             Id = Guid.NewGuid(),
@@ -31,6 +32,7 @@ public class OutboundEmail
             TriggeringSystem = triggeringSystem,
             DetailJson = detailJson,
             MetadataJson = metadataJson,
+            Priority = priority,
             SendStatus = EmailSendStatus.Queued,
             SendAttempts = 0,
             ReviewStatus = EmailReviewStatus.Pending,
@@ -58,6 +60,9 @@ public class OutboundEmail
 
     /// <summary>One-line human summary shown in the dashboard list.</summary>
     public string Summary { get; private set; } = string.Empty;
+
+    /// <summary>Operator-triage priority (T52): reports High, feedback Low, bugs Normal. Drives dashboard sort/filter.</summary>
+    public EmailPriority Priority { get; private set; } = EmailPriority.Normal;
 
     /// <summary>Structured payload (jsonb) — the producer's detail object.</summary>
     public string? DetailJson { get; private set; }

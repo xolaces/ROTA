@@ -88,6 +88,15 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
         // IsMuted is derived from MuteExpiresAt — never a column.
         builder.Ignore(p => p.IsMuted);
 
+        // Achievements (TICKET 46) — days-played tracking. LastLoginDate maps to a DATE column;
+        // DaysPlayed defaults to 0 for existing rows.
+        builder.Property(p => p.LastLoginDate)
+            .HasColumnName("last_login_date");
+
+        builder.Property(p => p.DaysPlayed)
+            .HasColumnName("days_played")
+            .HasDefaultValue(0);
+
         builder.Property(p => p.CreatedAt)
             .HasColumnName("created_at")
             .HasDefaultValueSql("NOW()");

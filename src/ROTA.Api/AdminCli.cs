@@ -20,6 +20,8 @@ namespace ROTA.Api;
 ///   dotnet run --project src/ROTA.Api -- gen-beta-key [count]
 ///   dotnet run --project src/ROTA.Api -- promote {user|guid} {Role}
 ///   dotnet run --project src/ROTA.Api -- demote {user|guid} {Role}
+///   dotnet run --project src/ROTA.Api -- flag-dev {user|guid}
+///   dotnet run --project src/ROTA.Api -- unflag-dev {user|guid}
 ///   dotnet run --project src/ROTA.Api -- leaderboard-refresh-stat
 ///   dotnet run --project src/ROTA.Api -- mastery-refresh-rating
 ///   dotnet run --project src/ROTA.Api -- grant-gear {user|guid} {gearDefId} [qty]
@@ -37,6 +39,8 @@ public static class AdminCli
             "gen-beta-key",
             "promote",
             "demote",
+            "flag-dev",
+            "unflag-dev",
             "leaderboard-refresh-stat",
             "mastery-refresh-rating",
             "grant-gear",
@@ -74,6 +78,8 @@ public static class AdminCli
                 "gen-beta-key"             => await RunGenBetaKey(app.Services, args),
                 "promote"                  => await RunRoleChange(app.Services, args, grant: true),
                 "demote"                   => await RunRoleChange(app.Services, args, grant: false),
+                "flag-dev"                 => await RunFlagDev(app.Services, args, grant: true),
+                "unflag-dev"               => await RunFlagDev(app.Services, args, grant: false),
                 "leaderboard-refresh-stat" => await RunLeaderboardRefreshStat(app.Services),
                 "mastery-refresh-rating"   => await RunMasteryRefreshRating(app.Services),
                 "grant-gear"               => await RunGrantGear(app.Services, args),
@@ -162,6 +168,29 @@ public static class AdminCli
         }
 
         Console.WriteLine($"{verb}: {target} → {role} {(grant ? "granted" : "revoked")}.");
+        return 0;
+    }
+
+    // T43 — flag/unflag a developer account. flag-dev grants the Developer flag and auto-joins the hidden
+    // Dev guild ("The Dev Coffee Shop"); unflag-dev removes from the dev guild and revokes the flag.
+    private static async Task<int> RunFlagDev(IServiceProvider services, string[] args, bool grant)
+    {
+        var verb = grant ? "flag-dev" : "unflag-dev";
+        if (args.Length < 2)
+        {
+            Console.Error.WriteLine($"{verb}: usage: {verb} <user|guid>");
+            return 1;
+        }
+
+        var target = args[1];
+        var status = await SeedData.FlagDeveloperAsync(services, target, grant);
+        if (status is null)
+        {
+            Console.Error.WriteLine($"{verb}: player '{target}' not found.");
+            return 1;
+        }
+
+        Console.WriteLine($"{verb}: {status}");
         return 0;
     }
 
@@ -288,7 +317,7 @@ public static class AdminCli
 
     private static int UnknownCommand(string command)
     {
-        Console.Error.WriteLine($"Unknown command '{command}'. Valid commands: seed-admin, gen-beta-key, promote, demote, leaderboard-refresh-stat, mastery-refresh-rating, grant-gear, gauntlet-open, gauntlet-close, gauntlet-settle.");
+        Console.Error.WriteLine($"Unknown command '{command}'. Valid commands: seed-admin, gen-beta-key, promote, demote, flag-dev, unflag-dev, leaderboard-refresh-stat, mastery-refresh-rating, grant-gear, gauntlet-open, gauntlet-close, gauntlet-settle.");
         return 1;
     }
 }

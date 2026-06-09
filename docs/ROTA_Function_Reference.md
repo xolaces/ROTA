@@ -1,6 +1,118 @@
 # ROTA Function Reference
-Last updated: 2026-06-08 (System 22 Masteries Phase A — Slice 7: Discernment drop-quality — PHASE A COMPLETE)
+Last updated: 2026-06-08 (TICKET 46 — Achievement Points)
 Update when adding public methods or entities.
+
+---
+
+## TICKET 46 — Achievement Points (2026-06-08)
+
+Data-driven achievements: JSON content (category, metric, points, threshold, optional tier-chain `nextId`). Per-player
+counters tracked at the existing combat/loot chokepoints + a new days-played login hook; TOTAL AP is SUMMED over an
+append-only `achievement_awards` ledger (gem-ledger idempotency — one award row per achievement via unique index).
+Migration **AddAchievementSystem** (NOT applied). Backend only — client mirror deferred.
+
+### Enums (`src/ROTA.Domain/Enums/`)
+- `AchievementCategory { RaidCompletion=0, QuestClear=1, EquipmentOwned=2, DaysPlayed=3, Collector=4 }`
+- `AchievementMetric { RaidCompletions=0, QuestNodesCleared=1, QuestBossesCleared=2, EquipmentPiecesOwned=3, DaysPlayed=4, CollectorItemCount=5 }`
+
+### Content (`src/ROTA.Api/content/achievements.json`) + provider
+`AchievementDefinition { Id, Category, Metric, Name, Description, int Points(>0), long Threshold(>0), bool Repeatable=false,
+string? NextId, string? CollectorKey, string? IconKey }` (`src/ROTA.Application/Models/`).
+`IAchievementDefinitionProvider` (eager singleton; registered in `ServiceCollectionExtensions`, eager-resolved in
+`Program.cs`). Impl `AchievementDefinitionProvider` (`src/ROTA.Infrastructure/Services/`) throws at startup on:
+duplicate id, unknown category/metric, points≤0, threshold≤0, dangling/cyclic `NextId`, non-increasing threshold along a
+chain, metric mismatch in a chain, missing `CollectorKey` on a Collector achievement. `GetAll()/GetById(id)/GetByMetric(metric)`.
+
+### Entities / persistence
+- `AchievementProgress { Id, PlayerId, AchievementId(string), long ProgressValue, bool IsCompleted, DateTimeOffset? CompletedAt,
+  CreatedAt, UpdatedAt, IsDeleted }` + `Add/SetValue/MarkComplete`. Table `achievement_progress`; UNIQUE (player_id, achievement_id).
+- `AchievementAward { Id, PlayerId, AchievementId(string), int Points, ReferenceId(string), CreatedAt }` (append-only; no
+  updated_at/is_deleted). Table `achievement_awards`; UNIQUE (player_id, achievement_id) + FK index on player_id.
+- `Player.LastLoginDate (DateOnly?)` + `Player.DaysPlayed (int)` + `Player.RecordLogin(DateOnly today)` (increments DaysPlayed
+  only when the day advances; returns true on a new day). `PlayerConfiguration` maps `last_login_date` + `days_played`.
+
+### Repositories (`src/ROTA.Infrastructure/Persistence/Repositories/AchievementRepositories.cs`)
+- `IAchievementProgressRepository`: `GetForPlayerAsync`, `FindAsync`, `IncrementAsync` (raw ON CONFLICT upsert-increment,
+  ambient-tx aware), `SetCounterAsync` (raw ON CONFLICT upsert-SET absolute), `UpsertAsync`.
+- `IAchievementAwardRepository`: `GetTotalPointsAsync` (= SUM points), `ReferenceExistsAsync`, `GetForPlayerAsync`,
+  `CreateAsync` (returns false on unique-violation — idempotent create, clones the mastery respec repo).
+
+### IAchievementService (`src/ROTA.Application/Services/AchievementService.cs`)
+- `RecordProgressAsync(playerId, AchievementMetric, amount=1, referenceId?, ct)` — increments every achievement on the metric;
+  idempotent per (achievement, referenceId) when supplied. `SetCounterAsync(playerId, metric, absoluteValue, ct)` — absolute set
+  for all achievements on a metric (EquipmentPiecesOwned). `RecountCollectorCountersAsync(playerId, ct)` — per-key distinct-owned
+  recount (matches item Type name or Tags). `EvaluateCompletionsAsync(playerId, ct)` — awards each met-but-unawarded achievement
+  exactly once (ledger + unique index), latches IsCompleted, audits "AchievementUnlocked". `GetForPlayerAsync` → overview;
+  `GetTotalPointsAsync` → ledger SUM.
+
+### Tracking hooks (best-effort — never block gameplay)
+- `RaidService.HitRaidAsync` (isKill block, inside the advisory-lock tx): `RecordProgressAsync(RaidCompletions, 1, "ach:raidkill:{raidId}:{playerId}")`.
+- `QuestService.AttemptQuestAsync` (on `nodeJustCleared`): `RecordProgressAsync(QuestNodesCleared, 1)` + `QuestBossesCleared` for a boss; then `EvaluateCompletionsAsync`.
+- `QuestService.GrantItemAsync` (new distinct item): `RecountCollectorCountersAsync`.
+- `EquipmentService.GrantGearAsync`: recount absolute owned (SUM `IPlayerGearRepository.GetOwnedAsync` quantities) → `SetCounterAsync(EquipmentPiecesOwned, total)`.
+- `AuthService.LoginAsync` (success): `Player.RecordLogin(today)` + `UpdateAsync` then `RecordProgressAsync(DaysPlayed, 1, "ach:day:{playerId}:{yyyy-MM-dd}")` once/day.
+- `PlayerService.GetProfileAsync`: `EvaluateCompletionsAsync` + hydrate `TotalAchievementPoints` (best-effort).
+
+### Endpoint + DTOs
+- `[Authorize] GET /api/achievements` → `AchievementOverviewResponse { int TotalPoints; IReadOnlyList<AchievementEntryDto> Achievements }`
+  (`AchievementController`). `AchievementEntryDto { string Id, Category, Metric, Name, Description; int Points; long Threshold, Progress;
+  bool IsCompleted; DateTimeOffset? CompletedAt; string? IconKey }` (`src/ROTA.Shared/DTOs/AchievementDTOs.cs`).
+- `PlayerProfileResponse.TotalAchievementPoints (int)` — SUMMED from the award ledger.
+
+### Config
+- `AchievementConfig` (empty scalar holder, reserved; bound from "AchievementConfig" in Program.cs).
+
+---
+
+## T52 — Subject Enforcement + Email Priority (2026-06-08)
+
+Server-validated, config-driven subject lists for Bug + Player reports; Feedback stays open-text but is always
+filed under a fixed category. Each outbound email carries a derived priority (Reports=High, Feedback=Low, Bug=Normal).
+Migration **AddEmailPriority** (NOT applied).
+
+### Content (`src/ROTA.Api/content/subjects.json`)
+Single source of truth: `{ bugSubjects:[{key,label}], reportSubjects:[{key,label}], feedbackCategory:string }`.
+
+### Models (`src/ROTA.Application/Models/SubjectCatalog.cs`)
+- `SubjectCatalog { List<SubjectCategory> BugSubjects, ReportSubjects; string FeedbackCategory }`
+- `SubjectCategory { string Key, Label }`
+
+### ISubjectCatalogProvider (`src/ROTA.Application/Interfaces/`)
+Eager singleton (registered in `ServiceCollectionExtensions`, eager-resolved in `Program.cs`). Impl
+`SubjectCatalogProvider` (`src/ROTA.Infrastructure/Services/`): reads `content/subjects.json`; throws
+`InvalidOperationException` at startup on missing file / empty list / duplicate key / blank feedbackCategory.
+- `IReadOnlyList<SubjectCategory> BugSubjects/ReportSubjects`; `string FeedbackCategory`
+- `bool IsValidBugSubject(string)/IsValidReportSubject(string)` — accept key OR label (case-insensitive)
+- `string? NormalizeBugSubject(string)/NormalizeReportSubject(string)` — key|label → canonical label, null if off-list
+- `SubjectCatalog GetCatalog()`
+
+### Enum (`src/ROTA.Domain/Enums/EmailPriority.cs`)
+`{ Low=0, Normal=1, High=2 }`.
+
+### Entity / persistence
+- `OutboundEmail.Priority` (`EmailPriority`, private setter); `Create(..., EmailPriority priority = Normal)`.
+- `OutboundEmailConfiguration`: `priority` int column, `HasConversion<int>()`, DB default Normal, `HasSentinel((EmailPriority)(-1))`
+  (so explicit `Low(0)` — the CLR default — is still written on INSERT), `HasIndex(e => e.Priority)`.
+- `EmailPayload.Priority` (`EmailPriority`, init, default Normal); `EmailNotificationService.QueueAsync` forwards it.
+
+### Producers (priority + subject normalization)
+- `FeedbackController` (inject `ISubjectCatalogProvider`): Bug → normalize subject to label + stash `subjectKey`/`subjectLabel`
+  in detail, Priority=Normal; Feedback → Subject forced to `FeedbackCategory` ("Player Feedback"), Priority=Low.
+- `SocialService.ReportPlayerAsync` (inject `ISubjectCatalogProvider`): Priority=High; reason normalized to label;
+  `subjectKey` stashed in detail.
+
+### Validators
+- `FeedbackRequestValidator(ISubjectCatalogProvider)`: Bug → Subject must be `IsValidBugSubject` (key|label); Feedback → open text.
+- `ReportPlayerRequestValidator(ISubjectCatalogProvider)`: Reason must be `IsValidReportSubject` (key|label).
+
+### Endpoint
+- `[Authorize] GET /api/subjects` → `SubjectCatalogResponse { List<SubjectOption> BugSubjects, ReportSubjects; string FeedbackCategory }`,
+  `SubjectOption { Key, Label }` (`src/ROTA.Shared/DTOs/SubjectCatalogResponse.cs`, `SubjectsController`).
+
+### Ops list — priority filter + sort
+- `IOutboundEmailRepository.ListAsync(..., EmailPriority? priority = null, string? sort = null, ...)`: filters on priority;
+  default sort = `OrderByDescending(Priority).ThenByDescending(CreatedAt)`; `sort="created"` = recency-only.
+- `OpsController.List` accepts `[FromQuery] string? priority` + `string? sort`; `OutboundEmailResponse.Priority` (string "Low"/"Normal"/"High").
 
 ---
 
@@ -447,7 +559,13 @@ Migration `AddGuildSystem` (3 tables: `guilds`, `guild_memberships`, `guild_join
 ### Config (`src/ROTA.Application/Configuration/GuildConfig.cs`)
 Bound from appsettings `"GuildConfig"` via `IOptions<GuildConfig>`. `MemberCap` 50, `CreationGoldCost`
 25000 (**TUNABLE — flagged**), `MinCreationLevel` 20, `LeaderInactivityDays` 14, `TagMinLength` 2,
-`TagMaxLength` 5, `NameMaxLength` 32.
+`TagMaxLength` 5, `NameMaxLength` 32. T43 dev-guild keys: `DevGuildTag` "DEV", `DevGuildName`
+"The Dev Coffee Shop", `DevGuildDescription` "Developers only.".
+
+### Config (`src/ROTA.Application/Configuration/DeveloperConfig.cs`) — T43
+Bound from appsettings `"Developer"` via `IOptions<DeveloperConfig>`. `Usernames[]` + `PlayerIds[]` — the
+developer allowlist. **EMPTY by default** (owner adds identifiers; nothing hardcoded). Drives
+`SeedData.EnsureDevGuildAsync` (flag grant + dev-guild seed + auto-join).
 
 ### Entities (`src/ROTA.Domain/Entities/`)
 - **`Guild`** — `Id, Name, NameNormalized, Tag, TagNormalized, Description, CrestId?, LeaderId, Motd,
@@ -500,7 +618,8 @@ Officer+: invite, accept/reject application, set MOTD.
 
 ### DTOs (`src/ROTA.Shared/DTOs/GuildDTOs.cs`)
 `GuildFailureCode` (None/NotFound/Validation/AlreadyInGuild/NotInGuild/NameTaken/TagTaken/InsufficientLevel/
-InsufficientGold/MemberCapReached/PermissionDenied/PolicyForbidsApply/LeaderCannotLeave/Conflict);
+InsufficientGold/MemberCapReached/PermissionDenied/PolicyForbidsApply/LeaderCannotLeave/Conflict/
+DevGuildRestricted [T43, →403]);
 `GuildActionResult`, `CreateGuildResult`, `ApplyGuildResult`; requests `CreateGuildRequest`,
 `GuildInviteRequest`, `UpdateGuildRequest`, `TransferLeadershipRequest`; responses `GuildSummaryDto`,
 `GuildMemberDto`, `GuildJoinRequestDto`, `GuildDetailResponse`. Validators in
@@ -825,7 +944,18 @@ Implementation: `LeaderboardService` (`src/ROTA.Application/Services/Leaderboard
 | `Task<IReadOnlyList<CompletedRaidResponse>> GetCompletedRaidsAsync(Guid, CancellationToken)` | Caller's completed raids with persisted reward summary; limit 50, newest first |
 | `Task<SummonRaidResult> SummonRaidAsync(Guid, string raidDefinitionId, RaidDifficulty, CancellationToken)` | Summon raid |
 | `Task<RaidHitResult> HitRaidAsync(Guid, Guid activeRaidId, int hitSize, string key, CancellationToken)` | Hit a raid |
+| `Task<ActiveRaidResponse?> GetRaidByIdAsync(Guid activeRaidId, Guid callerId, CancellationToken)` | Join-by-UID lookup (the GUID is the invite token). Null on missing/deleted/expired, others' Personal, or a defeated raid the caller didn't summon. **Ticket 50:** the summoner may resolve their own `Lootable` raid (loot screen); `Looted` resolves for no one |
+| `Task<ShareRaidResult> ShareRaidAsync(Guid callerId, Guid activeRaidId, RaidVisibility = Public, CancellationToken)` | **Ticket 50** — summoner-only publish to a visibility tier (Public/GuildOnly/FriendsOnly). Fails NotFound / NotSummoner / CannotSharePersonal / NotInGuild. `Private` target coerced to Public (no un-share). Audited |
+| `Task<LootRaidResult> LootRaidAsync(Guid callerId, Guid activeRaidId, CancellationToken)` | **Ticket 50** — summoner-only DISMISS of a defeated raid (`Lootable`→`Looted`, removes from all indexes; **not** a reward claim — rewards already granted on the killing hit). Fails NotFound / NotSummoner / NotLootable. `IsDeleted` untouched. Audited |
+| `Task<IReadOnlyList<ActiveRaidResponse>> GetGuildRaidsAsync(Guid, CancellationToken)` | The caller's guild's active raids (empty when guild-less) |
+| `Task<SummonGuildRaidResult> SummonGuildRaidAsync(Guid, string raidDefinitionId, RaidDifficulty, CancellationToken)` | Officer-gated guild-raid summon (consumes 1 pooled sigil) |
 | `Task<IReadOnlyList<RaidParticipantRankDto>> GetParticipantsAsync(Guid activeRaidId, int top, CancellationToken)` | Ranked participants by total damage (desc); `top` clamped to 1..100 |
+
+**Ticket 50 visibility/lifecycle model:** `RaidVisibility { Private=0, Public=1, GuildOnly=2, FriendsOnly=3 }`
+replaces `ActiveRaid.IsPublic`; `RaidLifecycleState { Active=0, Lootable=1, Looted=2 }`. **"Active raid"
+(alive + hittable by id) is DISTINCT from "listed raid" (indexed in a list).** `ActiveRaidResponse` carries
+`Visibility` + `LifecycleState` strings; `IsPublic` stays as a derived `= Visibility == Public` for
+back-compat. Accepted-friends via `IFriendshipRepository.ListForPlayerAsync(playerId, Accepted, ct)`.
 
 ---
 
@@ -971,7 +1101,11 @@ Constructor: `(IPlayerRepository, IEnergyService, IGemService, IAuditLogReposito
 
 ### QuestService → IQuestService
 `src/ROTA.Application/Services/QuestService.cs`
-Static definitions from content/quests.json. Energy spent first. Level-ups via `player.AddExperience(xp, _stats.XpToNextLevel)`.
+Static definitions from content/quests.json — a data-driven **Chapter → Zone → Node** hierarchy (T45;
+136 nodes / 6 chapters / 25 zones). Energy spent first. Level-ups via `player.AddExperience(xp, _stats.XpToNextLevel)`.
+- **T44 XP:** `xp = ExperienceReward(base) × zoneRatio × chapterScalar × rewardMult`; battle `zoneRatio = QuestConfig.XpZoneRatioBase + ZoneIndex×XpZoneRatioPerZone`, boss always `XpBossRatio`; `QuestConfig.ChapterXpScalars` per chapter. XP is NOT Hoard-scaled.
+- **T45 ordered gating:** prerequisiteQuestId chains node→zone→chapter; a per-zone boss adds a **zone-boss gate** (before energy spend) failing `QuestFailureCode.ZoneBossLocked` (→409) until every NON-boss node in its zone HasEverCleared. GetAvailableQuestsAsync greys a zone-incomplete boss (`IsUnlocked=false`).
+- **Zone reset (revises T26):** clearing a zone boss calls `ResetZoneAsync(playerId, chapter, zoneIndex, …)` — resets only that zone's nodes (Progress→start, IsCleared→false), preserving HasEverCleared. `QuestResultResponse.ZoneReset` flags it.
 
 ### RaidService → IRaidService
 `src/ROTA.Application/Services/RaidService.cs`
@@ -1070,6 +1204,8 @@ ROTA-XXXX-XXXX-XXXX Crockford base32 keygen via RandomNumberGenerator. GenerateA
 ### SeedData (static)
 `src/ROTA.Infrastructure/Seeding/SeedData.cs`
 EnsureAdminAsync: idempotent bootstrap. Reads Seed:AdminPassword (required, no default) and Seed:AdminEmail (default xolaces@rota.dev). Creates "Xolaces" with Player|Admin roles and DisplayName="DEV_Xolaces". BCrypt(12).
+EnsureDevGuildAsync (T43): idempotent. Resolves the `Developer` allowlist (Usernames[]+PlayerIds[], EMPTY by default), grants `PlayerRoles.Developer`, ensures the Dev guild ("The Dev Coffee Shop", tag DEV, InviteOnly) led by the first resolvable dev, auto-joins devs. Skips guild creation (warns) when no dev resolves — never flags/locks the seeded admin. Audits DevFlagGranted/DevGuildSeeded/DevGuildJoined. Wired in Program.cs after EnsureAdminAsync.
+FlagDeveloperAsync(sp, target, grant) (T43): CLI helper for flag-dev/unflag-dev. grant=true grants the flag + ensures guild + auto-joins; grant=false removes from the dev guild + revokes the flag. Returns a status string (null when the target doesn't resolve).
 
 ---
 
@@ -1111,6 +1247,9 @@ EnsureAdminAsync: idempotent bootstrap. Reads Seed:AdminPassword (required, no d
 | `GET /api/raids/completed` | `GetCompletedRaidsAsync` | 200 — caller's defeated raids with reward summary; newest first, limit 50 |
 | `POST /api/raids/{raidDefinitionId}/summon` | `SummonRaidAsync` | 201, 400, 404, 422 |
 | `POST /api/raids/{activeRaidId}/hit` | `HitRaidAsync` | 200, 400, 404, 409, 410, 422 |
+| `GET /api/raids/{activeRaidId}` | `GetRaidByIdAsync` | 200, 404 — join-by-UID; summoner can open own `Lootable` raid |
+| `POST /api/raids/{activeRaidId}/share` | `ShareRaidAsync` | 200, 400, 403, 404, 409 — body `ShareRaidRequest { Visibility="Public" }` **optional** (no body → Public, back-compat). 409 = Personal **or** NotInGuild |
+| `POST /api/raids/{activeRaidId}/loot` | `LootRaidAsync` | 200, 403, 404, 409 — **Ticket 50** summoner-only dismiss of a defeated raid (409 = NotLootable) |
 | `GET /api/raids/{activeRaidId}/participants?top=` | `GetParticipantsAsync` | 200 ranked participant list |
 
 ### ItemController — `api/items` [Authorize]
@@ -1484,6 +1623,7 @@ Eval rule: `floor(owned / perCount) × bonusAmount`
 | `Player = 1` | 1 | All registered accounts — permanent, cannot be revoked |
 | `Moderator = 2` | 2 | Mod tooling access |
 | `Admin = 4` | 4 | Full access; last-admin protection enforced |
+| `Developer = 8` | 8 | T43 — internal dev account; confined to the hidden Dev guild ("The Dev Coffee Shop"). Granted from the `Developer` config allowlist or CLI flag-dev. No schema change (plain bit in the int column). |
 
 ### ConditionType (`src/ROTA.Application/Models/ConditionalBonus.cs`)
 | Value | Behavior |
@@ -1524,7 +1664,7 @@ Eval rule: `floor(owned / perCount) × bonusAmount`
 - **RaidSize** — `Personal=0, Small=1, Medium=2, Large=3, Titanic=4`
 - **ItemType** — `Equipment, Material, StatBag, Sigil, Consumable`
 - **ItemRarity** — `Grey=0, White=1, Green=2, Blue=3, Purple=4, Orange=5`
-- **QuestFailureCode** — `QuestNotFound, PlayerNotFound, InsufficientEnergy, PrerequisiteNotMet, DifficultyLocked`
+- **QuestFailureCode** — `None=0, QuestNotFound=1, PrerequisiteNotMet=2, InsufficientEnergy=3, PlayerNotFound=4, PlayerBanned=5, DifficultyLocked=6, NodeCleared=7, ZoneBossLocked=8` (NodeCleared/ZoneBossLocked → HTTP 409)
 - **RaidHitFailureCode** — `RaidNotFound, RaidExpired, RaidAlreadyDefeated, InvalidHitSize, InsufficientStamina, AccessDenied, RaidFull`
 - **SummonRaidFailureCode** — `DefinitionNotFound, PlayerNotFound`
 - **UseItemFailureCode** — `ItemNotFound, InsufficientItems, ItemNotUsable`

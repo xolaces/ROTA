@@ -2,31 +2,43 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using ROTA.Application.Configuration;
 using ROTA.Application.Interfaces;
 using ROTA.Domain.Entities;
 using StackExchange.Redis;
 
 namespace ROTA.Api.Middleware;
 
-// Per-IP:     auth endpoints   → 10 req/min  (key: ratelimit:ip:{ip}:{path})
-// Per-player: all other routes → 60 req/min  (key: ratelimit:player:{playerId})
+// Per-IP:     auth endpoints   → AuthRequestsPerWindow   (key: ratelimit:ip:{ip}:{path})
+// Per-player: all other routes → PlayerRequestsPerWindow (key: ratelimit:player:{playerId})
+// Ceilings + window are config-driven (RateLimitConfig); defaults 10 auth / 180 player per 60s.
 // Runs before JWT validation; player ID is extracted without signature verification
 // (auth middleware rejects invalid tokens anyway).
 public class RateLimitMiddleware
 {
-    private const int AuthLimitPerMinute = 10;
-    private const int PlayerLimitPerMinute = 60;
-    private static readonly TimeSpan Window = TimeSpan.FromMinutes(1);
+    private readonly int _authLimit;
+    private readonly int _playerLimit;
+    private readonly TimeSpan _window;
 
     private readonly RequestDelegate _next;
     private readonly IDatabase _redis;
     private readonly IServiceScopeFactory _scopeFactory;
 
-    public RateLimitMiddleware(RequestDelegate next, IConnectionMultiplexer mux, IServiceScopeFactory scopeFactory)
+    public RateLimitMiddleware(
+        RequestDelegate next,
+        IConnectionMultiplexer mux,
+        IServiceScopeFactory scopeFactory,
+        IOptions<RateLimitConfig> config)
     {
         _next = next;
         _redis = mux.GetDatabase();
         _scopeFactory = scopeFactory;
+
+        var cfg = config.Value;
+        _authLimit = cfg.AuthRequestsPerWindow;
+        _playerLimit = cfg.PlayerRequestsPerWindow;
+        _window = TimeSpan.FromSeconds(cfg.WindowSeconds);
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -40,7 +52,7 @@ public class RateLimitMiddleware
             var segment = path.Replace('/', '_').Trim('_').ToLowerInvariant();
             var key = $"ratelimit:ip:{ip}:{segment}";
 
-            if (await IsLimitExceededAsync(key, AuthLimitPerMinute))
+            if (await IsLimitExceededAsync(key, _authLimit))
             {
                 await WriteLimitBreachAuditAsync(null, $"RateLimitIp:{path}", ip);
                 await WriteRateLimitResponse(context, key);
@@ -54,7 +66,7 @@ public class RateLimitMiddleware
             if (playerId is not null)
             {
                 var key = $"ratelimit:player:{playerId}";
-                if (await IsLimitExceededAsync(key, PlayerLimitPerMinute))
+                if (await IsLimitExceededAsync(key, _playerLimit))
                 {
                     await WriteLimitBreachAuditAsync(Guid.Parse(playerId), $"RateLimitPlayer:{path}", ip);
                     await WriteRateLimitResponse(context, key);
@@ -71,14 +83,14 @@ public class RateLimitMiddleware
     {
         var count = await _redis.StringIncrementAsync(key);
         if (count == 1)
-            await _redis.KeyExpireAsync(key, Window);
+            await _redis.KeyExpireAsync(key, _window);
         return count > limit;
     }
 
     private async Task WriteRateLimitResponse(HttpContext context, string key)
     {
         var ttl = await _redis.KeyTimeToLiveAsync(key);
-        var retryAfter = (int)Math.Ceiling(ttl?.TotalSeconds ?? Window.TotalSeconds);
+        var retryAfter = (int)Math.Ceiling(ttl?.TotalSeconds ?? _window.TotalSeconds);
 
         context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
         context.Response.Headers["Retry-After"] = retryAfter.ToString();

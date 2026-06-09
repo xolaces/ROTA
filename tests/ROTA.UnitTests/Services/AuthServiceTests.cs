@@ -7,6 +7,7 @@ using Moq;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Services;
 using ROTA.Domain.Entities;
+using ROTA.Domain.Enums;
 using ROTA.Shared.DTOs;
 
 namespace ROTA.UnitTests.Services;
@@ -68,6 +69,7 @@ public class AuthServiceTests
         var lockout  = new Mock<IAuthLockoutService>();
         var auditLog = new Mock<IAuditLogRepository>();
         var betaKeys = new Mock<IBetaKeyRepository>();
+        var achievements = new Mock<IAchievementService>();
 
         // Default: not locked out
         lockout.Setup(l => l.IsLockedOutAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -79,7 +81,8 @@ public class AuthServiceTests
             BuildConfig(privateKey, betaGateEnabled),
             lockout.Object,
             auditLog.Object,
-            betaKeys.Object);
+            betaKeys.Object,
+            achievements.Object);
 
         return (service, players, tokens, lockout, auditLog);
     }
@@ -213,6 +216,7 @@ public class AuthServiceTests
         var lockout  = new Mock<IAuthLockoutService>();
         var auditLog = new Mock<IAuditLogRepository>();
         var betaKeys = new Mock<IBetaKeyRepository>();
+        var achievements = new Mock<IAchievementService>();
 
         players.Setup(r => r.EmailExistsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                .ReturnsAsync(false);
@@ -222,7 +226,7 @@ public class AuthServiceTests
         var service = new AuthService(
             players.Object, tokens.Object,
             BuildConfig(betaGateEnabled: true),
-            lockout.Object, auditLog.Object, betaKeys.Object);
+            lockout.Object, auditLog.Object, betaKeys.Object, achievements.Object);
 
         var result = await service.RegisterAsync(
             new RegisterRequest
@@ -265,6 +269,73 @@ public class AuthServiceTests
         var result = await service.LoginAsync(
             new LoginRequest { Email = player.Email, Password = "Correct1" },
             "127.0.0.1");
+
+        result.Should().NotBeNull();
+        result!.AccessToken.Should().NotBeNullOrEmpty();
+    }
+
+    // TICKET 46 — a successful login records the DaysPlayed achievement metric exactly once per UTC
+    // day (RecordLogin advances DaysPlayed only on a new calendar day), best-effort and non-blocking.
+    [Fact]
+    public async Task LoginAsync_Success_RecordsDaysPlayedOncePerDay()
+    {
+        var key = GenerateTestRsaPrivateKey();
+        var players  = new Mock<IPlayerRepository>();
+        var tokens   = new Mock<IRefreshTokenRepository>();
+        var lockout  = new Mock<IAuthLockoutService>();
+        var auditLog = new Mock<IAuditLogRepository>();
+        var betaKeys = new Mock<IBetaKeyRepository>();
+        var achievements = new Mock<IAchievementService>();
+
+        lockout.Setup(l => l.IsLockedOutAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+        var player = MakePlayer();
+        players.Setup(r => r.FindByEmailAsync(player.Email, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+        tokens.Setup(r => r.CountActiveSessionsAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(0);
+        tokens.Setup(r => r.CreateAsync(It.IsAny<RefreshToken>(), It.IsAny<CancellationToken>()))
+              .ReturnsAsync((RefreshToken t, CancellationToken _) => t);
+
+        var service = new AuthService(players.Object, tokens.Object, BuildConfig(key),
+            lockout.Object, auditLog.Object, betaKeys.Object, achievements.Object);
+
+        // First login on a fresh player → counts the day.
+        await service.LoginAsync(new LoginRequest { Email = player.Email, Password = "Correct1" }, "127.0.0.1");
+        player.DaysPlayed.Should().Be(1);
+        achievements.Verify(a => a.RecordProgressAsync(
+            player.Id, AchievementMetric.DaysPlayed, 1, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
+
+        // Second login same day → no additional day counted, no second record.
+        await service.LoginAsync(new LoginRequest { Email = player.Email, Password = "Correct1" }, "127.0.0.1");
+        player.DaysPlayed.Should().Be(1);
+        achievements.Verify(a => a.RecordProgressAsync(
+            player.Id, AchievementMetric.DaysPlayed, 1, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task LoginAsync_AchievementHookThrows_DoesNotBreakLogin()
+    {
+        var key = GenerateTestRsaPrivateKey();
+        var players  = new Mock<IPlayerRepository>();
+        var tokens   = new Mock<IRefreshTokenRepository>();
+        var lockout  = new Mock<IAuthLockoutService>();
+        var auditLog = new Mock<IAuditLogRepository>();
+        var betaKeys = new Mock<IBetaKeyRepository>();
+        var achievements = new Mock<IAchievementService>();
+
+        lockout.Setup(l => l.IsLockedOutAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+        var player = MakePlayer();
+        players.Setup(r => r.FindByEmailAsync(player.Email, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+        tokens.Setup(r => r.CountActiveSessionsAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(0);
+        tokens.Setup(r => r.CreateAsync(It.IsAny<RefreshToken>(), It.IsAny<CancellationToken>()))
+              .ReturnsAsync((RefreshToken t, CancellationToken _) => t);
+        // The achievement hook blows up — login must still succeed (best-effort).
+        achievements.Setup(a => a.RecordProgressAsync(
+            It.IsAny<Guid>(), It.IsAny<AchievementMetric>(), It.IsAny<long>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("boom"));
+
+        var service = new AuthService(players.Object, tokens.Object, BuildConfig(key),
+            lockout.Object, auditLog.Object, betaKeys.Object, achievements.Object);
+
+        var result = await service.LoginAsync(new LoginRequest { Email = player.Email, Password = "Correct1" }, "127.0.0.1");
 
         result.Should().NotBeNull();
         result!.AccessToken.Should().NotBeNullOrEmpty();

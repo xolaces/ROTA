@@ -598,6 +598,12 @@ public class LeaderboardWriteHookTests
         var mastery = new Mock<IMasteryService>();
         mastery.Setup(m => m.GetModifiersAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new MasteryModifiers(new MasteryCombatModifiers(0.0, 0.0), new MasteryLootModifiers(1.0, 1.0, 1.0, 0.0)));
+        // Ticket 50 — friendship repo for the FriendsOnly visibility tier (no friends by default).
+        var friendships = new Mock<IFriendshipRepository>();
+        friendships.Setup(r => r.ListForPlayerAsync(
+                It.IsAny<Guid>(), It.IsAny<FriendshipStatus?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Friendship>());
+        var achievements = new Mock<IAchievementService>();
 
         var service = new RaidService(
             raids.Object, participants.Object, players.Object, resources.Object,
@@ -610,7 +616,8 @@ public class LeaderboardWriteHookTests
             leaderboards.Object, combatCfg,
             trophyRepo.Object, gauntletContent.Object, playerEventMagics.Object,
             playerMagicHonors.Object, strikes.Object, gauntletScoring.Object, gauntletCfg,
-            gauntletCurrency.Object, guildMemberships.Object, guildEconomy.Object, mastery.Object, random);
+            gauntletCurrency.Object, guildMemberships.Object, guildEconomy.Object, mastery.Object,
+            achievements.Object, friendships.Object, random);
 
         return new RaidBundle(service, raids, participants, players, resources, energy,
             auditLog, definitions, hitCache, equipment, stats, leaderboards);

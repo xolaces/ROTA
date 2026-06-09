@@ -1,0 +1,18 @@
+{
+  "bugSubjects": [
+    { "key": "exploit_abuse", "label": "Exploit Abuse" },
+    { "key": "combat_issue", "label": "Combat Issue" },
+    { "key": "ui_problem", "label": "UI Problem" },
+    { "key": "progression_block", "label": "Progression Block" },
+    { "key": "crash_performance", "label": "Crash / Performance" },
+    { "key": "other", "label": "Other" }
+  ],
+  "reportSubjects": [
+    { "key": "cheating", "label": "Cheating" },
+    { "key": "harassment", "label": "Harassment" },
+    { "key": "inappropriate_name", "label": "Inappropriate Name" },
+    { "key": "spam_advertising", "label": "Spam / Advertising" },
+    { "key": "other", "label": "Other" }
+  ],
+  "feedbackCategory": "Player Feedback"
+}

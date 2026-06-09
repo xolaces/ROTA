@@ -33,11 +33,16 @@ public class QuestServiceTests
         Mock<IMagicService> MagicService,
         Mock<ILegionService> LegionService,
         Mock<IEquipmentService> Equipment,
-        Mock<IMasteryService> Mastery);
+        Mock<IMasteryService> Mastery,
+        Mock<IAchievementService> Achievements);
 
     private static ServiceBundle BuildService(Random? random = null)
     {
         var definitions       = new Mock<IQuestDefinitionProvider>();
+        // Default GetAll → empty list so the T45 zone-boss gate (which scans for in-zone siblings)
+        // never NPEs in tests that don't set up the full definition list. Tests that exercise the
+        // gate / zone-reset override this with an explicit list.
+        definitions.Setup(d => d.GetAll()).Returns(new List<QuestDefinition>());
         var questProgress     = new Mock<IQuestProgressRepository>();
         var difficultyProgress = new Mock<IQuestDifficultyProgressRepository>();
         var players           = new Mock<IPlayerRepository>();
@@ -88,37 +93,39 @@ public class QuestServiceTests
         // Neutral loot modifiers by default → quest rewards/drops unchanged unless a test overrides.
         mastery.Setup(m => m.GetLootModifiersAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new MasteryLootModifiers(1.0, 1.0, 1.0, 0.0));
+        var achievements = new Mock<IAchievementService>();
 
         var service = new QuestService(
             definitions.Object, questProgress.Object, difficultyProgress.Object,
             players.Object, energy.Object, gems.Object,
             stats.Object, lootTables.Object, itemDefs.Object, inventory.Object,
             auditLog.Object, magicService.Object, legionService.Object, equipment.Object,
-            mastery.Object, questConfig, random);
+            mastery.Object, achievements.Object, questConfig, random);
 
         return new ServiceBundle(service, definitions, questProgress, difficultyProgress,
             players, energy, gems, stats, lootTables, itemDefs, inventory, auditLog, magicService,
-            legionService, equipment, mastery);
+            legionService, equipment, mastery, achievements);
     }
 
+    // Ch1 Z0 chain. ZoneIndex 0 → battle zoneRatio = XpZoneRatioBase (1.2); chapter-1 scalar = 1.0.
     private static IReadOnlyList<QuestDefinition> TwoQuestChain() => new List<QuestDefinition>
     {
-        new() { Id = "q001", Name = "Quest 1", Chapter = 1, BaseEnergyCost = 5,
-                GoldReward = 100, ExperienceReward = 50, GemReward = 0, PrerequisiteQuestId = null },
-        new() { Id = "q002", Name = "Quest 2", Chapter = 1, BaseEnergyCost = 5,
-                GoldReward = 150, ExperienceReward = 75, GemReward = 0, PrerequisiteQuestId = "q001" },
+        new() { Id = "q001", Name = "Quest 1", Chapter = 1, ZoneIndex = 0, ZoneName = "Z0", NodeIndex = 0,
+                BaseEnergyCost = 5, GoldReward = 100, ExperienceReward = 50, GemReward = 0, PrerequisiteQuestId = null },
+        new() { Id = "q002", Name = "Quest 2", Chapter = 1, ZoneIndex = 0, ZoneName = "Z0", NodeIndex = 1,
+                BaseEnergyCost = 5, GoldReward = 150, ExperienceReward = 75, GemReward = 0, PrerequisiteQuestId = "q001" },
     };
 
     private static QuestDefinition QuestWithGems(int gemReward = 2) => new()
     {
-        Id = "q_gem", Name = "Gem Quest", Chapter = 1, BaseEnergyCost = 5,
-        GoldReward = 100, ExperienceReward = 50, GemReward = gemReward,
+        Id = "q_gem", Name = "Gem Quest", Chapter = 1, ZoneIndex = 0, ZoneName = "Z0", NodeIndex = 0,
+        BaseEnergyCost = 5, GoldReward = 100, ExperienceReward = 50, GemReward = gemReward,
     };
 
     private static QuestDefinition BossQuest() => new()
     {
-        Id = "q_boss", Name = "Boss Quest", Chapter = 1, BaseEnergyCost = 8,
-        NodeType = "Boss", GoldReward = 200, ExperienceReward = 100, GemReward = 1,
+        Id = "q_boss", Name = "Boss Quest", Chapter = 1, ZoneIndex = 0, ZoneName = "Z0", NodeIndex = 1,
+        BaseEnergyCost = 8, NodeType = "Boss", GoldReward = 200, ExperienceReward = 100, GemReward = 1,
         SigilDropChance = 0.25f,
         Sigils = new Dictionary<string, string>
         {
@@ -219,7 +226,8 @@ public class QuestServiceTests
 
         result.Success.Should().BeTrue();
         result.GoldGranted.Should().Be(100);
-        result.ExperienceGranted.Should().Be(50);
+        // T44 — XP = base(50) × zoneRatio(1.2 @ ZoneIndex 0) × chapterScalar(1.0 @ Ch1) × rewardMult(1.0) = 60.
+        result.ExperienceGranted.Should().Be(60);
         result.CompletionCount.Should().Be(1);
         result.Difficulty.Should().Be("Normal");
         result.DifficultyColor.Should().Be("Green");
@@ -331,6 +339,13 @@ public class QuestServiceTests
         result.NodeCleared.Should().BeTrue();
         result.NodeJustCleared.Should().BeTrue();
         b.QuestProgress.Verify(r => r.UpdateAsync(It.IsAny<PlayerQuestProgress>(), It.IsAny<CancellationToken>()), Times.Once);
+
+        // TICKET 46 — a non-boss node clear records QuestNodesCleared (not QuestBossesCleared) and evaluates.
+        b.Achievements.Verify(a => a.RecordProgressAsync(
+            player.Id, AchievementMetric.QuestNodesCleared, 1, null, It.IsAny<CancellationToken>()), Times.Once);
+        b.Achievements.Verify(a => a.RecordProgressAsync(
+            It.IsAny<Guid>(), AchievementMetric.QuestBossesCleared, It.IsAny<long>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+        b.Achievements.Verify(a => a.EvaluateCompletionsAsync(player.Id, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -357,41 +372,59 @@ public class QuestServiceTests
     }
 
     [Fact]
-    public async Task AttemptQuest_BossCompletion_ResetsWholeChapter_PreservingUnlocks()
+    public async Task AttemptQuest_BossCompletion_ResetsOnlyItsZone_PreservingUnlocks_LeavingOtherZoneUntouched()
     {
-        // T26 — clearing a chapter boss resets every node in that chapter back to fresh
-        // (Progress→start, IsCleared→false) while keeping HasEverCleared (forward unlocks survive).
+        // T44/45 (revises T26) — clearing a ZONE boss resets only that zone's nodes back to fresh
+        // (Progress→start, IsCleared→false) while keeping HasEverCleared (forward unlocks survive),
+        // and leaves a DIFFERENT zone in the same chapter completely untouched.
         var b = BuildService();
         var player = MakePlayer();
-        b.Definitions.Setup(d => d.GetById("q_boss")).Returns(BossQuest());
+
+        // Ch1: Z0 = { q001 battle, q_boss boss }, Z1 = { z1_node battle, z1_boss boss }.
+        var z0Battle = new QuestDefinition { Id = "q001", Name = "Z0 Battle", Chapter = 1, ZoneIndex = 0, ZoneName = "Z0", NodeIndex = 0, BaseEnergyCost = 5, GoldReward = 100, ExperienceReward = 50 };
+        var z0Boss   = BossQuest(); // Ch1 Z0 NodeIndex 1
+        var z1Battle = new QuestDefinition { Id = "z1_node", Name = "Z1 Battle", Chapter = 1, ZoneIndex = 1, ZoneName = "Z1", NodeIndex = 0, BaseEnergyCost = 5, GoldReward = 100, ExperienceReward = 50, PrerequisiteQuestId = "q_boss" };
+        var z1Boss   = new QuestDefinition { Id = "z1_boss", Name = "Z1 Boss", Chapter = 1, ZoneIndex = 1, ZoneName = "Z1", NodeIndex = 1, NodeType = "Boss", BaseEnergyCost = 8, GoldReward = 200, ExperienceReward = 100, PrerequisiteQuestId = "z1_node" };
+
+        b.Definitions.Setup(d => d.GetById("q_boss")).Returns(z0Boss);
         b.Definitions.Setup(d => d.GetAll())
-            .Returns(new List<QuestDefinition> { TwoQuestChain()[0], BossQuest() });
+            .Returns(new List<QuestDefinition> { z0Battle, z0Boss, z1Battle, z1Boss });
         SetupPlayerAndEnergy(b, player);
 
-        // A previously-cleared battle node in the same chapter — should be restored by the reset.
+        // Z0 sibling battle — previously cleared; should be RESTORED by the zone reset.
         var battle = PlayerQuestProgress.Create(player.Id, "q001");
-        battle.Deplete(100); // cleared
+        battle.Deplete(100); // cleared (HasEverCleared latched)
         b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q001", It.IsAny<CancellationToken>()))
             .ReturnsAsync(battle);
 
-        // The boss with 2.5 progress left — one boss attempt (depletes 2.5) clears it.
+        // The Z0 boss with 2.5 progress left — one boss attempt (depletes 2.5) clears it.
         var boss = PlayerQuestProgress.Create(player.Id, "q_boss");
         boss.Deplete(97.5);
         b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q_boss", It.IsAny<CancellationToken>()))
             .ReturnsAsync(boss);
 
+        // A node in a DIFFERENT zone (Z1) — previously cleared; must be LEFT UNTOUCHED by the reset.
+        var otherZoneNode = PlayerQuestProgress.Create(player.Id, "z1_node");
+        otherZoneNode.Deplete(100); // cleared
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "z1_node", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(otherZoneNode);
+
         var result = await b.Service.AttemptQuestAsync(player.Id, "q_boss", QuestDifficulty.Normal);
 
         result.Success.Should().BeTrue();
         result.NodeJustCleared.Should().BeTrue();
-        result.ChapterReset.Should().BeTrue();
+        result.ZoneReset.Should().BeTrue();
 
-        // Both nodes are fresh again, but their permanent unlock latch is preserved.
+        // Z0 nodes fresh again, but the permanent unlock latch is preserved.
         battle.IsCleared.Should().BeFalse();
         battle.Progress.Should().Be(100.0);
-        battle.HasEverCleared.Should().BeTrue("a chapter reset must never re-lock earned progression");
+        battle.HasEverCleared.Should().BeTrue("a zone reset must never re-lock earned progression");
         boss.IsCleared.Should().BeFalse();
         boss.HasEverCleared.Should().BeTrue();
+
+        // The other zone's node is NOT reset — zone-scoped reset only.
+        otherZoneNode.IsCleared.Should().BeTrue("a different zone in the chapter is left untouched");
+        otherZoneNode.Progress.Should().Be(0.0);
     }
 
     [Fact]
@@ -509,13 +542,14 @@ public class QuestServiceTests
     public async Task AttemptQuest_ExactLevelUp_AtThreshold_GrantsLevelUpPoints()
     {
         // Player has 950 XP toward level 2. Quest grants 50 XP. 950+50=1000 = exactly one level.
+        // Boss in Ch1 Z0 → XP multiplier = XpBossRatio(2.0) × chapterScalar(1.0) = 2.0, so base 25 → 50.
         var b = BuildService(); // XpToNextLevel → 1000
         var player = MakePlayer(xp: 950); // AddExperience(950, _=>1000): Level=1, Experience=950
 
         var quest = new QuestDefinition
         {
-            Id = "xp_quest", Name = "XP Quest", Chapter = 1, BaseEnergyCost = 5,
-            GoldReward = 0, ExperienceReward = 50, GemReward = 0,
+            Id = "xp_quest", Name = "XP Quest", Chapter = 1, ZoneIndex = 0, NodeType = "Boss",
+            BaseEnergyCost = 5, GoldReward = 0, ExperienceReward = 25, GemReward = 0,
         };
         b.Definitions.Setup(d => d.GetById("xp_quest")).Returns(quest);
         SetupPlayerAndEnergy(b, player);
@@ -523,6 +557,7 @@ public class QuestServiceTests
         var result = await b.Service.AttemptQuestAsync(player.Id, "xp_quest", QuestDifficulty.Normal);
 
         result.Success.Should().BeTrue();
+        result.ExperienceGranted.Should().Be(50);
         result.NewLevel.Should().Be(2);
         // XP carries over: 950+50=1000, level-up consumes 1000 → 0 remaining
         result.CurrentLevelXp.Should().Be(0);
@@ -534,13 +569,14 @@ public class QuestServiceTests
     public async Task AttemptQuest_XpCarriesOver_AfterLevelUp()
     {
         // Player has 980 XP. Quest grants 50. Total 1030: level up consumes 1000, 30 carries over.
+        // Boss in Ch1 Z0 → ×2.0 multiplier, so base 25 → 50 XP.
         var b = BuildService(); // XpToNextLevel → 1000
         var player = MakePlayer(xp: 980);
 
         var quest = new QuestDefinition
         {
-            Id = "xp_quest", Name = "XP Quest", Chapter = 1, BaseEnergyCost = 5,
-            GoldReward = 0, ExperienceReward = 50, GemReward = 0,
+            Id = "xp_quest", Name = "XP Quest", Chapter = 1, ZoneIndex = 0, NodeType = "Boss",
+            BaseEnergyCost = 5, GoldReward = 0, ExperienceReward = 25, GemReward = 0,
         };
         b.Definitions.Setup(d => d.GetById("xp_quest")).Returns(quest);
         SetupPlayerAndEnergy(b, player);
@@ -548,6 +584,7 @@ public class QuestServiceTests
         var result = await b.Service.AttemptQuestAsync(player.Id, "xp_quest", QuestDifficulty.Normal);
 
         result.Success.Should().BeTrue();
+        result.ExperienceGranted.Should().Be(50);
         result.NewLevel.Should().Be(2);
         result.CurrentLevelXp.Should().Be(30); // 1030 - 1000 = 30 carry-over
         result.LevelsGained.Should().Be(1);
@@ -557,6 +594,7 @@ public class QuestServiceTests
     public async Task AttemptQuest_ChainLevelUp_ThreeLevels_FromOneGrant()
     {
         // XpToNextLevel returns 20 → each level costs 20 XP. Quest grants 60 XP → 3 level-ups.
+        // Boss in Ch1 Z0 → ×2.0 multiplier, so base 30 → 60 XP.
         var b = BuildService();
         b.Stats.Setup(s => s.XpToNextLevel(It.IsAny<int>())).Returns(20); // override default 1000
 
@@ -564,8 +602,8 @@ public class QuestServiceTests
 
         var quest = new QuestDefinition
         {
-            Id = "xp_quest", Name = "XP Quest", Chapter = 1, BaseEnergyCost = 5,
-            GoldReward = 0, ExperienceReward = 60, GemReward = 0,
+            Id = "xp_quest", Name = "XP Quest", Chapter = 1, ZoneIndex = 0, NodeType = "Boss",
+            BaseEnergyCost = 5, GoldReward = 0, ExperienceReward = 30, GemReward = 0,
         };
         b.Definitions.Setup(d => d.GetById("xp_quest")).Returns(quest);
         SetupPlayerAndEnergy(b, player);
@@ -585,13 +623,14 @@ public class QuestServiceTests
     public async Task AttemptQuest_GrantLevelUpPointsAsync_CalledOncePerLevelGained()
     {
         // XpToNextLevel → 1000. Quest gives 2500 XP → exactly 2 level-ups with 500 left over.
+        // Boss in Ch1 Z0 → ×2.0 multiplier, so base 1250 → 2500 XP.
         var b = BuildService(); // XpToNextLevel → 1000
         var player = MakePlayer(); // Level=1, XP=0
 
         var quest = new QuestDefinition
         {
-            Id = "xp_quest", Name = "XP Quest", Chapter = 1, BaseEnergyCost = 5,
-            GoldReward = 0, ExperienceReward = 2500, GemReward = 0,
+            Id = "xp_quest", Name = "XP Quest", Chapter = 1, ZoneIndex = 0, NodeType = "Boss",
+            BaseEnergyCost = 5, GoldReward = 0, ExperienceReward = 1250, GemReward = 0,
         };
         b.Definitions.Setup(d => d.GetById("xp_quest")).Returns(quest);
         SetupPlayerAndEnergy(b, player);
@@ -1038,5 +1077,228 @@ public class QuestServiceTests
 
         b.Equipment.Verify(e => e.GrantGearAsync(
             player.Id, "gear_pano_helm", 1, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    // -----------------------------------------------------------------------
+    // T44 — zone-indexed XP formula
+    // XP = base × zoneRatio × chapterScalar × rewardMult.
+    //   battle zoneRatio = XpZoneRatioBase(1.2) + ZoneIndex × XpZoneRatioPerZone(0.05)
+    //   boss   zoneRatio = XpBossRatio(2.0) regardless of zone
+    // Defaults: chapterScalar Ch1=1.0, Ch2=1.6. rewardMult Normal=1.0, Nightmare=3.5.
+    // -----------------------------------------------------------------------
+
+    private static QuestDefinition XpNode(
+        int chapter, int zoneIndex, string nodeType = "Battle", int experienceReward = 100)
+        => new()
+        {
+            Id = "q_xp", Name = "XP Node", Chapter = chapter, ZoneIndex = zoneIndex, ZoneName = "Z",
+            NodeIndex = 0, NodeType = nodeType, BaseEnergyCost = 5,
+            GoldReward = 0, ExperienceReward = experienceReward, GemReward = 0,
+        };
+
+    [Theory]
+    // base 100, Ch1 (scalar 1.0):
+    [InlineData(1, 0, "Battle", QuestDifficulty.Normal,    120)]  // 100 × 1.2  × 1.0 × 1.0
+    [InlineData(1, 2, "Battle", QuestDifficulty.Normal,    130)]  // 100 × 1.30 × 1.0 × 1.0  (1.2 + 2×0.05)
+    [InlineData(1, 0, "Boss",   QuestDifficulty.Normal,    200)]  // 100 × 2.0  × 1.0 × 1.0
+    [InlineData(1, 2, "Boss",   QuestDifficulty.Normal,    200)]  // boss ratio ignores zone
+    // Ch2 (scalar 1.6):
+    [InlineData(2, 0, "Battle", QuestDifficulty.Normal,    192)]  // 100 × 1.2  × 1.6 × 1.0
+    [InlineData(2, 0, "Boss",   QuestDifficulty.Normal,    320)]  // 100 × 2.0  × 1.6 × 1.0
+    // Nightmare rewardMult 3.5, Ch1:
+    [InlineData(1, 0, "Battle", QuestDifficulty.Nightmare, 420)]  // 100 × 1.2  × 1.0 × 3.5
+    [InlineData(1, 0, "Boss",   QuestDifficulty.Nightmare, 700)]  // 100 × 2.0  × 1.0 × 3.5
+    public async Task AttemptQuest_XpFormula_ScalesByZoneChapterAndDifficulty(
+        int chapter, int zoneIndex, string nodeType, QuestDifficulty difficulty, int expectedXp)
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+        b.Definitions.Setup(d => d.GetById("q_xp")).Returns(XpNode(chapter, zoneIndex, nodeType));
+        SetupPlayerAndEnergy(b, player);
+
+        // Unlock the difficulty gate for non-Normal difficulties.
+        if (difficulty > QuestDifficulty.Normal)
+        {
+            for (var gd = QuestDifficulty.Normal; gd < difficulty; gd++)
+            {
+                var gateProg = PlayerQuestDifficultyProgress.Create(player.Id, "q_xp", gd);
+                gateProg.RecordCompletion();
+                var captured = gd;
+                b.DifficultyProgress.Setup(r => r.GetAsync(player.Id, "q_xp", captured, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(gateProg);
+            }
+        }
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q_xp", difficulty);
+
+        result.Success.Should().BeTrue();
+        result.ExperienceGranted.Should().Be(expectedXp);
+        result.XpGained.Should().Be(expectedXp);
+    }
+
+    // -----------------------------------------------------------------------
+    // T45 — zone-boss gate (a per-zone boss requires all preceding zone nodes cleared)
+    // -----------------------------------------------------------------------
+
+    // Ch1 Z0 = { zn0 battle, zn1 battle, zb boss }. The boss prereq is the last battle.
+    private static IReadOnlyList<QuestDefinition> ZoneWithBoss() => new List<QuestDefinition>
+    {
+        new() { Id = "zn0", Name = "Node 0", Chapter = 1, ZoneIndex = 0, ZoneName = "Z0", NodeIndex = 0,
+                BaseEnergyCost = 5, GoldReward = 100, ExperienceReward = 50, PrerequisiteQuestId = null },
+        new() { Id = "zn1", Name = "Node 1", Chapter = 1, ZoneIndex = 0, ZoneName = "Z0", NodeIndex = 1,
+                BaseEnergyCost = 5, GoldReward = 100, ExperienceReward = 50, PrerequisiteQuestId = "zn0" },
+        new() { Id = "zb", Name = "Zone Boss", Chapter = 1, ZoneIndex = 0, ZoneName = "Z0", NodeIndex = 2,
+                NodeType = "Boss", BaseEnergyCost = 8, GoldReward = 200, ExperienceReward = 100, GemReward = 1,
+                PrerequisiteQuestId = "zn1" },
+    };
+
+    [Fact]
+    public async Task AttemptQuest_ZoneBoss_Rejected_WhenASiblingNodeNotEverCleared_NoEnergySpent()
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+        var defs = ZoneWithBoss();
+        b.Definitions.Setup(d => d.GetById("zb")).Returns(defs[2]);
+        b.Definitions.Setup(d => d.GetAll()).Returns(defs);
+        SetupPlayerAndEnergy(b, player);
+
+        // The boss's own prereq (zn1) is cleared so the prerequisite check passes — but zn0 was never
+        // cleared, so the ZONE gate must still reject (proves the gate is a distinct, stronger check).
+        var zn1 = PlayerQuestProgress.Create(player.Id, "zn1");
+        zn1.Deplete(100); // cleared → HasEverCleared
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "zn1", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(zn1);
+        // zn0 never attempted → null → not cleared.
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "zn0", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerQuestProgress?)null);
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "zb", QuestDifficulty.Normal);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(QuestFailureCode.ZoneBossLocked);
+        b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_ZoneBoss_Succeeds_WhenAllSiblingNodesEverCleared()
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+        var defs = ZoneWithBoss();
+        b.Definitions.Setup(d => d.GetById("zb")).Returns(defs[2]);
+        b.Definitions.Setup(d => d.GetAll()).Returns(defs);
+        SetupPlayerAndEnergy(b, player);
+
+        foreach (var id in new[] { "zn0", "zn1" })
+        {
+            var p = PlayerQuestProgress.Create(player.Id, id);
+            p.Deplete(100); // cleared → HasEverCleared
+            b.QuestProgress.Setup(r => r.GetAsync(player.Id, id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(p);
+        }
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "zb", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue();
+        b.Energy.Verify(e => e.SpendEnergyAsync(player.Id, ResourceType.Energy, It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    // -----------------------------------------------------------------------
+    // T45 — cross-zone ordering (a zone's first node is prereq-locked on the previous zone's boss)
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task AttemptQuest_NextZoneFirstNode_LockedUntilPreviousZoneBossEverCleared()
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+
+        // Z1 first node requires the Z0 boss "zb".
+        var z1First = new QuestDefinition
+        {
+            Id = "z1n0", Name = "Zone 1 Node 0", Chapter = 1, ZoneIndex = 1, ZoneName = "Z1", NodeIndex = 0,
+            BaseEnergyCost = 5, GoldReward = 100, ExperienceReward = 50, PrerequisiteQuestId = "zb",
+        };
+        b.Definitions.Setup(d => d.GetById("z1n0")).Returns(z1First);
+        SetupPlayerAndEnergy(b, player);
+
+        // Z0 boss exists but was never cleared → Z1 first node stays locked.
+        var zbProgress = PlayerQuestProgress.Create(player.Id, "zb");
+        zbProgress.Deplete(2.5); // attempted once, far from cleared
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "zb", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(zbProgress);
+
+        var locked = await b.Service.AttemptQuestAsync(player.Id, "z1n0", QuestDifficulty.Normal);
+        locked.Success.Should().BeFalse();
+        locked.FailureCode.Should().Be(QuestFailureCode.PrerequisiteNotMet);
+        b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+
+        // Clear the Z0 boss → HasEverCleared latches → Z1 first node unlocks.
+        zbProgress.Deplete(100);
+        zbProgress.HasEverCleared.Should().BeTrue();
+
+        var unlocked = await b.Service.AttemptQuestAsync(player.Id, "z1n0", QuestDifficulty.Normal);
+        unlocked.Success.Should().BeTrue();
+    }
+
+    // -----------------------------------------------------------------------
+    // T45 — availability DTO carries zone fields + greys a boss whose zone isn't depleted
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task GetAvailableQuests_PopulatesZoneFields_AndGreysBoss_UntilZoneDepleted()
+    {
+        var b = BuildService();
+        var playerId = Guid.NewGuid();
+        var defs = ZoneWithBoss(); // zn0, zn1 battles + zb boss, all Ch1 Z0
+        b.Definitions.Setup(d => d.GetAll()).Returns(defs);
+
+        // zn0 cleared (unlocks zn1 + the boss is visible), zn1 NOT yet cleared → boss stays greyed.
+        var zn0 = PlayerQuestProgress.Create(playerId, "zn0");
+        zn0.Deplete(100); // cleared
+        b.QuestProgress.Setup(r => r.GetAllForPlayerAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerQuestProgress> { zn0 });
+
+        var result = await b.Service.GetAvailableQuestsAsync(playerId);
+
+        var node0 = result.Single(q => q.Id == "zn0");
+        node0.ZoneName.Should().Be("Z0");
+        node0.ZoneIndex.Should().Be(0);
+        node0.NodeIndex.Should().Be(0);
+        node0.IsUnlocked.Should().BeTrue();
+
+        // The boss is returned (its prereq zn1 isn't cleared, so it should NOT be returned at all).
+        // zn1 itself is returned and unlocked; the boss requires zn1 cleared → not in the list yet.
+        result.Should().Contain(q => q.Id == "zn1");
+        result.Single(q => q.Id == "zn1").IsUnlocked.Should().BeTrue();
+        result.Should().NotContain(q => q.Id == "zb",
+            "the boss's prerequisite (zn1) is not yet cleared, so it is not yet surfaced");
+    }
+
+    [Fact]
+    public async Task GetAvailableQuests_BossSurfacedButGreyed_WhenPrereqClearedButZoneSiblingPending()
+    {
+        // Construct a zone where the boss's prereq is cleared but an EARLIER sibling is not, so the
+        // boss is surfaced (prereq satisfied) yet greyed (IsUnlocked=false) by the zone gate.
+        var b = BuildService();
+        var playerId = Guid.NewGuid();
+
+        // Boss prereq is zn0 (not zn1) so we can clear the prereq while leaving zn1 pending.
+        var zn0 = new QuestDefinition { Id = "zn0", Name = "N0", Chapter = 1, ZoneIndex = 0, ZoneName = "Z0", NodeIndex = 0, BaseEnergyCost = 5, GoldReward = 100, ExperienceReward = 50 };
+        var zn1 = new QuestDefinition { Id = "zn1", Name = "N1", Chapter = 1, ZoneIndex = 0, ZoneName = "Z0", NodeIndex = 1, BaseEnergyCost = 5, GoldReward = 100, ExperienceReward = 50, PrerequisiteQuestId = "zn0" };
+        var zb  = new QuestDefinition { Id = "zb", Name = "Boss", Chapter = 1, ZoneIndex = 0, ZoneName = "Z0", NodeIndex = 2, NodeType = "Boss", BaseEnergyCost = 8, GoldReward = 200, ExperienceReward = 100, PrerequisiteQuestId = "zn0" };
+        b.Definitions.Setup(d => d.GetAll()).Returns(new List<QuestDefinition> { zn0, zn1, zb });
+
+        // Only zn0 cleared → boss prereq satisfied (surfaced) but zn1 pending → boss greyed.
+        var zn0Prog = PlayerQuestProgress.Create(playerId, "zn0");
+        zn0Prog.Deplete(100);
+        b.QuestProgress.Setup(r => r.GetAllForPlayerAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerQuestProgress> { zn0Prog });
+
+        var result = await b.Service.GetAvailableQuestsAsync(playerId);
+
+        var boss = result.Single(q => q.Id == "zb");
+        boss.IsBossNode.Should().BeTrue();
+        boss.IsUnlocked.Should().BeFalse("the zone still has an uncleared node (zn1), so the boss is greyed");
     }
 }

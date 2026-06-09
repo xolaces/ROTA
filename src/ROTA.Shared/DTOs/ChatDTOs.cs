@@ -15,7 +15,17 @@ public class ChatMessageDto
     public string? RaidId { get; init; }
 
     public Guid SenderId { get; init; }
+
+    /// <summary>The sender's DISPLAY name — for rendering only.</summary>
     public string SenderName { get; init; } = string.Empty;
+
+    /// <summary>
+    /// The sender's stable, unique USERNAME (handle). Used by the client context menu to target
+    /// moderation/social actions — <c>AdminService.ResolveTargetAsync</c> resolves a GUID or username,
+    /// NOT a display name. Server-sourced from the verified identity; never client-supplied. May be null
+    /// on backfill of old cached messages persisted before this field existed.
+    /// </summary>
+    public string? SenderUsername { get; init; }
 
     /// <summary>"Player" | "Moderator" | "Admin" — drives reserved-name colouring on the client.</summary>
     public string SenderRole { get; init; } = "Player";

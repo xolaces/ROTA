@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="gold" x1="120" y1="110" x2="380" y2="430" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F5CE88"/>
+      <stop offset="0.5" stop-color="#E89A50"/>
+      <stop offset="1" stop-color="#C66E2A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- DRAGON TAIL (clean angular hook + barbed spade + spine) -->
+  <path fill="none" stroke="url(#gold)" stroke-width="38" stroke-linejoin="miter" stroke-linecap="butt"
+        d="M 180 396 L 150 444 L 110 466 L 70 448 L 54 408 L 64 372 L 88 352"/>
+  <path fill="url(#gold)" d="M 116 330 L 101 368 L 94 347 L 74 336 Z"/>
+  <path fill="url(#gold)" d="M 95 478 L 110 498 L 125 478 Z"/>
+
+  <!-- THE R (chiseled: miter joins, flat carved terminals, faceted bowl) -->
+  <g fill="none" stroke="url(#gold)" stroke-width="56" stroke-linejoin="miter" stroke-linecap="butt" stroke-miterlimit="10">
+    <path d="M180 138 L180 404"/>
+    <path d="M180 140 L300 140 L350 190 L350 214 L300 262 L186 262"/>
+    <path d="M198 256 L354 404"/>
+  </g>
+</svg>

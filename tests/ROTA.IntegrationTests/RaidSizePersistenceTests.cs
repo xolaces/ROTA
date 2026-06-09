@@ -75,10 +75,11 @@ public class RaidSizePersistenceTests : IAsyncLifetime
         }
     }
 
-    // System 19 — is_public round-trip. New summons start private (false). Share() flips the
-    // column and the change persists. Guards the AddRaidVisibility migration + EF mapping.
+    // Ticket 50 — visibility + lifecycle round-trip (replaces the old System 19 is_public test). New
+    // summons start Private + Active. ShareTo() moves the visibility tier; MarkDefeated() flips lifecycle
+    // to Lootable; Loot() flips it to Looted. Guards the AddRaidVisibilityModel migration + EF mapping.
     [Fact]
-    public async Task ActiveRaid_IsPublic_DefaultsFalse_AndShare_Persists()
+    public async Task ActiveRaid_Visibility_DefaultsPrivate_AndShareTo_Persists()
     {
         Guid raidId;
         await using (var db = NewDbContext())
@@ -98,25 +99,76 @@ public class RaidSizePersistenceTests : IAsyncLifetime
             raidId = raid.Id;
         }
 
-        // Newly summoned raids must be private.
+        // Newly summoned raids must be Private + Active.
         await using (var db = NewDbContext())
         {
             var stored = await db.ActiveRaids.AsNoTracking().FirstAsync(r => r.Id == raidId);
-            stored.IsPublic.Should().BeFalse("new summons start private");
+            stored.Visibility.Should().Be(RaidVisibility.Private, "new summons start private");
+            stored.LifecycleState.Should().Be(RaidLifecycleState.Active, "new summons start active");
         }
 
-        // Share() flips the flag; the update must persist.
+        // ShareTo(GuildOnly) moves the tier; the update must persist.
         await using (var db = NewDbContext())
         {
             var raid = await db.ActiveRaids.FirstAsync(r => r.Id == raidId);
-            raid.Share();
+            raid.ShareTo(RaidVisibility.GuildOnly);
             await db.SaveChangesAsync();
         }
 
         await using (var db = NewDbContext())
         {
             var stored = await db.ActiveRaids.AsNoTracking().FirstAsync(r => r.Id == raidId);
-            stored.IsPublic.Should().BeTrue("Share() must persist IsPublic=true");
+            stored.Visibility.Should().Be(RaidVisibility.GuildOnly, "ShareTo() must persist the tier");
+        }
+    }
+
+    // Ticket 50 — lifecycle round-trip: MarkDefeated() → Lootable, then Loot() → Looted, both persisting.
+    [Fact]
+    public async Task ActiveRaid_Lifecycle_DefeatThenLoot_Persists()
+    {
+        Guid raidId;
+        await using (var db = NewDbContext())
+        {
+            var summoner = Player.Create("sum_loot", "loot@persist.test", "hash");
+            db.Players.Add(summoner);
+
+            var raid = ActiveRaid.Create(
+                "raid_ironcolossus",
+                summoner.Id,
+                maxHp: 500L,
+                expiresAt: DateTimeOffset.UtcNow.AddHours(1),
+                difficulty: RaidDifficulty.Normal,
+                size: RaidSize.Small);
+            db.ActiveRaids.Add(raid);
+            await db.SaveChangesAsync();
+            raidId = raid.Id;
+        }
+
+        // Defeating the raid flips lifecycle to Lootable.
+        await using (var db = NewDbContext())
+        {
+            var raid = await db.ActiveRaids.FirstAsync(r => r.Id == raidId);
+            raid.MarkDefeated();
+            await db.SaveChangesAsync();
+        }
+        await using (var db = NewDbContext())
+        {
+            var stored = await db.ActiveRaids.AsNoTracking().FirstAsync(r => r.Id == raidId);
+            stored.LifecycleState.Should().Be(RaidLifecycleState.Lootable, "a defeated raid is lootable");
+        }
+
+        // Looting (dismissing) flips it to Looted without soft-deleting the row.
+        await using (var db = NewDbContext())
+        {
+            var raid = await db.ActiveRaids.FirstAsync(r => r.Id == raidId);
+            raid.Loot();
+            await db.SaveChangesAsync();
+        }
+        await using (var db = NewDbContext())
+        {
+            var stored = await db.ActiveRaids.AsNoTracking().FirstAsync(r => r.Id == raidId);
+            stored.LifecycleState.Should().Be(RaidLifecycleState.Looted, "Loot() must persist Looted");
+            stored.IsDeleted.Should().BeFalse("Loot() must NOT soft-delete (history/FK stay intact)");
         }
     }
 }

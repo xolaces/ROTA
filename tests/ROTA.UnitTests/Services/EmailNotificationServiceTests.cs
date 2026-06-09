@@ -73,6 +73,48 @@ public class EmailNotificationServiceTests
         queue.Verify(q => q.Enqueue(id), Times.Once);
     }
 
+    [Fact]
+    public async Task Queue_PersistsPriority_FromPayload()
+    {
+        var (service, emails, _, _, _) = BuildService();
+        OutboundEmail? captured = null;
+        emails.Setup(r => r.AddAsync(It.IsAny<OutboundEmail>(), It.IsAny<CancellationToken>()))
+            .Callback<OutboundEmail, CancellationToken>((e, _) => captured = e)
+            .Returns(Task.CompletedTask);
+
+        var payload = new EmailPayload
+        {
+            Type = EmailType.PlayerReport,
+            Subject = "Report",
+            Priority = EmailPriority.High,
+            Summary = "reported",
+        };
+
+        await service.QueueAsync(payload);
+
+        captured.Should().NotBeNull();
+        captured!.Priority.Should().Be(EmailPriority.High);
+    }
+
+    [Fact]
+    public async Task Queue_DefaultsPriorityToNormal_WhenPayloadOmitsIt()
+    {
+        var (service, emails, _, _, _) = BuildService();
+        OutboundEmail? captured = null;
+        emails.Setup(r => r.AddAsync(It.IsAny<OutboundEmail>(), It.IsAny<CancellationToken>()))
+            .Callback<OutboundEmail, CancellationToken>((e, _) => captured = e)
+            .Returns(Task.CompletedTask);
+
+        await service.QueueAsync(new EmailPayload
+        {
+            Type = EmailType.BugReport,
+            Subject = "Bug",
+            Summary = "bug",
+        });
+
+        captured!.Priority.Should().Be(EmailPriority.Normal);
+    }
+
     // -----------------------------------------------------------------------
     // ProcessSendAsync — best-effort send updates send_status
     // -----------------------------------------------------------------------

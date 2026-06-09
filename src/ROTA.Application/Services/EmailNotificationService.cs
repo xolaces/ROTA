@@ -54,7 +54,8 @@ public sealed class EmailNotificationService : IEmailNotificationService
             payload.TriggeringPlayerId,
             payload.TriggeringSystem,
             detailJson,
-            metadataJson);
+            metadataJson,
+            payload.Priority);
 
         // [1] Persist first — the row survives even if the send never succeeds.
         await _emails.AddAsync(email, ct);

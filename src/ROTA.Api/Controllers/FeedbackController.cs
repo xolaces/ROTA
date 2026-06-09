@@ -24,15 +24,18 @@ public sealed class FeedbackController : ControllerBase
     private readonly IEmailNotificationService _emails;
     private readonly ISubmissionRateLimiter _rateLimiter;
     private readonly IValidator<FeedbackRequest> _validator;
+    private readonly ISubjectCatalogProvider _subjects;
 
     public FeedbackController(
         IEmailNotificationService emails,
         ISubmissionRateLimiter rateLimiter,
-        IValidator<FeedbackRequest> validator)
+        IValidator<FeedbackRequest> validator,
+        ISubjectCatalogProvider subjects)
     {
         _emails = emails;
         _rateLimiter = rateLimiter;
         _validator = validator;
+        _subjects = subjects;
     }
 
     [HttpPost]
@@ -57,9 +60,32 @@ public sealed class FeedbackController : ControllerBase
                 new { message = "Too many submissions in the last hour. Please try again later." });
 
         var isBug = string.Equals(request.Category, "Bug", StringComparison.OrdinalIgnoreCase);
+
+        // T52 — resolve the subject + priority:
+        //   Bug      → validated subject normalized to its label; subjectKey stashed in detail; Priority=Normal.
+        //   Feedback → open text, always filed under the fixed feedback category label; Priority=Low.
+        string subjectLabel;
+        string? subjectKey;
+        EmailPriority priority;
+        if (isBug)
+        {
+            // The validator already rejected off-list subjects; normalize to the canonical label.
+            subjectLabel = _subjects.NormalizeBugSubject(request.Subject) ?? request.Subject;
+            subjectKey = _subjects.BugSubjects.FirstOrDefault(s => s.Label == subjectLabel)?.Key;
+            priority = EmailPriority.Normal;
+        }
+        else
+        {
+            subjectLabel = _subjects.FeedbackCategory;
+            subjectKey = null;
+            priority = EmailPriority.Low;
+        }
+
         var detail = new Dictionary<string, object?>
         {
             ["category"] = request.Category,
+            ["subjectKey"] = subjectKey,
+            ["subjectLabel"] = subjectLabel,
             ["description"] = request.Description,
             ["screen"] = request.Screen,
             ["snapshot"] = request.Snapshot,
@@ -68,8 +94,9 @@ public sealed class FeedbackController : ControllerBase
         var id = await _emails.QueueAsync(new EmailPayload
         {
             Type = isBug ? EmailType.BugReport : EmailType.GeneralTicket,
-            Subject = request.Subject,
-            Summary = $"{(isBug ? "Bug" : "Feedback")} from {playerId}: {request.Subject}",
+            Subject = subjectLabel,
+            Priority = priority,
+            Summary = $"{(isBug ? "Bug" : "Feedback")} from {playerId}: {subjectLabel}",
             TriggeringPlayerId = playerId,
             TriggeringSystem = "T38",
             Detail = detail,

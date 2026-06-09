@@ -161,6 +161,7 @@ public sealed class GuildController : ControllerBase
             GuildFailureCode.NotFound => NotFound(body),
             GuildFailureCode.Validation => BadRequest(body),
             GuildFailureCode.PermissionDenied => StatusCode(StatusCodes.Status403Forbidden, body),
+            GuildFailureCode.DevGuildRestricted => StatusCode(StatusCodes.Status403Forbidden, body), // T43
             _ => Conflict(body), // all remaining states are 409 conflicts (taken / full / already-in / policy / etc.)
         };
     }

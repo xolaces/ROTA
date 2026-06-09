@@ -13,7 +13,7 @@ public class ActiveRaid
         DateTimeOffset expiresAt,
         RaidDifficulty difficulty = RaidDifficulty.Normal,
         RaidSize size = RaidSize.Large,
-        bool isPublic = false)
+        RaidVisibility visibility = RaidVisibility.Private)
     {
         return new ActiveRaid
         {
@@ -25,7 +25,8 @@ public class ActiveRaid
             IsDefeated         = false,
             Difficulty         = difficulty,
             Size               = size,
-            IsPublic           = isPublic,
+            Visibility         = visibility,
+            LifecycleState     = RaidLifecycleState.Active,
             ParticipantCount   = 0,
             ExpiresAt          = expiresAt,
             CreatedAt          = DateTimeOffset.UtcNow,
@@ -43,9 +44,14 @@ public class ActiveRaid
     public RaidDifficulty Difficulty { get; private set; }
     public RaidSize Size { get; private set; }
 
-    // Visibility — summons start private (false). Share() flips it so the raid appears in the
-    // public list. Decoupled from Size: the raid id (GUID) is always the invite token.
-    public bool IsPublic { get; private set; }
+    // Visibility (Ticket 50) — the INDEXING tier: summons start Private. ShareTo() moves the raid into
+    // the Public / GuildOnly / FriendsOnly list. DISTINCT from "active": a raid is always joinable by its
+    // GUID (the invite token) regardless of Visibility — this only governs which list it shows up in.
+    public RaidVisibility Visibility { get; private set; }
+
+    // Lifecycle state (Ticket 50) — Active → (on kill) Lootable → (on summoner dismissal) Looted.
+    // Rewards are granted on the killing hit, NOT here; Loot() is a dismiss/remove-from-indexes action.
+    public RaidLifecycleState LifecycleState { get; private set; }
 
     public DateTimeOffset ExpiresAt { get; private set; }
 
@@ -79,8 +85,11 @@ public class ActiveRaid
 
     public void MarkDefeated()
     {
-        IsDefeated = true;
-        UpdatedAt  = DateTimeOffset.UtcNow;
+        IsDefeated     = true;
+        // Ticket 50 — a defeated raid becomes Lootable (awaiting summoner dismissal). Rewards were
+        // already granted on this killing hit; the transition only drives the "loot/dismiss" affordance.
+        LifecycleState = RaidLifecycleState.Lootable;
+        UpdatedAt      = DateTimeOffset.UtcNow;
     }
 
     public void IncrementParticipantCount()
@@ -89,12 +98,31 @@ public class ActiveRaid
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    // Publish this raid to the public list. Idempotent — sharing an already-public raid is a no-op
-    // beyond bumping UpdatedAt. Caller (RaidService) enforces summoner-only + non-Personal rules.
-    public void Share()
+    // Ticket 50 — publish this raid to a visibility tier (Public / GuildOnly / FriendsOnly). May move
+    // between tiers (e.g. GuildOnly → Public). Idempotent beyond bumping UpdatedAt. Caller (RaidService)
+    // enforces summoner-only + non-Personal + guild-membership rules. There is intentionally NO un-share
+    // path back to Private (non-goal). ShareTo(Private) is a no-op tier-wise but still bumps UpdatedAt.
+    public void ShareTo(RaidVisibility visibility)
     {
-        IsPublic  = true;
-        UpdatedAt = DateTimeOffset.UtcNow;
+        Visibility = visibility;
+        UpdatedAt  = DateTimeOffset.UtcNow;
+    }
+
+    // Back-compat overload (Ticket 50) — defaults to Public so the currently-shipped client (which calls
+    // share with no visibility) and existing callers/tests keep working unchanged.
+    public void Share() => ShareTo(RaidVisibility.Public);
+
+    // Ticket 50 — summoner dismisses a defeated raid: Lootable → Looted, removing it from ALL indexes.
+    // Guard: only a Lootable raid may be looted (a still-Active raid throws; a re-loot is a no-op so the
+    // service can treat it as already-gone). Does NOT soft-delete — IsDeleted stays false so the
+    // raid_participants FK and the completed-raid history remain intact.
+    public void Loot()
+    {
+        if (LifecycleState != RaidLifecycleState.Lootable)
+            throw new InvalidOperationException(
+                $"Cannot loot a raid in {LifecycleState} state — only a Lootable (defeated) raid may be dismissed.");
+        LifecycleState = RaidLifecycleState.Looted;
+        UpdatedAt      = DateTimeOffset.UtcNow;
     }
 
     // System 16 Slice 2 (additive) — stamps this raid as belonging to a Gauntlet event. Set once

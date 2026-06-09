@@ -23,6 +23,7 @@ public sealed class SocialService : ISocialService
     private readonly IAuditLogRepository _audit;
     private readonly IEmailNotificationService _emails;
     private readonly ISubmissionRateLimiter _rateLimiter;
+    private readonly ISubjectCatalogProvider _subjects;
 
     public SocialService(
         IPlayerRepository players,
@@ -31,7 +32,8 @@ public sealed class SocialService : ISocialService
         IPrivateMessageRepository messages,
         IAuditLogRepository audit,
         IEmailNotificationService emails,
-        ISubmissionRateLimiter rateLimiter)
+        ISubmissionRateLimiter rateLimiter,
+        ISubjectCatalogProvider subjects)
     {
         _players = players;
         _friends = friends;
@@ -40,6 +42,7 @@ public sealed class SocialService : ISocialService
         _audit = audit;
         _emails = emails;
         _rateLimiter = rateLimiter;
+        _subjects = subjects;
     }
 
     // -------------------------------------------------------------------- friends
@@ -206,11 +209,16 @@ public sealed class SocialService : ISocialService
         if (target is null) return AdminActionResult.Fail($"Player '{targetUsernameOrId}' not found.");
         if (target.Id == reporterId) return AdminActionResult.Fail("You cannot report yourself.");
 
+        // T52 — normalize the validated reason (key or label) to its canonical label; stash the key.
+        var reasonLabel = _subjects.NormalizeReportSubject(reason) ?? reason;
+        var reasonKey = _subjects.ReportSubjects.FirstOrDefault(s => s.Label == reasonLabel)?.Key;
+
         await _emails.QueueAsync(new EmailPayload
         {
             Type = EmailType.PlayerReport,
-            Subject = $"Report: {target.Username}",
-            Summary = $"{reporterId} reported {target.Username} — {reason}",
+            Subject = $"Report: {target.Username} — {reasonLabel}",
+            Priority = EmailPriority.High,
+            Summary = $"{reporterId} reported {target.Username} — {reasonLabel}",
             TriggeringPlayerId = reporterId,
             TriggeringSystem = "T37",
             Detail = new Dictionary<string, object?>
@@ -218,12 +226,13 @@ public sealed class SocialService : ISocialService
                 ["reporterId"] = reporterId.ToString(),
                 ["reportedId"] = target.Id.ToString(),
                 ["reportedUsername"] = target.Username,
-                ["reason"] = reason,
+                ["subjectKey"] = reasonKey,
+                ["reason"] = reasonLabel,
                 ["description"] = description,
             },
         }, ipAddress, ct);
 
-        await Audit(reporterId, "PlayerReported", $"reporter={reporterId} reported={target.Id} reason={reason}", ct);
+        await Audit(reporterId, "PlayerReported", $"reporter={reporterId} reported={target.Id} reason={reasonLabel}", ct);
         return AdminActionResult.Ok();
     }
 

@@ -18,4 +18,12 @@ public enum PlayerRoles
 
     /// <summary>Administrator role — full server access.</summary>
     Admin = 1 << 2,
+
+    /// <summary>
+    /// Developer flag (T43) — marks an internal developer account. Granted from the "Developer" config
+    /// allowlist at startup (or via the CLI). Stored as a plain bit in the existing int Roles column, so
+    /// no schema change is required. Devs are confined to the hidden Dev guild ("The Dev Coffee Shop"):
+    /// they may only ever belong to that guild, and the guild is hidden from non-dev browse/detail.
+    /// </summary>
+    Developer = 1 << 3,
 }

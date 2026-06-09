@@ -14,6 +14,9 @@ public sealed class EmailPayload
     /// <summary>Short subject (the service prefixes <c>[ROTA][Type]</c>).</summary>
     public required string Subject { get; init; }
 
+    /// <summary>Operator-triage priority (T52). Producers set this; defaults to Normal.</summary>
+    public EmailPriority Priority { get; init; } = EmailPriority.Normal;
+
     /// <summary>One-line human summary for the dashboard list.</summary>
     public required string Summary { get; init; }
 

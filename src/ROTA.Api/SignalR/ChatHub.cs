@@ -18,6 +18,11 @@ public sealed class ChatHub : Hub
 {
     private const int MaxBody = 500;
 
+    // The JWT "name" claim carries Player.Username (AuthService emits JwtRegisteredClaimNames.Name =
+    // "name"). MapInboundClaims is off, so the claim type is verbatim "name", not ClaimTypes.Name —
+    // which is why Identity.Name (keyed on the long URI) was unreliable here.
+    private const string UsernameClaim = "name";
+
     private readonly IWorldChatStore _world;
     private readonly IGuildChatStore _guild;
     private readonly IPlayerRepository _players;
@@ -110,8 +115,11 @@ public sealed class ChatHub : Hub
         RaidId = raidId,
         SenderId = SenderId(),
         SenderName = Context.User?.FindFirst("display_name")?.Value
-                     ?? Context.User?.Identity?.Name
+                     ?? Context.User?.FindFirst(UsernameClaim)?.Value
                      ?? "Player",
+        // Stable unique handle for moderation/social targeting (the "name" claim = Player.Username).
+        // Verified identity only — never a client-supplied value.
+        SenderUsername = Context.User?.FindFirst(UsernameClaim)?.Value,
         SenderRole = Context.User?.IsInRole(nameof(PlayerRoles.Admin)) == true ? "Admin"
                    : Context.User?.IsInRole(nameof(PlayerRoles.Moderator)) == true ? "Moderator"
                    : "Player",

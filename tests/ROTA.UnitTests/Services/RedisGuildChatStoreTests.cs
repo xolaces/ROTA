@@ -81,6 +81,7 @@ public class RedisGuildChatStoreTests
         Scope = "Guild",
         SenderId = Guid.NewGuid(),
         SenderName = "Tester",
+        SenderUsername = "tester",
         SenderRole = "Player",
         Body = body,
         SentAt = DateTimeOffset.UtcNow,

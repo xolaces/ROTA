@@ -19,6 +19,7 @@ public enum GuildFailureCode
     PolicyForbidsApply = 11, // 409 — InviteOnly guild can't be applied to
     LeaderCannotLeave = 12,  // 409 — leader must transfer/disband first
     Conflict = 13,           // 409 — generic conflict (e.g. duplicate insert lost the race)
+    DevGuildRestricted = 14, // 403 — dev-guild gate (devs locked to it; non-devs barred from it) (T43)
 }
 
 /// <summary>Generic result of a guild command (no payload).</summary>

@@ -185,8 +185,17 @@ builder.Services.Configure<EmailConfig>(
 builder.Services.Configure<GuildConfig>(
     builder.Configuration.GetSection("GuildConfig"));
 
+builder.Services.Configure<DeveloperConfig>(
+    builder.Configuration.GetSection("Developer"));
+
 builder.Services.Configure<MasteryConfig>(
     builder.Configuration.GetSection("MasteryConfig"));
+
+builder.Services.Configure<AchievementConfig>(
+    builder.Configuration.GetSection("AchievementConfig"));
+
+builder.Services.Configure<RateLimitConfig>(
+    builder.Configuration.GetSection("RateLimitConfig"));
 
 builder.Services.AddRotaServices(builder.Environment.ContentRootPath);
 
@@ -244,6 +253,15 @@ app.Services.GetRequiredService<IGauntletShopProvider>();
 // (4 Ancients, magnitude tables, tier checklists, breadth curve) throws at boot rather than on first use.
 app.Services.GetRequiredService<IMasteryDefinitionProvider>();
 
+// TICKET 46 — eagerly construct the achievement definition provider so its content validation
+// (unique ids, valid category/metric, positive points/threshold, NextId chains, Collector keys)
+// throws at boot rather than on first use.
+app.Services.GetRequiredService<IAchievementDefinitionProvider>();
+
+// T52 — eagerly construct the subject catalog provider so its content validation (non-empty bug/report
+// lists, unique keys, non-blank feedback category) throws at boot rather than on first submission.
+app.Services.GetRequiredService<ISubjectCatalogProvider>();
+
 // Dev-only auto-migrate: keeps a fresh local DB in sync without a manual
 // `dotnet ef database update`. Idempotent — safe to run even when the schema
 // is already current. Production deployments must run migrations explicitly
@@ -258,6 +276,9 @@ if (app.Environment.IsDevelopment())
 // Startup seed — runs once before accepting requests.
 // Idempotent: skipped if the admin account already exists.
 await SeedData.EnsureAdminAsync(app.Services);
+
+// T43: ensure the hidden Dev guild + the developer allowlist. No-op when the allowlist is empty.
+await SeedData.EnsureDevGuildAsync(app.Services);
 
 // [1] Global exception handler
 // SECURITY: raw exceptions must never reach the client - stack traces leak architecture

@@ -62,6 +62,7 @@ public sealed class QuestService : IQuestService
     private readonly ILegionService _legionService;
     private readonly IEquipmentService _equipment;
     private readonly IMasteryService _mastery;
+    private readonly IAchievementService _achievements;
     private readonly QuestConfig _questConfig;
     private readonly Random _random;
 
@@ -81,6 +82,7 @@ public sealed class QuestService : IQuestService
         ILegionService legionService,
         IEquipmentService equipment,
         IMasteryService mastery,
+        IAchievementService achievements,
         IOptions<QuestConfig> questConfig,
         Random? random = null)
     {
@@ -99,6 +101,7 @@ public sealed class QuestService : IQuestService
         _legionService     = legionService;
         _equipment         = equipment;
         _mastery           = mastery;
+        _achievements      = achievements;
         _questConfig       = questConfig.Value;
         _random            = random ?? Random.Shared;
     }
@@ -116,19 +119,36 @@ public sealed class QuestService : IQuestService
             .Select(kv => kv.Key)
             .ToHashSet();
 
+        var allDefs = _definitions.GetAll();
+
         var result = new List<QuestAvailabilityResponse>();
-        foreach (var quest in _definitions.GetAll())
+        foreach (var quest in allDefs)
         {
             if (quest.PrerequisiteQuestId is not null
                 && !unlockedQuestIds.Contains(quest.PrerequisiteQuestId))
                 continue;
 
             progressByQuestId.TryGetValue(quest.Id, out var prog);
+
+            // T45 — a zone boss is attemptable only once every preceding NON-boss node in its zone
+            // has ever been cleared. The prerequisite chain already enforces in-zone ordering, so a
+            // visible-but-locked boss means a sibling node still needs clearing (the client greys it).
+            bool isUnlocked = true;
+            if (quest.IsBoss)
+            {
+                isUnlocked = allDefs
+                    .Where(n => !n.IsBoss && n.Chapter == quest.Chapter && n.ZoneIndex == quest.ZoneIndex)
+                    .All(n => unlockedQuestIds.Contains(n.Id));
+            }
+
             result.Add(new QuestAvailabilityResponse
             {
                 Id                 = quest.Id,
                 Name               = quest.Name,
                 Chapter            = quest.Chapter,
+                ZoneIndex          = quest.ZoneIndex,
+                ZoneName           = quest.ZoneName,
+                NodeIndex          = quest.NodeIndex,
                 NodeType           = quest.NodeType,
                 BaseEnergyCost     = quest.BaseEnergyCost,
                 GoldReward         = quest.GoldReward,
@@ -140,9 +160,10 @@ public sealed class QuestService : IQuestService
                 Progress           = prog?.Progress ?? _questConfig.NodeStartProgress,
                 IsCleared          = prog?.IsCleared ?? false,
                 IsBossNode         = quest.IsBoss,
-                // Returned nodes have already passed the prerequisite filter above, so they are
-                // attemptable. Must be set explicitly: the client disables Attempt when false.
-                IsUnlocked         = true,
+                // Non-boss nodes that reach here have passed the prerequisite filter, so they are
+                // attemptable. A boss additionally requires its whole zone to be depleted. Must be set
+                // explicitly: the client disables Attempt when false.
+                IsUnlocked         = isUnlocked,
             });
         }
         return result;
@@ -162,6 +183,23 @@ public sealed class QuestService : IQuestService
             var prereq = await _questProgress.GetAsync(playerId, quest.PrerequisiteQuestId, ct);
             if (prereq is null || !prereq.HasEverCleared)
                 return Fail(QuestFailureCode.PrerequisiteNotMet, "Prerequisite quest not yet cleared.");
+        }
+
+        // 2a. T45 — ZONE-BOSS GATE: a per-zone boss is only summonable after every preceding NON-boss
+        //     node in its zone has been depleted (HasEverCleared). Runs before any side effect (no
+        //     energy spent on failure). The in-zone prerequisite chain normally guarantees this, but
+        //     the explicit gate hardens against content gaps and surfaces a clear failure code.
+        if (quest.IsBoss)
+        {
+            foreach (var sibling in _definitions.GetAll())
+            {
+                if (sibling.IsBoss || sibling.Chapter != quest.Chapter || sibling.ZoneIndex != quest.ZoneIndex)
+                    continue;
+                var sibProg = await _questProgress.GetAsync(playerId, sibling.Id, ct);
+                if (sibProg is null || !sibProg.HasEverCleared)
+                    return Fail(QuestFailureCode.ZoneBossLocked,
+                        "Clear every node in this zone before challenging its boss.");
+            }
         }
 
         // 2b. T26 — a cleared (locked) node can't be attempted until the chapter boss resets it.
@@ -199,7 +237,14 @@ public sealed class QuestService : IQuestService
         float rewardMult  = RewardMultipliers[difficulty];
         int energyCost    = (int)Math.Ceiling(quest.BaseEnergyCost * energyMult);
         int goldReward    = (int)(quest.GoldReward * rewardMult * lootMods.HoardGoldMultiplier);
-        int xpReward      = (int)(quest.ExperienceReward * rewardMult);
+        // T44 — zone-indexed XP. ExperienceReward is the per-node BASE; a battle scales with zone
+        // depth, a boss always uses the (larger) boss ratio, and the per-chapter scalar makes late
+        // chapters award meaningfully more. XP is NOT Hoard-scaled (only gold/drops are).
+        double zoneRatio = quest.IsBoss
+            ? _questConfig.XpBossRatio
+            : _questConfig.XpZoneRatioBase + quest.ZoneIndex * _questConfig.XpZoneRatioPerZone;
+        double chapterScalar = _questConfig.ChapterXpScalars.TryGetValue(quest.Chapter, out var s) ? s : 1.0;
+        int xpReward      = (int)(quest.ExperienceReward * zoneRatio * chapterScalar * rewardMult);
         int gemReward     = (int)Math.Round(quest.GemReward * rewardMult);
 
         // 6. Spend energy — if insufficient, return immediately with no side effects
@@ -235,13 +280,14 @@ public sealed class QuestService : IQuestService
         else
             await _questProgress.UpdateAsync(progress, ct);
 
-        // 8b. T26 — completing a chapter boss resets the WHOLE chapter back to fresh (the
-        //     deplete→clear→boss→reset farming cycle). HasEverCleared is preserved so unlocks hold.
-        bool chapterReset = false;
+        // 8b. T44/45 (revises T26) — completing a ZONE boss resets that boss's OWN ZONE back to fresh
+        //     (the deplete→clear→boss→reset farming cycle, now zone-scoped not chapter-scoped).
+        //     HasEverCleared is preserved so forward unlocks hold.
+        bool zoneReset = false;
         if (quest.IsBoss && nodeJustCleared)
         {
-            await ResetChapterAsync(playerId, quest.Chapter, progress, ct);
-            chapterReset = true;
+            await ResetZoneAsync(playerId, quest.Chapter, quest.ZoneIndex, progress, ct);
+            zoneReset = true;
         }
 
         // 9. Record per-difficulty progress
@@ -326,6 +372,21 @@ public sealed class QuestService : IQuestService
         }
         catch (Exception) when (!ct.IsCancellationRequested) { /* best-effort — never break the attempt */ }
 
+        // 14c. TICKET 46 — quest achievement counters + completion evaluation. BEST-EFFORT (same as the
+        //      mastery block: the quest reward path is non-transactional, so this never fails the attempt).
+        //      Mirrors the just-cleared gating. This is one of the two completion-evaluation trigger points.
+        try
+        {
+            if (nodeJustCleared)
+            {
+                await _achievements.RecordProgressAsync(playerId, AchievementMetric.QuestNodesCleared, 1, ct: ct);
+                if (quest.IsBoss)
+                    await _achievements.RecordProgressAsync(playerId, AchievementMetric.QuestBossesCleared, 1, ct: ct);
+            }
+            await _achievements.EvaluateCompletionsAsync(playerId, ct);
+        }
+        catch (Exception) when (!ct.IsCancellationRequested) { /* best-effort — never break the attempt */ }
+
         // 15. Audit log
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, "QuestAttempt", null,
@@ -352,19 +413,21 @@ public sealed class QuestService : IQuestService
             NodeProgress      = progress.Progress,
             NodeCleared       = progress.IsCleared,
             NodeJustCleared   = nodeJustCleared,
-            ChapterReset      = chapterReset,
+            ZoneReset         = zoneReset,
         };
     }
 
-    // T26 — reset every node in `chapter` back to fresh (Progress→start, IsCleared→false). Called when
-    // a chapter boss is cleared. HasEverCleared is preserved on each node so forward unlocks survive.
-    // The just-cleared boss's own progress instance is passed in to avoid a redundant re-fetch/retrack.
-    private async Task ResetChapterAsync(
-        Guid playerId, int chapter, PlayerQuestProgress bossProgress, CancellationToken ct)
+    // T44/45 (revises T26) — reset every node in the boss's own (chapter, zoneIndex) back to fresh
+    // (Progress→start, IsCleared→false). Called when a zone boss is cleared. HasEverCleared is
+    // preserved on each node so forward unlocks survive. The just-cleared boss's own progress
+    // instance is passed in to avoid a redundant re-fetch/retrack. Other zones in the chapter are
+    // left untouched.
+    private async Task ResetZoneAsync(
+        Guid playerId, int chapter, int zoneIndex, PlayerQuestProgress bossProgress, CancellationToken ct)
     {
         foreach (var node in _definitions.GetAll())
         {
-            if (node.Chapter != chapter) continue;
+            if (node.Chapter != chapter || node.ZoneIndex != zoneIndex) continue;
 
             var p = node.Id == bossProgress.QuestId
                 ? bossProgress
@@ -475,6 +538,7 @@ public sealed class QuestService : IQuestService
         List<ItemGrantDTO> itemsGranted, CancellationToken ct)
     {
         var existing = await _inventory.GetAsync(playerId, itemDefId, ct);
+        bool wasNewDistinct = existing is null;
         if (existing is not null)
         {
             existing.AddQuantity(quantity);
@@ -497,6 +561,15 @@ public sealed class QuestService : IQuestService
                 Rarity   = def.Rarity.ToString(),
                 ArtKey   = def.ArtKey,
             });
+
+            // TICKET 46 — Collector achievement (distinct-item count). Only recount when a NEW distinct
+            // item was added (a quantity bump never changes the distinct count). The service recounts the
+            // absolute distinct-owned total per Collector key, so re-granting never inflates. Best-effort.
+            if (wasNewDistinct)
+            {
+                try { await _achievements.RecountCollectorCountersAsync(playerId, ct); }
+                catch (Exception) when (!ct.IsCancellationRequested) { /* best-effort — never break the grant */ }
+            }
         }
     }
 

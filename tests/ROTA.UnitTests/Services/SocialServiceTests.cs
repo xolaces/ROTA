@@ -5,6 +5,7 @@ using ROTA.Application.Models;
 using ROTA.Application.Services;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
+using ROTA.UnitTests.TestSupport;
 
 namespace ROTA.UnitTests.Services;
 
@@ -32,7 +33,7 @@ public class SocialServiceTests
             .ReturnsAsync(true);
 
         var service = new SocialService(players.Object, friends.Object, blocks.Object,
-            messages.Object, audit.Object, emails.Object, limiter.Object);
+            messages.Object, audit.Object, emails.Object, limiter.Object, SubjectCatalogFixture.Real);
         return (service, players, friends, blocks, messages, audit, emails, limiter);
     }
 
@@ -209,7 +210,11 @@ public class SocialServiceTests
 
         result.Success.Should().BeTrue();
         emails.Verify(e => e.QueueAsync(
-            It.Is<EmailPayload>(p => p.Type == EmailType.PlayerReport && p.TriggeringSystem == "T37"),
+            It.Is<EmailPayload>(p =>
+                p.Type == EmailType.PlayerReport &&
+                p.TriggeringSystem == "T37" &&
+                p.Priority == EmailPriority.High &&            // T52 — reports are High priority
+                p.Subject.Contains("Cheating")),              // reason key normalized to its label
             It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 

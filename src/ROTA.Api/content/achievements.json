@@ -1,0 +1,9 @@
+[
+  {"id":"ach_raids_10","category":"RaidCompletion","metric":"RaidCompletions","name":"Slayer","description":"Defeat 10 raids.","points":10,"threshold":10,"nextId":"ach_raids_100","iconKey":"ach_raid"},
+  {"id":"ach_raids_100","category":"RaidCompletion","metric":"RaidCompletions","name":"Raid Veteran","description":"Defeat 100 raids.","points":50,"threshold":100,"iconKey":"ach_raid"},
+  {"id":"ach_quest_nodes_50","category":"QuestClear","metric":"QuestNodesCleared","name":"Pathfinder","description":"Clear 50 quest nodes.","points":15,"threshold":50,"iconKey":"ach_quest"},
+  {"id":"ach_quest_bosses_10","category":"QuestClear","metric":"QuestBossesCleared","name":"Boss Breaker","description":"Clear 10 zone bosses.","points":30,"threshold":10,"iconKey":"ach_boss"},
+  {"id":"ach_gear_25","category":"EquipmentOwned","metric":"EquipmentPiecesOwned","name":"Well Equipped","description":"Own 25 equipment pieces.","points":20,"threshold":25,"iconKey":"ach_gear"},
+  {"id":"ach_days_30","category":"DaysPlayed","metric":"DaysPlayed","name":"Devoted","description":"Play on 30 distinct days.","points":25,"threshold":30,"iconKey":"ach_calendar"},
+  {"id":"ach_collect_sigils_8","category":"Collector","metric":"CollectorItemCount","collectorKey":"Sigil","name":"Sigil Hoarder","description":"Own 8 distinct Sigil items.","points":20,"threshold":8,"iconKey":"ach_sigil"}
+]

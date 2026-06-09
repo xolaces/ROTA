@@ -15,6 +15,7 @@ public sealed class EquipmentService : IEquipmentService
     private readonly IPlayerInventoryRepository _inventory;
     private readonly IItemDefinitionProvider    _itemDefs;
     private readonly IPlayerGearRepository      _gearRepo;
+    private readonly IAchievementService        _achievements;
 
     public EquipmentService(
         IPlayerEquipmentRepository repo,
@@ -22,14 +23,16 @@ public sealed class EquipmentService : IEquipmentService
         IAuditLogRepository        auditLog,
         IPlayerInventoryRepository inventory,
         IItemDefinitionProvider    itemDefs,
-        IPlayerGearRepository      gearRepo)
+        IPlayerGearRepository      gearRepo,
+        IAchievementService        achievements)
     {
-        _repo      = repo;
-        _gearDefs  = gearDefs;
-        _auditLog  = auditLog;
-        _inventory = inventory;
-        _itemDefs  = itemDefs;
-        _gearRepo  = gearRepo;
+        _repo         = repo;
+        _gearDefs     = gearDefs;
+        _auditLog     = auditLog;
+        _inventory    = inventory;
+        _itemDefs     = itemDefs;
+        _gearRepo     = gearRepo;
+        _achievements = achievements;
     }
 
     public async Task<EquipResult> EquipAsync(
@@ -249,6 +252,21 @@ public sealed class EquipmentService : IEquipmentService
         {
             await _gearRepo.CreateAsync(PlayerGear.Create(playerId, gearDefinitionId, quantity), ct);
         }
+
+        // TICKET 46 — EquipmentPiecesOwned achievement. RECOUNT the absolute owned total (SUM of
+        // quantities across all owned gear) rather than applying a delta, so the counter can never
+        // drift. Best-effort: a recount failure must never break the gear grant.
+        try
+        {
+            var owned = await _gearRepo.GetOwnedAsync(playerId, ct);
+            long total = owned.Sum(g => (long)g.Quantity);
+            await _achievements.SetCounterAsync(
+                playerId, Domain.Enums.AchievementMetric.EquipmentPiecesOwned, total, ct);
+            // Evaluate promptly so an equipment-owned achievement is awarded at grant time (mirrors
+            // QuestService), not only on the next profile/quest/raid read.
+            await _achievements.EvaluateCompletionsAsync(playerId, ct);
+        }
+        catch (Exception) when (!ct.IsCancellationRequested) { /* best-effort — never break the grant */ }
     }
 
     private static EquippedItemResponse MapResponse(

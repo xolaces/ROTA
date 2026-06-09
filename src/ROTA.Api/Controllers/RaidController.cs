@@ -56,15 +56,24 @@ public sealed class RaidController : ControllerBase
         return result is null ? NotFound() : Ok(result);
     }
 
-    // Summoner-only: publish this raid to the public list.
+    // Summoner-only: publish this raid to a visibility tier (Ticket 50). The body is OPTIONAL — omitting
+    // it (or sending no body) defaults to "Public" so the currently-shipped client (no-body share) keeps
+    // working. Valid Visibility values: Public | GuildOnly | FriendsOnly.
     [HttpPost("{activeRaidId}/share")]
     [ProducesResponseType(typeof(ActiveRaidResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Share([FromRoute] Guid activeRaidId)
+    public async Task<IActionResult> Share(
+        [FromRoute] Guid activeRaidId,
+        [FromBody] ShareRaidRequest? request = null)
     {
-        var result = await _raids.ShareRaidAsync(GetPlayerId(), activeRaidId);
+        var visStr = request?.Visibility ?? "Public";
+        if (!Enum.TryParse<RaidVisibility>(visStr, ignoreCase: true, out var visibility))
+            return BadRequest(new { message = $"Invalid visibility '{visStr}'. Valid values: Public, GuildOnly, FriendsOnly." });
+
+        var result = await _raids.ShareRaidAsync(GetPlayerId(), activeRaidId, visibility);
 
         if (result.Success)
             return Ok(result.Raid);
@@ -73,8 +82,32 @@ public sealed class RaidController : ControllerBase
         {
             ShareRaidFailureCode.NotFound            => NotFound(new { message = result.FailureReason }),
             ShareRaidFailureCode.NotSummoner         => StatusCode(StatusCodes.Status403Forbidden, new { message = result.FailureReason }),
-            ShareRaidFailureCode.CannotSharePersonal => Conflict(new { message = result.FailureReason }),
+            ShareRaidFailureCode.CannotSharePersonal => Conflict(new { code = result.FailureCode.ToString(), message = result.FailureReason }),
+            ShareRaidFailureCode.NotInGuild          => Conflict(new { code = result.FailureCode.ToString(), message = result.FailureReason }),
             _                                        => UnprocessableEntity(new { message = result.FailureReason }),
+        };
+    }
+
+    // Summoner-only: dismiss a defeated raid from all lists (Ticket 50). Rewards were already granted on
+    // the killing hit — this only removes the raid from the indexes (Lootable → Looted).
+    [HttpPost("{activeRaidId}/loot")]
+    [ProducesResponseType(typeof(ActiveRaidResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Loot([FromRoute] Guid activeRaidId)
+    {
+        var result = await _raids.LootRaidAsync(GetPlayerId(), activeRaidId);
+
+        if (result.Success)
+            return Ok(result.Raid);
+
+        return result.FailureCode switch
+        {
+            LootRaidFailureCode.NotFound    => NotFound(new { message = result.FailureReason }),
+            LootRaidFailureCode.NotSummoner => StatusCode(StatusCodes.Status403Forbidden, new { message = result.FailureReason }),
+            LootRaidFailureCode.NotLootable => Conflict(new { message = result.FailureReason }),
+            _                               => UnprocessableEntity(new { message = result.FailureReason }),
         };
     }
 

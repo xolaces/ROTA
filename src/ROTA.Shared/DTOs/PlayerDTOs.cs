@@ -20,6 +20,8 @@ public class PlayerProfileResponse
     // Masteries (System 22 Phase A) — the active pledge name (null if unpledged) + live Overall Mastery Rating.
     public string? ActivePledge { get; set; }
     public int MasteryRatingActive { get; set; }
+    // Achievements (TICKET 46) — total Achievement Points, SUMMED from the award ledger.
+    public int TotalAchievementPoints { get; set; }
 }
 
 public class ResourceValueResponse
