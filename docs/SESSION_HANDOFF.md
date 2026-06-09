@@ -1,8 +1,9 @@
 # ROTA Session Handoff — 2026-06-08 (Playtest Tickets 41–52)
 
 ## TL;DR (resume here)
-A 12-ticket playtest batch (**T41–T52**) is **fully implemented, integration-reviewed, and green** across
-all three repos. **Nothing is committed or pushed** — all changes sit in the working trees for owner review.
+A 12-ticket playtest batch (**T41–T52**) is **fully implemented, integration-reviewed, green, and committed**.
+**Backend is committed + pushed** to `origin/main` (`001bec1`). **Client + ops are committed LOCALLY only**
+(no git remotes configured): client `master` `1754e5e`, ops `master` `b2a8536`.
 
 - **Backend** (`C:\Users\xolac\OneDrive\Documentos\Projects\ROTA`, branch `main`): **0 errors / 0 CS warnings**,
   **987 tests** (885 unit + 102 integration). ~116 changed/new files. 3 new migrations, **NOT applied**.
@@ -22,8 +23,10 @@ all three repos. **Nothing is committed or pushed** — all changes sit in the w
    or run `dotnet run --project src/ROTA.Api -- flag-dev <user|guid>`. Until then `EnsureDevGuildAsync` is a logged
    no-op (a guild needs a leader; the admin `Xolaces` is deliberately never locked into it). The Dev Coffee Shop
    (tag `DEV`) auto-seeds on the next start once a dev account is configured.
-3. **Commit/merge when satisfied.** Backend on `main`, client on `master`, ops on its branch — all uncommitted.
-   Before committing the client, delete the stray editor artifact `C:\Dev\ROTA.Client6\Assets\_Recovery\` (+ `.meta`).
+3. **Push client + ops (no remotes yet).** Backend already pushed. The Unity client (`C:\Dev\ROTA.Client6`,
+   `1754e5e`) and ops dashboard (`C:\Dev\rota-ops-dashboard`, `b2a8536`) are committed but have **no git remote** —
+   create the GitHub repos + `git remote add origin <url>` + `git push -u origin master` to back them up. The stray
+   `C:\Dev\ROTA.Client6\Assets\_Recovery\` (+ `.meta`) artifact was left untracked (excluded from the commit) — delete it.
 
 ## WHAT SHIPPED (per ticket)
 - **T41** (client) — raid hit button no longer sticks (in-flight guard + `finally` re-gate, replacing the
