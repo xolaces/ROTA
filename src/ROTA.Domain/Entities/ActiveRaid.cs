@@ -49,8 +49,11 @@ public class ActiveRaid
     // GUID (the invite token) regardless of Visibility — this only governs which list it shows up in.
     public RaidVisibility Visibility { get; private set; }
 
-    // Lifecycle state (Ticket 50) — Active → (on kill) Lootable → (on summoner dismissal) Looted.
-    // Rewards are granted on the killing hit, NOT here; Loot() is a dismiss/remove-from-indexes action.
+    // Lifecycle state (Ticket 50). Active → (on kill) Lootable. T57 REVISES T50's reward timing: gold/
+    // gems/stat-points/items are now COMPUTED on the killing hit but GRANTED per-participant when each
+    // player presses Loot (RaidService.LootRaidAsync), so a defeated raid stays Lootable until claimed
+    // (it is no longer flipped to Looted per claim). The Looted state + Loot() below are retained for the
+    // legacy summoner-dismiss path but are NOT used by the per-participant claim flow.
     public RaidLifecycleState LifecycleState { get; private set; }
 
     public DateTimeOffset ExpiresAt { get; private set; }
@@ -86,8 +89,8 @@ public class ActiveRaid
     public void MarkDefeated()
     {
         IsDefeated     = true;
-        // Ticket 50 — a defeated raid becomes Lootable (awaiting summoner dismissal). Rewards were
-        // already granted on this killing hit; the transition only drives the "loot/dismiss" affordance.
+        // Ticket 50 — a defeated raid becomes Lootable. T57: rewards are DEFERRED to each participant's
+        // Loot claim, so Lootable means "rewards are waiting to be claimed" (not merely awaiting dismissal).
         LifecycleState = RaidLifecycleState.Lootable;
         UpdatedAt      = DateTimeOffset.UtcNow;
     }

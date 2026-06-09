@@ -11,6 +11,12 @@ public interface IEnergyService
     Task RefillEnergyAsync(Guid playerId, ResourceType type, int amount, CancellationToken ct = default);
 
     /// <summary>
+    /// T56 — deducts up to <paramref name="amount"/> from the pool, clamping at 0 (never fails).
+    /// Used for health damage (drain rather than reject). Returns the amount actually drained.
+    /// </summary>
+    Task<int> DrainAsync(Guid playerId, ResourceType type, int amount, CancellationToken ct = default);
+
+    /// <summary>
     /// Fully refills the resource pool to its current MaxValue (CurrentValue = MaxValue),
     /// resetting the regen checkpoint to now. Used on level-up (all pools restored).
     /// </summary>

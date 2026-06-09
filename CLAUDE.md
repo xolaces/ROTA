@@ -552,6 +552,45 @@ API + ProfileScreen AP label) is a SEPARATE later step; only the Shared DTO fiel
   award. KNOWN FOLLOW-UPS: client mirror; TUNE rosters/points/thresholds; repeatable achievements (PHASE-2);
   raid item-loot / threshold-drop Collector hooks (only quest item grants recount Collector today).
 
+## Tickets 53–58 — Playtest batch 2 (2026-06-08) — COMPLETE & GREEN (Unity compile owner-gated)
+Build: 0 errors / 0 warnings. **991 tests pass (889 unit + 102 integration).** 2 new migrations (NOT applied):
+`20260609043452_AddHealthResource` (T56, empty schema diff + data backfill) + `20260609131852_AddRaidParticipantPendingDrops`
+(T57, adds `pending_drops_json` text column). Unity client not compiled here. Build order T53→T55→T58→T54→T56→T57.
+Detail in docs/SESSION_HANDOFF.md.
+- **T53** (client) — `MockRotaApi.AttemptQuestAsync` now deducts energy (was the real HUD↔profile desync that
+  looked like a backend bug in mock playtest). Backend resource-sync + level-up refill confirmed correct.
+- **T55** (backend+client) — Chapter/Zone quest navigator + **co-scaled XP & energy**. `QuestConfig.ChapterScaling`
+  (per-chapter EnergyCostMultiplier/XpMultiplier, capped at chapter 16, modeled for 24) replaces XP-only
+  `ChapterXpScalars` (now BETA). Energy now scales per chapter; XP multiplier gentle (base XP already scales) →
+  fixes "XP too high vs energy". `QuestAvailabilityResponse += EffectiveEnergyCost/EffectiveXpReward`. Config-
+  driven. Mock mirrors the table + expands to 3 chapters/4 zones. No migration.
+- **T58** (client) — `ItemDropOverlay` (mirrors LevelUpOverlay): tap-to-dismiss rarity-colored multi-item card,
+  queued; fired from QuestScreen before NotifyLevelUp; constructed in AppBootstrap.
+- **T54** (backend+client) — Gauntlet is an EVENT: glowing Home CTA (when event Active) → new `GauntletScreen`
+  (ladder/strikes/shop/leaderboard) + full client DTO/IRotaApi/Http/Mock plumbing. **Curve (tested):**
+  `GauntletStageCurve.Hp(n)=StageHpBase(5000)×StageHpGrowth(1.0493)^(n-1)`; `GauntletConfig.MaxLadderStage=250`
+  (appsettings) — `GauntletContentProvider` formula-extends the ladder when MaxLadderStage>JSON count (0/off by
+  default so unit fixtures untouched; stage-1 HP stays 5000 for the shipped integration assertion). Break-even
+  power = Hp/StrikesPerDefeat ⇒ stage 250 ≈ 80M (presumed endgame); smooth power→stage (1k→15,1M→158,80M→250).
+  `GauntletCurveTests` asserts + prints the table. "Gauntlet Legion Power" stays a PHASE-2 placeholder.
+- **T56** (backend+client) — Health = 4th `PlayerResource` (`ResourceType.Health=4`). Seeded at BaseMaxHealth,
+  regen via `ClassConfig.HealthRegenMinutes`(10), **refills on level-up (owner: KEEP — so NOT a T22 reversal)**,
+  max synced to BaseMaxHealth on allocate. Per-hit cost: flat-per-difficulty (`CombatConfig.RaidHealthCostByDifficulty`)
+  + Gauntlet Defense-scaled curve (fractional reduction, ramps past stage 200); `EnergyService.DrainAsync` clamps
+  at 0 (never blocks). HUD health bar + live HP on profile. Migration **AddHealthResource** (hand-authored,
+  data-only backfill = base_max_health per existing player).
+- **T57** (backend+client) — explicit **per-participant Loot claim** (REVERSES T50/System-23 grant-on-kill).
+  **Reward boundary (owner-locked): ON-HIT = XP + gold ONLY; LOOTED = everything else** (gems, stat-points,
+  inventory items, AND the magic/unit/legion/gear collection drops). `DistributeKillRewardsAsync` grants XP+gold
+  immediately on the killing hit, ROLLS the rest and stores it pending on the participant row
+  (`RecordPendingRewards`; gems/SP via fields, items via `ItemsEarnedJson`, drops via new `PendingDropsJson` =
+  `List<PendingDrop>{Kind,Id,Qty}`; RewardedAt null=unclaimed). Per-participant `LootRaidAsync` grants the pending
+  gems/SP/items/drops on the claim (idempotent via the RewardedAt latch; gold/XP NOT re-granted). `GetActiveRaidsAsync`
+  + `IActiveRaidRepository.GetLootableUnclaimedForPlayerAsync` surface unclaimed lootable raids. Controller loot →
+  full `LootRaidResult` (+`Rewards` = the looted gems/SP/items, gold/XP shown 0). RaidCombatView: Loot button moved
+  out of the summoner-only share body → ANY participant; kill prompts "press Loot", loot shows the spoils. Migration
+  **AddRaidParticipantPendingDrops** (adds `pending_drops_json` text column).
+
 ## PHASE-2 Deferred Items
 - DiscernmentInvestment effect: quest drop quality (raid crit shipped v0.2.3)
 - Explicit DB transaction scope for QUEST reward steps (energy committed but rewards not atomic; raids fixed v0.2.5)

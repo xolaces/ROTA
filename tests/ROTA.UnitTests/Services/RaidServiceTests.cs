@@ -692,10 +692,13 @@ public class RaidServiceTests
         var result = await b.Service.HitRaidAsync(attacker.Id, raid.Id, 1, Guid.NewGuid().ToString());
 
         result.Success.Should().BeTrue();
-        // Tier multiplier for Legendary1 = 1.5, so 6 SP * 1.5 = 9 (rounded)
+        // Tier multiplier for Legendary1 = 1.5, so 6 SP * 1.5 = 9 (rounded). Still COMPUTED + surfaced on
+        // the kill response for display…
         result.Response!.Rewards!.UnassignedStatPointsGranted.Should().Be(9,
             "cumulative thresholds at 0.1%, 5%, and 20% each grant stat points, scaled by Legendary1 multiplier");
-        b.Stats.Verify(s => s.AddUnassignedPointsAsync(attacker.Id, 9, It.IsAny<CancellationToken>()), Times.Once);
+        // …but T57 DEFERS the grant to the Loot claim — the kill must not actually add the points.
+        b.Stats.Verify(s => s.AddUnassignedPointsAsync(attacker.Id, 9, It.IsAny<CancellationToken>()), Times.Never,
+            "T57 — stat points are computed on the kill but granted when the participant presses Loot");
     }
 
     // -----------------------------------------------------------------------
@@ -703,7 +706,7 @@ public class RaidServiceTests
     // -----------------------------------------------------------------------
 
     [Fact]
-    public async Task Hit_Kill_UsesCorrectGemIdempotencyKeyFormat()
+    public async Task Hit_Kill_DefersGems_NotGrantedUntilLoot()
     {
         var b = BuildService(new Random(0));
         var attacker = MakePlayer();
@@ -725,10 +728,11 @@ public class RaidServiceTests
 
         await b.Service.HitRaidAsync(attacker.Id, raid.Id, 1, Guid.NewGuid().ToString());
 
-        var expectedRef = $"raid:{raid.Id}:{attacker.Id}";
+        // T57 — gems are computed on the kill but DEFERRED to the Loot claim; the kill must not grant them
+        // (the per-(raid,player) idempotency ref is reused at Loot — see LootRaid_ByParticipant_...).
         b.Gems.Verify(g => g.GrantGemsAsync(
-            attacker.Id, It.IsAny<int>(), GemTransactionType.RaidReward, expectedRef,
-            It.IsAny<CancellationToken>()), Times.Once);
+            It.IsAny<Guid>(), It.IsAny<int>(), GemTransactionType.RaidReward, It.IsAny<string?>(),
+            It.IsAny<CancellationToken>()), Times.Never);
     }
 
     // -----------------------------------------------------------------------
@@ -1666,52 +1670,65 @@ public class RaidServiceTests
     // ── LootRaidAsync ────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task LootRaid_BySummoner_OnLootable_Succeeds_AndMarksLooted()
+    public async Task LootRaid_ByParticipant_GrantsDeferredRewards_AndIsIdempotent()
     {
         var b = BuildService();
-        var summonerId = Guid.NewGuid();
-        var raid = MakeVisRaid(summonerId, RaidVisibility.Public);
+        var player = MakePlayer();
+        var raid = MakeVisRaid(Guid.NewGuid(), RaidVisibility.Public);
         raid.MarkDefeated();   // Active → Lootable
+
+        // The kill recorded these as PENDING (RewardedAt null); Loot grants them.
+        var part = RaidParticipant.Create(raid.Id, player.Id);
+        part.RecordPendingRewards("Legendary", gold: 500, xp: 200, gems: 10, statPoints: 3, itemsJson: string.Empty);
 
         b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(raid);
-        b.Raids.Setup(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()))
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(part);
+        b.Participants.Setup(p => p.UpdateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((RaidParticipant?)null);
+        b.Players.Setup(p => p.FindByIdAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(player);
+        b.Players.Setup(p => p.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
         b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
 
-        var result = await b.Service.LootRaidAsync(summonerId, raid.Id);
+        var result = await b.Service.LootRaidAsync(player.Id, raid.Id);
 
         result.Success.Should().BeTrue();
-        raid.LifecycleState.Should().Be(RaidLifecycleState.Looted);
-        raid.IsDeleted.Should().BeFalse("loot dismisses from indexes but never soft-deletes");
-        result.Raid!.LifecycleState.Should().Be("Looted");
-        b.Raids.Verify(r => r.UpdateAsync(It.Is<ActiveRaid>(
-            x => x.Id == raid.Id && x.LifecycleState == RaidLifecycleState.Looted),
-            It.IsAny<CancellationToken>()), Times.Once);
-        b.AuditLog.Verify(a => a.AppendAsync(
-            It.Is<AuditLog>(l => l.Action == "RaidLooted"), It.IsAny<CancellationToken>()), Times.Once);
+        result.Rewards!.GoldGranted.Should().Be(0, "gold is an on-hit reward, not claimed at Loot");
+        result.Rewards.GemsGranted.Should().Be(10);
+        result.Rewards.UnassignedStatPointsGranted.Should().Be(3);
+        part.RewardsClaimed.Should().BeTrue("the claim latches RewardedAt");
+        b.Gems.Verify(g => g.GrantGemsAsync(player.Id, 10, GemTransactionType.RaidReward,
+            $"raid:{raid.Id}:{player.Id}", It.IsAny<CancellationToken>()), Times.Once);
+        b.Stats.Verify(s => s.AddUnassignedPointsAsync(player.Id, 3, It.IsAny<CancellationToken>()), Times.Once);
+
+        // Idempotent re-press: still succeeds (returns the summary) but re-grants nothing.
+        var again = await b.Service.LootRaidAsync(player.Id, raid.Id);
+        again.Success.Should().BeTrue();
+        b.Gems.Verify(g => g.GrantGemsAsync(player.Id, It.IsAny<int>(), GemTransactionType.RaidReward, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once,
+            "a second Loot press must not re-grant");
     }
 
     [Fact]
-    public async Task LootRaid_ByNonSummoner_ReturnsNotSummoner_NoStateChange()
+    public async Task LootRaid_ByNonParticipant_ReturnsNotFound()
     {
         var b = BuildService();
-        var summonerId  = Guid.NewGuid();
-        var otherPlayer = Guid.NewGuid();
-        var raid = MakeVisRaid(summonerId, RaidVisibility.Public);
+        var raid = MakeVisRaid(Guid.NewGuid(), RaidVisibility.Public);
         raid.MarkDefeated();
 
         b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
 
-        var result = await b.Service.LootRaidAsync(otherPlayer, raid.Id);
+        var result = await b.Service.LootRaidAsync(Guid.NewGuid(), raid.Id);
 
         result.Success.Should().BeFalse();
-        result.FailureCode.Should().Be(LootRaidFailureCode.NotSummoner);
-        raid.LifecycleState.Should().Be(RaidLifecycleState.Lootable, "a non-summoner cannot dismiss the raid");
-        b.Raids.Verify(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Never);
+        result.FailureCode.Should().Be(LootRaidFailureCode.NotFound);
     }
 
     [Fact]
@@ -2371,15 +2388,16 @@ public class RaidServiceTests
         };
         b.LootTables.Setup(lt => lt.GetById("lt_raid_ironcolossus")).Returns(lootTable);
 
+        // One participant object reused by the kill (records the deferred drop) and the loot (grants it).
+        var participant = RaidParticipant.Create(raid.Id, player.Id);
         b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((RaidParticipant?)null);
+            .ReturnsAsync(participant);
         b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+        b.Participants.Setup(p => p.UpdateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
         b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<RaidParticipant>
-            {
-                RaidParticipant.Create(raid.Id, player.Id),
-            });
+            .ReturnsAsync(new List<RaidParticipant> { participant });
         b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
@@ -2387,8 +2405,15 @@ public class RaidServiceTests
 
         result.Success.Should().BeTrue();
         result.Response!.IsDefeated.Should().BeTrue("the killing blow depletes the last HP");
+        // T57 — the magic drop is ROLLED on the kill but DEFERRED: not granted until Loot.
         b.MagicService.Verify(m => m.GrantMagicAsync(player.Id, "magic_whetstone", It.IsAny<CancellationToken>()),
-            Times.Once, "magic drop with chance=1.0 must call GrantMagicAsync for the eligible participant");
+            Times.Never, "magic drop is deferred to the Loot claim");
+
+        // Claiming via Loot grants the deferred magic drop exactly once.
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
+        await b.Service.LootRaidAsync(player.Id, raid.Id);
+        b.MagicService.Verify(m => m.GrantMagicAsync(player.Id, "magic_whetstone", It.IsAny<CancellationToken>()),
+            Times.Once, "magic drop with chance=1.0 is granted on the Loot claim");
     }
 
     // -----------------------------------------------------------------------
@@ -2836,15 +2861,15 @@ public class RaidServiceTests
         };
         b.LootTables.Setup(lt => lt.GetById("lt_raid_ironcolossus")).Returns(lootTable);
 
+        var participant = RaidParticipant.Create(raid.Id, player.Id);
         b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((RaidParticipant?)null);
+            .ReturnsAsync(participant);
         b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+        b.Participants.Setup(p => p.UpdateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
         b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<RaidParticipant>
-            {
-                RaidParticipant.Create(raid.Id, player.Id),
-            });
+            .ReturnsAsync(new List<RaidParticipant> { participant });
         b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
@@ -2852,9 +2877,14 @@ public class RaidServiceTests
 
         result.Success.Should().BeTrue();
         result.Response!.IsDefeated.Should().BeTrue();
-        b.Equipment.Verify(e => e.GrantGearAsync(
-            player.Id, "gear_conscript_helm", 1, It.IsAny<CancellationToken>()),
-            Times.Once, "gear drop with chance=1.0 must call GrantGearAsync for the eligible participant");
+        // T57 — the gear drop is rolled on the kill but DEFERRED to the Loot claim.
+        b.Equipment.Verify(e => e.GrantGearAsync(player.Id, "gear_conscript_helm", 1, It.IsAny<CancellationToken>()),
+            Times.Never, "gear drop is deferred to the Loot claim");
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
+        await b.Service.LootRaidAsync(player.Id, raid.Id);
+        b.Equipment.Verify(e => e.GrantGearAsync(player.Id, "gear_conscript_helm", 1, It.IsAny<CancellationToken>()),
+            Times.Once, "gear drop with chance=1.0 is granted on the Loot claim");
     }
 
     // -----------------------------------------------------------------------

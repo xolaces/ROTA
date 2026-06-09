@@ -46,6 +46,9 @@ public class Player
             PlayerResource.Create(id, ResourceType.Energy,       maxValue: 25, regenPerMinute: 2),
             PlayerResource.Create(id, ResourceType.Stamina,      maxValue: 5,  regenPerMinute: 1),
             PlayerResource.Create(id, ResourceType.GuildStamina, maxValue: 1,  regenPerMinute: 0),
+            // T56 — Health pool; MaxValue mirrors PlayerStats.BaseMaxHealth (the stat-allocation target),
+            // kept in sync on allocate + level-up. Regenerates via the class-configured rate.
+            PlayerResource.Create(id, ResourceType.Health,       maxValue: player.Stats.BaseMaxHealth, regenPerMinute: 1),
         };
 
         return player;

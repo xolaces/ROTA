@@ -192,13 +192,16 @@ public class ShareRaidRequest
     public string Visibility { get; set; } = "Public";
 }
 
-// Ticket 50 — result of the summoner-only loot (dismiss) action.
+// Ticket 50 + T57 — result of the per-participant loot CLAIM. T57 adds Rewards: the gold/gems/stat-
+// points/items GRANTED on this claim (XP/levels were already granted on the killing hit). On an
+// idempotent re-press, Rewards still carries the participant's summary but nothing is re-granted.
 public class LootRaidResult
 {
     public bool Success { get; set; }
     public LootRaidFailureCode FailureCode { get; set; }
     public string? FailureReason { get; set; }
     public ActiveRaidResponse? Raid { get; set; }
+    public RaidRewards? Rewards { get; set; }
 }
 
 public enum SummonRaidFailureCode

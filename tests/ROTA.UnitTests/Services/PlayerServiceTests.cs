@@ -136,6 +136,10 @@ public class PlayerServiceTests
               .ReturnsAsync(5);
         energy.Setup(e => e.GetCurrentEnergyAsync(player.Id, ResourceType.GuildStamina, It.IsAny<CancellationToken>()))
               .ReturnsAsync(1);
+        // T56 — Health is now a 4th resource; stub it at its max so it is also full.
+        var healthMax = player.Resources.First(r => r.ResourceType == ResourceType.Health).MaxValue;
+        energy.Setup(e => e.GetCurrentEnergyAsync(player.Id, ResourceType.Health, It.IsAny<CancellationToken>()))
+              .ReturnsAsync(healthMax);
 
         energy.Setup(e => e.GetRegenMinutesPerPoint(It.IsAny<PlayerClass>(), It.IsAny<ResourceType>()))
               .Returns(5.0);

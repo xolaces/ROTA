@@ -98,6 +98,14 @@ public sealed class StatService : IStatService
             await _energy.RefillEnergyAsync(playerId, ResourceType.Stamina, amount, ct);
         }
 
+        // T56 — Health investment raises BaseMaxHealth, so grow the Health pool max to match and credit
+        // the gained delta to the current pool (same immediate-effect rule as Energy/Stamina above).
+        if (statType == StatType.Health)
+        {
+            await _energy.UpdateMaxAsync(playerId, ResourceType.Health, stats.BaseMaxHealth, ct);
+            await _energy.RefillEnergyAsync(playerId, ResourceType.Health, amount, ct);
+        }
+
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, "AllocateStat", null,
             $"Allocated {amount} points to {statType}. SkillPoints remaining: {stats.SkillPoints}",
@@ -138,6 +146,12 @@ public sealed class StatService : IStatService
         await _energy.RefillToMaxAsync(playerId, ResourceType.Energy, ct);
         await _energy.RefillToMaxAsync(playerId, ResourceType.Stamina, ct);
         await _energy.RefillToMaxAsync(playerId, ResourceType.GuildStamina, ct);
+
+        // T56 — sync the Health pool max to BaseMaxHealth (grows via stat allocation) and refill it on
+        // level-up too (owner decision: level-up still tops up health, alongside its passive regen).
+        // RestoreFullHealth() above keeps the vestigial PlayerStats.CurrentHealth consistent.
+        await _energy.UpdateMaxAsync(playerId, ResourceType.Health, player.Stats.BaseMaxHealth, ct);
+        await _energy.RefillToMaxAsync(playerId, ResourceType.Health, ct);
 
         if (newLevel % 5 == 0)
         {

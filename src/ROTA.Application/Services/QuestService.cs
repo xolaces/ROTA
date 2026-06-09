@@ -106,6 +106,28 @@ public sealed class QuestService : IQuestService
         _random            = random ?? Random.Shared;
     }
 
+    // T55 — single source of truth for the co-scaled energy cost + XP reward of a quest at a given
+    // difficulty. Used on attempt AND to populate the availability DTO (at Normal as the display
+    // baseline). Energy: base × difficultyEnergyMult × chapterEnergyMult × (1 + zoneIndex × zoneRamp).
+    // XP (NOT Hoard-scaled): base × zoneRatio(boss|battle) × chapterXpMult × difficultyRewardMult.
+    private (int EnergyCost, int XpReward) ComputeScaledCostAndXp(QuestDefinition quest, QuestDifficulty difficulty)
+    {
+        var scaling = _questConfig.GetChapterScaling(quest.Chapter);
+
+        double energyMult     = EnergyMultipliers[difficulty];
+        double zoneEnergyRamp = 1.0 + quest.ZoneIndex * _questConfig.EnergyZoneRampPerZone;
+        int energyCost = (int)Math.Ceiling(
+            quest.BaseEnergyCost * energyMult * scaling.EnergyCostMultiplier * zoneEnergyRamp);
+
+        double zoneRatio = quest.IsBoss
+            ? _questConfig.XpBossRatio
+            : _questConfig.XpZoneRatioBase + quest.ZoneIndex * _questConfig.XpZoneRatioPerZone;
+        int xpReward = (int)(
+            quest.ExperienceReward * zoneRatio * scaling.XpMultiplier * RewardMultipliers[difficulty]);
+
+        return (energyCost, xpReward);
+    }
+
     public async Task<IReadOnlyList<QuestAvailabilityResponse>> GetAvailableQuestsAsync(
         Guid playerId, CancellationToken ct = default)
     {
@@ -141,6 +163,11 @@ public sealed class QuestService : IQuestService
                     .All(n => unlockedQuestIds.Contains(n.Id));
             }
 
+            // T55 — effective (chapter+zone-scaled) cost/reward at Normal as the card display baseline;
+            // the client multiplies by the selected difficulty. The server recomputes authoritatively on
+            // attempt, so these are display-only.
+            var (effEnergy, effXp) = ComputeScaledCostAndXp(quest, QuestDifficulty.Normal);
+
             result.Add(new QuestAvailabilityResponse
             {
                 Id                 = quest.Id,
@@ -151,6 +178,8 @@ public sealed class QuestService : IQuestService
                 NodeIndex          = quest.NodeIndex,
                 NodeType           = quest.NodeType,
                 BaseEnergyCost     = quest.BaseEnergyCost,
+                EffectiveEnergyCost = effEnergy,
+                EffectiveXpReward  = effXp,
                 GoldReward         = quest.GoldReward,
                 ExperienceReward   = quest.ExperienceReward,
                 GemReward          = quest.GemReward,
@@ -233,18 +262,11 @@ public sealed class QuestService : IQuestService
         catch (Exception) when (!ct.IsCancellationRequested) { lootMods = new MasteryLootModifiers(1.0, 1.0, 1.0, 0.0); }
 
         // 5. Compute scaled costs and rewards
-        float energyMult  = EnergyMultipliers[difficulty];
         float rewardMult  = RewardMultipliers[difficulty];
-        int energyCost    = (int)Math.Ceiling(quest.BaseEnergyCost * energyMult);
+        // T55 — energy cost AND XP reward both carry the per-chapter (capped) scaling + zone depth, so
+        // they grow together and the XP-per-energy ratio stays intentional at every stage.
+        var (energyCost, xpReward) = ComputeScaledCostAndXp(quest, difficulty);
         int goldReward    = (int)(quest.GoldReward * rewardMult * lootMods.HoardGoldMultiplier);
-        // T44 — zone-indexed XP. ExperienceReward is the per-node BASE; a battle scales with zone
-        // depth, a boss always uses the (larger) boss ratio, and the per-chapter scalar makes late
-        // chapters award meaningfully more. XP is NOT Hoard-scaled (only gold/drops are).
-        double zoneRatio = quest.IsBoss
-            ? _questConfig.XpBossRatio
-            : _questConfig.XpZoneRatioBase + quest.ZoneIndex * _questConfig.XpZoneRatioPerZone;
-        double chapterScalar = _questConfig.ChapterXpScalars.TryGetValue(quest.Chapter, out var s) ? s : 1.0;
-        int xpReward      = (int)(quest.ExperienceReward * zoneRatio * chapterScalar * rewardMult);
         int gemReward     = (int)Math.Round(quest.GemReward * rewardMult);
 
         // 6. Spend energy — if insufficient, return immediately with no side effects

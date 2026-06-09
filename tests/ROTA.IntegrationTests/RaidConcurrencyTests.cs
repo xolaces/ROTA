@@ -176,9 +176,27 @@ public class RaidConcurrencyTests : IAsyncLifetime
             dbRaid.CurrentHp.Should().Be(0, "HP must be zero after kill");
         }
 
-        // 3. Gem rewards granted exactly once across both players.
-        //    IronColossus BaseGemReward = 2; in a 1v1 the single player is Legendary1
-        //    and receives gems.  The race-loser never dealt damage so gets no gems.
+        // 3. T57 — gems are DEFERRED: the killing hit computes them but grants NONE.
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<RotaDbContext>();
+            var gemRowsOnKill = await db.GemTransactions
+                .Where(g => g.ReferenceId == $"raid:{raid.Id}:{player1.Id}"
+                         || g.ReferenceId == $"raid:{raid.Id}:{player2.Id}")
+                .CountAsync();
+            gemRowsOnKill.Should().Be(0, "T57 — raid gems are computed on the kill but granted at Loot");
+        }
+
+        // 3b. The WINNER (the player who landed the kill) claims their deferred rewards via Loot, which
+        //     grants gems exactly once (IronColossus BaseGemReward = 2, Legendary1 in a 1v1). The race-
+        //     loser never dealt damage → no participant row → nothing to claim.
+        var winnerId = results[0].Success ? player1.Id : player2.Id;
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var rs = scope.ServiceProvider.GetRequiredService<IRaidService>();
+            var loot = await rs.LootRaidAsync(winnerId, raid.Id);
+            loot.Success.Should().BeTrue("the winner can claim their deferred rewards");
+        }
         using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<RotaDbContext>();
@@ -187,7 +205,7 @@ public class RaidConcurrencyTests : IAsyncLifetime
                          || g.ReferenceId == $"raid:{raid.Id}:{player2.Id}")
                 .CountAsync();
             gemRows.Should().Be(1,
-                "gems must be granted exactly once — duplicate rewards are the bug this lock prevents");
+                "gems granted exactly once — on the winner's Loot claim (no duplicate, the lock's guarantee)");
         }
 
         // 4. The losing player's stamina is net-unchanged (spent then refunded).

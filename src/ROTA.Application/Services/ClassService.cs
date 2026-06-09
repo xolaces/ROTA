@@ -46,6 +46,7 @@ public sealed class ClassService : IClassService
             EnergyRegenMinutesPerPoint     = energy,
             StaminaRegenMinutesPerPoint    = stamina,
             GuildStaminaRegenMinutesPerPoint = _config.Value.GuildStaminaRegenMinutes,
+            HealthRegenMinutesPerPoint     = _config.Value.HealthRegenMinutes,   // T56
             IsConverged                    = IsConvergedClass(playerClass),
         };
     }

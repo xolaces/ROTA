@@ -88,11 +88,11 @@ public sealed class RaidController : ControllerBase
         };
     }
 
-    // Summoner-only: dismiss a defeated raid from all lists (Ticket 50). Rewards were already granted on
-    // the killing hit — this only removes the raid from the indexes (Lootable → Looted).
+    // T57 — per-participant loot CLAIM of a defeated raid. Grants this player's deferred rewards
+    // (gold/gems/stat-points/items; XP was granted at kill) and returns them. Idempotent on re-press.
+    // Returns the full LootRaidResult (Raid + Rewards). 404 not-found / not-a-participant, 409 not-yet-defeated.
     [HttpPost("{activeRaidId}/loot")]
-    [ProducesResponseType(typeof(ActiveRaidResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(LootRaidResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Loot([FromRoute] Guid activeRaidId)
@@ -100,7 +100,7 @@ public sealed class RaidController : ControllerBase
         var result = await _raids.LootRaidAsync(GetPlayerId(), activeRaidId);
 
         if (result.Success)
-            return Ok(result.Raid);
+            return Ok(result);
 
         return result.FailureCode switch
         {

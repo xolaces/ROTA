@@ -244,6 +244,15 @@ public sealed class RaidService : IRaidService
         foreach (var raid in activeRaids)
             result.Add(await MapToResponseAsync(raid, playerId, activeRaids.Count, now, ct));
 
+        // T57 — also surface the caller's defeated raids with UNCLAIMED deferred rewards (Lootable), so
+        // they can return and loot after leaving without claiming. Disjoint from the Active list above
+        // (different lifecycle). Gauntlet/guild raids are excluded — those are claimed on their own screens.
+        var lootable = await _raids.GetLootableUnclaimedForPlayerAsync(playerId, ct);
+        if (lootable is not null)
+            foreach (var raid in lootable)
+                if (raid.GauntletEventId is null && raid.GuildId is null)
+                    result.Add(await MapToResponseAsync(raid, playerId, raid.ParticipantCount, now, ct));
+
         return result;
     }
 
@@ -537,17 +546,17 @@ public sealed class RaidService : IRaidService
         return new ShareRaidResult { Success = true, Raid = response };
     }
 
-    // Ticket 50 — summoner-only dismiss of a defeated raid. Rewards were already granted on the killing
-    // hit (DistributeKillRewardsAsync) — there is NO unclaimed-reward state — so this is purely a
-    // remove-from-all-indexes action (Lootable → Looted). IsDeleted is left false so raid_participants
-    // and the completed-raid history stay intact.
+    // Ticket 50 + T57 — per-PARTICIPANT loot CLAIM. T57 reverses T50's "rewards already granted on the
+    // killing hit, Loot is a pure dismiss": rewards (gold/gems/stat-points/items) are now COMPUTED on the
+    // killing hit but GRANTED here, when each participant presses Loot. XP/level-ups stay immediate at
+    // kill. Each participant claims exactly once (RewardedAt latches); a re-press is idempotent (the
+    // summary is returned, nothing re-granted). The raid stays Lootable (it is no longer flipped to
+    // Looted per claim) so other participants can still return and claim until it expires.
     public async Task<LootRaidResult> LootRaidAsync(
         Guid callerId, Guid activeRaidId, CancellationToken ct = default)
     {
         var raid = await _raids.FindByIdWithSummonerAsync(activeRaidId, ct);
-
-        // Missing / deleted / already-looted → NotFound (an already-looted raid is gone from the player's
-        // perspective, so we don't distinguish it from a missing one).
+        // Missing / deleted / fully dismissed (legacy Looted) → gone from the player's perspective.
         if (raid is null || raid.IsDeleted || raid.LifecycleState == RaidLifecycleState.Looted)
             return new LootRaidResult
             {
@@ -555,31 +564,70 @@ public sealed class RaidService : IRaidService
                 FailureReason = "Raid not found.",
             };
 
-        if (raid.SummonedByPlayerId != callerId)
-            return new LootRaidResult
-            {
-                FailureCode   = LootRaidFailureCode.NotSummoner,
-                FailureReason = "Only the summoner can dismiss this raid.",
-            };
-
-        // Still Active (not yet defeated) → can't loot/dismiss it.
+        // Must be defeated (Lootable) to claim — a still-Active raid can't be looted.
         if (raid.LifecycleState != RaidLifecycleState.Lootable)
             return new LootRaidResult
             {
                 FailureCode   = LootRaidFailureCode.NotLootable,
-                FailureReason = "This raid is still active and cannot be dismissed yet.",
+                FailureReason = "This raid is still active — defeat it before looting.",
             };
 
-        raid.Loot();
-        await _raids.UpdateAsync(raid, ct);
+        // Only a participant has rewards to claim.
+        var participant = await _participants.FindByRaidAndPlayerAsync(activeRaidId, callerId, ct);
+        if (participant is null)
+            return new LootRaidResult
+            {
+                FailureCode   = LootRaidFailureCode.NotFound,
+                FailureReason = "You did not take part in this raid.",
+            };
 
-        await _auditLog.AppendAsync(AuditLog.Create(
-            callerId, "RaidLooted", null,
-            $"Dismissed defeated raid {raid.Id} ({raid.RaidDefinitionId}) [{raid.Size}] from all lists.",
-            null), ct);
+        // Grant the deferred rewards exactly once (idempotent on re-press: RewardedAt already set). T57:
+        // gold + XP are NOT here — they were granted on-hit (the killing hit). Loot grants EVERYTHING else:
+        // gems, stat-points, inventory items, and the magic/unit/legion/gear collection drops.
+        if (!participant.RewardsClaimed)
+        {
+            if (participant.GemsEarned > 0)
+                await _gems.GrantGemsAsync(callerId, participant.GemsEarned,
+                    GemTransactionType.RaidReward, $"raid:{raid.Id}:{callerId}", ct);
+            if (participant.StatPointsEarned > 0)
+                await _stats.AddUnassignedPointsAsync(callerId, participant.StatPointsEarned, ct);
+            if (!string.IsNullOrEmpty(participant.ItemsEarnedJson))
+            {
+                var pendingItems = JsonSerializer.Deserialize<List<ItemGrantDTO>>(participant.ItemsEarnedJson)
+                                   ?? new List<ItemGrantDTO>();
+                var throwaway = new List<ItemGrantDTO>();
+                foreach (var it in pendingItems)
+                    await GrantInventoryItemAsync(callerId, it.ItemId, it.Quantity, throwaway, ct);
+            }
+            // T57 — deferred collection drops (idempotent grants).
+            if (!string.IsNullOrEmpty(participant.PendingDropsJson))
+            {
+                var drops = JsonSerializer.Deserialize<List<PendingDrop>>(participant.PendingDropsJson)
+                            ?? new List<PendingDrop>();
+                foreach (var d in drops)
+                {
+                    switch (d.Kind)
+                    {
+                        case "Magic":  await _magicService.GrantMagicAsync(callerId, d.Id, ct); break;
+                        case "Unit":   await _legionService.GrantUnitAsync(callerId, d.Id, ct); break;
+                        case "Legion": await _legionService.GrantLegionAsync(callerId, d.Id, ct); break;
+                        case "Gear":   await _equipment.GrantGearAsync(callerId, d.Id, d.Quantity, ct); break;
+                    }
+                }
+            }
 
-        var response = await MapToResponseAsync(raid, callerId, totalParticipants: 1, DateTimeOffset.UtcNow, ct);
-        return new LootRaidResult { Success = true, Raid = response };
+            participant.MarkRewardsClaimed(DateTimeOffset.UtcNow);
+            await _participants.UpdateAsync(participant, ct);
+
+            await _auditLog.AppendAsync(AuditLog.Create(
+                callerId, "RaidLootClaimed", null,
+                $"Claimed deferred rewards for raid {raid.Id} ({raid.RaidDefinitionId}): " +
+                $"gems +{participant.GemsEarned}, SP +{participant.StatPointsEarned}.", null), ct);
+        }
+
+        var rewards  = BuildClaimedRewards(participant);
+        var response = await MapToResponseAsync(raid, callerId, totalParticipants: raid.ParticipantCount, DateTimeOffset.UtcNow, ct);
+        return new LootRaidResult { Success = true, Raid = response, Rewards = rewards };
     }
 
     public async Task<IReadOnlyList<RaidParticipantRankDto>> GetParticipantsAsync(
@@ -783,6 +831,13 @@ public sealed class RaidService : IRaidService
             // Compute effective stats — base + gear bonuses + conditional bonuses.
             var combat = await _equipment.GetEffectiveCombatDataAsync(
                 playerId, player.Stats!.BaseAttack, player.Stats.BaseDefense, ct);
+
+            // T56 — health cost for this hit: flat per difficulty for ordinary/guild raids; a Defense-
+            // scaled mob-damage curve for the Gauntlet (ramps past ~stage 200). Best-effort drain inside
+            // the hit tx, clamped at 0 — it never blocks the hit (PHASE-2: optional 0-health gate).
+            int healthCost = ComputeHealthCost(isGauntlet, lockedRaid, combat.EffectiveDefense);
+            if (healthCost > 0)
+                await _energy.DrainAsync(playerId, ResourceType.Health, healthCost, ct);
 
             // System 22 Phase A — mastery modifiers (combat: Wrath +% legion power, Bulwark +% guild-raid
             // damage; loot: Hoard +% gold). ONE mastery-state read for the whole hit; a mastery-less player
@@ -1332,6 +1387,37 @@ public sealed class RaidService : IRaidService
     // KILL REWARD DISTRIBUTION
     // -------------------------------------------------------------------
 
+    // T56 — per-hit health cost. Ordinary/guild raids pay a flat cost by difficulty; the Gauntlet pays a
+    // Defense-scaled mob-damage curve that ramps past the configured stage (~200). Always returns ≥ 1 for
+    // a Gauntlet hit so the mob is always noticeable; ordinary raids use the configured per-difficulty cost.
+    private int ComputeHealthCost(bool isGauntlet, ActiveRaid raid, long effectiveDefense)
+    {
+        if (isGauntlet)
+        {
+            int stage = ParseGauntletStage(raid.RaidDefinitionId);
+            double raw = _combatConfig.GauntletHealthBaseDamage
+                       + stage * _combatConfig.GauntletHealthPerStage
+                       + Math.Max(0, stage - _combatConfig.GauntletHealthRampStage) * _combatConfig.GauntletHealthRampPerStage;
+            double reduction = Math.Min(_combatConfig.GauntletHealthDefenseReductionMax,
+                                        effectiveDefense * _combatConfig.GauntletHealthDefenseReductionPerPoint);
+            return (int)Math.Max(1, Math.Round(raw * (1.0 - reduction)));
+        }
+        return _combatConfig.RaidHealthCostByDifficulty.TryGetValue(raid.Difficulty.ToString(), out var c)
+            ? c
+            : _combatConfig.RaidHealthCostDefault;
+    }
+
+    // Parse N from a "gauntlet_stage_N" definition id; 0 when it isn't a Gauntlet stage.
+    private static int ParseGauntletStage(string raidDefinitionId)
+    {
+        const string prefix = "gauntlet_stage_";
+        if (!string.IsNullOrEmpty(raidDefinitionId)
+            && raidDefinitionId.StartsWith(prefix, StringComparison.Ordinal)
+            && int.TryParse(raidDefinitionId.Substring(prefix.Length), out var n))
+            return n;
+        return 0;
+    }
+
     private async Task<RaidRewards> DistributeKillRewardsAsync(
         Guid callerPlayerId,
         Player callerPlayer,
@@ -1389,6 +1475,10 @@ public sealed class RaidService : IRaidService
             long gold = (long)Math.Round(definition.BaseGoldReward * diffMult * (double)multiplier);
             int xp    = (int)Math.Round(definition.BaseExperienceReward * diffMult * (double)multiplier);
 
+            // T57 — XP + GOLD are IMMEDIATE on-hit rewards (the killing hit grants both, alongside the
+            // per-hit on-hit gold/XP). EVERYTHING ELSE — gems, stat-points, items, and the magic/unit/
+            // legion/gear drops — is DEFERRED: computed + stored on the participant row now, GRANTED when
+            // that participant presses Loot.
             participantPlayer.AddGold(gold);
             var levelUps = participantPlayer.AddExperience(xp, lvl => _stats.XpToNextLevel(lvl));
             await _players.UpdateAsync(participantPlayer, ct);
@@ -1397,28 +1487,24 @@ public sealed class RaidService : IRaidService
             foreach (var newLevel in levelUps)
                 await _stats.GrantLevelUpPointsAsync(p.PlayerId, newLevel, ct);
 
-            // Gems — Rare+ only
+            // Gems — Rare+ only. T57: COMPUTED now, GRANTED at Loot (the idempotent ref is reused there).
             int participantGemsGranted = 0;
             if (displayTier is not "Participant")
             {
                 int gemAmount = (int)Math.Round(definition.BaseGemReward * (double)multiplier);
                 if (gemAmount > 0)
                 {
-                    var gemRef = $"raid:{raid.Id}:{p.PlayerId}";
-                    var granted = await _gems.GrantGemsAsync(
-                        p.PlayerId, gemAmount, GemTransactionType.RaidReward, gemRef, ct);
-                    if (granted)
-                    {
-                        participantGemsGranted = gemAmount;
-                        if (p.PlayerId == callerPlayerId)
-                            callerGemsGranted = gemAmount;
-                    }
+                    participantGemsGranted = gemAmount;
+                    if (p.PlayerId == callerPlayerId)
+                        callerGemsGranted = gemAmount;
                 }
             }
 
-            // Loot table — stat points and items (cumulative thresholds)
+            // Loot table — stat points, items, and collection drops (cumulative thresholds). T57: ALL of
+            // these are DEFERRED to Loot — rolled now, granted on the participant's claim.
             int unassignedSP = 0;
             var items = new List<ItemGrantDTO>();
+            var pendingDrops = new List<PendingDrop>();
             if (!string.IsNullOrEmpty(definition.LootTableId))
             {
                 var lt = _lootTables.GetById(definition.LootTableId);
@@ -1442,53 +1528,51 @@ public sealed class RaidService : IRaidService
                             if (_random.NextDouble() < drop.Chance)
                             {
                                 int qty = (int)Math.Max(1, Math.Round(drop.Quantity * (double)multiplier));
-                                await GrantInventoryItemAsync(p.PlayerId, drop.ItemId, qty, items, ct);
+                                // T57 — roll only; the item is GRANTED to inventory at Loot.
+                                BuildItemGrantDTO(drop.ItemId, qty, items);
                             }
                         }
 
-                        // Magic drops per threshold — idempotent grant (duplicate = no-op).
+                        // T57 — magic/unit/legion/gear drops are DEFERRED: rolled now, stored as PendingDrop,
+                        // granted (idempotently) at Loot.
                         foreach (var drop in threshold.MagicDrops)
-                        {
                             if (_random.NextDouble() < drop.Chance)
-                                await _magicService.GrantMagicAsync(p.PlayerId, drop.MagicId, ct);
-                        }
+                                pendingDrops.Add(new PendingDrop { Kind = "Magic", Id = drop.MagicId, Quantity = 1 });
 
-                        // Unit drops per threshold — idempotent grant.
                         foreach (var drop in threshold.UnitDrops)
-                        {
                             if (_random.NextDouble() < drop.Chance)
-                                await _legionService.GrantUnitAsync(p.PlayerId, drop.UnitId, ct);
-                        }
+                                pendingDrops.Add(new PendingDrop { Kind = "Unit", Id = drop.UnitId, Quantity = 1 });
 
-                        // Legion drops per threshold — idempotent grant.
                         foreach (var drop in threshold.LegionDrops)
-                        {
                             if (_random.NextDouble() < drop.Chance)
-                                await _legionService.GrantLegionAsync(p.PlayerId, drop.LegionId, ct);
-                        }
+                                pendingDrops.Add(new PendingDrop { Kind = "Legion", Id = drop.LegionId, Quantity = 1 });
 
-                        // Gear drops per threshold — idempotent upsert.
+                        // Gear drops are unconditional at a qualifying threshold (no chance roll).
                         foreach (var drop in threshold.GearDrops)
-                            await _equipment.GrantGearAsync(p.PlayerId, drop.GearDefinitionId, drop.Quantity, ct);
+                            pendingDrops.Add(new PendingDrop { Kind = "Gear", Id = drop.GearDefinitionId, Quantity = drop.Quantity });
                     }
                 }
             }
 
-            if (unassignedSP > 0)
-                await _stats.AddUnassignedPointsAsync(p.PlayerId, unassignedSP, ct);
+            // T57 — stat points are DEFERRED (granted at Loot), not added here.
 
-            // Persist reward summary onto the participant row — same advisory-lock transaction.
+            // Persist the COMPUTED (pending) reward summary onto the participant row — same advisory-lock
+            // transaction. RewardedAt stays null until the participant claims via Loot. Gold/XP were just
+            // granted (on-hit), but GoldEarned/XpEarned are still stored for the completed-raid history.
             var itemsJson = items.Count > 0
                 ? JsonSerializer.Serialize(items)
                 : string.Empty;
-            p.RecordRewards(
-                tier:        displayTier,
-                gold:        gold,
-                xp:          xp,
-                gems:        participantGemsGranted,
-                statPoints:  unassignedSP,
-                itemsJson:   itemsJson,
-                rewardedAt:  DateTimeOffset.UtcNow);
+            var pendingDropsJson = pendingDrops.Count > 0
+                ? JsonSerializer.Serialize(pendingDrops)
+                : string.Empty;
+            p.RecordPendingRewards(
+                tier:             displayTier,
+                gold:             gold,
+                xp:               xp,
+                gems:             participantGemsGranted,
+                statPoints:       unassignedSP,
+                itemsJson:        itemsJson,
+                pendingDropsJson: pendingDropsJson);
             await _participants.UpdateAsync(p, ct);
 
             if (p.PlayerId == callerPlayerId)
@@ -1560,6 +1644,41 @@ public sealed class RaidService : IRaidService
                 ArtKey   = def.ArtKey,
             });
         }
+    }
+
+    // T57 — build the loot DTO WITHOUT granting to inventory. The roll OUTCOME is fixed + stored at kill
+    // (in items_earned_json); the actual inventory grant happens at Loot. Mirrors the DTO tail of
+    // GrantInventoryItemAsync.
+    private void BuildItemGrantDTO(string itemDefId, int quantity, List<ItemGrantDTO> into)
+    {
+        var def = _itemDefs.GetById(itemDefId);
+        if (def is not null)
+            into.Add(new ItemGrantDTO
+            {
+                ItemId   = itemDefId,
+                ItemName = def.Name,
+                Quantity = quantity,
+                Rarity   = def.Rarity.ToString(),
+                ArtKey   = def.ArtKey,
+            });
+    }
+
+    // T57 — the Loot CLAIM summary: only what Loot actually grants (gems / stat-points / items). Gold +
+    // XP are 0 here because they were on-hit rewards (granted on the killing hit), not claimed at Loot.
+    private RaidRewards BuildClaimedRewards(RaidParticipant p)
+    {
+        var items = string.IsNullOrEmpty(p.ItemsEarnedJson)
+            ? new List<ItemGrantDTO>()
+            : (JsonSerializer.Deserialize<List<ItemGrantDTO>>(p.ItemsEarnedJson) ?? new List<ItemGrantDTO>());
+        return new RaidRewards
+        {
+            GoldGranted                 = 0,   // on-hit reward, not claimed at Loot
+            ExperienceGranted           = 0,   // on-hit reward, not claimed at Loot
+            GemsGranted                 = p.GemsEarned,
+            ContributionTier            = p.ContributionTier,
+            UnassignedStatPointsGranted = p.StatPointsEarned,
+            ItemsGranted                = items,
+        };
     }
 
     private static RaidHitResult HitFail(RaidHitFailureCode code, string reason)

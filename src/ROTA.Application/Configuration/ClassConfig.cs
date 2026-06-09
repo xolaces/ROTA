@@ -5,6 +5,8 @@ namespace ROTA.Application.Configuration;
 public class ClassConfig
 {
     public double GuildStaminaRegenMinutes { get; set; } = 2.0;
+    // T56 — Health regen (minutes per point). Slow-but-steady late-game tension; class-tunable later.
+    public double HealthRegenMinutes { get; set; } = 10.0;
     public Dictionary<string, int> ClassUnlockLevels { get; set; } = new();
     public Dictionary<int, string> ConvergenceLevels { get; set; } = new();
     public Dictionary<string, Dictionary<string, double>> RegenMinutesPerPoint { get; set; } = new();

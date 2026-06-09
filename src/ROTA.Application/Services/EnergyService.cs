@@ -99,6 +99,25 @@ public sealed class EnergyService : IEnergyService
         }, ct);
     }
 
+    // T56 — deduct up to `amount` from a pool, clamping at 0 (never fails). Used for health damage,
+    // which should drain the pool rather than be rejected like a spend. Returns the amount drained.
+    public async Task<int> DrainAsync(Guid playerId, ResourceType type, int amount, CancellationToken ct = default)
+    {
+        if (amount <= 0) return 0;
+        var now = DateTimeOffset.UtcNow;
+        var minutesPerPoint = await ResolveMinutesPerPointAsync(playerId, type, ct);
+
+        int drained = 0;
+        await _resources.AtomicUpdateAsync(playerId, type, resource =>
+        {
+            var live = ComputeLiveValue(resource, minutesPerPoint, now);
+            drained = Math.Min(live, amount);
+            resource.SaveCheckpoint(live - drained, now);
+            return true;
+        }, ct);
+        return drained;
+    }
+
     public async Task RefillToMaxAsync(Guid playerId, ResourceType type, CancellationToken ct = default)
     {
         var now = DateTimeOffset.UtcNow;
@@ -149,6 +168,7 @@ public sealed class EnergyService : IEnergyService
             ResourceType.Energy       => rates.EnergyRegenMinutesPerPoint,
             ResourceType.Stamina      => rates.StaminaRegenMinutesPerPoint,
             ResourceType.GuildStamina => rates.GuildStaminaRegenMinutesPerPoint,
+            ResourceType.Health       => rates.HealthRegenMinutesPerPoint,   // T56
             _                         => 0,
         };
     }

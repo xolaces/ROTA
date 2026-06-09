@@ -1080,11 +1080,13 @@ public class QuestServiceTests
     }
 
     // -----------------------------------------------------------------------
-    // T44 — zone-indexed XP formula
-    // XP = base × zoneRatio × chapterScalar × rewardMult.
+    // T44/T55 — zone-indexed XP formula
+    // XP = base × zoneRatio × chapterXpMultiplier × rewardMult.
     //   battle zoneRatio = XpZoneRatioBase(1.2) + ZoneIndex × XpZoneRatioPerZone(0.05)
     //   boss   zoneRatio = XpBossRatio(2.0) regardless of zone
-    // Defaults: chapterScalar Ch1=1.0, Ch2=1.6. rewardMult Normal=1.0, Nightmare=3.5.
+    // T55: the per-chapter scalar is now ChapterScaling[ch].XpMultiplier (gentle — the base XP already
+    // carries chapter progression, and energy now co-scales). Defaults: Ch1=1.00, Ch2=1.03.
+    // rewardMult Normal=1.0, Nightmare=3.5.
     // -----------------------------------------------------------------------
 
     private static QuestDefinition XpNode(
@@ -1102,9 +1104,9 @@ public class QuestServiceTests
     [InlineData(1, 2, "Battle", QuestDifficulty.Normal,    130)]  // 100 × 1.30 × 1.0 × 1.0  (1.2 + 2×0.05)
     [InlineData(1, 0, "Boss",   QuestDifficulty.Normal,    200)]  // 100 × 2.0  × 1.0 × 1.0
     [InlineData(1, 2, "Boss",   QuestDifficulty.Normal,    200)]  // boss ratio ignores zone
-    // Ch2 (scalar 1.6):
-    [InlineData(2, 0, "Battle", QuestDifficulty.Normal,    192)]  // 100 × 1.2  × 1.6 × 1.0
-    [InlineData(2, 0, "Boss",   QuestDifficulty.Normal,    320)]  // 100 × 2.0  × 1.6 × 1.0
+    // Ch2 (T55 XpMultiplier 1.03):
+    [InlineData(2, 0, "Battle", QuestDifficulty.Normal,    123)]  // (int)(100 × 1.2  × 1.03 × 1.0) = 123
+    [InlineData(2, 0, "Boss",   QuestDifficulty.Normal,    206)]  // (int)(100 × 2.0  × 1.03 × 1.0) = 206
     // Nightmare rewardMult 3.5, Ch1:
     [InlineData(1, 0, "Battle", QuestDifficulty.Nightmare, 420)]  // 100 × 1.2  × 1.0 × 3.5
     [InlineData(1, 0, "Boss",   QuestDifficulty.Nightmare, 700)]  // 100 × 2.0  × 1.0 × 3.5

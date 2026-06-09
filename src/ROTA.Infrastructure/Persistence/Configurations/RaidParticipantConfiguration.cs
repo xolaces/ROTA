@@ -73,6 +73,13 @@ public class RaidParticipantConfiguration : IEntityTypeConfiguration<RaidPartici
             .HasDefaultValue(string.Empty)
             .IsRequired();
 
+        // T57 — deferred magic/unit/legion/gear drops (JSON), granted at Loot. Plain text; app-serialized.
+        builder.Property(p => p.PendingDropsJson)
+            .HasColumnName("pending_drops_json")
+            .HasColumnType("text")
+            .HasDefaultValue(string.Empty)
+            .IsRequired();
+
         builder.Property(p => p.RewardedAt)
             .HasColumnName("rewarded_at")
             .IsRequired(false);

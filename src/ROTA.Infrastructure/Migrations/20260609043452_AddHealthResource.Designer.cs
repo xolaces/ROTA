@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ROTA.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using ROTA.Infrastructure.Persistence;
 namespace ROTA.Infrastructure.Migrations
 {
     [DbContext(typeof(RotaDbContext))]
-    partial class RotaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260609043452_AddHealthResource")]
+    partial class AddHealthResource
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2621,13 +2624,6 @@ namespace ROTA.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasDefaultValue("")
                         .HasColumnName("items_earned_json");
-
-                    b.Property<string>("PendingDropsJson")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("")
-                        .HasColumnName("pending_drops_json");
 
                     b.Property<Guid>("PlayerId")
                         .HasColumnType("uuid")

@@ -12,6 +12,11 @@ public class QuestAvailabilityResponse
     public int NodeIndex { get; set; }
     public string NodeType { get; set; } = string.Empty;
     public int BaseEnergyCost { get; set; }
+    // T55 — co-scaled display values at Normal difficulty: the per-chapter (capped at chapter 16) +
+    // zone-depth scaling applied to the base energy cost and base XP. The client shows these (×selected
+    // difficulty) so the player sees the real cost/reward; the server recomputes on attempt.
+    public int EffectiveEnergyCost { get; set; }
+    public int EffectiveXpReward { get; set; }
     public int GoldReward { get; set; }
     public int ExperienceReward { get; set; }
     public int GemReward { get; set; }

@@ -55,8 +55,45 @@ public sealed class GauntletContentProvider : IGauntletContentProvider
 
         _trophies = trophies.ToDictionary(t => t.Id, t => t, StringComparer.Ordinal);
         _prizeTable = prizeTable;
-        _raids = raids.OrderBy(r => r.LadderStage).ToList();
+
+        // T54 — formula-extend the ladder to MaxLadderStage when configured (0/≤count = off → JSON
+        // stages exactly as loaded, so small-fixture unit tests are unaffected).
+        var ladder = raids.OrderBy(r => r.LadderStage).ToList();
+        if (_config.MaxLadderStage > ladder.Count)
+            ladder = BuildExtendedLadder(ladder, _config);
+        _raids = ladder;
         _raidsByStage = _raids.ToDictionary(r => r.LadderStage, r => r);
+    }
+
+    // T54 — regenerate the ladder as config.MaxLadderStage stages whose HP/rewards follow the single
+    // smooth GauntletStageCurve (no per-stage JSON authoring). Early stages keep their JSON name/art/id;
+    // generated stages get a synthesized id + name. Strictly rising by construction (growth > 1), so the
+    // ladder invariants hold; stage-1 HP == StageHpBase keeps the shipped integration assertion valid.
+    private static List<GauntletRaidDefinition> BuildExtendedLadder(
+        List<GauntletRaidDefinition> jsonRaids, GauntletConfig config)
+    {
+        var result = new List<GauntletRaidDefinition>(config.MaxLadderStage);
+        for (var stage = 1; stage <= config.MaxLadderStage; stage++)
+        {
+            var src = stage <= jsonRaids.Count ? jsonRaids[stage - 1] : null;
+            result.Add(new GauntletRaidDefinition
+            {
+                Id                   = src?.Id   ?? $"gauntlet_stage_{stage}",
+                Name                 = src?.Name ?? $"Gauntlet — Stage {stage}",
+                Tier                 = "Event",
+                LadderStage          = stage,
+                BaseHp               = GauntletStageCurve.Hp(stage, config),
+                TimerHours           = src?.TimerHours        ?? 24,
+                StaminaCostPerHit    = src?.StaminaCostPerHit ?? 1,
+                LootTableId          = src?.LootTableId       ?? string.Empty,
+                BaseGoldReward       = GauntletStageCurve.Gold(stage, config),
+                BaseExperienceReward = GauntletStageCurve.Xp(stage, config),
+                BaseGemReward        = src?.BaseGemReward     ?? 0,
+                ArtKey               = src?.ArtKey            ?? $"gauntlet_stage_{stage}",
+                GauntletScored       = true,
+            });
+        }
+        return result;
     }
 
     // ── Accessors ────────────────────────────────────────────────────────────

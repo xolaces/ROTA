@@ -34,6 +34,18 @@ public sealed class ActiveRaidRepository : IActiveRaidRepository
             .Where(r => !r.IsDefeated && !r.IsDeleted && r.ExpiresAt > DateTimeOffset.UtcNow)
             .ToListAsync(ct);
 
+    // T57 — Lootable raids the caller can still claim (participant row with RewardedAt == null).
+    public async Task<IReadOnlyList<ActiveRaid>> GetLootableUnclaimedForPlayerAsync(
+        Guid playerId, CancellationToken ct = default)
+        => await _db.ActiveRaids
+            .Include(r => r.SummonedByPlayer)
+            .Where(r => !r.IsDeleted
+                        && r.LifecycleState == Domain.Enums.RaidLifecycleState.Lootable
+                        && _db.RaidParticipants.Any(p =>
+                               p.ActiveRaidId == r.Id && p.PlayerId == playerId
+                               && !p.IsDeleted && p.RewardedAt == null))
+            .ToListAsync(ct);
+
     // System 16 Slice 7 — every Gauntlet ladder raid this player has for the event (any state).
     // Ordered by CreatedAt so the most recent stage is last; the ladder service re-derives the stage
     // number from RaidDefinitionId ("gauntlet_stage_N") rather than trusting order.

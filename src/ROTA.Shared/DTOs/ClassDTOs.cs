@@ -6,6 +6,7 @@ public class ClassRegenRates
     public double EnergyRegenMinutesPerPoint { get; set; }
     public double StaminaRegenMinutesPerPoint { get; set; }
     public double GuildStaminaRegenMinutesPerPoint { get; set; }
+    public double HealthRegenMinutesPerPoint { get; set; }   // T56
     public List<string> AvailableChoices { get; set; } = new();
     // Per-choice regen preview so the unlock overlay can show each candidate class's benefit
     // (faster regen = lower minutes-per-point) without a round-trip per class. Empty when there
