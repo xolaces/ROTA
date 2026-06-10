@@ -96,4 +96,35 @@ public class OutboundEmailRepositoryTests : IAsyncLifetime
         // Newest-first regardless of priority: the High row was inserted last, so it comes first.
         page.Items.First().Id.Should().Be(high.Id);
     }
+
+    // T71 ops hardening — the startup recovery sweep's query: Queued rows and retryable Failed rows
+    // are owed an attempt; exhausted-Failed and Sent rows are not. (Other tests share this container,
+    // so assert membership, not exact set equality.)
+    [Fact]
+    public async Task GetPendingSendIds_ReturnsQueuedAndRetryableFailed_Only()
+    {
+        const int maxAttempts = 3;
+        await using var db = NewDbContext();
+        var repo = new OutboundEmailRepository(db);
+
+        var queued = Make(EmailPriority.Normal);
+        var retryableFailed = Make(EmailPriority.Normal);
+        retryableFailed.MarkFailed("smtp down");                       // 1 attempt < 3
+        var exhausted = Make(EmailPriority.Normal);
+        for (int i = 0; i < maxAttempts; i++) exhausted.MarkFailed("smtp down");
+        var sent = Make(EmailPriority.Normal);
+        sent.MarkSent();
+
+        await repo.AddAsync(queued);
+        await repo.AddAsync(retryableFailed);
+        await repo.AddAsync(exhausted);
+        await repo.AddAsync(sent);
+
+        var pending = await repo.GetPendingSendIdsAsync(maxAttempts);
+
+        pending.Should().Contain(queued.Id, "Queued rows were stranded by a restart");
+        pending.Should().Contain(retryableFailed.Id, "Failed with attempts remaining retries");
+        pending.Should().NotContain(exhausted.Id, "exhausted rows stay Failed for dashboard triage");
+        pending.Should().NotContain(sent.Id);
+    }
 }

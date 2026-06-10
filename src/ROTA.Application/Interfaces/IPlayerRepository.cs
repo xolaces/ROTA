@@ -38,4 +38,15 @@ public interface IPlayerRepository
     /// admins. Returns false (no change) if the target is not an admin or is the last remaining admin.
     /// </summary>
     Task<bool> TryDemoteAdminAsync(Guid targetId, CancellationToken ct = default);
+
+    /// <summary>
+    /// T59 — applies <paramref name="mutate"/> to the player and saves under the xmin optimistic-
+    /// concurrency token, retrying on conflict (reload fresh values, re-apply, re-save). Use this for
+    /// every gameplay reward write to the players row (quest rewards, raid on-hit gold/XP, kill-loop
+    /// XP/gold) so simultaneous quest+raid writes can never lose gold/XP via last-write-wins.
+    /// The callback MUST be repeatable: touch only the passed player (no external side effects).
+    /// Returns the callback's result from the attempt that committed.
+    /// Throws <see cref="InvalidOperationException"/> if the player does not exist.
+    /// </summary>
+    Task<TResult> MutateWithRetryAsync<TResult>(Guid playerId, Func<Player, TResult> mutate, CancellationToken ct = default);
 }

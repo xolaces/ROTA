@@ -109,9 +109,21 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
             .HasColumnName("is_deleted")
             .HasDefaultValue(false);
 
-        // Unique constraints
-        builder.HasIndex(p => p.Username).IsUnique();
-        builder.HasIndex(p => p.Email).IsUnique();
+        // T59 — optimistic concurrency on the players row via the PostgreSQL xmin system column.
+        // Concurrent quest/raid reward writes were last-write-wins (silent XP/gold loss); with xmin
+        // as the token a stale write throws DbUpdateConcurrencyException and the reward chokepoints
+        // retry via IPlayerRepository.MutateWithRetryAsync. No schema change (xmin is a system column).
+        builder.Property<uint>("xmin")
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
+
+        // Unique constraints — PARTIAL (index-hardening, audit ticket): existence checks all filter
+        // is_deleted, so a soft-deleted account's email/username must not block re-registration
+        // (the non-partial index 500'd it — the friendship lesson applied to players).
+        builder.HasIndex(p => p.Username).IsUnique().HasFilter("is_deleted = false");
+        builder.HasIndex(p => p.Email).IsUnique().HasFilter("is_deleted = false");
 
         // Relationships
         builder.HasOne(p => p.Stats)

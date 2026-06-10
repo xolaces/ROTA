@@ -176,4 +176,59 @@ public class EmailNotificationServiceTests
         email.Verify(s => s.SendAsync(It.IsAny<EmailMessage>(), It.IsAny<CancellationToken>()), Times.Never);
         emails.Verify(r => r.UpdateAsync(It.IsAny<OutboundEmail>(), It.IsAny<CancellationToken>()), Times.Never);
     }
+
+    // -----------------------------------------------------------------------
+    // T71 — retry semantics: the bool return drives the background re-enqueue
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task ProcessSend_ReturnsSettled_OnSuccess_AndRetryable_OnFailure()
+    {
+        var (service, emails, _, email, _) = BuildService(new EmailConfig { MaxSendAttempts = 5 });
+        var row = OutboundEmail.Create(EmailType.BugReport, "[ROTA][BugReport] x",
+            "rotadevteam@gmail.com", "bug", null, "T38", "{}", null);
+        emails.Setup(r => r.GetByIdAsync(row.Id, It.IsAny<CancellationToken>())).ReturnsAsync(row);
+        email.SetupSequence(s => s.SendAsync(It.IsAny<EmailMessage>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("smtp down"))
+            .Returns(Task.CompletedTask);
+
+        (await service.ProcessSendAsync(row.Id)).Should().BeFalse("attempt 1/5 failed — retryable");
+        (await service.ProcessSendAsync(row.Id)).Should().BeTrue("the retry succeeded — settled");
+        row.SendStatus.Should().Be(EmailSendStatus.Sent);
+        row.SendAttempts.Should().Be(2);
+        row.LastSendError.Should().BeNull("MarkSent clears the prior failure");
+    }
+
+    [Fact]
+    public async Task ProcessSend_ReturnsSettled_WhenAttemptsExhausted()
+    {
+        var (service, emails, _, email, _) = BuildService(new EmailConfig { MaxSendAttempts = 2 });
+        var row = OutboundEmail.Create(EmailType.BugReport, "[ROTA][BugReport] x",
+            "rotadevteam@gmail.com", "bug", null, "T38", "{}", null);
+        emails.Setup(r => r.GetByIdAsync(row.Id, It.IsAny<CancellationToken>())).ReturnsAsync(row);
+        email.Setup(s => s.SendAsync(It.IsAny<EmailMessage>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("smtp down"));
+
+        (await service.ProcessSendAsync(row.Id)).Should().BeFalse("attempt 1/2 — retryable");
+        (await service.ProcessSendAsync(row.Id)).Should().BeTrue("attempt 2/2 — exhausted, left Failed for triage");
+        row.SendStatus.Should().Be(EmailSendStatus.Failed);
+        row.SendAttempts.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task ProcessSend_SkipsAlreadySentRow_WithoutResending()
+    {
+        // The startup recovery sweep + a live enqueue can both carry the same id — the second
+        // delivery attempt must no-op instead of double-sending.
+        var (service, emails, _, email, _) = BuildService();
+        var row = OutboundEmail.Create(EmailType.BugReport, "[ROTA][BugReport] x",
+            "rotadevteam@gmail.com", "bug", null, "T38", "{}", null);
+        row.MarkSent();
+        emails.Setup(r => r.GetByIdAsync(row.Id, It.IsAny<CancellationToken>())).ReturnsAsync(row);
+
+        (await service.ProcessSendAsync(row.Id)).Should().BeTrue();
+
+        email.Verify(s => s.SendAsync(It.IsAny<EmailMessage>(), It.IsAny<CancellationToken>()), Times.Never);
+        row.SendAttempts.Should().Be(1, "only the original MarkSent attempt is counted");
+    }
 }

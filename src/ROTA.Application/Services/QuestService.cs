@@ -274,10 +274,14 @@ public sealed class QuestService : IQuestService
         if (!spent)
             return Fail(QuestFailureCode.InsufficientEnergy, "Insufficient energy.");
 
-        // 7. Apply rewards (energy committed — errors from here propagate as 500)
-        player.AddGold(goldReward);
-        var levelUps = player.AddExperience(xpReward, lvl => _stats.XpToNextLevel(lvl));
-        await _players.UpdateAsync(player, ct);
+        // 7. Apply rewards (energy committed — errors from here propagate as 500).
+        // T59 — gold/XP go through the xmin-retry chokepoint so a simultaneous raid hit can't
+        // last-write-wins this away. `player` is the same tracked instance, so later reads see the result.
+        var levelUps = await _players.MutateWithRetryAsync(playerId, p =>
+        {
+            p.AddGold(goldReward);
+            return p.AddExperience(xpReward, lvl => _stats.XpToNextLevel(lvl));
+        }, ct);
 
         // Fire level-up side effects for each level gained
         foreach (var newLevel in levelUps)

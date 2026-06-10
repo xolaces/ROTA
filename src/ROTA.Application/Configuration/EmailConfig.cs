@@ -29,4 +29,11 @@ public sealed class EmailConfig
 
     /// <summary>Where every operator notification is delivered.</summary>
     public string OperatorRecipient { get; set; } = "rotadevteam@gmail.com";
+
+    // T71 ops hardening — send retry + startup recovery.
+    /// <summary>Total SMTP attempts per row before it is left Failed for dashboard triage.</summary>
+    public int MaxSendAttempts { get; set; } = 5;
+
+    /// <summary>Delay before a failed send is re-enqueued (transient SMTP hiccups self-heal).</summary>
+    public int RetrySendDelaySeconds { get; set; } = 60;
 }

@@ -61,6 +61,33 @@ public sealed class PlayerRepository : IPlayerRepository
         await _db.SaveChangesAsync(ct);
     }
 
+    // T59 — reward-write chokepoint. The players row carries xmin as a concurrency token, so a save
+    // racing another request's commit throws DbUpdateConcurrencyException; we reload the row's fresh
+    // values (same tracked instance — the DbContext identity map guarantees later reads in the request
+    // see the committed state) and re-apply the mutation. A player can only race themselves (quest vs
+    // raid vs gauntlet hits), so contention is shallow — the generous cap exists purely so a burst of
+    // simultaneous hits never surfaces a 500 where a retry would have converged in microseconds.
+    public async Task<TResult> MutateWithRetryAsync<TResult>(Guid playerId, Func<Player, TResult> mutate, CancellationToken ct = default)
+    {
+        const int maxAttempts = 10;
+        for (int attempt = 1; ; attempt++)
+        {
+            var player = await FindByIdAsync(playerId, ct)
+                ?? throw new InvalidOperationException($"Player {playerId} not found for reward mutation.");
+            var result = mutate(player);
+            try
+            {
+                await _db.SaveChangesAsync(ct);
+                return result;
+            }
+            catch (DbUpdateConcurrencyException) when (attempt < maxAttempts)
+            {
+                // Discard the conflicted values and pull the committed row; the loop re-applies.
+                await _db.Entry(player).ReloadAsync(ct);
+            }
+        }
+    }
+
     public async Task UpdateStatsAsync(Domain.Entities.PlayerStats stats, CancellationToken ct = default)
     {
         _db.PlayerStats.Update(stats);

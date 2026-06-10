@@ -73,14 +73,16 @@ public sealed class EmailNotificationService : IEmailNotificationService
         return email.Id;
     }
 
-    public async Task ProcessSendAsync(Guid emailId, CancellationToken ct = default)
+    public async Task<bool> ProcessSendAsync(Guid emailId, CancellationToken ct = default)
     {
         var email = await _emails.GetByIdAsync(emailId, ct);
         if (email is null)
         {
             _log.LogWarning("Outbound email {Id} not found for send", emailId);
-            return;
+            return true; // nothing to retry
         }
+        if (email.SendStatus == Domain.Enums.EmailSendStatus.Sent)
+            return true; // already delivered (startup sweep + retry can overlap a live enqueue)
 
         try
         {
@@ -97,10 +99,15 @@ public sealed class EmailNotificationService : IEmailNotificationService
         {
             // A delivery failure must never break anything — it is recorded and surfaced in the dashboard.
             email.MarkFailed(ex.Message);
-            _log.LogError(ex, "Outbound email {Id} ({Type}) send failed", email.Id, email.Type);
+            _log.LogError(ex, "Outbound email {Id} ({Type}) send failed (attempt {Attempts}/{Max})",
+                email.Id, email.Type, email.SendAttempts, _cfg.MaxSendAttempts);
         }
 
         await _emails.UpdateAsync(email, ct);
+
+        // T71 — retryable while attempts remain; exhausted rows stay Failed for dashboard triage.
+        return email.SendStatus == Domain.Enums.EmailSendStatus.Sent
+            || email.SendAttempts >= _cfg.MaxSendAttempts;
     }
 
     private static string BuildBody(OutboundEmail email)

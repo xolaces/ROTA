@@ -128,5 +128,12 @@ public class ActiveRaidConfiguration : IEntityTypeConfiguration<ActiveRaid>
         builder.HasIndex(r => new { r.Visibility, r.LifecycleState })
             .HasDatabaseName("ix_active_raids_visibility_lifecycle")
             .HasFilter("is_defeated = false AND is_deleted = false");
+
+        // Index-hardening (audit ticket): the T57 unclaimed-loot query filters lifecycle_state =
+        // Lootable(1) — DEFEATED rows, which the index above deliberately excludes. A tiny partial
+        // index covers that hot path (rows leave it again once Looted).
+        builder.HasIndex(r => r.LifecycleState)
+            .HasDatabaseName("ix_active_raids_lootable")
+            .HasFilter("lifecycle_state = 1 AND is_deleted = false");
     }
 }

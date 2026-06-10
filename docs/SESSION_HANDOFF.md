@@ -1,10 +1,37 @@
-# ROTA Session Handoff — 2026-06-09/10 (Security Audit COMPLETE → Wave 1 Client Catch-up)
+# ROTA Session Handoff — 2026-06-10 (Wave 1 client catch-up DONE → backend wave T59 DONE)
 
 ## TL;DR (resume here)
-The full-codebase security audit is **COMPLETE — all 52 findings dispositioned** (21 fixed+tested,
-5 refuted, 1 spec-faithful balance note, 25 accepted/ticketed with reasons). Backend tree is GREEN at
-**1001 tests (899 unit + 102 integration), 0 errors** — but the audit fixes are **UNCOMMITTED**
-(owner instructed: do not commit; review pending). **Next: Wave 1 — Unity client catch-up (T60–T64).**
+Audit fixes are COMMITTED (`30e2eaa`). **Wave 1 (T60–T64) is DONE** — key discovery: T60/T62/T63
+were ALREADY shipped in earlier client commits (this file's old Wave-1 list was stale); this session
+built T61 (AchievementsScreen + Home tile), fixed T63 gaps (RaidChatUnavailable handler, raid/guild
+send gating on IsConnected, stale tooltip), and ran the never-run T64 contract+mock-fidelity audit
+(profile ActivePledge/MasteryRatingActive + InventoryItemResponse wire-shape fixed; mock LSI cap /
+Health-alloc credit / per-difficulty health drain fixed). Client compiles clean, **UNCOMMITTED** in
+C:\Dev\ROTA.Client6. See memory `wave1-client-catchup.md` for the accepted mock simplifications.
+**T59 (players-row optimistic concurrency) is BUILT this session** — xmin token on players
+(PlayerConfiguration), `IPlayerRepository.MutateWithRetryAsync` chokepoint wired at the 3 reward
+writes (quest rewards, raid on-hit, kill-loop = the last-write-wins fix), EMPTY migration
+**AddPlayerXminConcurrency** (xmin is a system column — snapshot-sync only; owner applies), and
+PlayerConcurrencyTests (3 tests: stale-save throws, 8-writer no-loss, missing-player).
+**Also built this session (all backend, UNCOMMITTED, owner reviews → commits):**
+- **Index-hardening migration `IndexHardening`** (NOT applied to dev DB): players email/username
+  partial uniques (soft-deleted row no longer blocks re-registration), guild_join_requests pending
+  partial unique (guild,player,kind WHERE status=0), active_raids `ix_active_raids_lootable`
+  (T57 hot query), friendships UNDIRECTED pair unique via raw SQL LEAST/GREATEST (hand-added to
+  the migration — EF can't model expression indexes; safe because declines/unfriends soft-delete).
+- **Moderation polish:** AdminService.ActorMayModerateAsync — a Moderator can no longer ban/mute a
+  Moderator/Developer (admin or CLI only); unmute intentionally ungated. +3 unit tests.
+- **T71 ops hardening:** EmailConfig.MaxSendAttempts(5)/RetrySendDelaySeconds(60);
+  IEmailNotificationService.ProcessSendAsync → Task<bool> (settled vs retryable);
+  EmailSendBackgroundService startup sweep re-enqueues stranded Queued + retryable Failed rows
+  (IOutboundEmailRepository.GetPendingSendIdsAsync) and re-enqueues retryable failures after a
+  delay; already-Sent rows skip without re-sending (sweep/live-enqueue overlap). +3 unit +1
+  integration tests. The BanGateMiddleware HTTP-pipeline test remains OPEN (needs first HTTP-level
+  harness — pattern exists in BetaKeyConcurrencyTests' WebApplicationFactory).
+**Final green: 905 unit + 106 integration = 1011** (pending the last in-flight integration run).
+TWO new migrations for owner to apply: `AddPlayerXminConcurrency` (empty, snapshot-only) +
+`IndexHardening`. Next wave: Wave 2 public-beta blockers (T65 password reset → T66 deploy
+artifacts → T67 CI → T68 terms/privacy → T69 onboarding-lite → T70 Windows build pipeline).
 
 READ IN ORDER:
 1. This file.

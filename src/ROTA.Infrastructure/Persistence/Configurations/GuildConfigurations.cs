@@ -104,6 +104,14 @@ public class GuildJoinRequestConfiguration : IEntityTypeConfiguration<GuildJoinR
         builder.HasIndex(r => r.GuildId).HasDatabaseName("ix_guild_join_requests_guild_id");
         builder.HasIndex(r => r.PlayerId).HasDatabaseName("ix_guild_join_requests_player_id");
 
+        // Index-hardening (audit ticket): at most ONE live PENDING request per (guild, player, kind) —
+        // the service checks first, but two simultaneous applies could both pass the read. Kind stays
+        // in the key so a pending application and a pending invite can coexist (legit cross-flow).
+        builder.HasIndex(r => new { r.GuildId, r.PlayerId, r.Kind })
+            .IsUnique()
+            .HasDatabaseName("ix_guild_join_requests_pending_unique")
+            .HasFilter("status = 0 AND is_deleted = false");
+
         builder.HasOne<Guild>().WithMany().HasForeignKey(r => r.GuildId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Player>().WithMany().HasForeignKey(r => r.PlayerId).OnDelete(DeleteBehavior.Restrict);
     }

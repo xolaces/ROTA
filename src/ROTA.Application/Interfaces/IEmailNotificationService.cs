@@ -12,6 +12,10 @@ public interface IEmailNotificationService
     /// <summary>Persist + audit + enqueue. Returns the new outbound-email id. Non-blocking, non-throwing on send.</summary>
     Task<Guid> QueueAsync(EmailPayload payload, string? ipAddress = null, CancellationToken ct = default);
 
-    /// <summary>Loads the row, attempts the SMTP send, records sent/failed. Swallows send failures.</summary>
-    Task ProcessSendAsync(Guid emailId, CancellationToken ct = default);
+    /// <summary>
+    /// Loads the row, attempts the SMTP send, records sent/failed. Swallows send failures.
+    /// Returns true when the row needs no further attempt (sent, missing, or attempts exhausted);
+    /// false when the failure is retryable (T71 — the background sender re-enqueues after a delay).
+    /// </summary>
+    Task<bool> ProcessSendAsync(Guid emailId, CancellationToken ct = default);
 }

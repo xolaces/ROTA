@@ -48,8 +48,9 @@ public class AdminServiceTests
     private static Player MakePlayer(string username = "player", PlayerRoles roles = PlayerRoles.Player)
     {
         var p = Player.Create(username, $"{username}@rota.test", "hash");
-        if (roles.HasFlag(PlayerRoles.Admin))    p.GrantRole(PlayerRoles.Admin);
+        if (roles.HasFlag(PlayerRoles.Admin))     p.GrantRole(PlayerRoles.Admin);
         if (roles.HasFlag(PlayerRoles.Moderator)) p.GrantRole(PlayerRoles.Moderator);
+        if (roles.HasFlag(PlayerRoles.Developer)) p.GrantRole(PlayerRoles.Developer);
         return p;
     }
 
@@ -307,6 +308,61 @@ public class AdminServiceTests
         result.FailureReason.Should().Contain("admin");
         emails.Verify(e => e.QueueAsync(
             It.IsAny<EmailPayload>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    // Moderation polish (audit ticket) — a Moderator cannot ban/mute fellow staff; an Admin can.
+
+    [Fact]
+    public async Task BanPlayerAsync_ModeratorTargetsModerator_Fails()
+    {
+        var (service, players, _, _, emails) = BuildServiceEx();
+        var actor  = MakePlayer("mod1", PlayerRoles.Player | PlayerRoles.Moderator);
+        var target = MakePlayer("mod2", PlayerRoles.Player | PlayerRoles.Moderator);
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+        players.Setup(r => r.FindByUsernameAsync("mod2", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+
+        var result = await service.BanPlayerAsync(actor.Id, "mod2", "grudge");
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("admin", "only an admin may act on staff");
+        target.IsBanned.Should().BeFalse();
+        emails.Verify(e => e.QueueAsync(
+            It.IsAny<EmailPayload>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task MutePlayerAsync_ModeratorTargetsDeveloper_Fails()
+    {
+        var (service, players, _, _, _) = BuildServiceEx();
+        var actor  = MakePlayer("mod", PlayerRoles.Player | PlayerRoles.Moderator);
+        var target = MakePlayer("dev", PlayerRoles.Player | PlayerRoles.Developer);
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+        players.Setup(r => r.FindByUsernameAsync("dev", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+
+        var result = await service.MutePlayerAsync(actor.Id, "dev", 30, "x");
+
+        result.Success.Should().BeFalse();
+        target.IsMuted.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task BanPlayerAsync_AdminTargetsModerator_Succeeds()
+    {
+        var (service, players, tokens, _, _) = BuildServiceEx();
+        var actor  = MakeAdmin("admin");
+        var target = MakePlayer("mod", PlayerRoles.Player | PlayerRoles.Moderator);
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+        players.Setup(r => r.FindByUsernameAsync("mod", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+        players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        tokens.Setup(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+
+        var result = await service.BanPlayerAsync(actor.Id, "mod", "abuse of power");
+
+        result.Success.Should().BeTrue();
+        target.IsBanned.Should().BeTrue();
     }
 
     [Fact]

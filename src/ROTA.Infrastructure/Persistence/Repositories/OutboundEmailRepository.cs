@@ -85,4 +85,15 @@ public sealed class OutboundEmailRepository : IOutboundEmailRepository
 
         return new OutboundEmailStats(total, pending, approved, dismissed, sent, failed, byType);
     }
+
+    // T71 ops hardening — rows still owed a send attempt (startup recovery sweep). Queued rows were
+    // stranded by a restart (the channel is in-memory); Failed rows retry while attempts remain.
+    public async Task<IReadOnlyList<Guid>> GetPendingSendIdsAsync(int maxAttempts, CancellationToken ct = default)
+        => await _db.OutboundEmails.AsNoTracking()
+            .Where(e => !e.IsDeleted
+                        && (e.SendStatus == EmailSendStatus.Queued
+                            || (e.SendStatus == EmailSendStatus.Failed && e.SendAttempts < maxAttempts)))
+            .OrderBy(e => e.CreatedAt)
+            .Select(e => e.Id)
+            .ToListAsync(ct);
 }

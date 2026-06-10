@@ -21,6 +21,12 @@ public interface IOutboundEmailRepository
         CancellationToken ct = default);
 
     Task<OutboundEmailStats> GetStatsAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// T71 ops hardening — ids of rows still owed a send attempt: Queued (stranded by a restart —
+    /// the in-memory channel does not survive one) or Failed with attempts remaining. Oldest first.
+    /// </summary>
+    Task<IReadOnlyList<Guid>> GetPendingSendIdsAsync(int maxAttempts, CancellationToken ct = default);
 }
 
 /// <summary>A page of outbound-email rows plus the unpaged total (for the dashboard table).</summary>

@@ -1240,9 +1240,15 @@ public sealed class RaidService : IRaidService
                 }
             }
 
-            var hitLevelUps = player.AddExperience(xpGained, lvl => _stats.XpToNextLevel(lvl));
-            player.AddGold(goldGained);
-            await _players.UpdateAsync(player, ct);
+            // T59 — xmin-retry chokepoint: a simultaneous quest completion writing the same players
+            // row no longer loses this hit's gold/XP (or vice versa). Same tracked instance as
+            // `player`, so the response totals below reflect the committed values.
+            var hitLevelUps = await _players.MutateWithRetryAsync(playerId, pl =>
+            {
+                var ups = pl.AddExperience(xpGained, lvl => _stats.XpToNextLevel(lvl));
+                pl.AddGold(goldGained);
+                return ups;
+            }, ct);
 
             // System 22 Phase A — gold-earned mastery counter (on-hit gold, enlisted in this tx).
             await _mastery.RecordActivityAsync(playerId, MasteryActivityType.GoldEarned, goldGained, ct: ct);
@@ -1507,9 +1513,13 @@ public sealed class RaidService : IRaidService
             // per-hit on-hit gold/XP). EVERYTHING ELSE — gems, stat-points, items, and the magic/unit/
             // legion/gear drops — is DEFERRED: computed + stored on the participant row now, GRANTED when
             // that participant presses Loot.
-            participantPlayer.AddGold(gold);
-            var levelUps = participantPlayer.AddExperience(xp, lvl => _stats.XpToNextLevel(lvl));
-            await _players.UpdateAsync(participantPlayer, ct);
+            // T59 — xmin-retry chokepoint: each participant may be mid-quest/mid-hit elsewhere; a
+            // stale full-column save here silently lost their gold/XP (kill-reward last-write-wins).
+            var levelUps = await _players.MutateWithRetryAsync(p.PlayerId, pl =>
+            {
+                pl.AddGold(gold);
+                return pl.AddExperience(xp, lvl => _stats.XpToNextLevel(lvl));
+            }, ct);
 
             // Fire level-up side effects for each level gained
             foreach (var newLevel in levelUps)

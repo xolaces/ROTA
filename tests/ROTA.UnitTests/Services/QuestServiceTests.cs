@@ -8,6 +8,7 @@ using ROTA.Application.Services;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
 using ROTA.Shared.DTOs;
+using ROTA.UnitTests.TestSupport;
 
 namespace ROTA.UnitTests.Services;
 
@@ -46,6 +47,7 @@ public class QuestServiceTests
         var questProgress     = new Mock<IQuestProgressRepository>();
         var difficultyProgress = new Mock<IQuestDifficultyProgressRepository>();
         var players           = new Mock<IPlayerRepository>();
+        players.SetupMutatePassThrough();   // T59 — reward writes route through MutateWithRetryAsync
         var energy            = new Mock<IEnergyService>();
         var gems              = new Mock<IGemService>();
         var stats             = new Mock<IStatService>();

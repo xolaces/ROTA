@@ -9,6 +9,7 @@ using ROTA.Application.Services;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
 using ROTA.Shared.DTOs;
+using ROTA.UnitTests.TestSupport;
 
 namespace ROTA.UnitTests.Services;
 
@@ -519,6 +520,7 @@ public class LeaderboardWriteHookTests
         var raids          = new Mock<IActiveRaidRepository>();
         var participants   = new Mock<IRaidParticipantRepository>();
         var players        = new Mock<IPlayerRepository>();
+        players.SetupMutatePassThrough();   // T59 — reward writes route through MutateWithRetryAsync
         var resources      = new Mock<IPlayerResourceRepository>();
         var energy         = new Mock<IEnergyService>();
         var gems           = new Mock<IGemService>();

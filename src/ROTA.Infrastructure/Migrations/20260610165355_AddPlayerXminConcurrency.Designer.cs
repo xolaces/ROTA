@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ROTA.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using ROTA.Infrastructure.Persistence;
 namespace ROTA.Infrastructure.Migrations
 {
     [DbContext(typeof(RotaDbContext))]
-    partial class RotaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260610165355_AddPlayerXminConcurrency")]
+    partial class AddPlayerXminConcurrency
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -270,10 +273,6 @@ namespace ROTA.Infrastructure.Migrations
 
                     b.HasIndex("GuildId")
                         .HasDatabaseName("ix_active_raids_guild_id");
-
-                    b.HasIndex("LifecycleState")
-                        .HasDatabaseName("ix_active_raids_lootable")
-                        .HasFilter("lifecycle_state = 1 AND is_deleted = false");
 
                     b.HasIndex("SummonedByPlayerId")
                         .HasDatabaseName("ix_active_raids_summoned_by_player_id");
@@ -885,11 +884,6 @@ namespace ROTA.Infrastructure.Migrations
                     b.HasIndex("PlayerId")
                         .HasDatabaseName("ix_guild_join_requests_player_id");
 
-                    b.HasIndex("GuildId", "PlayerId", "Kind")
-                        .IsUnique()
-                        .HasDatabaseName("ix_guild_join_requests_pending_unique")
-                        .HasFilter("status = 0 AND is_deleted = false");
-
                     b.ToTable("guild_join_requests", (string)null);
                 });
 
@@ -1462,12 +1456,10 @@ namespace ROTA.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
-                        .IsUnique()
-                        .HasFilter("is_deleted = false");
+                        .IsUnique();
 
                     b.HasIndex("Username")
-                        .IsUnique()
-                        .HasFilter("is_deleted = false");
+                        .IsUnique();
 
                     b.ToTable("players", (string)null);
                 });

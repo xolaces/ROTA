@@ -133,6 +133,8 @@ public sealed class AdminService : IAdminService
             return AdminActionResult.Fail($"Player '{targetUsernameOrId}' not found.");
         if (target.HasRole(PlayerRoles.Admin))
             return AdminActionResult.Fail("Cannot ban an admin.");
+        if (!await ActorMayModerateAsync(actorId, target, ct))
+            return AdminActionResult.Fail("Only an admin can moderate staff (moderator/developer) accounts.");
 
         target.Ban(reason);
         await _players.UpdateAsync(target, ct);
@@ -165,6 +167,8 @@ public sealed class AdminService : IAdminService
             return AdminActionResult.Fail($"Player '{targetUsernameOrId}' not found.");
         if (target.HasRole(PlayerRoles.Admin))
             return AdminActionResult.Fail("Cannot mute an admin.");
+        if (!await ActorMayModerateAsync(actorId, target, ct))
+            return AdminActionResult.Fail("Only an admin can moderate staff (moderator/developer) accounts.");
 
         var expiresAt = DateTimeOffset.UtcNow.AddMinutes(durationMinutes);
         target.Mute(expiresAt);
@@ -217,6 +221,18 @@ public sealed class AdminService : IAdminService
         if (actorId == Guid.Empty) return true; // CLI/system bypass
         var actor = await _players.FindByIdAsync(actorId, ct);
         return actor is not null && (actor.HasRole(PlayerRoles.Admin) || actor.HasRole(PlayerRoles.Moderator));
+    }
+
+    // Moderation polish (audit ticket): a Moderator may not ban/mute fellow staff — only an Admin
+    // (or the CLI/system actor) can act on a Moderator or Developer. Admin targets stay untouchable
+    // for everyone (checked separately at each call site). Unmute is intentionally NOT gated — it
+    // only removes a restriction.
+    private async Task<bool> ActorMayModerateAsync(Guid actorId, Player target, CancellationToken ct)
+    {
+        if (actorId == Guid.Empty) return true; // CLI/system bypass
+        if (!target.HasRole(PlayerRoles.Moderator) && !target.HasRole(PlayerRoles.Developer)) return true;
+        var actor = await _players.FindByIdAsync(actorId, ct);
+        return actor is not null && actor.HasRole(PlayerRoles.Admin);
     }
 
     /// <summary>Raises a ModerationAction operator email (T40) for a punitive action. Never blocks.</summary>
