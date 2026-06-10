@@ -174,7 +174,9 @@ public class StatServiceTests
 
         result.Success.Should().BeTrue();
         result.NewEnergyInvestment.Should().Be(9);
-        b.Energy.Verify(e => e.UpdateMaxAsync(player.Id, ResourceType.Energy, 19, It.IsAny<CancellationToken>()), Times.Once);
+        // Owner decision (audit fix): MaxEnergy = BaseMaxEnergy(25) + investment — matches the seeds.
+        b.Energy.Verify(e => e.UpdateMaxAsync(player.Id, ResourceType.Energy,
+            PlayerStats.BaseMaxEnergy + 9, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     // -----------------------------------------------------------------------

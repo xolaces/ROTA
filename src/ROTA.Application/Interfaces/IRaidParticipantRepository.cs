@@ -13,6 +13,14 @@ public interface IRaidParticipantRepository
     Task UpdateAsync(RaidParticipant participant, CancellationToken ct = default);
 
     /// <summary>
+    /// T57 claim latch — atomically marks the participant's deferred rewards as claimed via a
+    /// conditional UPDATE (rewarded_at IS NULL). Returns true only for the single caller that wins
+    /// the latch; every concurrent or repeated claim returns false. Participates in an ambient
+    /// transaction so the latch commits/rolls back together with the reward grants.
+    /// </summary>
+    Task<bool> TryClaimRewardsAsync(Guid participantId, DateTimeOffset claimedAt, CancellationToken ct = default);
+
+    /// <summary>
     /// Top participants of a raid by total damage, descending; ties broken by earliest UpdatedAt.
     /// Joins players to resolve DisplayName. Excludes soft-deleted participants. Caps at `top` rows.
     /// </summary>

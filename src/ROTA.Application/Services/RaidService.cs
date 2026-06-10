@@ -581,48 +581,61 @@ public sealed class RaidService : IRaidService
                 FailureReason = "You did not take part in this raid.",
             };
 
-        // Grant the deferred rewards exactly once (idempotent on re-press: RewardedAt already set). T57:
-        // gold + XP are NOT here — they were granted on-hit (the killing hit). Loot grants EVERYTHING else:
-        // gems, stat-points, inventory items, and the magic/unit/legion/gear collection drops.
+        // Grant the deferred rewards exactly once. T57: gold + XP are NOT here — they were granted
+        // on-hit (the killing hit). Loot grants EVERYTHING else: gems, stat-points, inventory items,
+        // and the magic/unit/legion/gear collection drops.
+        //
+        // The claim is race- and crash-safe: the latch is a conditional UPDATE (rewarded_at IS NULL)
+        // and every grant rides the SAME advisory-lock transaction (keyed on the participant row), so
+        // two concurrent Loot presses serialize — the loser latches zero rows and grants nothing —
+        // and a crash mid-grant rolls the latch back together with the rewards (nothing lost,
+        // nothing duplicated). A re-press after a committed claim skips here via RewardsClaimed.
         if (!participant.RewardsClaimed)
         {
-            if (participant.GemsEarned > 0)
-                await _gems.GrantGemsAsync(callerId, participant.GemsEarned,
-                    GemTransactionType.RaidReward, $"raid:{raid.Id}:{callerId}", ct);
-            if (participant.StatPointsEarned > 0)
-                await _stats.AddUnassignedPointsAsync(callerId, participant.StatPointsEarned, ct);
-            if (!string.IsNullOrEmpty(participant.ItemsEarnedJson))
+            await _raids.AtomicWithAdvisoryLockAsync(participant.Id, async () =>
             {
-                var pendingItems = JsonSerializer.Deserialize<List<ItemGrantDTO>>(participant.ItemsEarnedJson)
-                                   ?? new List<ItemGrantDTO>();
-                var throwaway = new List<ItemGrantDTO>();
-                foreach (var it in pendingItems)
-                    await GrantInventoryItemAsync(callerId, it.ItemId, it.Quantity, throwaway, ct);
-            }
-            // T57 — deferred collection drops (idempotent grants).
-            if (!string.IsNullOrEmpty(participant.PendingDropsJson))
-            {
-                var drops = JsonSerializer.Deserialize<List<PendingDrop>>(participant.PendingDropsJson)
-                            ?? new List<PendingDrop>();
-                foreach (var d in drops)
+                if (!await _participants.TryClaimRewardsAsync(participant.Id, DateTimeOffset.UtcNow, ct))
+                    return false; // a concurrent claim won the latch — grant nothing, summary still returned
+
+                if (participant.GemsEarned > 0)
+                    await _gems.GrantGemsAsync(callerId, participant.GemsEarned,
+                        GemTransactionType.RaidReward, $"raid:{raid.Id}:{callerId}", ct);
+                if (participant.StatPointsEarned > 0)
+                    await _stats.AddUnassignedPointsAsync(callerId, participant.StatPointsEarned, ct);
+                if (!string.IsNullOrEmpty(participant.ItemsEarnedJson))
                 {
-                    switch (d.Kind)
+                    var pendingItems = JsonSerializer.Deserialize<List<ItemGrantDTO>>(participant.ItemsEarnedJson)
+                                       ?? new List<ItemGrantDTO>();
+                    var throwaway = new List<ItemGrantDTO>();
+                    foreach (var it in pendingItems)
+                        await GrantInventoryItemAsync(callerId, it.ItemId, it.Quantity, throwaway, ct);
+                }
+                // T57 — deferred collection drops (idempotent grants).
+                if (!string.IsNullOrEmpty(participant.PendingDropsJson))
+                {
+                    var drops = JsonSerializer.Deserialize<List<PendingDrop>>(participant.PendingDropsJson)
+                                ?? new List<PendingDrop>();
+                    foreach (var d in drops)
                     {
-                        case "Magic":  await _magicService.GrantMagicAsync(callerId, d.Id, ct); break;
-                        case "Unit":   await _legionService.GrantUnitAsync(callerId, d.Id, ct); break;
-                        case "Legion": await _legionService.GrantLegionAsync(callerId, d.Id, ct); break;
-                        case "Gear":   await _equipment.GrantGearAsync(callerId, d.Id, d.Quantity, ct); break;
+                        switch (d.Kind)
+                        {
+                            case "Magic":  await _magicService.GrantMagicAsync(callerId, d.Id, ct); break;
+                            case "Unit":   await _legionService.GrantUnitAsync(callerId, d.Id, ct); break;
+                            case "Legion": await _legionService.GrantLegionAsync(callerId, d.Id, ct); break;
+                            case "Gear":   await _equipment.GrantGearAsync(callerId, d.Id, d.Quantity, ct); break;
+                        }
                     }
                 }
-            }
 
+                await _auditLog.AppendAsync(AuditLog.Create(
+                    callerId, "RaidLootClaimed", null,
+                    $"Claimed deferred rewards for raid {raid.Id} ({raid.RaidDefinitionId}): " +
+                    $"gems +{participant.GemsEarned}, SP +{participant.StatPointsEarned}.", null), ct);
+                return true;
+            }, ct);
+
+            // In-memory only, for the response below — the durable latch was the conditional UPDATE.
             participant.MarkRewardsClaimed(DateTimeOffset.UtcNow);
-            await _participants.UpdateAsync(participant, ct);
-
-            await _auditLog.AppendAsync(AuditLog.Create(
-                callerId, "RaidLootClaimed", null,
-                $"Claimed deferred rewards for raid {raid.Id} ({raid.RaidDefinitionId}): " +
-                $"gems +{participant.GemsEarned}, SP +{participant.StatPointsEarned}.", null), ct);
         }
 
         var rewards  = BuildClaimedRewards(participant);
@@ -697,9 +710,25 @@ public sealed class RaidService : IRaidService
                 return HitFail(RaidHitFailureCode.RaidFull, "This raid is at its participant cap.");
         }
 
-        // 4. Atomic idempotency: reserve the slot (SET NX) or return cached response.
+        // 4. Validate hit size BEFORE reserving the idempotency slot — a rejected request must not
+        //    burn the client's key for 24h (the placeholder would answer every retry with
+        //    "already in progress" until the TTL expired).
+        if (hitSize != 1 && hitSize != 5 && hitSize != 20)
+            return HitFail(RaidHitFailureCode.InvalidHitSize, "Hit size must be 1, 5, or 20.");
+
+        // 5. Atomic idempotency: reserve the slot (SET NX) or return cached response.
         //    Closes the check-then-set race from the previous GetAsync/SetAsync pattern.
-        var (slotAcquired, existingResponse) = await _hitCache.TryAcquireSlotAsync(idempotencyKey, ct);
+        //    Audit fix: scope the cache key to THIS player + raid. The client-supplied key is a bare
+        //    string (e.g. a per-session counter), so an unscoped "raidhit:{key}" let player B's "1"
+        //    collide with player A's "1" — B's hit would silently return A's cached response. An empty
+        //    key (no idempotency requested) gets a fresh GUID so successive hits never self-collide;
+        //    an oversized key is hashed (deterministic, so retries still dedupe) to bound Redis keys.
+        var clientKey = string.IsNullOrWhiteSpace(idempotencyKey) ? Guid.NewGuid().ToString("N") : idempotencyKey;
+        if (clientKey.Length > 100)
+            clientKey = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+                System.Text.Encoding.UTF8.GetBytes(clientKey)));
+        var scopedKey = $"{playerId:N}:{activeRaidId:N}:{clientKey}";
+        var (slotAcquired, existingResponse) = await _hitCache.TryAcquireSlotAsync(scopedKey, ct);
         if (!slotAcquired)
         {
             if (existingResponse is not null)
@@ -707,10 +736,6 @@ public sealed class RaidService : IRaidService
             // Concurrent in-flight duplicate — treat as duplicate-in-progress.
             return HitFail(RaidHitFailureCode.RaidNotFound, "Request already in progress.");
         }
-
-        // 5. Validate hit size.
-        if (hitSize != 1 && hitSize != 5 && hitSize != 20)
-            return HitFail(RaidHitFailureCode.InvalidHitSize, "Hit size must be 1, 5, or 20.");
 
         var definition = _raidDefinitions.GetById(raid.RaidDefinitionId)
             ?? throw new InvalidOperationException($"Raid definition '{raid.RaidDefinitionId}' not found.");
@@ -878,9 +903,11 @@ public sealed class RaidService : IRaidService
                 }
 
                 // (Wrath, System 22 Phase A) — adds its percent into the legion bonus sum, exactly like a
-                // General's LegionBonus, so it flows once through bonusFraction (additive; never the Gauntlet).
-                // Applied BEFORE the trophy stage + PowerScaling so it touches legion power exactly once.
-                totalLegionBonus += masteryMods.Combat.WrathLegionPercent;
+                // General's LegionBonus, so it flows once through bonusFraction (additive). LOCKED RULE:
+                // Wrath NEVER applies in the Gauntlet (GetModifiersAsync has no raid context, so the gate
+                // lives here). Applied BEFORE the trophy stage + PowerScaling so it touches legion power once.
+                double wrathPercent = isGauntlet ? 0.0 : masteryMods.Combat.WrathLegionPercent;
+                totalLegionBonus += wrathPercent;
 
                 double bonusFraction  = totalLegionBonus / 100.0;
                 double rawLegionPower = unitSum * (1.0 + bonusFraction);
@@ -906,7 +933,7 @@ public sealed class RaidService : IRaidService
 
                 // Wrath marginal (display only): rawLegionPower is linear in bonusFraction, so Wrath's
                 // contribution is unitSum × (wrathPercent/100) carried through the same trophy + scaling stages.
-                wrathLegionBonus = Math.Max(0, (long)(unitSum * (masteryMods.Combat.WrathLegionPercent / 100.0)
+                wrathLegionBonus = Math.Max(0, (long)(unitSum * (wrathPercent / 100.0)
                     * (1.0 + maxTrophyFraction) * _legionConfig.PowerScaling * hitSize * multiplier));
             }
 
@@ -1377,8 +1404,9 @@ public sealed class RaidService : IRaidService
             BulwarkBonus         = bulwarkBonus,
         };
 
-        // 10. Store the completed response — replaces the "pending" placeholder.
-        await _hitCache.StoreResultAsync(idempotencyKey, response, ct);
+        // 10. Store the completed response — replaces the "pending" placeholder. Uses the same
+        //     player+raid-scoped key reserved in step 4.
+        await _hitCache.StoreResultAsync(scopedKey, response, ct);
 
         return new RaidHitResult { Success = true, Response = response };
     }

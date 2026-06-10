@@ -26,12 +26,15 @@ public sealed class ChatHub : Hub
     private readonly IWorldChatStore _world;
     private readonly IGuildChatStore _guild;
     private readonly IPlayerRepository _players;
+    private readonly IRaidParticipantRepository _raidParticipants;
 
-    public ChatHub(IWorldChatStore world, IGuildChatStore guild, IPlayerRepository players)
+    public ChatHub(IWorldChatStore world, IGuildChatStore guild, IPlayerRepository players,
+                   IRaidParticipantRepository raidParticipants)
     {
         _world = world;
         _guild = guild;
         _players = players;
+        _raidParticipants = raidParticipants;
     }
 
     /// <summary>Broadcasts a world-chat message to all clients and stores it in the ring buffer.</summary>
@@ -46,21 +49,38 @@ public sealed class ChatHub : Hub
         await Clients.All.SendAsync("WorldMessage", msg);
     }
 
-    /// <summary>Joins the caller to a raid's chat group (T35).</summary>
-    public Task JoinRaid(string raidId) => Groups.AddToGroupAsync(Context.ConnectionId, RaidGroup(raidId));
+    /// <summary>
+    /// Joins the caller to a raid's chat group (T35). AUDIT FIX — participant-gated: the raidId is
+    /// client-supplied, so without the gate any authenticated player who learned a raid GUID could
+    /// subscribe to (and read) another party's raid chat. Mirrors the guild-chat member gate below.
+    /// The group key is canonicalized from the parsed GUID so case-variant strings can't fork groups.
+    /// </summary>
+    public async Task JoinRaid(string raidId)
+    {
+        if (!Guid.TryParse(raidId, out var raidGuid)) return;
+        if (!await IsRaidParticipantAsync(raidGuid)) { await NotifyNotInRaid(); return; }
+        await Groups.AddToGroupAsync(Context.ConnectionId, RaidGroup(raidGuid));
+    }
 
     /// <summary>Leaves a raid's chat group.</summary>
-    public Task LeaveRaid(string raidId) => Groups.RemoveFromGroupAsync(Context.ConnectionId, RaidGroup(raidId));
+    public Task LeaveRaid(string raidId)
+        => Guid.TryParse(raidId, out var raidGuid)
+            ? Groups.RemoveFromGroupAsync(Context.ConnectionId, RaidGroup(raidGuid))
+            : Task.CompletedTask;
 
-    /// <summary>Broadcasts an ephemeral raid-chat message to the raid group only.</summary>
+    /// <summary>
+    /// Broadcasts an ephemeral raid-chat message to the raid group only. AUDIT FIX — participant-
+    /// gated like JoinRaid: without it any player could inject messages into any raid's chat.
+    /// </summary>
     public async Task SendRaidMessage(string raidId, string body)
     {
         body = Sanitize(body);
-        if (body.Length == 0 || string.IsNullOrWhiteSpace(raidId)) return;
+        if (body.Length == 0 || !Guid.TryParse(raidId, out var raidGuid)) return;
         if (await CannotChatAsync()) { await NotifyBlocked(); return; }
+        if (!await IsRaidParticipantAsync(raidGuid)) { await NotifyNotInRaid(); return; }
 
         var msg = BuildMessage("Raid", raidId, body);
-        await Clients.Group(RaidGroup(raidId)).SendAsync("RaidMessage", msg);
+        await Clients.Group(RaidGroup(raidGuid)).SendAsync("RaidMessage", msg);
     }
 
     // ---- guild chat (System 21 Slice 2) ----
@@ -148,6 +168,12 @@ public sealed class ChatHub : Hub
 
     private Task NotifyNotInGuild() => Clients.Caller.SendAsync("GuildChatUnavailable", "You are not in a guild.");
 
+    /// <summary>The caller may use a raid's chat only if they hold a participant row in it.</summary>
+    private async Task<bool> IsRaidParticipantAsync(Guid raidId)
+        => await _raidParticipants.FindByRaidAndPlayerAsync(raidId, SenderId()) is not null;
+
+    private Task NotifyNotInRaid() => Clients.Caller.SendAsync("RaidChatUnavailable", "You are not a participant in this raid.");
+
     private static string Sanitize(string body)
     {
         if (string.IsNullOrWhiteSpace(body)) return string.Empty;
@@ -155,7 +181,7 @@ public sealed class ChatHub : Hub
         return body.Length > MaxBody ? body[..MaxBody] : body;
     }
 
-    private static string RaidGroup(string raidId) => $"raid:{raidId}";
+    private static string RaidGroup(Guid raidId) => $"raid:{raidId:D}";
 
     private static string GuildGroup(Guid guildId) => $"guild:{guildId}";
 }

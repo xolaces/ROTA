@@ -47,6 +47,10 @@ public sealed class OpsController : ControllerBase
         EmailReviewStatus? reviewFilter = Enum.TryParse<EmailReviewStatus>(reviewStatus, ignoreCase: true, out var r) ? r : null;
         EmailPriority? priorityFilter = Enum.TryParse<EmailPriority>(priority, ignoreCase: true, out var p) ? p : null;
 
+        // Audit fix: clamp paging — an unbounded pageSize let a single request materialize the table.
+        if (page < 1) page = 1;
+        pageSize = Math.Clamp(pageSize, 1, 200);
+
         var result = await _emails.ListAsync(typeFilter, reviewFilter, search, page, pageSize, priorityFilter, sort);
 
         return Ok(new OutboundEmailListResponse

@@ -125,29 +125,75 @@ public sealed class GauntletService : IGauntletService
         if (entry is null)
             return new GauntletLadderResponse { JoinedRequired = true, StageCount = stageCount };
 
-        var stages = await _raids.GetGauntletStagesForPlayerAsync(playerId, active.Id, ct);
-        var now = DateTimeOffset.UtcNow;
+        // Audit fix — the KNOWN ladder double-spawn race: two concurrent GetLadder calls both saw "no
+        // active stage" and both spawned stage N (two raids, double per-defeat rewards). The decide-
+        // and-spawn now runs under a per-PLAYER advisory lock (key = playerId; the generic wrapper
+        // derives the lock id from any Guid), so concurrent calls serialize and the loser re-queries
+        // committed truth and returns the winner's stage instead of spawning a twin.
+        var eventId  = active.Id;
+        var eventEnd = active.EndsAt;
+        ActiveRaid? ladderRaid = null;
+        bool complete = false;
 
-        // (1) An ACTIVE stage (not defeated, not expired) is the current target — return it as-is,
-        //     never re-spawn. A player can hold at most one active stage at a time (we only ever spawn
-        //     the next after the prior is defeated), but if several somehow matched we take the highest.
-        var current = stages
-            .Where(r => !r.IsDefeated && r.ExpiresAt > now)
-            .OrderByDescending(r => StageNumberOf(r.RaidDefinitionId))
-            .FirstOrDefault();
-        if (current is not null)
-            return await BuildLadderForRaidAsync(current, playerId, stageCount, ct);
+        await _raids.AtomicWithAdvisoryLockAsync(playerId, async () =>
+        {
+            // Tracker was cleared by the wrapper — this read sees every committed spawn.
+            var stages = await _raids.GetGauntletStagesForPlayerAsync(playerId, eventId, ct);
+            var now = DateTimeOffset.UtcNow;
 
-        // (2) No active stage → auto-advance. nextStage = (highest DEFEATED stage) + 1, or 1 if none.
-        int highestDefeated = stages
-            .Where(r => r.IsDefeated)
-            .Select(r => StageNumberOf(r.RaidDefinitionId))
-            .DefaultIfEmpty(0)
-            .Max();
-        int nextStage = highestDefeated + 1;
+            // (1) An ACTIVE stage (not defeated, not expired) is the current target — return it as-is,
+            //     never re-spawn. A player can hold at most one active stage at a time (we only ever
+            //     spawn the next after the prior is defeated); if several match we take the highest.
+            ladderRaid = stages
+                .Where(r => !r.IsDefeated && r.ExpiresAt > now)
+                .OrderByDescending(r => StageNumberOf(r.RaidDefinitionId))
+                .FirstOrDefault();
+            if (ladderRaid is not null)
+                return true;
 
-        // (3) Past the final stage → the ladder is complete for this event.
-        if (nextStage > stageCount)
+            // (2) No active stage → auto-advance. nextStage = (highest DEFEATED stage) + 1, or 1.
+            int highestDefeated = stages
+                .Where(r => r.IsDefeated)
+                .Select(r => StageNumberOf(r.RaidDefinitionId))
+                .DefaultIfEmpty(0)
+                .Max();
+            int nextStage = highestDefeated + 1;
+
+            // (3) Past the final stage → the ladder is complete for this event.
+            if (nextStage > stageCount)
+            {
+                complete = true;
+                return true;
+            }
+
+            // (4) Spawn the next stage: Personal, GauntletEventId-stamped, MaxHp = stage baseHp (NO
+            //     difficulty multiplier — Gauntlet has no difficulty; Normal is the enum placeholder).
+            //     ExpiresAt = event end so every stage shares the event window. Spawn + audit commit
+            //     atomically with the lock.
+            var def = _content.GetGauntletRaidByStage(nextStage)
+                ?? throw new InvalidOperationException(
+                    $"Gauntlet ladder stage {nextStage} is missing from gauntlet_raids.json.");
+
+            var raid = ActiveRaid.Create(
+                raidDefinitionId: def.Id,
+                summonedByPlayerId: playerId,
+                maxHp: def.BaseHp,
+                expiresAt: eventEnd,
+                difficulty: RaidDifficulty.Normal,
+                size: RaidSize.Personal);
+            raid.LinkGauntletEvent(eventId);
+            await _raids.CreateAsync(raid, ct);
+
+            await _auditLog.AppendAsync(AuditLog.Create(
+                playerId, "GauntletLadderSpawn", null,
+                $"Spawned Gauntlet ladder stage {nextStage} ('{def.Id}', id={raid.Id}) for event {eventId}. " +
+                $"HP={raid.MaxHp}, expires={raid.ExpiresAt:O}.", null), ct);
+
+            ladderRaid = raid;
+            return true;
+        }, ct);
+
+        if (complete)
             return new GauntletLadderResponse
             {
                 Complete     = true,
@@ -155,29 +201,10 @@ public sealed class GauntletService : IGauntletService
                 StageCount   = stageCount,
             };
 
-        // (4) Spawn the next stage: Personal, GauntletEventId-stamped, MaxHp = stage baseHp (NO
-        //     difficulty multiplier — Gauntlet has no difficulty; Normal is just the enum placeholder).
-        //     ExpiresAt = event end so every stage shares the event window. Persist + audit, then map.
-        var def = _content.GetGauntletRaidByStage(nextStage)
-            ?? throw new InvalidOperationException(
-                $"Gauntlet ladder stage {nextStage} is missing from gauntlet_raids.json.");
+        if (ladderRaid is null) // defensive: lock body always sets one outcome
+            return new GauntletLadderResponse { NoActiveEvent = true, StageCount = stageCount };
 
-        var raid = ActiveRaid.Create(
-            raidDefinitionId: def.Id,
-            summonedByPlayerId: playerId,
-            maxHp: def.BaseHp,
-            expiresAt: active.EndsAt,
-            difficulty: RaidDifficulty.Normal,
-            size: RaidSize.Personal);
-        raid.LinkGauntletEvent(active.Id);
-        await _raids.CreateAsync(raid, ct);
-
-        await _auditLog.AppendAsync(AuditLog.Create(
-            playerId, "GauntletLadderSpawn", null,
-            $"Spawned Gauntlet ladder stage {nextStage} ('{def.Id}', id={raid.Id}) for event {active.Id}. " +
-            $"HP={raid.MaxHp}, expires={raid.ExpiresAt:O}.", null), ct);
-
-        return await BuildLadderForRaidAsync(raid, playerId, stageCount, ct);
+        return await BuildLadderForRaidAsync(ladderRaid, playerId, stageCount, ct);
     }
 
     // Maps a current/just-spawned ladder ActiveRaid onto the ladder response, reusing the canonical

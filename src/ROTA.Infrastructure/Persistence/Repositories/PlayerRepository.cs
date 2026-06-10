@@ -1,4 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using Npgsql;
+using NpgsqlTypes;
 using ROTA.Application.Interfaces;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
@@ -72,4 +75,42 @@ public sealed class PlayerRepository : IPlayerRepository
     public async Task<int> CountByRoleAsync(PlayerRoles role, CancellationToken ct = default)
         => await _db.Players
             .CountAsync(p => !p.IsDeleted && (p.Roles & role) == role, ct);
+
+    // Fixed advisory-lock key for ALL admin-role mutations. A single conditional UPDATE with a COUNT
+    // subquery would NOT be safe here — concurrent demotions target DIFFERENT rows, so row locks don't
+    // serialize them and both could read count==2 under READ COMMITTED. The advisory lock forces them
+    // to run one at a time, so the count the winner reads already reflects any prior commit.
+    private const long AdminRoleLockKey = unchecked((long)0xAD17_0E55_0A001L);
+
+    public async Task<bool> TryDemoteAdminAsync(Guid targetId, CancellationToken ct = default)
+    {
+        await using IDbContextTransaction tx = await _db.Database.BeginTransactionAsync(ct);
+
+        var conn = (NpgsqlConnection)_db.Database.GetDbConnection();
+        var ntx  = (NpgsqlTransaction)tx.GetDbTransaction();
+        await using (var lockCmd = new NpgsqlCommand("SELECT pg_advisory_xact_lock(@k)", conn, ntx))
+        {
+            lockCmd.Parameters.AddWithValue("k", NpgsqlDbType.Bigint, AdminRoleLockKey);
+            await lockCmd.ExecuteNonQueryAsync(ct);
+        }
+
+        // Re-read under the lock so the count reflects every committed change.
+        _db.ChangeTracker.Clear();
+
+        var adminCount = await _db.Players
+            .CountAsync(p => !p.IsDeleted && (p.Roles & PlayerRoles.Admin) == PlayerRoles.Admin, ct);
+        var target = await _db.Players
+            .FirstOrDefaultAsync(p => p.Id == targetId && !p.IsDeleted, ct);
+
+        if (target is null || !target.HasRole(PlayerRoles.Admin) || adminCount <= 1)
+        {
+            await tx.RollbackAsync(ct);
+            return false;
+        }
+
+        target.RevokeRole(PlayerRoles.Admin);
+        await _db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+        return true;
+    }
 }

@@ -95,7 +95,7 @@ public class GuildChatHubTests
             ctx.Setup(c => c.User).Returns(new ClaimsPrincipal(identity));
             ctx.Setup(c => c.ConnectionId).Returns("conn-1");
 
-            Hub = new ChatHub(Mock.Of<IWorldChatStore>(), Store, Players.Object)
+            Hub = new ChatHub(Mock.Of<IWorldChatStore>(), Store, Players.Object, Mock.Of<IRaidParticipantRepository>())
             {
                 Clients = clients.Object,
                 Groups = Groups.Object,

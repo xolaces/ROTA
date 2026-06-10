@@ -303,6 +303,68 @@ public class EnergyServiceTests
     }
 
     [Fact]
+    public async Task SpendEnergy_PreservesFractionalRegenProgress()
+    {
+        // Audit fix — the old write path checkpointed at `now`, destroying the fractional remainder
+        // on every spend: with a 5-min/point rate, a player acting every 4 minutes would NEVER regen.
+        // The checkpoint must be backdated by the remainder so progress toward the next point survives.
+        var (service, resources, _, players, _, _) = BuildService(energyMinutesPerPoint: 5.0);
+        var playerId = Guid.NewGuid();
+
+        var knownPlayer = Player.Create("u", "u@t.com", "h");
+        players.Setup(p => p.FindByIdAsync(playerId, It.IsAny<CancellationToken>()))
+               .ReturnsAsync(knownPlayer);
+
+        // Checkpoint 4 minutes ago: 0 whole points regenerated, 4 minutes of fractional progress.
+        var checkpointAt = DateTimeOffset.UtcNow.AddMinutes(-4);
+        var resource = MakeResourceWithCheckpoint(10, 50, 0, checkpointAt);
+
+        resources.Setup(r => r.AtomicUpdateAsync(
+                    playerId, ResourceType.Energy,
+                    It.IsAny<Func<PlayerResource, bool>>(), It.IsAny<CancellationToken>()))
+                 .ReturnsAsync((Guid _, ResourceType _, Func<PlayerResource, bool> fn, CancellationToken _)
+                     => fn(resource));
+
+        var result = await service.SpendEnergyAsync(playerId, ResourceType.Energy, 1);
+
+        result.Should().BeTrue();
+        resource.CurrentValue.Should().Be(9, "live 10 − spend 1");
+        // The new checkpoint must sit ~4 minutes in the past (the carried remainder), not at `now`.
+        var carriedMinutes = (DateTimeOffset.UtcNow - resource.LastRegenAt).TotalMinutes;
+        carriedMinutes.Should().BeGreaterThan(3.9, "the 4 minutes of progress toward the next point must survive the spend")
+            .And.BeLessThan(4.2);
+    }
+
+    [Fact]
+    public async Task SpendEnergy_AtCap_DoesNotBankRegenProgress()
+    {
+        // At the cap, elapsed time is NOT regen progress — a spend from full must restart the clock
+        // at `now`, otherwise players could bank time while full and insta-regen after spending.
+        var (service, resources, _, players, _, _) = BuildService(energyMinutesPerPoint: 5.0);
+        var playerId = Guid.NewGuid();
+
+        var knownPlayer = Player.Create("u", "u@t.com", "h");
+        players.Setup(p => p.FindByIdAsync(playerId, It.IsAny<CancellationToken>()))
+               .ReturnsAsync(knownPlayer);
+
+        // Full pool, checkpoint 12 minutes ago (live caps at max; the 12 minutes are not progress).
+        var resource = MakeResourceWithCheckpoint(50, 50, 0, DateTimeOffset.UtcNow.AddMinutes(-12));
+
+        resources.Setup(r => r.AtomicUpdateAsync(
+                    playerId, ResourceType.Energy,
+                    It.IsAny<Func<PlayerResource, bool>>(), It.IsAny<CancellationToken>()))
+                 .ReturnsAsync((Guid _, ResourceType _, Func<PlayerResource, bool> fn, CancellationToken _)
+                     => fn(resource));
+
+        var result = await service.SpendEnergyAsync(playerId, ResourceType.Energy, 5);
+
+        result.Should().BeTrue();
+        resource.CurrentValue.Should().Be(45, "live capped at 50 − spend 5");
+        var clockAge = (DateTimeOffset.UtcNow - resource.LastRegenAt).TotalSeconds;
+        clockAge.Should().BeLessThan(5, "spending from a full pool restarts the regen clock — no banking");
+    }
+
+    [Fact]
     public async Task SpendEnergy_Guard_PreventsDoubleDeduct()
     {
         // Simulates the race condition guard: the updateFn is called with the live value

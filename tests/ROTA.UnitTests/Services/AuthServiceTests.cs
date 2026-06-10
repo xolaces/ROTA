@@ -439,8 +439,9 @@ public class AuthServiceTests
               .ReturnsAsync(activeToken);
         players.Setup(r => r.FindByIdAsync(player.Id, It.IsAny<CancellationToken>()))
                .ReturnsAsync(player);
-        tokens.Setup(r => r.RevokeAsync(activeToken, It.IsAny<CancellationToken>()))
-              .Returns(Task.CompletedTask);
+        // Audit fix: rotation is now an atomic conditional UPDATE — this caller wins the latch.
+        tokens.Setup(r => r.TryRevokeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+              .ReturnsAsync(true);
         tokens.Setup(r => r.CountActiveSessionsAsync(player.Id, It.IsAny<CancellationToken>()))
               .ReturnsAsync(0);
         tokens.Setup(r => r.CreateAsync(It.IsAny<RefreshToken>(), It.IsAny<CancellationToken>()))
@@ -450,8 +451,35 @@ public class AuthServiceTests
             new RefreshRequest { RefreshToken = "somerawtoken" }, "127.0.0.1");
 
         result.Should().NotBeNull();
-        tokens.Verify(r => r.RevokeAsync(activeToken, It.IsAny<CancellationToken>()), Times.Once,
-            "consumed token must be revoked on rotation");
+        tokens.Verify(r => r.TryRevokeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once,
+            "consumed token must be revoked (atomically) on rotation");
+        tokens.Verify(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never,
+            "a clean rotation must not trigger the breach response");
+    }
+
+    [Fact]
+    public async Task RefreshAsync_LostRotationRace_RevokesAllSessions()
+    {
+        // Audit fix — two concurrent refreshes with the same token: the loser of the conditional
+        // UPDATE must NOT mint a second token pair, and the family is revoked (replay semantics).
+        var (service, players, tokens, _, _) = BuildService();
+        var player = MakePlayer();
+        var activeToken = MakeActiveToken(player.Id);
+
+        tokens.Setup(r => r.FindByTokenHashAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+              .ReturnsAsync(activeToken);
+        players.Setup(r => r.FindByIdAsync(player.Id, It.IsAny<CancellationToken>()))
+               .ReturnsAsync(player);
+        tokens.Setup(r => r.TryRevokeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+              .ReturnsAsync(false);   // a concurrent request already rotated it
+
+        var result = await service.RefreshAsync(
+            new RefreshRequest { RefreshToken = "somerawtoken" }, "127.0.0.1");
+
+        result.Should().BeNull("the latch loser must not mint a second session");
+        tokens.Verify(r => r.CreateAsync(It.IsAny<RefreshToken>(), It.IsAny<CancellationToken>()), Times.Never);
+        tokens.Verify(r => r.RevokeAllActiveAsync(player.Id, It.IsAny<CancellationToken>()), Times.Once,
+            "concurrent reuse of one refresh token is treated as theft");
     }
 
     // -----------------------------------------------------------------------
@@ -472,6 +500,9 @@ public class AuthServiceTests
 
         result.Should().BeNull("revoked tokens must be rejected");
         tokens.Verify(r => r.CreateAsync(It.IsAny<RefreshToken>(), It.IsAny<CancellationToken>()), Times.Never);
+        // Audit fix: replaying a rotated token is the theft signal — the whole family is revoked.
+        tokens.Verify(r => r.RevokeAllActiveAsync(revokedToken.PlayerId, It.IsAny<CancellationToken>()), Times.Once,
+            "replay of a rotated token must evict every session (breach detection)");
     }
 
     [Fact]
@@ -486,6 +517,8 @@ public class AuthServiceTests
             new RefreshRequest { RefreshToken = "somerawtoken" }, "127.0.0.1");
 
         result.Should().BeNull("expired tokens must be rejected");
+        tokens.Verify(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never,
+            "an expired (not replayed) token is an ordinary failure, not a breach");
     }
 
     // -----------------------------------------------------------------------

@@ -112,6 +112,14 @@ public class RaidServiceTests
             .Returns(Task.CompletedTask);
         auditLog.Setup(a => a.AppendAsync(It.IsAny<AuditLog>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        // T57 loot-claim defaults: the advisory-lock wrapper invokes its delegate (no real DB tx in
+        // unit tests) and the conditional-UPDATE latch reports "won". Race tests override the latch.
+        raids.Setup(r => r.AtomicWithAdvisoryLockAsync(
+                It.IsAny<Guid>(), It.IsAny<Func<Task<bool>>>(), It.IsAny<CancellationToken>()))
+            .Returns<Guid, Func<Task<bool>>, CancellationToken>((_, action, _) => action());
+        participants.Setup(p => p.TryClaimRewardsAsync(
+                It.IsAny<Guid>(), It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
         stats.Setup(s => s.GrantLevelUpPointsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         stats.Setup(s => s.AddUnassignedPointsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
@@ -391,7 +399,8 @@ public class RaidServiceTests
         var cached = new RaidHitResponse { Success = true, DamageDealt = 42 };
 
         // TryAcquireSlotAsync returns (false, response) → duplicate found, return immediately.
-        b.HitCache.Setup(c => c.TryAcquireSlotAsync(key, It.IsAny<CancellationToken>()))
+        // Audit fix: the service now scopes the cache key to player+raid, so match on the suffix.
+        b.HitCache.Setup(c => c.TryAcquireSlotAsync(It.Is<string>(s => s.EndsWith(key)), It.IsAny<CancellationToken>()))
             .ReturnsAsync((false, cached));
 
         var raid = MakeRaid();
@@ -1711,6 +1720,38 @@ public class RaidServiceTests
         again.Success.Should().BeTrue();
         b.Gems.Verify(g => g.GrantGemsAsync(player.Id, It.IsAny<int>(), GemTransactionType.RaidReward, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once,
             "a second Loot press must not re-grant");
+    }
+
+    [Fact]
+    public async Task LootRaid_ConcurrentClaimLosesLatch_GrantsNothing()
+    {
+        // Audit fix — two concurrent Loot presses: the loser of the conditional-UPDATE latch must
+        // grant NOTHING (no gems, no SP, no items) even though it loaded RewardedAt == null.
+        var b = BuildService();
+        var player = MakePlayer();
+        var raid = MakeVisRaid(Guid.NewGuid(), RaidVisibility.Public);
+        raid.MarkDefeated();
+
+        var part = RaidParticipant.Create(raid.Id, player.Id);
+        part.RecordPendingRewards("Legendary", gold: 500, xp: 200, gems: 10, statPoints: 3, itemsJson: string.Empty);
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(part);
+        // This request loses the latch race — the concurrent winner already set rewarded_at.
+        b.Participants.Setup(p => p.TryClaimRewardsAsync(part.Id, It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.LootRaidAsync(player.Id, raid.Id);
+
+        result.Success.Should().BeTrue("the loser still gets the reward summary back");
+        b.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(),
+            It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never,
+            "the latch loser must not re-grant gems");
+        b.Stats.Verify(s => s.AddUnassignedPointsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never, "the latch loser must not re-grant stat points");
     }
 
     [Fact]
@@ -3548,7 +3589,8 @@ public class RaidServiceTests
         var cached = new RaidHitResponse { Success = true, DamageDealt = 42, NewStrikeBalance = 7 };
 
         // TryAcquireSlotAsync returns (false, cached) → early return before AtomicApplyHitAsync.
-        b.HitCache.Setup(c => c.TryAcquireSlotAsync(key, It.IsAny<CancellationToken>()))
+        // Audit fix: the service now scopes the cache key to player+raid, so match on the suffix.
+        b.HitCache.Setup(c => c.TryAcquireSlotAsync(It.Is<string>(s => s.EndsWith(key)), It.IsAny<CancellationToken>()))
             .ReturnsAsync((false, cached));
 
         var raid = MakeGauntletRaid(eventId);

@@ -54,6 +54,12 @@ public sealed class ItemService : IItemService
     public async Task<UseItemResponse> UseItemAsync(
         Guid playerId, string itemDefinitionId, int quantity, CancellationToken ct = default)
     {
+        // Authoritative guard (defense-in-depth behind the validator): a non-positive quantity must
+        // never reach ConsumeQuantity, which would otherwise ADD inventory (Quantity -= -1) and grant
+        // negative stat points — an item/SP duplication exploit.
+        if (quantity < 1)
+            return UseFail(UseItemFailureCode.InsufficientItems, "Quantity must be at least 1.");
+
         var def = _itemDefs.GetById(itemDefinitionId);
         if (def is null)
             return UseFail(UseItemFailureCode.ItemNotFound, "Item definition not found.");

@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ROTA.Application.Interfaces;
@@ -12,10 +13,12 @@ namespace ROTA.Api.Controllers;
 public sealed class ItemController : ControllerBase
 {
     private readonly IItemService _items;
+    private readonly IValidator<UseItemRequest> _useValidator;
 
-    public ItemController(IItemService items)
+    public ItemController(IItemService items, IValidator<UseItemRequest> useValidator)
     {
         _items = items;
+        _useValidator = useValidator;
     }
 
     [HttpGet]
@@ -34,6 +37,9 @@ public sealed class ItemController : ControllerBase
         [FromRoute] string itemDefinitionId,
         [FromBody] UseItemRequest request)
     {
+        var v = await _useValidator.ValidateAsync(request);
+        if (!v.IsValid) return InvalidRequest(v);
+
         var result = await _items.UseItemAsync(GetPlayerId(), itemDefinitionId, request.Quantity);
 
         if (result.Success) return Ok(result);
@@ -48,4 +54,11 @@ public sealed class ItemController : ControllerBase
 
     private Guid GetPlayerId()
         => Guid.Parse(User.FindFirst(JwtRegisteredClaimNames.Sub)!.Value);
+
+    private IActionResult InvalidRequest(FluentValidation.Results.ValidationResult v)
+    {
+        foreach (var e in v.Errors)
+            ModelState.AddModelError(e.PropertyName, e.ErrorMessage);
+        return ValidationProblem();
+    }
 }

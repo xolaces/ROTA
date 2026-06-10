@@ -41,15 +41,19 @@ public sealed class EnergyService : IEnergyService
 
     public async Task<bool> SpendEnergyAsync(Guid playerId, ResourceType type, int amount, CancellationToken ct = default)
     {
+        // Defense-in-depth (audit fix): a negative spend would CREDIT the pool (live − (−n) = live + n).
+        // All callers pass server-computed costs today, but this guard makes the invariant local.
+        if (amount <= 0) return false;
+
         var now = DateTimeOffset.UtcNow;
         var minutesPerPoint = await ResolveMinutesPerPointAsync(playerId, type, ct);
 
         var success = await _resources.AtomicUpdateAsync(playerId, type, resource =>
         {
-            var live = ComputeLiveValue(resource, minutesPerPoint, now);
+            var (live, checkpointAt) = ComputeLiveValueWithCarry(resource, minutesPerPoint, now);
             if (live < amount) return false;
 
-            resource.SaveCheckpoint(live - amount, now);
+            resource.SaveCheckpoint(live - amount, checkpointAt);
             return true;
         }, ct);
 
@@ -88,13 +92,18 @@ public sealed class EnergyService : IEnergyService
 
     public async Task RefillEnergyAsync(Guid playerId, ResourceType type, int amount, CancellationToken ct = default)
     {
+        // Defense-in-depth (audit fix): a negative refill would silently drain the pool.
+        if (amount <= 0) return;
+
         var now = DateTimeOffset.UtcNow;
         var minutesPerPoint = await ResolveMinutesPerPointAsync(playerId, type, ct);
 
         await _resources.AtomicUpdateAsync(playerId, type, resource =>
         {
-            var live = ComputeLiveValue(resource, minutesPerPoint, now);
-            resource.SaveCheckpoint(Math.Min(live + amount, resource.MaxValue), now);
+            var (live, checkpointAt) = ComputeLiveValueWithCarry(resource, minutesPerPoint, now);
+            var newValue = Math.Min(live + amount, resource.MaxValue);
+            // At the cap the fractional carry is meaningless (no banking past max) — restart the clock.
+            resource.SaveCheckpoint(newValue, newValue >= resource.MaxValue ? now : checkpointAt);
             return true;
         }, ct);
     }
@@ -110,9 +119,9 @@ public sealed class EnergyService : IEnergyService
         int drained = 0;
         await _resources.AtomicUpdateAsync(playerId, type, resource =>
         {
-            var live = ComputeLiveValue(resource, minutesPerPoint, now);
+            var (live, checkpointAt) = ComputeLiveValueWithCarry(resource, minutesPerPoint, now);
             drained = Math.Min(live, amount);
-            resource.SaveCheckpoint(live - drained, now);
+            resource.SaveCheckpoint(live - drained, checkpointAt);
             return true;
         }, ct);
         return drained;
@@ -158,6 +167,31 @@ public sealed class EnergyService : IEnergyService
         var elapsed = (reference - resource.LastRegenAt).TotalMinutes;
         var regenerated = (int)(elapsed / minutesPerPoint);
         return Math.Min(resource.CurrentValue + regenerated, resource.MaxValue);
+    }
+
+    // Audit fix — fractional-regen carry. ComputeLiveValue truncates elapsed/minutesPerPoint to whole
+    // points; the old write path then checkpointed at `now`, silently destroying the fractional
+    // remainder on EVERY spend/refill/drain (a player acting every 30s with a 5-min rate would regen
+    // ~nothing). This variant also returns the timestamp to checkpoint at: backdated by the remainder
+    // so progress toward the next point survives the write. At/above the cap the clock restarts at
+    // `reference` instead — elapsed time at the cap is not regen progress (no banking past max).
+    private static (int Live, DateTimeOffset CheckpointAt) ComputeLiveValueWithCarry(
+        PlayerResource resource, double minutesPerPoint, DateTimeOffset reference)
+    {
+        if (minutesPerPoint <= 0)
+            return (Math.Min(resource.CurrentValue, resource.MaxValue), reference);
+
+        var elapsed = (reference - resource.LastRegenAt).TotalMinutes;
+        if (elapsed < 0) elapsed = 0; // clock-skew safety: never let a future checkpoint inflate regen
+
+        var regenerated = (int)(elapsed / minutesPerPoint);
+        var live = resource.CurrentValue + regenerated;
+
+        if (live >= resource.MaxValue)
+            return (resource.MaxValue, reference);
+
+        var remainderMinutes = elapsed - regenerated * minutesPerPoint;
+        return (live, reference - TimeSpan.FromMinutes(remainderMinutes));
     }
 
     public double GetRegenMinutesPerPoint(PlayerClass playerClass, ResourceType type)

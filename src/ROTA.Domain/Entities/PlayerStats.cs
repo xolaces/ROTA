@@ -40,9 +40,15 @@ public class PlayerStats
 
     public DateTimeOffset UpdatedAt { get; private set; }
 
-    // Computed resource caps
-    public int ComputeMaxEnergy() => 10 + EnergyInvestment;
-    public int ComputeMaxStamina() => 10 + StaminaInvestment;
+    // Computed resource caps. OWNER DECISION (audit fix, 2026-06-09): bases rebased from 10/10 to
+    // match the seeded starting pools (Energy 25 / Stamina 5, the playtested DotD-heritage feel).
+    // The old 10+investment formula CONTRADICTED the seeds: a fresh player's first Energy allocation
+    // clamped 25→11, destroying 14 max + 14 current energy. Allocation now always strictly grows pools.
+    public const int BaseMaxEnergy  = 25;
+    public const int BaseMaxStamina = 5;
+
+    public int ComputeMaxEnergy() => BaseMaxEnergy + EnergyInvestment;
+    public int ComputeMaxStamina() => BaseMaxStamina + StaminaInvestment;
 
     // LSI = (EnergyInvestment + StaminaInvestment x 2) / Level -- cap is 9.0 (server-enforced)
     public double ComputeLSI(int level) =>

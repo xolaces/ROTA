@@ -301,15 +301,17 @@ app.UseMiddleware<RequestLoggingMiddleware>();
 // [4] CORS
 app.UseCors("RotaPolicy");
 
-// [5] Rate limiting
-// Runs BEFORE JWT validation - bots are dropped before any expensive DB work
-app.UseMiddleware<RateLimitMiddleware>();
-
-// [6] Routing
+// [5] Routing
 app.UseRouting();
 
-// [7] Authentication
+// [6] Authentication
 app.UseAuthentication();
+
+// [7] Rate limiting (audit fix: AFTER authentication)
+// The per-player bucket must key on the signature-VERIFIED identity — keying on an unverified JWT
+// 'sub' let attackers exhaust a victim's bucket with forged tokens (targeted DoS). Per-IP limiting
+// of /api/auth and of unauthenticated traffic still happens here, before authorization/DB work.
+app.UseMiddleware<RateLimitMiddleware>();
 
 // [8] Authorization
 app.UseAuthorization();
@@ -317,6 +319,11 @@ app.UseAuthorization();
 // [9] Audit logging
 // Runs after auth so we have a verified PlayerId to write to audit_log
 app.UseMiddleware<AuditLogMiddleware>();
+
+// [9b] Ban gate (audit fix)
+// The 15-min access JWT outlives a ban's refresh-token revocation; this gate stops every mutating
+// request from a banned player immediately. After AuditLogMiddleware so the 403 is still audited.
+app.UseMiddleware<BanGateMiddleware>();
 
 // [10] Swagger (dev only)
 if (app.Environment.IsDevelopment())

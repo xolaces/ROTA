@@ -53,13 +53,17 @@ public sealed class ClassService : IClassService
 
     public IReadOnlyList<PlayerClass> GetAvailableChoices(int level, PlayerClass current)
     {
+        // Tier 2 unlock: level 5+, still Conscript. Audit fix: no upper bound, and checked BEFORE the
+        // high-level auto-advance guard — the old `level < 100` permanently locked a Conscript who
+        // hadn't chosen by L100 out of ALL progression (Tier3Choices has no Conscript key and no
+        // path-based auto-advance applies to Conscript) until Luminary at L2000. A late chooser now
+        // picks their Tier 2 path and immediately sees its Tier 3 specs on the next read.
+        if (level >= 5 && current == PlayerClass.Conscript && !IsConvergedClass(current))
+            return Tier2Choices;
+
         // Converged classes and high-level players auto-advance only — no manual choices
         if (IsConvergedClass(current) || level >= 500)
             return Array.Empty<PlayerClass>();
-
-        // Tier 2 unlock: level 5+, still Conscript
-        if (level >= 5 && level < 100 && current == PlayerClass.Conscript)
-            return Tier2Choices;
 
         // Tier 3 unlock: level 100+, currently a Tier 2 class
         if (level >= 100 && Tier3Choices.TryGetValue(current, out var tier3))

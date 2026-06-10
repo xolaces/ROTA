@@ -86,17 +86,21 @@ public sealed class AdminService : IAdminService
         if (target is null)
             return AdminActionResult.Fail($"Player '{targetUsernameOrId}' not found.");
 
-        // Guard: last-admin protection.
+        var before = target.Roles;
+
+        // Last-admin protection. Demotion runs atomically (advisory lock + count + clear) so two
+        // concurrent demotes of different admins can't both pass the guard and leave zero admins.
         if (role == PlayerRoles.Admin)
         {
-            var adminCount = await _players.CountByRoleAsync(PlayerRoles.Admin, ct);
-            if (adminCount <= 1)
+            if (!await _players.TryDemoteAdminAsync(target.Id, ct))
                 return AdminActionResult.Fail("Cannot demote the last admin.");
+            target.RevokeRole(role); // reflect the persisted change on the (detached) entity for audit
         }
-
-        var before = target.Roles;
-        target.RevokeRole(role);
-        await _players.UpdateAsync(target, ct);
+        else
+        {
+            target.RevokeRole(role);
+            await _players.UpdateAsync(target, ct);
+        }
 
         // Revoke active sessions so the removed privilege is effective immediately.
         if (role is PlayerRoles.Admin or PlayerRoles.Moderator)

@@ -201,10 +201,31 @@ public sealed class AuthService : IAuthService
         var tokenHash = HashToken(request.RefreshToken);
         var stored = await _refreshTokens.FindByTokenHashAsync(tokenHash);
 
-        if (stored is null || !stored.IsActive)
+        if (stored is null)
         {
             await _auditLog.AppendAsync(AuditLog.Create(
                 null, "TokenRefreshFailed", null,
+                "Invalid or expired token", ipAddress));
+            return null;
+        }
+
+        // Replay of an already-rotated token is the canonical theft signal: the legitimate client
+        // holds the NEW token, so whoever presents the old one (victim or thief — we can't tell
+        // which side is which) means the family is compromised. Revoke every active session so the
+        // thief is evicted; the victim re-authenticates with their password.
+        if (stored.IsRevoked)
+        {
+            await _refreshTokens.RevokeAllActiveAsync(stored.PlayerId);
+            await _auditLog.AppendAsync(AuditLog.Create(
+                stored.PlayerId, "TokenReplayDetected", null,
+                "Rotated refresh token was replayed — all sessions revoked", ipAddress));
+            return null;
+        }
+
+        if (!stored.IsActive) // not revoked, so: expired — ordinary failure, no breach response
+        {
+            await _auditLog.AppendAsync(AuditLog.Create(
+                stored.PlayerId, "TokenRefreshFailed", null,
                 "Invalid or expired token", ipAddress));
             return null;
         }
@@ -218,7 +239,16 @@ public sealed class AuthService : IAuthService
             return null;
         }
 
-        await _refreshTokens.RevokeAsync(stored);
+        // Atomic rotation: a single conditional UPDATE claims the token. Losing the race means a
+        // concurrent request rotated it between our read and now — same semantics as a replay.
+        if (!await _refreshTokens.TryRevokeAsync(tokenHash))
+        {
+            await _refreshTokens.RevokeAllActiveAsync(stored.PlayerId);
+            await _auditLog.AppendAsync(AuditLog.Create(
+                stored.PlayerId, "TokenReplayDetected", null,
+                "Concurrent rotation of the same refresh token — all sessions revoked", ipAddress));
+            return null;
+        }
 
         await _auditLog.AppendAsync(AuditLog.Create(
             player.Id, "TokenRefresh", null,
@@ -252,12 +282,16 @@ public sealed class AuthService : IAuthService
 
     private async Task<AuthResponse> IssueTokenPairAsync(Player player, string ipAddress)
     {
+        // Trim to the cap, not by one: if races (or historical drift) ever push the count past the
+        // cap, a single-revoke would leave it permanently exceeded — every login would trim one and
+        // add one. Looping restores the invariant on the next issue regardless of how it drifted.
         var activeSessions = await _refreshTokens.CountActiveSessionsAsync(player.Id);
-        if (activeSessions >= MaxConcurrentSessions)
+        while (activeSessions >= MaxConcurrentSessions)
         {
             var oldest = await _refreshTokens.FindOldestActiveAsync(player.Id);
-            if (oldest is not null)
-                await _refreshTokens.RevokeAsync(oldest);
+            if (oldest is null) break;
+            await _refreshTokens.RevokeAsync(oldest);
+            activeSessions--;
         }
 
         var rawToken = GenerateSecureToken();

@@ -49,6 +49,16 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
         await _db.SaveChangesAsync(ct);
     }
 
+    // Single conditional UPDATE — bypasses the change tracker, so the check-and-set is atomic at
+    // the database. Two concurrent rotations of the same token: exactly one sees rows == 1.
+    public async Task<bool> TryRevokeAsync(string tokenHash, CancellationToken ct = default)
+    {
+        var rows = await _db.RefreshTokens
+            .Where(t => t.TokenHash == tokenHash && !t.IsRevoked)
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.IsRevoked, true), ct);
+        return rows == 1;
+    }
+
     public async Task RevokeAllActiveAsync(Guid playerId, CancellationToken ct = default)
     {
         var active = await _db.RefreshTokens

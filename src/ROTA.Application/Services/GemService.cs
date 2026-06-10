@@ -4,7 +4,11 @@ using ROTA.Domain.Enums;
 
 namespace ROTA.Application.Services;
 
-//        A concurrent double-spend is possible under high contention. Phase 2: advisory lock.
+// Audit fix (was: "A concurrent double-spend is possible under high contention. Phase 2: advisory
+// lock"): spends now run through IGemTransactionRepository.TrySpendAsync — idempotency + balance +
+// debit under a per-player advisory lock — so concurrent spends serialize and the SUM balance can
+// never go negative. Grants use TryCreateAsync so a concurrent duplicate reference returns false
+// (already granted) instead of throwing on the unique index.
 public sealed class GemService : IGemService
 {
     private const int DailyRefillAmount = 5;
@@ -29,7 +33,10 @@ public sealed class GemService : IGemService
             && await _transactions.ReferenceExistsAsync(playerId, type, referenceId, ct))
             return false;
 
-        await _transactions.CreateAsync(GemTransaction.Create(playerId, amount, type, referenceId), ct);
+        // TryCreateAsync: a concurrent duplicate that slipped past the pre-check above hits the
+        // unique index and reports "already granted" instead of throwing.
+        if (!await _transactions.TryCreateAsync(GemTransaction.Create(playerId, amount, type, referenceId), ct))
+            return false;
 
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, $"GemGrant:{type}", null,
@@ -42,25 +49,17 @@ public sealed class GemService : IGemService
         Guid playerId, int amount, GemTransactionType type, string? referenceId,
         CancellationToken ct = default)
     {
-        // referenceId already in ledger → the original charge committed; no second row written.
-        // This is an idempotent replay: caller must proceed with the grant step (AlreadyProcessed
-        // is SUCCESS, not failure). This closes the lost-purchase hole: if a crash happened
-        // between gem spend and grant, the retry arrives here, gets AlreadyProcessed, and
-        // re-runs the (idempotent) grant.
-        if (referenceId is not null
-            && await _transactions.ReferenceExistsAsync(playerId, type, referenceId, ct))
-            return GemSpendOutcome.AlreadyProcessed;
+        // Atomic in the repository: idempotency (AlreadyProcessed = the original charge committed;
+        // caller proceeds with its idempotent grant step — the lost-purchase recovery), balance
+        // check, and the −amount insert all run under a per-player advisory lock.
+        var outcome = await _transactions.TrySpendAsync(playerId, amount, type, referenceId, ct);
 
-        var balance = await _transactions.GetBalanceAsync(playerId, ct);
-        if (balance < amount) return GemSpendOutcome.InsufficientBalance;
+        if (outcome == GemSpendOutcome.Charged)
+            await _auditLog.AppendAsync(AuditLog.Create(
+                playerId, $"GemSpend:{type}", null,
+                $"Spent {amount} gems (ref={referenceId})", null), ct);
 
-        await _transactions.CreateAsync(GemTransaction.Create(playerId, -amount, type, referenceId), ct);
-
-        await _auditLog.AppendAsync(AuditLog.Create(
-            playerId, $"GemSpend:{type}", null,
-            $"Spent {amount} gems (ref={referenceId})", null), ct);
-
-        return GemSpendOutcome.Charged;
+        return outcome;
     }
 
     public Task<bool> DailyRefillAsync(Guid playerId, CancellationToken ct = default)

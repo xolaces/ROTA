@@ -199,8 +199,8 @@ public class AdminServiceTests
 
         players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
         players.Setup(r => r.FindByUsernameAsync("last-admin", It.IsAny<CancellationToken>())).ReturnsAsync(target);
-        // Only 1 admin in the system.
-        players.Setup(r => r.CountByRoleAsync(PlayerRoles.Admin, It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        // Audit fix: the last-admin guard is now the atomic demotion. Last admin → returns false.
+        players.Setup(r => r.TryDemoteAdminAsync(target.Id, It.IsAny<CancellationToken>())).ReturnsAsync(false);
 
         var result = await service.RevokeRoleAsync(actor.Id, "last-admin", PlayerRoles.Admin);
 
@@ -217,14 +217,17 @@ public class AdminServiceTests
 
         players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
         players.Setup(r => r.FindByUsernameAsync("second-admin", It.IsAny<CancellationToken>())).ReturnsAsync(target);
-        // 2 admins — safe to remove one.
-        players.Setup(r => r.CountByRoleAsync(PlayerRoles.Admin, It.IsAny<CancellationToken>())).ReturnsAsync(2);
+        // Audit fix: 2 admins — the atomic demotion succeeds.
+        players.Setup(r => r.TryDemoteAdminAsync(target.Id, It.IsAny<CancellationToken>())).ReturnsAsync(true);
         players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
         tokens.Setup(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
 
         var result = await service.RevokeRoleAsync(actor.Id, "second-admin", PlayerRoles.Admin);
 
         result.Success.Should().BeTrue();
+        target.HasRole(PlayerRoles.Admin).Should().BeFalse("the demotion clears the Admin flag");
+        tokens.Verify(r => r.RevokeAllActiveAsync(target.Id, It.IsAny<CancellationToken>()), Times.Once,
+            "demoting an admin must revoke their sessions");
     }
 
     // -----------------------------------------------------------------------

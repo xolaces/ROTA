@@ -52,6 +52,21 @@ public sealed class RaidParticipantRepository : IRaidParticipantRepository
         await _db.SaveChangesAsync(ct);
     }
 
+    // T57 claim latch. Raw conditional UPDATE so the check-and-set is a single row-locked statement:
+    // under concurrency the second caller blocks on the row lock, then matches zero rows. Runs on the
+    // DbContext connection, so it participates in any ambient transaction (the loot-claim tx).
+    public async Task<bool> TryClaimRewardsAsync(
+        Guid participantId, DateTimeOffset claimedAt, CancellationToken ct = default)
+    {
+        var rows = await _db.Database.ExecuteSqlInterpolatedAsync($@"
+            UPDATE raid_participants
+               SET rewarded_at = {claimedAt}, updated_at = {claimedAt}
+             WHERE id = {participantId}
+               AND rewarded_at IS NULL
+               AND is_deleted = false", ct);
+        return rows == 1;
+    }
+
     public async Task<IReadOnlyList<RaidParticipantRank>> GetTopByDamageAsync(
         Guid activeRaidId, int top, CancellationToken ct = default)
     {

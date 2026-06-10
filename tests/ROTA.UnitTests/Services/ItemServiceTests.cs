@@ -212,6 +212,33 @@ public class ItemServiceTests
     }
 
     // -----------------------------------------------------------------------
+    // UseItemAsync — negative / zero quantity guard (audit fix: item+SP dup)
+    // -----------------------------------------------------------------------
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(0)]
+    public async Task UseItem_Rejects_NonPositiveQuantity_WithoutGrantingOrMutating(int qty)
+    {
+        var b = BuildService();
+        var playerId = Guid.NewGuid();
+        var def = StatBagDef();
+        var inv = MakeInvItem(def.Id, 5);
+
+        b.ItemDefs.Setup(d => d.GetById(def.Id)).Returns(def);
+        b.Inventory.Setup(r => r.GetAsync(playerId, def.Id, It.IsAny<CancellationToken>())).ReturnsAsync(inv);
+
+        var result = await b.Service.UseItemAsync(playerId, def.Id, qty);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(UseItemFailureCode.InsufficientItems);
+        // The exploit was: negative quantity ADDS items (Quantity -= -1) and grants negative SP.
+        b.Stats.Verify(s => s.AddUnassignedPointsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+        b.Inventory.Verify(r => r.UpdateAsync(It.IsAny<PlayerInventoryItem>(), It.IsAny<CancellationToken>()), Times.Never);
+        inv.Quantity.Should().Be(5, "inventory must be untouched on a rejected use");
+    }
+
+    // -----------------------------------------------------------------------
     // UseItemAsync — non-usable item type
     // -----------------------------------------------------------------------
 

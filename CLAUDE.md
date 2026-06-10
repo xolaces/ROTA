@@ -611,8 +611,11 @@ these specs exactly.
   / Player.Level
 - LSI cap: 9.0 (player-investable, server-enforced)
 - Gear and item bonuses CAN push effective LSI above 9.0
-- MaxEnergy = 10 + EnergyInvestment
-- MaxStamina = 10 + StaminaInvestment
+- MaxEnergy = 25 + EnergyInvestment   (OWNER AMENDED 2026-06-09: base 10→25 to match the seeded
+  starting pool — the 10-base formula clamped a fresh player's seeded 25 energy down to 11 on the
+  first allocation, destroying 14 max + 14 current; bases live in PlayerStats.BaseMaxEnergy/Stamina
+  and Player.CreateWithId seeds reference them so they can never drift again)
+- MaxStamina = 5 + StaminaInvestment  (same amendment: base 10→5 matches the seeded pool)
 - MaxGuildStamina = Player.Level exactly (1:1, no investment)
 - Discernment (renamed from Perception): no LSI cap,
   invest freely, affects quest drop quality and raid

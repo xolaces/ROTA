@@ -37,10 +37,18 @@ public class GauntletServiceTests
         public Mock<IRaidService> RaidService = new();
 
         public GauntletService Build()
-            => new(Events.Object, Entries.Object, Strikes.Object, Currency.Object,
+        {
+            // Audit fix: the ladder spawn now runs under a per-player advisory lock — unit tests have
+            // no real DB tx, so the wrapper just invokes its delegate (mirrors RaidServiceTests).
+            Raids.Setup(r => r.AtomicWithAdvisoryLockAsync(
+                    It.IsAny<Guid>(), It.IsAny<Func<Task<bool>>>(), It.IsAny<CancellationToken>()))
+                .Returns<Guid, Func<Task<bool>>, CancellationToken>((_, action, _) => action());
+
+            return new(Events.Object, Entries.Object, Strikes.Object, Currency.Object,
                    Content.Object, Players.Object, Gems.Object, Audit.Object,
                    Options.Create(Config), Shop.Object, Legions.Object, Equipment.Object,
                    Raids.Object, RaidService.Object);
+        }
     }
 
     // Builds a player at an exact level: each level costs exactly 1 XP, so AddExperience(level-1)

@@ -30,4 +30,12 @@ public interface IPlayerRepository
     /// Uses bitwise: <c>WHERE (roles &amp; @r) = @r AND NOT is_deleted</c>.
     /// </summary>
     Task<int> CountByRoleAsync(ROTA.Domain.Enums.PlayerRoles role, CancellationToken ct = default);
+
+    /// <summary>
+    /// Atomically demotes the target from Admin while preserving the "always keep ≥1 admin" invariant
+    /// under concurrency. All admin-role mutations serialize on a fixed advisory lock, so two
+    /// simultaneous demotions of DIFFERENT admins cannot both pass a last-admin check and zero out the
+    /// admins. Returns false (no change) if the target is not an admin or is the last remaining admin.
+    /// </summary>
+    Task<bool> TryDemoteAdminAsync(Guid targetId, CancellationToken ct = default);
 }

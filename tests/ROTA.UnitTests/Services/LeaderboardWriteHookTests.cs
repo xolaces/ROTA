@@ -478,7 +478,8 @@ public class LeaderboardWriteHookTests
         var key    = Guid.NewGuid().ToString();
         var cached = new RaidHitResponse { Success = true, DamageDealt = 99999 };
 
-        b.HitCache.Setup(c => c.TryAcquireSlotAsync(key, It.IsAny<CancellationToken>()))
+        // Audit fix: the service now scopes the cache key to player+raid, so match on the suffix.
+        b.HitCache.Setup(c => c.TryAcquireSlotAsync(It.Is<string>(s => s.EndsWith(key)), It.IsAny<CancellationToken>()))
             .ReturnsAsync((false, cached));
 
         var raid = MakeRaid();

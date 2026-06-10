@@ -89,6 +89,7 @@ public class GuildServiceTests
         public Task<Player?> FindByIdWithStatsAsync(Guid id, CancellationToken ct = default) => FindByIdAsync(id, ct);
         public Task UpdateStatsAsync(PlayerStats stats, CancellationToken ct = default) => Task.CompletedTask;
         public Task<int> CountByRoleAsync(PlayerRoles role, CancellationToken ct = default) => Task.FromResult(0);
+        public Task<bool> TryDemoteAdminAsync(Guid targetId, CancellationToken ct = default) => Task.FromResult(false);
     }
 
     private sealed class Harness

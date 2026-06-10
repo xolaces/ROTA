@@ -124,6 +124,20 @@ public class ClassServiceTests
         svc.GetAvailableChoices(99, PlayerClass.Conscript).Should().HaveCount(3);
     }
 
+    [Theory]
+    [InlineData(100)]
+    [InlineData(250)]
+    [InlineData(600)]
+    public void GetAvailableChoices_LateConscript_StillOffersTier2(int level)
+    {
+        // Audit fix — a Conscript who never chose before L100 was permanently locked out of class
+        // progression (no choices, no path-based auto-advance) until Luminary at L2000. The Tier-2
+        // choice must stay open at ANY level while the player is still a Conscript.
+        var svc = BuildService(out _);
+        svc.GetAvailableChoices(level, PlayerClass.Conscript).Should().HaveCount(3,
+            "a Conscript must always be able to pick a Tier-2 path");
+    }
+
     [Fact]
     public void GetAvailableChoices_IronguardPath_AtLevel100_ReturnsCorrectChoices()
     {
