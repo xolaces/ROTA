@@ -1,7 +1,9 @@
 # ROTA Session Handoff — 2026-06-10 (Wave 1 client catch-up DONE → backend wave T59 DONE)
 
 ## TL;DR (resume here)
-Audit fixes are COMMITTED (`30e2eaa`). **Wave 1 (T60–T64) is DONE** — key discovery: T60/T62/T63
+**COMMITTED & APPLIED this session:** backend `bde33f5` (T59 + index-hardening + mod polish + T71),
+client `e0bdbfe` (Wave 1). Both migrations APPLIED to the dev DB. Tree is clean. Audit fixes were
+already `30e2eaa`. **Wave 1 (T60–T64) is DONE** — key discovery: T60/T62/T63
 were ALREADY shipped in earlier client commits (this file's old Wave-1 list was stale); this session
 built T61 (AchievementsScreen + Home tile), fixed T63 gaps (RaidChatUnavailable handler, raid/guild
 send gating on IsConnected, stale tooltip), and ran the never-run T64 contract+mock-fidelity audit
