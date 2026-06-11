@@ -28,6 +28,9 @@ public class RotaDbContext : DbContext
     // ----- System 12 — Beta Access Control -----
     public DbSet<BetaKey> BetaKeys => Set<BetaKey>();
 
+    // ----- T65 — Password Reset -----
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+
     // ----- System 13 — Character Gear -----
     public DbSet<PlayerEquipment> PlayerEquipment => Set<PlayerEquipment>();
 

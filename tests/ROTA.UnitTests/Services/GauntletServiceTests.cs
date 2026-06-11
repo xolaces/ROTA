@@ -35,6 +35,8 @@ public class GauntletServiceTests
         // Slice 7 — ladder summon/auto-advance
         public Mock<IActiveRaidRepository> Raids = new();
         public Mock<IRaidService> RaidService = new();
+        // T76 — magic display names (prize preview / settlement summary)
+        public Mock<IMagicDefinitionProvider> Magics = new();
 
         public GauntletService Build()
         {
@@ -47,7 +49,7 @@ public class GauntletServiceTests
             return new(Events.Object, Entries.Object, Strikes.Object, Currency.Object,
                    Content.Object, Players.Object, Gems.Object, Audit.Object,
                    Options.Create(Config), Shop.Object, Legions.Object, Equipment.Object,
-                   Raids.Object, RaidService.Object);
+                   Raids.Object, RaidService.Object, Magics.Object);
         }
     }
 
@@ -756,5 +758,205 @@ public class GauntletServiceTests
         result.Entries.Single(e => e.Id == "shop_gear").AlreadyOwned.Should().BeFalse("the gear is not owned");
         result.Entries.Single(e => e.Id == "shop_gems").AlreadyOwned.Should().BeFalse("bundles are never owned");
         result.Entries.Single(e => e.Id == "shop_gear").Currency.Should().Be("Pitchfork");
+    }
+
+    // ── T76 — prize preview / settlement summary / Coming-Soon gates ─────────
+
+    private static GauntletEvent SettledEvent(
+        GauntletEventKind kind = GauntletEventKind.Neck, string name = "Cycle 0", int runNumber = 1)
+    {
+        var ev = GauntletEvent.Create(name,
+            DateTimeOffset.UtcNow.AddDays(-8), DateTimeOffset.UtcNow.AddDays(-1),
+            kind, runNumber);
+        ev.Activate();
+        ev.Close();
+        ev.MarkSettled();
+        return ev;
+    }
+
+    private static GauntletEvent NotStartedEvent()
+    {
+        // Opened (Active) but with a future window — the Coming Soon shape.
+        var ev = GauntletEvent.Create("Cycle Soon",
+            DateTimeOffset.UtcNow.AddHours(6), DateTimeOffset.UtcNow.AddDays(7));
+        ev.Activate();
+        return ev;
+    }
+
+    private static GauntletPrizeBand Rank1Band(string? magicId = "magic_wrath_of_the_ancients") => new()
+    {
+        RankFrom = 1, RankTo = 1, Tokens = 50, Pitchfork = 10,
+        TrophyId = "trophy_aureate", MagicId = magicId,
+    };
+
+    [Fact]
+    public async Task GetPrizeTable_DefaultsToActiveEventKind_AndHydratesNames()
+    {
+        var b = new Bundle();
+        var ev = ActiveEvent(); // Neck by default
+        WireActiveEvent(b, ev);
+        b.Content.Setup(c => c.GetBands(GauntletEventKind.Neck))
+            .Returns(new List<GauntletPrizeBand> { Rank1Band() });
+        b.Content.Setup(c => c.GetTrophyById("trophy_aureate"))
+            .Returns(new GauntletTrophyDefinition { Id = "trophy_aureate", Name = "Aureate Trophy" });
+        b.Magics.Setup(m => m.GetById("magic_wrath_of_the_ancients"))
+            .Returns(new MagicDefinition { Id = "magic_wrath_of_the_ancients", Name = "Wrath of the Ancients" });
+
+        var table = await b.Build().GetPrizeTableAsync();
+
+        table.Kind.Should().Be("Neck");
+        table.Bands.Should().HaveCount(1);
+        table.Bands[0].Tokens.Should().Be(50);
+        table.Bands[0].TrophyName.Should().Be("Aureate Trophy");
+        table.Bands[0].MagicName.Should().Be("Wrath of the Ancients");
+    }
+
+    [Fact]
+    public async Task GetPrizeTable_ExplicitKind_OverridesActiveEvent_AndDefaultsNeckWhenNoEvent()
+    {
+        var b = new Bundle();
+        // No active event at all.
+        b.Events.Setup(r => r.GetActiveAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GauntletEvent?)null);
+        b.Content.Setup(c => c.GetBands(GauntletEventKind.Ring))
+            .Returns(new List<GauntletPrizeBand> { Rank1Band(magicId: null) });
+        b.Content.Setup(c => c.GetBands(GauntletEventKind.Neck))
+            .Returns(new List<GauntletPrizeBand> { Rank1Band() });
+
+        var svc = b.Build();
+        var ring = await svc.GetPrizeTableAsync(GauntletEventKind.Ring);
+        var fallback = await svc.GetPrizeTableAsync();
+
+        ring.Kind.Should().Be("Ring");
+        ring.Bands[0].MagicId.Should().BeNull("rings never grant rank magics");
+        fallback.Kind.Should().Be("Neck", "no explicit kind + no active event defaults to Neck");
+    }
+
+    [Fact]
+    public async Task LastSettlement_NullWhenNoSettledEvent_OrNoEntry()
+    {
+        var b = new Bundle();
+        var playerId = Guid.NewGuid();
+        b.Events.Setup(r => r.GetMostRecentSettledAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GauntletEvent?)null);
+        (await b.Build().GetMyLastSettlementAsync(playerId)).Should().BeNull("no event has ever settled");
+
+        var settled = SettledEvent();
+        b.Events.Setup(r => r.GetMostRecentSettledAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(settled);
+        b.Entries.Setup(r => r.FindByEventAndPlayerAsync(settled.Id, playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((GauntletEntry?)null);
+        (await b.Build().GetMyLastSettlementAsync(playerId)).Should().BeNull("the caller sat the event out");
+    }
+
+    [Fact]
+    public async Task LastSettlement_MapsFinalRank_AndBandPayout()
+    {
+        var b = new Bundle();
+        var playerId = Guid.NewGuid();
+        var settled = SettledEvent(GauntletEventKind.Neck, name: "Gauntlet of Embers", runNumber: 3);
+        var entry = GauntletEntry.Create(settled.Id, playerId, GauntletLeague.Wyrm);
+        entry.AddScore(123_456, DateTimeOffset.UtcNow.AddDays(-2));
+        entry.SetRank(1);
+        b.Events.Setup(r => r.GetMostRecentSettledAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(settled);
+        b.Entries.Setup(r => r.FindByEventAndPlayerAsync(settled.Id, playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(entry);
+        b.Content.Setup(c => c.GetBandForRank(1, GauntletEventKind.Neck)).Returns(Rank1Band());
+        b.Content.Setup(c => c.GetTrophyById("trophy_aureate"))
+            .Returns(new GauntletTrophyDefinition { Id = "trophy_aureate", Name = "Aureate Trophy" });
+        b.Magics.Setup(m => m.GetById("magic_wrath_of_the_ancients"))
+            .Returns(new MagicDefinition { Id = "magic_wrath_of_the_ancients", Name = "Wrath of the Ancients" });
+
+        var s = await b.Build().GetMyLastSettlementAsync(playerId);
+
+        s.Should().NotBeNull();
+        s!.EventName.Should().Be("Gauntlet of Embers");
+        s.Kind.Should().Be("Neck");
+        s.RunNumber.Should().Be(3);
+        s.League.Should().Be("Wyrm");
+        s.FinalRank.Should().Be(1);
+        s.Score.Should().Be(123_456);
+        s.WonPrizes.Should().BeTrue();
+        s.TokensAwarded.Should().Be(50);
+        s.PitchforkAwarded.Should().Be(10);
+        s.TrophyName.Should().Be("Aureate Trophy");
+        s.MagicName.Should().Be("Wrath of the Ancients");
+    }
+
+    [Fact]
+    public async Task LastSettlement_RankBeyondEveryBand_PlacedButWonNothing()
+    {
+        var b = new Bundle();
+        var playerId = Guid.NewGuid();
+        var settled = SettledEvent();
+        var entry = GauntletEntry.Create(settled.Id, playerId, GauntletLeague.Whelpling);
+        entry.SetRank(750); // beyond PrizeRankCount → no band
+        b.Events.Setup(r => r.GetMostRecentSettledAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(settled);
+        b.Entries.Setup(r => r.FindByEventAndPlayerAsync(settled.Id, playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(entry);
+        b.Content.Setup(c => c.GetBandForRank(750, GauntletEventKind.Neck))
+            .Returns((GauntletPrizeBand?)null);
+
+        var s = await b.Build().GetMyLastSettlementAsync(playerId);
+
+        s.Should().NotBeNull("placement is still reported even when no prize was won");
+        s!.FinalRank.Should().Be(750);
+        s.WonPrizes.Should().BeFalse();
+        s.TokensAwarded.Should().Be(0);
+        s.PitchforkAwarded.Should().Be(0);
+        s.TrophyId.Should().BeNull();
+        s.MagicId.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Join_Rejected_BeforeStartsAt_ComingSoon()
+    {
+        var b = new Bundle();
+        WireActiveEvent(b, NotStartedEvent());
+
+        var result = await b.Build().JoinEventAsync(Guid.NewGuid());
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("not started");
+        b.Entries.Verify(r => r.UpsertAsync(It.IsAny<GauntletEntry>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Ladder_BeforeStartsAt_ReturnsNotStarted_AndSpawnsNothing()
+    {
+        var b = new Bundle();
+        WireActiveEvent(b, NotStartedEvent());
+        b.Content.Setup(c => c.GetGauntletRaids()).Returns(new List<GauntletRaidDefinition>
+        {
+            new() { Id = "gauntlet_stage_1", LadderStage = 1, BaseHp = 5000 },
+        });
+
+        var ladder = await b.Build().GetLadderAsync(Guid.NewGuid());
+
+        ladder.NotStarted.Should().BeTrue();
+        ladder.NoActiveEvent.Should().BeFalse();
+        ladder.JoinedRequired.Should().BeFalse();
+        ladder.ActiveRaid.Should().BeNull();
+        b.Raids.Verify(r => r.CreateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Never,
+            "no stage may spawn before the event window opens");
+    }
+
+    [Fact]
+    public async Task GetCurrentEvent_FutureStart_CarriesSecondsUntilStart()
+    {
+        var b = new Bundle();
+        WireActiveEvent(b, NotStartedEvent()); // starts in ~6h
+
+        var dto = await b.Build().GetCurrentEventAsync();
+
+        dto.Should().NotBeNull();
+        dto!.SecondsUntilStart.Should().BeGreaterThan(0);
+        dto.SecondsRemaining.Should().BeGreaterThan(0);
+
+        // A started event reports zero.
+        WireActiveEvent(b, ActiveEvent());
+        (await b.Build().GetCurrentEventAsync())!.SecondsUntilStart.Should().Be(0);
     }
 }

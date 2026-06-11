@@ -58,6 +58,9 @@ public class GauntletAdminServiceTests
             // Real prize bands (matches content/gauntlet_prizes.json) so band lookups are faithful.
             Content.Setup(c => c.GetBandForRank(It.IsAny<int>()))
                 .Returns((int rank) => BandForRank(rank));
+            // T76 — settle is kind-aware; these tests exercise the Neck family, same bands.
+            Content.Setup(c => c.GetBandForRank(It.IsAny<int>(), It.IsAny<GauntletEventKind>()))
+                .Returns((int rank, GauntletEventKind _) => BandForRank(rank));
         }
 
         public GauntletAdminService Build() => new(
@@ -160,7 +163,7 @@ public class GauntletAdminServiceTests
         var rank1 = Guid.NewGuid();
         var rank2 = Guid.NewGuid();
         var unranked = Guid.NewGuid();
-        b.Events.Setup(r => r.GetMostRecentSettledAsync(It.IsAny<CancellationToken>())).ReturnsAsync(prior);
+        b.Events.Setup(r => r.GetMostRecentSettledAsync(GauntletEventKind.Neck, It.IsAny<CancellationToken>())).ReturnsAsync(prior);
         b.Entries.Setup(e => e.GetForEventAsync(prior.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<GauntletEntry>
             {
@@ -193,7 +196,7 @@ public class GauntletAdminServiceTests
 
         var prior = EventInState(GauntletEventState.Settled);
         var rank1 = Guid.NewGuid();
-        b.Events.Setup(r => r.GetMostRecentSettledAsync(It.IsAny<CancellationToken>())).ReturnsAsync(prior);
+        b.Events.Setup(r => r.GetMostRecentSettledAsync(GauntletEventKind.Neck, It.IsAny<CancellationToken>())).ReturnsAsync(prior);
         b.Entries.Setup(e => e.GetForEventAsync(prior.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<GauntletEntry> { RankedEntry(prior.Id, rank1, GauntletLeague.Whelpling, 1) });
         // The grant ALREADY exists on the new event → the pre-check short-circuits.

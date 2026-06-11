@@ -58,7 +58,10 @@ public sealed class GauntletAdminService : IGauntletAdminService
     }
 
     public async Task<GauntletEventActionResult> OpenEventAsync(
-        string name, DateTimeOffset startsAt, DateTimeOffset endsAt, CancellationToken ct = default)
+        string name, DateTimeOffset startsAt, DateTimeOffset endsAt,
+        GauntletEventKind kind = GauntletEventKind.Neck,
+        string? loreBlurb = null, string? bannerKey = null,
+        CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(name))
             return GauntletEventActionResult.Fail("Event name is required.");
@@ -71,7 +74,10 @@ public sealed class GauntletAdminService : IGauntletAdminService
             return GauntletEventActionResult.Fail(
                 $"An active Gauntlet event already exists ({active.Id}). Close it before opening another.");
 
-        var ev = GauntletEvent.Create(name, startsAt, endsAt);
+        // T76 — RunNumber counts runs of the SAME kind ("the 3rd Neck Gauntlet").
+        var runNumber = await _events.CountByKindAsync(kind, ct) + 1;
+
+        var ev = GauntletEvent.Create(name, startsAt, endsAt, kind, runNumber, loreBlurb, bannerKey);
         ev.Activate();
         await _events.CreateAsync(ev, ct);
 
@@ -81,11 +87,15 @@ public sealed class GauntletAdminService : IGauntletAdminService
         // created, grant the most-recently-settled event's rank winners their consumable for ev — so a
         // prior rank-1 holder is a CURRENT Wrath owner (×1.25) and ranks 2–10 are CURRENT Blessing
         // owners (×1.10/×1.25 honor logic in Slice 4 combat reads PlayerEventMagic for the active event).
-        int handedOff = await HandOffRankMagicsAsync(ev.Id, ct);
+        // T76 — rank magics are a NECK-family crown: only a Neck open hands them off, and only from
+        // the prior NECK run (a Ring Gauntlet neither receives nor disturbs them).
+        int handedOff = kind == GauntletEventKind.Neck
+            ? await HandOffRankMagicsAsync(ev.Id, ct)
+            : 0;
 
         await _auditLog.AppendAsync(AuditLog.Create(
             null, "GauntletEventOpen", null,
-            $"Opened event {ev.Id} '{ev.Name}' [{ev.StartsAt:O}..{ev.EndsAt:O}]. " +
+            $"Opened {kind} event {ev.Id} '{ev.Name}' (run #{runNumber}) [{ev.StartsAt:O}..{ev.EndsAt:O}]. " +
             $"Rank-magic consumables handed off to {handedOff} prior winner(s).", null), ct);
 
         return GauntletEventActionResult.Ok(GauntletService.MapEvent(ev));
@@ -99,7 +109,8 @@ public sealed class GauntletAdminService : IGauntletAdminService
     // (or retried) open never double-grants. Returns the number of grants written this call.
     private async Task<int> HandOffRankMagicsAsync(Guid newEventId, CancellationToken ct)
     {
-        var prior = await _events.GetMostRecentSettledAsync(ct);
+        // T76 — kind-scoped: the magic crown passes Neck-run → Neck-run only.
+        var prior = await _events.GetMostRecentSettledAsync(GauntletEventKind.Neck, ct);
         if (prior is null)
             return 0;   // first-ever event → nobody to hand off to
 
@@ -184,7 +195,9 @@ public sealed class GauntletAdminService : IGauntletAdminService
             if (entry.LastRank is null || entry.LastRank.Value > _config.PrizeRankCount)
                 continue;
 
-            var band = _content.GetBandForRank(entry.LastRank.Value);
+            // T76 — kind-aware: Ring events use the ring prize set (or magic-stripped Neck bands
+            // until the ring set is authored by the content wave).
+            var band = _content.GetBandForRank(entry.LastRank.Value, ev.Kind);
             if (band is null)
                 continue;   // rank not covered by any band → nothing to grant
 

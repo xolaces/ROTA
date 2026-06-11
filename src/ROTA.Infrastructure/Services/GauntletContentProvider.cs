@@ -103,6 +103,43 @@ public sealed class GauntletContentProvider : IGauntletContentProvider
     public GauntletPrizeBand? GetBandForRank(int rank)
         => _prizeTable.Bands.FirstOrDefault(b => rank >= b.RankFrom && rank <= b.RankTo);
 
+    // T76 — kind-aware lookup. Ring uses its own authored set when present; otherwise the Neck
+    // bands with MagicId stripped (ring gauntlets never grant rank magics — owner-locked).
+    public GauntletPrizeBand? GetBandForRank(int rank, GauntletEventKind kind)
+    {
+        if (kind == GauntletEventKind.Neck)
+            return GetBandForRank(rank);
+
+        if (_prizeTable.RingBands is { Count: > 0 })
+            return _prizeTable.RingBands.FirstOrDefault(b => rank >= b.RankFrom && rank <= b.RankTo);
+
+        var neck = GetBandForRank(rank);
+        return neck is null ? null : StripMagic(neck);
+    }
+
+    // T76 — the full kind-aware band list for the prize preview table; same fallback rule as the
+    // single-rank lookup so the preview always matches what settle would actually pay.
+    public IReadOnlyList<GauntletPrizeBand> GetBands(GauntletEventKind kind)
+    {
+        if (kind == GauntletEventKind.Neck)
+            return _prizeTable.Bands.OrderBy(b => b.RankFrom).ToList();
+
+        if (_prizeTable.RingBands is { Count: > 0 })
+            return _prizeTable.RingBands.OrderBy(b => b.RankFrom).ToList();
+
+        return _prizeTable.Bands.OrderBy(b => b.RankFrom).Select(StripMagic).ToList();
+    }
+
+    private static GauntletPrizeBand StripMagic(GauntletPrizeBand neck) => new()
+    {
+        RankFrom  = neck.RankFrom,
+        RankTo    = neck.RankTo,
+        Tokens    = neck.Tokens,
+        Pitchfork = neck.Pitchfork,
+        TrophyId  = neck.TrophyId,
+        MagicId   = null,
+    };
+
     public IReadOnlyList<GauntletTrophyDefinition> GetAllTrophies() => _trophies.Values.ToList();
 
     public GauntletTrophyDefinition? GetTrophyById(string id)
@@ -112,6 +149,10 @@ public sealed class GauntletContentProvider : IGauntletContentProvider
 
     public GauntletRaidDefinition? GetGauntletRaidByStage(int ladderStage)
         => _raidsByStage.TryGetValue(ladderStage, out var r) ? r : null;
+
+    // T76 — reverse lookup for the combat kill hook (raid definition id → ladder stage).
+    public GauntletRaidDefinition? GetGauntletRaidByDefinitionId(string raidDefinitionId)
+        => _raids.FirstOrDefault(r => r.Id == raidDefinitionId);
 
     public GauntletLeague ResolveLeague(int level)
     {

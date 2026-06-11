@@ -14,6 +14,22 @@ public class GauntletEventResponse
     public DateTimeOffset StartsAt { get; init; }
     public DateTimeOffset EndsAt { get; init; }
     public DateTimeOffset? SettledAt { get; init; }
+
+    // T76 — event identity for the event page.
+    /// <summary>Event family ("Neck" standard / "Ring" rare) — drives the prize set.</summary>
+    public string Kind { get; init; } = "Neck";
+    /// <summary>Sequential run number within this kind ("the 3rd Neck Gauntlet").</summary>
+    public int RunNumber { get; init; }
+    public string? LoreBlurb { get; init; }
+    public string? BannerKey { get; init; }
+    /// <summary>Server-computed seconds until EndsAt (0 when ended) — drives the countdown.</summary>
+    public long SecondsRemaining { get; init; }
+
+    /// <summary>
+    /// T76 — server-computed seconds until StartsAt (0 once started). Non-zero means the event is
+    /// visible but not yet playable — the Home CTA's "Coming Soon" state.
+    /// </summary>
+    public long SecondsUntilStart { get; init; }
 }
 
 /// <summary>A player's standing in an event.</summary>
@@ -22,9 +38,11 @@ public class GauntletEntryResponse
     public Guid Id { get; init; }
     public Guid GauntletEventId { get; init; }
     public Guid PlayerId { get; init; }
-    /// <summary>League name (Whelpling/Wyrm/Dragon) — locked at first join.</summary>
+    /// <summary>League name (Whelpling/Wyrm/Dragon/Ancient) — locked at first join.</summary>
     public string League { get; init; } = string.Empty;
     public long Score { get; init; }
+    /// <summary>T76 — highest ladder stage defeated this event (the primary ranking metric).</summary>
+    public int HighestStage { get; init; }
     public DateTimeOffset TieBreakAt { get; init; }
     public int? LastRank { get; init; }
 }
@@ -54,6 +72,13 @@ public class GauntletOverviewResponse
     public long StrikeBalance { get; init; }
     public long TokenBalance { get; init; }
     public long PitchforkBalance { get; init; }
+
+    /// <summary>
+    /// T76 — the caller's result in the most recently SETTLED event (any kind), or null if no event
+    /// has settled or the caller had no entry in it. Drives the "you placed #N" settlement card and
+    /// the Home CTA's Settled state.
+    /// </summary>
+    public GauntletPlayerSettlementResponse? LastSettlement { get; init; }
 }
 
 // ── Requests ───────────────────────────────────────────────────────────────────
@@ -77,6 +102,11 @@ public class OpenGauntletEventRequest
     public string Name { get; set; } = string.Empty;
     public DateTimeOffset StartsAt { get; set; }
     public DateTimeOffset EndsAt { get; set; }
+
+    // T76 — event identity. Kind: "Neck" (default, standard run) or "Ring" (rare run).
+    public string Kind { get; set; } = "Neck";
+    public string? LoreBlurb { get; set; }
+    public string? BannerKey { get; set; }
 }
 
 // ── Results ──────────────────────────────────────────────────────────────────
@@ -187,6 +217,12 @@ public class GauntletLadderResponse
 
     /// <summary>True when no Gauntlet event is currently active.</summary>
     public bool NoActiveEvent { get; init; }
+
+    /// <summary>
+    /// T76 — true when an event exists but its StartsAt is still in the future (Coming Soon): no
+    /// stage is spawned and the ladder is not climbable until the event window opens.
+    /// </summary>
+    public bool NotStarted { get; init; }
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -212,6 +248,9 @@ public class GauntletLeaderboardResponse
     /// <summary>The caller's current score in this league+event, or null if they have no entry.</summary>
     public long? YourScore { get; init; }
 
+    /// <summary>T76 — the caller's highest defeated stage, or null if they have no entry.</summary>
+    public int? YourHighestStage { get; init; }
+
     /// <summary>Total ranked entries in this league (entries with a non-null snapshot rank).</summary>
     public int TotalRanked { get; init; }
 }
@@ -222,6 +261,8 @@ public class GauntletLeaderboardEntryDto
     public int Rank { get; init; }
     public Guid PlayerId { get; init; }
     public string DisplayName { get; init; } = string.Empty;
+    /// <summary>T76 — highest ladder stage defeated (the primary ranking metric).</summary>
+    public int HighestStage { get; init; }
     public long Score { get; init; }
 }
 
@@ -303,4 +344,64 @@ public class BuyShopResult
 
     public static BuyShopResult Fail(string reason)
         => new() { Success = false, FailureReason = reason };
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// T76 — prize preview table + per-player settlement summary (System 24).
+// ──────────────────────────────────────────────────────────────────────────────
+
+/// <summary>
+/// GET /api/gauntlet/prizes — the kind-aware rank-prize bands for the event page's prize preview.
+/// Ring events without an authored ring set serve the Neck bands with the rank magic stripped.
+/// </summary>
+public class GauntletPrizeTableResponse
+{
+    /// <summary>Event family the bands apply to ("Neck"/"Ring").</summary>
+    public string Kind { get; init; } = "Neck";
+    public List<GauntletPrizeBandResponse> Bands { get; init; } = new();
+}
+
+/// <summary>One rank band of the prize table, hydrated with display names for the client.</summary>
+public class GauntletPrizeBandResponse
+{
+    public int RankFrom { get; init; }
+    public int RankTo { get; init; }
+    public int Tokens { get; init; }
+    public int Pitchfork { get; init; }
+    public string? TrophyId { get; init; }
+    public string? TrophyName { get; init; }
+    /// <summary>Seasonal rank magic (Neck only) — held until the next Neck Gauntlet opens.</summary>
+    public string? MagicId { get; init; }
+    public string? MagicName { get; init; }
+}
+
+/// <summary>
+/// The caller's result in the most recently settled event — "you placed #N — won X". Prize fields
+/// are the band the final rank landed in (zeros/nulls when the rank fell outside every band).
+/// </summary>
+public class GauntletPlayerSettlementResponse
+{
+    public Guid EventId { get; init; }
+    public string EventName { get; init; } = string.Empty;
+    /// <summary>Event family ("Neck"/"Ring") the result belongs to.</summary>
+    public string Kind { get; init; } = "Neck";
+    public int RunNumber { get; init; }
+    public DateTimeOffset? SettledAt { get; init; }
+
+    /// <summary>League name (Whelpling/Wyrm/Dragon/Ancient) the caller competed in.</summary>
+    public string League { get; init; } = string.Empty;
+    /// <summary>Final snapshot rank within the league (null only if settlement never ranked the entry).</summary>
+    public int? FinalRank { get; init; }
+    public int HighestStage { get; init; }
+    public long Score { get; init; }
+
+    /// <summary>True when the final rank landed inside a prize band (something below was awarded).</summary>
+    public bool WonPrizes { get; init; }
+    public int TokensAwarded { get; init; }
+    public int PitchforkAwarded { get; init; }
+    public string? TrophyId { get; init; }
+    public string? TrophyName { get; init; }
+    /// <summary>Rank magic earned (Neck only) — granted when the NEXT Neck Gauntlet opens, held for that run.</summary>
+    public string? MagicId { get; init; }
+    public string? MagicName { get; init; }
 }

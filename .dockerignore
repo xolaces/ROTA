@@ -1,0 +1,17 @@
+# Build context hygiene — keep the image build fast and secret-free.
+.git
+.github
+.vs
+.claude
+**/bin
+**/obj
+tests
+tools
+docs
+assets
+*.md
+*.pdf
+.env
+.env.*
+docker-compose*.yml
+Dockerfile

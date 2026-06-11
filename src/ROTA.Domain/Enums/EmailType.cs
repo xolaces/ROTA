@@ -21,4 +21,7 @@ public enum EmailType
 
     /// <summary>General in-game feedback / ticket (T38).</summary>
     GeneralTicket = 5,
+
+    /// <summary>Password-reset code sent to the PLAYER (not the operator) — T65.</summary>
+    PasswordReset = 6,
 }

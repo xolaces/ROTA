@@ -26,6 +26,18 @@ public sealed class GauntletEventRepository : IGauntletEventRepository
             .OrderByDescending(e => e.SettledAt)
             .FirstOrDefaultAsync(ct);
 
+    // T76 — kind-scoped variant: the seasonal-crown hand-off only looks at the SAME event family
+    // (a Ring Gauntlet never hands off / revokes the Neck Gauntlet's crowns).
+    public Task<GauntletEvent?> GetMostRecentSettledAsync(
+        GauntletEventKind kind, CancellationToken ct = default)
+        => _db.GauntletEvents
+            .Where(e => e.State == GauntletEventState.Settled && e.Kind == kind && !e.IsDeleted)
+            .OrderByDescending(e => e.SettledAt)
+            .FirstOrDefaultAsync(ct);
+
+    public Task<int> CountByKindAsync(GauntletEventKind kind, CancellationToken ct = default)
+        => _db.GauntletEvents.CountAsync(e => e.Kind == kind && !e.IsDeleted, ct);
+
     public Task<GauntletEvent?> FindByIdAsync(Guid id, CancellationToken ct = default)
         => _db.GauntletEvents
             .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted, ct);

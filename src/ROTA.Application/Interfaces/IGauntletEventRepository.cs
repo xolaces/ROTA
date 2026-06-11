@@ -16,6 +16,12 @@ public interface IGauntletEventRepository
     /// </summary>
     Task<GauntletEvent?> GetMostRecentSettledAsync(CancellationToken ct = default);
 
+    /// <summary>T76 — most recently settled event of the given KIND (seasonal-crown scope), or null.</summary>
+    Task<GauntletEvent?> GetMostRecentSettledAsync(Domain.Enums.GauntletEventKind kind, CancellationToken ct = default);
+
+    /// <summary>T76 — count of all (non-deleted) events of the given kind; drives RunNumber.</summary>
+    Task<int> CountByKindAsync(Domain.Enums.GauntletEventKind kind, CancellationToken ct = default);
+
     Task<GauntletEvent?> FindByIdAsync(Guid id, CancellationToken ct = default);
 
     Task<GauntletEvent> CreateAsync(GauntletEvent gauntletEvent, CancellationToken ct = default);

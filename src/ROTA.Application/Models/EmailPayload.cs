@@ -31,4 +31,10 @@ public sealed class EmailPayload
 
     /// <summary>Optional metadata, serialized to the <c>metadata</c> jsonb column.</summary>
     public IReadOnlyDictionary<string, object?>? Metadata { get; init; }
+
+    /// <summary>
+    /// When set, the email is delivered to this address instead of the operator inbox, with the raw
+    /// <see cref="Subject"/> (no <c>[ROTA][Type]</c> ops tag) — used for player-facing mail (T65).
+    /// </summary>
+    public string? RecipientOverride { get; init; }
 }

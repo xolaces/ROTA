@@ -28,6 +28,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRaidParticipantRepository, RaidParticipantRepository>();
         services.AddScoped<IPlayerInventoryRepository, PlayerInventoryRepository>();
         services.AddScoped<IBetaKeyRepository, BetaKeyRepository>();
+        services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
         services.AddScoped<IPlayerEquipmentRepository, PlayerEquipmentRepository>();
         services.AddScoped<IPlayerGearRepository, PlayerGearRepository>();
         services.AddScoped<IPlayerMagicRepository, PlayerMagicRepository>();
@@ -107,6 +108,9 @@ public static class ServiceCollectionExtensions
         // T52 — subject catalog (bug/report subject lists + feedback category); throws at startup on bad content.
         services.AddSingleton<ISubjectCatalogProvider>(
             _ => new SubjectCatalogProvider(contentRootPath));
+        // T68 — terms/privacy markdown; throws at startup on missing/blank documents.
+        services.AddSingleton<ILegalTextProvider>(
+            _ => new LegalTextProvider(contentRootPath));
         // System 16 Slice 1 — depends on the magic provider (validates Gauntlet magics +
         // prize magicId refs) and IOptions<GauntletConfig> (validates league bounds).
         services.AddSingleton<IGauntletContentProvider>(sp =>
@@ -149,6 +153,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IGuildEconomyService, GuildEconomyService>();
         services.AddScoped<IMasteryService, MasteryService>();
         services.AddScoped<IAchievementService, AchievementService>();
+        services.AddScoped<ILegalService, LegalService>();
+        services.AddScoped<IDevService, DevService>();
 
         // System 16 — Gauntlet (Slice 2) services
         services.AddScoped<IGauntletService, GauntletService>();

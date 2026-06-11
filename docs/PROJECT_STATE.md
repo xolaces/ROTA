@@ -1,11 +1,17 @@
-# ROTA — Project State (current truth)
+# ROTA — Project State (HISTORICAL SNAPSHOT — superseded)
+
+> **⚠️ STALE (verified 2026-05-30; flagged 2026-06-10).** This snapshot predates Systems 21 S2/S3,
+> 22, 23, T43–T77, the Unity client, and ~470 newer tests. **Current truth lives in
+> [SESSION_HANDOFF.md](SESSION_HANDOFF.md) (freshest, top section) + [CURRENT_TASK.md](CURRENT_TASK.md)
+> (snapshot) + CLAUDE.md (build history).** Headline corrections: there IS a game client (Unity 6,
+> C:\Dev\ROTA.Client6, compiles clean); tests are at **1058** (947u+111i), not 592; all migrations
+> through `AddGauntletEventIdentity` are applied. Body below kept for historical reference only.
 
 *Verified 2026-05-30 by file inventory + source tracing + green `dotnet build`/`dotnet test` runs.*
-*Single source of current truth. `CLAUDE.md` = session history; `changelog.md` = release log.*
 
 ## What it is
-Server-authoritative .NET 10 backend for a Dawn-of-the-Dragons-style async RPG. No game client
-(Unity deferred; C# SDK is v0.3.0). Clean Architecture: `src/ROTA.{Api,Application,Domain,
+Server-authoritative .NET 10 backend for a Dawn-of-the-Dragons-style async RPG, plus a Unity 6
+client (separate repo). Clean Architecture: `src/ROTA.{Api,Application,Domain,
 Infrastructure,Shared}`. PostgreSQL 16 (EF Core 9), Redis, RS256 JWT.
 
 ## System 21 — Guild / Clan Foundations (Slice 1) — 2026-06-07 (branch `feat/system21-guild-s1-core`)

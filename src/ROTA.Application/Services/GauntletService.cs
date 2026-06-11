@@ -28,6 +28,8 @@ public sealed class GauntletService : IGauntletService
     // Slice 7 — ladder summon/auto-advance
     private readonly IActiveRaidRepository _raids;
     private readonly IRaidService _raidService;
+    // T76 — magic display names for the prize preview / settlement summary
+    private readonly IMagicDefinitionProvider _magics;
 
     public GauntletService(
         IGauntletEventRepository events,
@@ -43,7 +45,8 @@ public sealed class GauntletService : IGauntletService
         ILegionService legions,
         IEquipmentService equipment,
         IActiveRaidRepository raids,
-        IRaidService raidService)
+        IRaidService raidService,
+        IMagicDefinitionProvider magics)
     {
         _events      = events;
         _entries     = entries;
@@ -59,6 +62,7 @@ public sealed class GauntletService : IGauntletService
         _equipment   = equipment;
         _raids       = raids;
         _raidService = raidService;
+        _magics      = magics;
     }
 
     public async Task<GauntletEventResponse?> GetCurrentEventAsync(CancellationToken ct = default)
@@ -72,6 +76,10 @@ public sealed class GauntletService : IGauntletService
         var active = await _events.GetActiveAsync(ct);
         if (active is null)
             return JoinGauntletResult.Fail("There is no active Gauntlet event.");
+
+        // T76 — Coming Soon: an opened event with a future StartsAt is visible but not yet playable.
+        if (active.StartsAt > DateTimeOffset.UtcNow)
+            return JoinGauntletResult.Fail("The Gauntlet has not started yet.");
 
         // Idempotent: if the player already has an entry for this event, return it WITHOUT
         // re-creating or re-evaluating their league (locked for the cycle).
@@ -118,6 +126,11 @@ public sealed class GauntletService : IGauntletService
         var active = await _events.GetActiveAsync(ct);
         if (active is null)
             return new GauntletLadderResponse { NoActiveEvent = true, StageCount = stageCount };
+
+        // T76 — Coming Soon: before StartsAt nothing spawns and nothing is climbable (mirrors the
+        // join gate, so the pair can never disagree about whether the event window is open).
+        if (active.StartsAt > DateTimeOffset.UtcNow)
+            return new GauntletLadderResponse { NotStarted = true, StageCount = stageCount };
 
         // Must have joined the event (a GauntletEntry) before climbing — joining locks the league and
         // is what makes the player scoreable. Mirrors "you must join to be scored" in the combat hook.
@@ -414,6 +427,75 @@ public sealed class GauntletService : IGauntletService
             _ => false,
         };
 
+    // ── T76 — prize preview + settlement summary ─────────────────────────────
+
+    public async Task<GauntletPrizeTableResponse> GetPrizeTableAsync(
+        GauntletEventKind? kind = null, CancellationToken ct = default)
+    {
+        // Kind resolution: explicit override → the active event's kind → Neck (the standard run).
+        var resolved = kind
+            ?? (await _events.GetActiveAsync(ct))?.Kind
+            ?? GauntletEventKind.Neck;
+
+        var bands = _content.GetBands(resolved);
+
+        return new GauntletPrizeTableResponse
+        {
+            Kind  = resolved.ToString(),
+            Bands = bands.Select(MapBand).ToList(),
+        };
+    }
+
+    public async Task<GauntletPlayerSettlementResponse?> GetMyLastSettlementAsync(
+        Guid playerId, CancellationToken ct = default)
+    {
+        var settled = await _events.GetMostRecentSettledAsync(ct);
+        if (settled is null)
+            return null;
+
+        var entry = await _entries.FindByEventAndPlayerAsync(settled.Id, playerId, ct);
+        if (entry is null)
+            return null;
+
+        // The prize band the FINAL rank landed in (kind-aware — exactly what settle paid). An
+        // unranked entry or a rank beyond every band yields a "placed, won nothing" summary.
+        var band = entry.LastRank is int rank
+            ? _content.GetBandForRank(rank, settled.Kind)
+            : null;
+
+        return new GauntletPlayerSettlementResponse
+        {
+            EventId      = settled.Id,
+            EventName    = settled.Name,
+            Kind         = settled.Kind.ToString(),
+            RunNumber    = settled.RunNumber,
+            SettledAt    = settled.SettledAt,
+            League       = entry.League.ToString(),
+            FinalRank    = entry.LastRank,
+            HighestStage = entry.HighestStage,
+            Score        = entry.Score,
+            WonPrizes    = band is not null,
+            TokensAwarded    = band?.Tokens ?? 0,
+            PitchforkAwarded = band?.Pitchfork ?? 0,
+            TrophyId   = band?.TrophyId,
+            TrophyName = band?.TrophyId is null ? null : _content.GetTrophyById(band.TrophyId)?.Name,
+            MagicId    = band?.MagicId,
+            MagicName  = band?.MagicId is null ? null : _magics.GetById(band.MagicId)?.Name,
+        };
+    }
+
+    private GauntletPrizeBandResponse MapBand(GauntletPrizeBand b) => new()
+    {
+        RankFrom  = b.RankFrom,
+        RankTo    = b.RankTo,
+        Tokens    = b.Tokens,
+        Pitchfork = b.Pitchfork,
+        TrophyId   = b.TrophyId,
+        TrophyName = b.TrophyId is null ? null : _content.GetTrophyById(b.TrophyId)?.Name,
+        MagicId    = b.MagicId,
+        MagicName  = b.MagicId is null ? null : _magics.GetById(b.MagicId)?.Name,
+    };
+
     // ── Mapping ──────────────────────────────────────────────────────────────
 
     internal static GauntletEventResponse MapEvent(GauntletEvent e)
@@ -425,6 +507,14 @@ public sealed class GauntletService : IGauntletService
             StartsAt  = e.StartsAt,
             EndsAt    = e.EndsAt,
             SettledAt = e.SettledAt,
+            // T76 — event identity + server-side countdown.
+            Kind      = e.Kind.ToString(),
+            RunNumber = e.RunNumber,
+            LoreBlurb = e.LoreBlurb,
+            BannerKey = e.BannerKey,
+            SecondsRemaining = (long)Math.Max(0, (e.EndsAt - DateTimeOffset.UtcNow).TotalSeconds),
+            // T76 — non-zero only before the window opens (the Home CTA's Coming Soon state).
+            SecondsUntilStart = (long)Math.Max(0, (e.StartsAt - DateTimeOffset.UtcNow).TotalSeconds),
         };
 
     internal static GauntletEntryResponse MapEntry(GauntletEntry e)
@@ -435,6 +525,7 @@ public sealed class GauntletService : IGauntletService
             PlayerId        = e.PlayerId,
             League          = e.League.ToString(),
             Score           = e.Score,
+            HighestStage    = e.HighestStage,
             TieBreakAt      = e.TieBreakAt,
             LastRank        = e.LastRank,
         };

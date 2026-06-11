@@ -29,6 +29,11 @@ public sealed class GauntletScoringService : IGauntletScoringService
         // Atomic single UPDATE in the repo; tie_break_at only advances on a positive delta.
         => _entries.IncrementScoreAsync(eventId, playerId, deltaScore, hitAt, ct);
 
+    public Task RecordStageDefeatAsync(
+        Guid playerId, Guid eventId, int stage, CancellationToken ct = default)
+        // Atomic GREATEST in the repo — monotonic, race-safe, rides the ambient combat tx.
+        => _entries.RecordStageDefeatAsync(eventId, playerId, stage, ct);
+
     public Task RecomputeRanksAsync(Guid eventId, CancellationToken ct = default)
         => _entries.RecomputeRanksAsync(eventId, ct);
 
@@ -49,14 +54,16 @@ public sealed class GauntletScoringService : IGauntletScoringService
             League      = league.ToString(),
             Entries     = page.Select(r => new GauntletLeaderboardEntryDto
             {
-                Rank        = r.Rank,
-                PlayerId    = r.PlayerId,
-                DisplayName = r.DisplayName,
-                Score       = r.Score,
+                Rank         = r.Rank,
+                PlayerId     = r.PlayerId,
+                DisplayName  = r.DisplayName,
+                HighestStage = r.HighestStage,
+                Score        = r.Score,
             }).ToList(),
-            YourRank    = mine?.Rank,
-            YourScore   = mine?.Score,
-            TotalRanked = totalRanked,
+            YourRank         = mine?.Rank,
+            YourScore        = mine?.Score,
+            YourHighestStage = mine?.HighestStage,
+            TotalRanked      = totalRanked,
         };
     }
 }

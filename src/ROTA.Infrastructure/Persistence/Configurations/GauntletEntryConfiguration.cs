@@ -36,6 +36,11 @@ public class GauntletEntryConfiguration : IEntityTypeConfiguration<GauntletEntry
             .HasColumnName("tie_break_at")
             .IsRequired();
 
+        // T76 — primary ranking metric (highest ladder stage defeated); 0 for pre-T76 rows.
+        builder.Property(e => e.HighestStage)
+            .HasColumnName("highest_stage")
+            .HasDefaultValue(0);
+
         builder.Property(e => e.LastRank)
             .HasColumnName("last_rank");
 

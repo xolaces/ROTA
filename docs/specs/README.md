@@ -26,15 +26,17 @@ queue a build agent works against; it stays as the historical decision record af
 | `system-17-leaderboards.md` | System 17 / **v0.2.8** | Global leaderboards — 6 boards, aggregate table, eligibility-in-SQL, write hooks, stat snapshot. (5 slices, complete.) |
 | `system-19-raid-sharing.md` | System 19 | Raids private until shared — `ActiveRaid.IsPublic` + `Share()`, `GET /api/raids/{id}` (join-by-UID), `POST /api/raids/{id}/share` (summoner-only), list = public + own; sigils summon `Small`. Client share panel + join-by-UID. (3 slices, complete.) |
 | `system-20-quest-depletion-drops.md` | System 20 | Quest nodes deplete 100→0 (battle −5 / boss −2.5) to clear + unlock the next; Discernment-scaled chance drops via the activated quest loot pipeline; Pano "Legendary" (Orange) 8-piece set. Client depletion bar + class work alongside. (4 slices, complete.) |
+| `system-16-gauntlet.md` | System 16 | Competitive Gauntlet event: leagues, Strikes ledger, Wrath/Blessing off-cap auras, trophies, two-currency token shop. (7 slices, merged to main 2026-06-07.) |
+| `system-22-masteries-core.md` | System 22 — **Phase A** | Masteries core: 4 Ancients leveled 1→5 via challenge checklists; global + pledge modifiers via `IMasteryService` at existing hooks; Mastery Rating + lossless re-spec. (7 slices, merged 2026-06-08. Phase B/C stay in backlog.) |
+| `phase-2-ops-social.md` | Phase 2 / T30–T40 | Ops & social: operator email backbone, moderation, friends/blocks/PM, SignalR chat, feedback. (Backend complete 2026-06-06.) |
+| `system-23-raid-visibility-lifecycle.md` | System 23 / Ticket 50 | `RaidVisibility` tiers + Lootable→Looted lifecycle (T57 later made loot a per-participant CLAIM). Backend complete 2026-06-08; migrations applied. |
 
 ## Active (`active/`)
 
 | File | System | Status | Purpose |
 |---|---|---|---|
-| `system-16-gauntlet.md` | System 16 | **Decision-complete — ready to build (6 slices)** | Competitive Gauntlet event: leagues, Strikes ledger, Wrath/Blessing off-cap auras, trophies, two-currency token shop. Slice 4 = deep combat/money. |
-| `system-21-guild-foundations.md` | System 21 | **Design — open decisions pending (§5); fundamentals-first** | Guild/clan: cross-game design study + ROTA fundamentals (identity, membership, roles, guild chat, guild raids). Campaigns + async guild wars on the roadmap. Reuses raid/contribution engine + GuildStamina + chat hub. |
-| `system-22-masteries-core.md` | System 22 — **Phase A** | **Decision-complete — building (7 slices)** | Masteries core: 4 Ancients (Wrath/Bulwark/Hoard/Discernment) leveled 1→5 via challenge checklists; always-on global + pledge (≈×2) flat modifiers via `IMasteryService` at existing combat/loot hooks (no new path); Formula-B Overall Mastery Rating + derived titles; lossless re-spec economy. Phase B (The Rise) + Phase C (PoE-depth) stay in backlog. |
-| `system-23-raid-visibility-lifecycle.md` | System 23 / **Ticket 50** | **Backend complete (migration NOT applied); client mirror pending** | Replaces `ActiveRaid.IsPublic` with a `RaidVisibility` tier enum (Private/Public/GuildOnly/FriendsOnly) + a completed→`Lootable`→`Looted` lifecycle and summoner-only `POST /api/raids/{id}/loot` (DISMISS, not a reward claim — rewards already grant on the killing hit). List query gains guild-membership + accepted-friend lookups. Makes "active raid (hittable by id) ≠ public raid (listed)" explicit. `IsPublic` kept on the wire as a derived field for back-compat. Migration `AddRaidVisibilityModel`. |
+| `system-21-guild-foundations.md` | System 21 | **S1+S2 merged; S3a/S3b on branches; succession auto-driver open** | Guild/clan: identity, membership, roles, guild chat, sigil economy, guild raids. Campaigns + async guild wars on the roadmap. |
+| `system-24-gauntlet-event-experience.md` | System 24 / **T76** | **Owner decisions LOCKED; S1 foundation BUILT 2026-06-10 (§6)** | DotD-parity Gauntlet event experience: 4 level brackets (incl. Ancient 5000+), highest-stage ranking, late-ladder HP ramp, Neck/Ring event families + run identity, event page. Remaining: seasonal rank-GEAR mechanism (needs T77 content), settlement screen, prize table UI. |
 
 ## Backlog (`backlog/`)
 

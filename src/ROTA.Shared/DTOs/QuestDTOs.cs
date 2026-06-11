@@ -35,6 +35,13 @@ public class QuestAvailabilityResponse
     /// to false on the client and disables every Attempt button).
     /// </summary>
     public bool IsUnlocked { get; set; }
+
+    /// <summary>
+    /// T74 — the highest difficulty the player may ATTEMPT on this node ("Normal".."Nightmare";
+    /// Hard unlocks after a Normal clear, etc.). The client must render higher tiers as locked
+    /// and unselectable; the server still enforces the gate authoritatively on attempt.
+    /// </summary>
+    public string HighestUnlockedDifficulty { get; set; } = "Normal";
 }
 
 public class QuestAttemptRequest

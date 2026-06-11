@@ -40,6 +40,13 @@ public class GauntletEntry
     /// <summary>Timestamp of the last score-changing hit; the "earliest to reach" tiebreak source.</summary>
     public DateTimeOffset TieBreakAt { get; private set; }
 
+    /// <summary>
+    /// T76 — the highest ladder stage this player has DEFEATED this event. The PRIMARY ranking
+    /// metric (DotD: "compete on a ladder of the highest tier completed"); Score (damage) and
+    /// TieBreakAt break ties. Updated atomically in SQL (GREATEST) on each gauntlet stage kill.
+    /// </summary>
+    public int HighestStage { get; private set; }
+
     /// <summary>Snapshot/settled rank within the league; null until a rank pass runs (Slice 3).</summary>
     public int? LastRank { get; private set; }
 

@@ -55,6 +55,10 @@ public sealed class GauntletController : ControllerBase
         var tokenBalance     = await _currency.GetBalanceAsync(playerId, GauntletCurrency.Token, ct);
         var pitchforkBalance = await _currency.GetBalanceAsync(playerId, GauntletCurrency.Pitchfork, ct);
 
+        // T76 — the caller's "you placed #N" card from the most recently settled event (null when
+        // none settled or the caller sat it out). Always populated so the client decides display.
+        var lastSettlement = await _gauntlet.GetMyLastSettlementAsync(playerId, ct);
+
         return Ok(new GauntletOverviewResponse
         {
             CurrentEvent     = eventDto,
@@ -62,7 +66,34 @@ public sealed class GauntletController : ControllerBase
             StrikeBalance    = strikeBalance,
             TokenBalance     = tokenBalance,
             PitchforkBalance = pitchforkBalance,
+            LastSettlement   = lastSettlement,
         });
+    }
+
+    /// <summary>
+    /// T76 — the kind-aware prize preview table for the event page. <c>kind</c> optional: defaults
+    /// to the active event's kind (Neck when no event is active). 400 on an unknown kind.
+    /// </summary>
+    [HttpGet("prizes")]
+    [ProducesResponseType(typeof(GauntletPrizeTableResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetPrizes([FromQuery] string? kind, CancellationToken ct)
+    {
+        GauntletEventKind? parsedKind = null;
+        if (!string.IsNullOrWhiteSpace(kind))
+        {
+            if (!Enum.TryParse<GauntletEventKind>(kind, ignoreCase: true, out var k)
+                || !Enum.IsDefined(k))
+            {
+                return BadRequest(new
+                {
+                    message = $"Unknown kind '{kind}' ({string.Join(", ", Enum.GetNames<GauntletEventKind>())}).",
+                });
+            }
+            parsedKind = k;
+        }
+
+        return Ok(await _gauntlet.GetPrizeTableAsync(parsedKind, ct));
     }
 
     /// <summary>

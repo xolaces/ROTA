@@ -13,7 +13,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.16" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.*" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.*" />
   </ItemGroup>
 
@@ -24,7 +24,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="content\quests.json">
+    <!-- T66: every content JSON ships to build + publish output so a published app
+         (Docker /app) resolves content/ from its ContentRootPath exactly like dev does. -->
+    <Content Update="content\**\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <!-- T68: .md is NOT a default Web-SDK content glob — include explicitly or publish drops it. -->
+    <Content Include="content\legal\*.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

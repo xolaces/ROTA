@@ -14,6 +14,14 @@ public interface IGauntletContentProvider
     // The prize band containing the given rank, or null if the rank is unawarded.
     GauntletPrizeBand? GetBandForRank(int rank);
 
+    // T76 — kind-aware band lookup. Neck = the standard bands; Ring = the ring set when authored,
+    // else the Neck bands with MagicId stripped (rings never grant rank magics).
+    GauntletPrizeBand? GetBandForRank(int rank, GauntletEventKind kind);
+
+    // T76 — the full kind-aware band list (same Ring fallback rule as GetBandForRank), ordered by
+    // RankFrom ascending. Feeds the event page's prize preview table.
+    IReadOnlyList<GauntletPrizeBand> GetBands(GauntletEventKind kind);
+
     // All trophy definitions.
     IReadOnlyList<GauntletTrophyDefinition> GetAllTrophies();
 
@@ -25,6 +33,10 @@ public interface IGauntletContentProvider
 
     // A Gauntlet raid stage by its 1-based ladder position, or null.
     GauntletRaidDefinition? GetGauntletRaidByStage(int ladderStage);
+
+    // T76 — a Gauntlet raid stage by its raid-definition id (the combat kill hook's reverse
+    // lookup: ActiveRaid.RaidDefinitionId → ladder stage), or null for non-Gauntlet definitions.
+    GauntletRaidDefinition? GetGauntletRaidByDefinitionId(string raidDefinitionId);
 
     // Resolve the league for a given player level using the configured bounds.
     GauntletLeague ResolveLeague(int level);

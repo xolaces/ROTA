@@ -6,6 +6,11 @@ namespace ROTA.Application.Models;
 public class GauntletPrizeTable
 {
     public List<GauntletPrizeBand> Bands { get; set; } = new();
+
+    // T76 — the RARE Ring-Gauntlet prize set (owner-locked: ring gear, NO rank magics). Optional
+    // until the content wave authors it: when null/empty, Ring events fall back to the Neck bands
+    // with MagicId STRIPPED (rings never grant magics). Same band invariants when present.
+    public List<GauntletPrizeBand>? RingBands { get; set; }
 }
 
 // A single placement band → rewards. Ranks are inclusive [RankFrom, RankTo].

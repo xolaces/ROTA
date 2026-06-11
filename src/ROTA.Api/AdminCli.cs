@@ -253,7 +253,7 @@ public static class AdminCli
     {
         if (args.Length < 4)
         {
-            Console.Error.WriteLine("gauntlet-open: usage: gauntlet-open <name> <startsAt> <endsAt>  (ISO-8601 timestamps)");
+            Console.Error.WriteLine("gauntlet-open: usage: gauntlet-open <name> <startsAt> <endsAt> [neck|ring]  (ISO-8601 timestamps; kind defaults to neck)");
             return 1;
         }
         var name = args[1];
@@ -268,15 +268,23 @@ public static class AdminCli
             return 1;
         }
 
+        // T76 — optional 4th arg: event kind (neck = standard run, ring = the rare run).
+        var kind = ROTA.Domain.Enums.GauntletEventKind.Neck;
+        if (args.Length >= 5 && !Enum.TryParse(args[4], ignoreCase: true, out kind))
+        {
+            Console.Error.WriteLine($"gauntlet-open: invalid kind '{args[4]}' (use 'neck' or 'ring').");
+            return 1;
+        }
+
         using var scope = services.CreateScope();
         var admin = scope.ServiceProvider.GetRequiredService<IGauntletAdminService>();
-        var result = await admin.OpenEventAsync(name, startsAt, endsAt);
+        var result = await admin.OpenEventAsync(name, startsAt, endsAt, kind);
         if (!result.Success)
         {
             Console.Error.WriteLine($"gauntlet-open: failed — {result.FailureReason}");
             return 1;
         }
-        Console.WriteLine($"gauntlet-open: opened event {result.Event!.Id} '{result.Event.Name}' (state {result.Event.State}).");
+        Console.WriteLine($"gauntlet-open: opened {result.Event!.Kind} event {result.Event.Id} '{result.Event.Name}' (run #{result.Event.RunNumber}, state {result.Event.State}).");
         return 0;
     }
 

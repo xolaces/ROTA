@@ -19,9 +19,17 @@ public interface IGauntletScoringService
         Guid playerId, Guid eventId, long deltaScore, DateTimeOffset hitAt, CancellationToken ct = default);
 
     /// <summary>
+    /// T76 — records a ladder-stage defeat: atomically raises the entry's HighestStage (the
+    /// PRIMARY ranking metric) when <paramref name="stage"/> is higher. Race-safe SQL GREATEST;
+    /// no-op if the entry is absent. Called from the combat kill path.
+    /// </summary>
+    Task RecordStageDefeatAsync(
+        Guid playerId, Guid eventId, int stage, CancellationToken ct = default);
+
+    /// <summary>
     /// Snapshots per-league ranks for the event into <c>LastRank</c>
-    /// (<c>ROW_NUMBER() … ORDER BY score DESC, tie_break_at ASC</c>). Idempotent. Driven by the
-    /// ~60s hosted service and at settlement (Slice 5).
+    /// (<c>ROW_NUMBER() … ORDER BY highest_stage DESC, score DESC, tie_break_at ASC</c> — T76).
+    /// Idempotent. Driven by the ~60s hosted service and at settlement (Slice 5).
     /// </summary>
     Task RecomputeRanksAsync(Guid eventId, CancellationToken ct = default);
 

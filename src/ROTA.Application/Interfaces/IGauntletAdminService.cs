@@ -10,8 +10,13 @@ public interface IGauntletAdminService
     /// Opens a new event (Create → Activate). Enforces ≤1 Active — rejects if an Active event
     /// already exists. Audited.
     /// </summary>
+    /// <remarks>T76 — kind selects the Neck (standard) or Ring (rare) prize family; RunNumber is
+    /// computed per kind; loreBlurb/bannerKey feed the event page.</remarks>
     Task<GauntletEventActionResult> OpenEventAsync(
-        string name, DateTimeOffset startsAt, DateTimeOffset endsAt, CancellationToken ct = default);
+        string name, DateTimeOffset startsAt, DateTimeOffset endsAt,
+        Domain.Enums.GauntletEventKind kind = Domain.Enums.GauntletEventKind.Neck,
+        string? loreBlurb = null, string? bannerKey = null,
+        CancellationToken ct = default);
 
     /// <summary>Closes an event (guard: must be Active). Audited.</summary>
     Task<GauntletEventActionResult> CloseEventAsync(Guid eventId, CancellationToken ct = default);

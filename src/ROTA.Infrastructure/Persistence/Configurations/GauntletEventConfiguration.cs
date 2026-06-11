@@ -26,6 +26,23 @@ public class GauntletEventConfiguration : IEntityTypeConfiguration<GauntletEvent
             .HasColumnName("state")
             .IsRequired();
 
+        // T76 — event identity. Kind stored as int (Neck=0 default for pre-T76 rows).
+        builder.Property(e => e.Kind)
+            .HasColumnName("kind")
+            .HasDefaultValue(Domain.Enums.GauntletEventKind.Neck);
+
+        builder.Property(e => e.RunNumber)
+            .HasColumnName("run_number")
+            .HasDefaultValue(1);
+
+        builder.Property(e => e.LoreBlurb)
+            .HasColumnName("lore_blurb")
+            .HasMaxLength(1000);
+
+        builder.Property(e => e.BannerKey)
+            .HasColumnName("banner_key")
+            .HasMaxLength(64);
+
         builder.Property(e => e.StartsAt)
             .HasColumnName("starts_at")
             .IsRequired();

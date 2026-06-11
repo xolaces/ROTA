@@ -115,6 +115,14 @@ public class Player
     /// <summary>Distinct UTC calendar days the player has logged in (the DaysPlayed achievement metric).</summary>
     public int DaysPlayed { get; private set; }
 
+    // Terms/privacy acceptance (T68). 0 = never accepted (pre-T68 accounts) — a version bump in
+    // Legal:CurrentTermsVersion makes every stale account re-accept via POST /api/legal/accept.
+    /// <summary>The terms version this player last accepted; 0 = never.</summary>
+    public int AcceptedTermsVersion { get; private set; }
+
+    /// <summary>UTC instant of the most recent acceptance; null = never.</summary>
+    public DateTimeOffset? TermsAcceptedAt { get; private set; }
+
     /// <summary>True while an unexpired mute is in effect. Derived — not mapped (Ignore in config).</summary>
     public bool IsMuted => MuteExpiresAt.HasValue && MuteExpiresAt.Value > DateTimeOffset.UtcNow;
 
@@ -154,6 +162,22 @@ public class Player
     public void UpdateDisplayName(string displayName)
     {
         DisplayName = displayName;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>Records acceptance of the given terms version (T68). Monotonic — never downgrades.</summary>
+    public void AcceptTerms(int version)
+    {
+        if (version <= AcceptedTermsVersion) return;
+        AcceptedTermsVersion = version;
+        TermsAcceptedAt = DateTimeOffset.UtcNow;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>Replaces the password hash (T65 password reset). Bumps UpdatedAt.</summary>
+    public void SetPasswordHash(string passwordHash)
+    {
+        PasswordHash = passwordHash;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 

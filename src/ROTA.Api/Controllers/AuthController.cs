@@ -10,21 +10,36 @@ namespace ROTA.Api.Controllers;
 [Route("api/auth")]
 public sealed class AuthController : ControllerBase
 {
+    // T65 anti-abuse budgets (per hour, via Redis ISubmissionRateLimiter).
+    private const int ResetRequestPerEmailPerHour = 3;
+    private const int ResetRequestPerIpPerHour = 10;
+    private const int ResetConfirmPerEmailPerHour = 10;
+    private const int ResetConfirmPerIpPerHour = 20;
+
     private readonly IAuthService _auth;
+    private readonly ISubmissionRateLimiter _rateLimiter;
     private readonly IValidator<RegisterRequest> _registerValidator;
     private readonly IValidator<LoginRequest> _loginValidator;
     private readonly IValidator<RefreshRequest> _refreshValidator;
+    private readonly IValidator<PasswordResetRequest> _resetRequestValidator;
+    private readonly IValidator<ResetPasswordRequest> _resetConfirmValidator;
 
     public AuthController(
         IAuthService auth,
+        ISubmissionRateLimiter rateLimiter,
         IValidator<RegisterRequest> registerValidator,
         IValidator<LoginRequest> loginValidator,
-        IValidator<RefreshRequest> refreshValidator)
+        IValidator<RefreshRequest> refreshValidator,
+        IValidator<PasswordResetRequest> resetRequestValidator,
+        IValidator<ResetPasswordRequest> resetConfirmValidator)
     {
         _auth = auth;
+        _rateLimiter = rateLimiter;
         _registerValidator = registerValidator;
         _loginValidator = loginValidator;
         _refreshValidator = refreshValidator;
+        _resetRequestValidator = resetRequestValidator;
+        _resetConfirmValidator = resetConfirmValidator;
     }
 
     [HttpPost("register")]
@@ -88,6 +103,60 @@ public sealed class AuthController : ControllerBase
         await _auth.LogoutAsync(request);
         return NoContent();
     }
+
+    /// <summary>T65 step 1 — always 202 whether or not the email exists (anti-enumeration).</summary>
+    [HttpPost("password-reset/request")]
+    [ProducesResponseType(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> RequestPasswordReset([FromBody] PasswordResetRequest request)
+    {
+        var v = await _resetRequestValidator.ValidateAsync(request);
+        if (!v.IsValid) return InvalidRequest(v);
+
+        if (!await _rateLimiter.TryConsumeAsync("pwreset-request", EmailRateKey(request.Email),
+                GetIpAddress(), ResetRequestPerEmailPerHour, ResetRequestPerIpPerHour))
+            return TooManyRequests();
+
+        await _auth.RequestPasswordResetAsync(request, GetIpAddress());
+        return Accepted(new { message = "If that email is registered, a reset code is on its way." });
+    }
+
+    /// <summary>T65 step 2 — redeem the emailed code with a new password.</summary>
+    [HttpPost("password-reset/confirm")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> ConfirmPasswordReset([FromBody] ResetPasswordRequest request)
+    {
+        var v = await _resetConfirmValidator.ValidateAsync(request);
+        if (!v.IsValid) return InvalidRequest(v);
+
+        // SECURITY: the per-email budget is the code brute-force guard (~49-bit codes, 15-min TTL).
+        if (!await _rateLimiter.TryConsumeAsync("pwreset-confirm", EmailRateKey(request.Email),
+                GetIpAddress(), ResetConfirmPerEmailPerHour, ResetConfirmPerIpPerHour))
+            return TooManyRequests();
+
+        var ok = await _auth.ResetPasswordAsync(request, GetIpAddress());
+        if (!ok)
+            return UnprocessableEntity(new { message = "Invalid or expired reset code." });
+
+        return NoContent();
+    }
+
+    // The rate limiter keys on a player Guid; pre-auth there is none, so derive a stable
+    // pseudo-id from the normalized email — giving true per-email budgets.
+    private static Guid EmailRateKey(string email)
+    {
+        var hash = System.Security.Cryptography.SHA256.HashData(
+            System.Text.Encoding.UTF8.GetBytes(email.Trim().ToLowerInvariant()));
+        return new Guid(hash.AsSpan(0, 16));
+    }
+
+    private IActionResult TooManyRequests()
+        => StatusCode(StatusCodes.Status429TooManyRequests,
+            new { message = "Too many attempts. Please try again later." });
 
     // SECURITY: read from connection, not X-Forwarded-For (spoofable).
     private string GetIpAddress()

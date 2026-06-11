@@ -1,0 +1,77 @@
+# =============================================================
+# ROTA — single-host production stack (T66)
+# Host-agnostic reference deployment: API + Postgres + Redis.
+# All secrets come from the host's .env (NEVER committed).
+#
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Before FIRST start (and after any release with new migrations):
+#   run migrations against the prod DB — see docs/DEPLOYMENT.md.
+# TLS terminates at your proxy (Caddy/nginx/cloud LB) → api:8080;
+# if you use one, set ForwardedHeaders__Enabled=true and list the
+# proxy IP in ForwardedHeaders__TrustedProxies__0.
+# =============================================================
+
+services:
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rota-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-rota};Username=${POSTGRES_USER:-rota_user};Password=${POSTGRES_PASSWORD:?set in .env}"
+      ConnectionStrings__Redis: "redis:6379,password=${REDIS_PASSWORD:?set in .env}"
+      Jwt__Issuer: ${JWT_ISSUER:-rota}
+      Jwt__Audience: ${JWT_AUDIENCE:-rota-client}
+      Jwt__PrivateKey: ${JWT_PRIVATE_KEY:?set in .env (PEM, RS256 private key)}
+      Jwt__PublicKey: ${JWT_PUBLIC_KEY:?set in .env (PEM, RS256 public key)}
+      Seed__AdminPassword: ${SEED_ADMIN_PASSWORD:?set in .env}
+      Email__Username: ${EMAIL_USERNAME:-}
+      Email__Password: ${EMAIL_PASSWORD:-}
+      BetaGate__Enabled: ${BETA_GATE_ENABLED:-true}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: rota-postgres-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       ${POSTGRES_DB:-rota}
+      POSTGRES_USER:     ${POSTGRES_USER:-rota_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in .env}
+    # No host port mapping — only the API container reaches the DB.
+    volumes:
+      - rota_prod_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rota_user} -d ${POSTGRES_DB:-rota}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: rota-redis-prod
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:?set in .env}
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}   # for the healthcheck below
+    volumes:
+      - rota_prod_redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli --no-auth-warning -a $$REDIS_PASSWORD ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  rota_prod_postgres_data:
+  rota_prod_redis_data:

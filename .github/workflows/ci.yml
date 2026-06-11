@@ -31,3 +31,18 @@ jobs:
       # (`dotnet test tests/ROTA.IntegrationTests`, Docker required).
       - name: Unit tests
         run: dotnet test tests/ROTA.UnitTests --configuration Release --no-build
+
+      # T67 migration gate: MigrationSnapshotTests (in the unit suite above) fails
+      # the build when the EF model drifts from the last migration's snapshot —
+      # hermetic (no DB, no dotnet-ef, no env vars), so no extra step is needed.
+
+  # T66/T67 — proves the production image assembles (and that publish carries
+  # content/). The image is build-verified only, never pushed from CI.
+  docker-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build production image
+        run: docker build -t rota-api:ci .

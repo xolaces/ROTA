@@ -1,3 +1,4 @@
+using ROTA.Domain.Enums;
 using ROTA.Shared.DTOs;
 
 namespace ROTA.Application.Interfaces;
@@ -55,4 +56,19 @@ public interface IGauntletService
     /// entry attempted with only a Token balance returns InsufficientTokens.
     /// </summary>
     Task<BuyShopResult> BuyFromShopAsync(Guid playerId, string shopEntryId, CancellationToken ct = default);
+
+    /// <summary>
+    /// T76 — the kind-aware prize preview table, hydrated with trophy/magic display names. Kind
+    /// resolution: <paramref name="kind"/> when given, else the active event's kind, else Neck.
+    /// </summary>
+    Task<GauntletPrizeTableResponse> GetPrizeTableAsync(
+        GauntletEventKind? kind = null, CancellationToken ct = default);
+
+    /// <summary>
+    /// T76 — the caller's result in the most recently SETTLED event (any kind): final league rank,
+    /// highest stage, and the prize band that rank landed in. Null when no event has ever settled
+    /// or the caller had no entry in it.
+    /// </summary>
+    Task<GauntletPlayerSettlementResponse?> GetMyLastSettlementAsync(
+        Guid playerId, CancellationToken ct = default);
 }

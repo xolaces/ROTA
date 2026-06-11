@@ -22,6 +22,12 @@ public sealed class QuestDifficultyProgressRepository : IQuestDifficultyProgress
                                    && p.QuestId == questId
                                    && p.Difficulty == difficulty, ct);
 
+    public async Task<IReadOnlyList<PlayerQuestDifficultyProgress>> GetAllForPlayerAsync(
+        Guid playerId, CancellationToken ct = default)
+        => await _db.PlayerQuestDifficultyProgress
+            .Where(p => p.PlayerId == playerId)
+            .ToListAsync(ct);
+
     public async Task CreateAsync(PlayerQuestDifficultyProgress progress, CancellationToken ct = default)
     {
         _db.PlayerQuestDifficultyProgress.Add(progress);

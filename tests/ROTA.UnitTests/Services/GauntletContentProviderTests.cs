@@ -74,6 +74,26 @@ public class GauntletContentProviderTests : IDisposable
     }
 
     [Fact]
+    public void GetBands_NeckKeepsMagics_RingFallbackStripsThem()
+    {
+        // T76 — the prize-preview list must match what settle would actually pay per kind. With no
+        // authored RingBands, Ring serves the Neck bands with MagicId stripped (trophies kept).
+        var provider = Build();
+
+        var neck = provider.GetBands(GauntletEventKind.Neck);
+        var ring = provider.GetBands(GauntletEventKind.Ring);
+
+        neck.Should().HaveCount(7);
+        neck.Select(b => b.RankFrom).Should().BeInAscendingOrder();
+        neck[0].MagicId.Should().Be("magic_wrath_of_the_ancients");
+
+        ring.Should().HaveCount(7, "the Ring fallback mirrors the Neck band structure");
+        ring.Should().OnlyContain(b => b.MagicId == null, "rings never grant rank magics");
+        ring[0].TrophyId.Should().Be(neck[0].TrophyId, "trophies survive the Ring fallback");
+        ring[0].Tokens.Should().Be(neck[0].Tokens);
+    }
+
+    [Fact]
     public void Provider_LoadsRealApiContent()
     {
         // Point at the actual Api content directory — proves the shipped JSON validates.
@@ -114,13 +134,16 @@ public class GauntletContentProviderTests : IDisposable
 
     // ── League resolution ──────────────────────────────────────────────────────
 
+    // T76 — owner-locked DotD brackets: 1–999 / 1000–2499 / 2500–4999 / 5000+.
     [Theory]
-    [InlineData(20,    GauntletLeague.Whelpling)]
-    [InlineData(1999,  GauntletLeague.Whelpling)]
-    [InlineData(2000,  GauntletLeague.Wyrm)]
-    [InlineData(9999,  GauntletLeague.Wyrm)]
-    [InlineData(10000, GauntletLeague.Dragon)]
-    [InlineData(999999, GauntletLeague.Dragon)]
+    [InlineData(20,     GauntletLeague.Whelpling)]
+    [InlineData(999,    GauntletLeague.Whelpling)]
+    [InlineData(1000,   GauntletLeague.Wyrm)]
+    [InlineData(2499,   GauntletLeague.Wyrm)]
+    [InlineData(2500,   GauntletLeague.Dragon)]
+    [InlineData(4999,   GauntletLeague.Dragon)]
+    [InlineData(5000,   GauntletLeague.Ancient)]
+    [InlineData(999999, GauntletLeague.Ancient)]
     public void ResolveLeague_MapsLevelToLeagueAtBandEdges(int level, GauntletLeague expected)
         => Build().ResolveLeague(level).Should().Be(expected);
 
@@ -341,10 +364,11 @@ public class GauntletContentProviderTests : IDisposable
         {
             LeagueBounds = new()
             {
-                ["Whelpling"] = new LeagueBound { Min = 1,     Max = 1999 },
+                ["Whelpling"] = new LeagueBound { Min = 1,    Max = 1999 },
                 // Gap: 2000 is uncovered.
-                ["Wyrm"]      = new LeagueBound { Min = 2001,  Max = 9999 },
-                ["Dragon"]    = new LeagueBound { Min = 10000, Max = GauntletConfig.NoMaxLevel },
+                ["Wyrm"]      = new LeagueBound { Min = 2001, Max = 2499 },
+                ["Dragon"]    = new LeagueBound { Min = 2500, Max = 4999 },
+                ["Ancient"]   = new LeagueBound { Min = 5000, Max = GauntletConfig.NoMaxLevel },
             },
         };
 
@@ -359,10 +383,11 @@ public class GauntletContentProviderTests : IDisposable
         {
             LeagueBounds = new()
             {
-                ["Whelpling"] = new LeagueBound { Min = 1,     Max = 1999 },
-                ["Wyrm"]      = new LeagueBound { Min = 2000,  Max = 9999 },
-                // Dragon capped at 10000 instead of the no-max sentinel.
-                ["Dragon"]    = new LeagueBound { Min = 10000, Max = 10000 },
+                ["Whelpling"] = new LeagueBound { Min = 1,    Max = 999 },
+                ["Wyrm"]      = new LeagueBound { Min = 1000, Max = 2499 },
+                ["Dragon"]    = new LeagueBound { Min = 2500, Max = 4999 },
+                // Ancient capped at 5000 instead of the no-max sentinel.
+                ["Ancient"]   = new LeagueBound { Min = 5000, Max = 5000 },
             },
         };
 

@@ -97,6 +97,14 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
             .HasColumnName("days_played")
             .HasDefaultValue(0);
 
+        // T68 — terms acceptance. 0 = never accepted; pre-T68 rows backfill to 0 via the default.
+        builder.Property(p => p.AcceptedTermsVersion)
+            .HasColumnName("accepted_terms_version")
+            .HasDefaultValue(0);
+
+        builder.Property(p => p.TermsAcceptedAt)
+            .HasColumnName("terms_accepted_at");
+
         builder.Property(p => p.CreatedAt)
             .HasColumnName("created_at")
             .HasDefaultValueSql("NOW()");

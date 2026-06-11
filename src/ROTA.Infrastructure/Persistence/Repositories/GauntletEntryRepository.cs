@@ -94,6 +94,34 @@ public sealed class GauntletEntryRepository : IGauntletEntryRepository
         await cmd.ExecuteNonQueryAsync(ct);
     }
 
+    // ── T76: atomic highest-stage update ───────────────────────────────────────
+
+    public async Task RecordStageDefeatAsync(
+        Guid eventId, Guid playerId, int stage, CancellationToken ct = default)
+    {
+        var conn = (NpgsqlConnection)_db.Database.GetDbConnection();
+        await EnsureOpenAsync(conn, ct);
+
+        var dbTx = _db.Database.CurrentTransaction?.GetDbTransaction() as NpgsqlTransaction;
+
+        // GREATEST makes this monotonic + race-safe: concurrent / out-of-order kills can never
+        // lower the recorded peak. Rides the RaidService advisory-lock tx when present.
+        const string sql = """
+            UPDATE gauntlet_entries
+               SET highest_stage = GREATEST(highest_stage, @stage),
+                   updated_at    = NOW()
+             WHERE gauntlet_event_id = @eventId
+               AND player_id         = @playerId
+               AND is_deleted        = false
+            """;
+
+        await using var cmd = new NpgsqlCommand(sql, conn, dbTx);
+        cmd.Parameters.AddWithValue("stage",    NpgsqlDbType.Integer, stage);
+        cmd.Parameters.AddWithValue("eventId",  NpgsqlDbType.Uuid,    eventId);
+        cmd.Parameters.AddWithValue("playerId", NpgsqlDbType.Uuid,    playerId);
+        await cmd.ExecuteNonQueryAsync(ct);
+    }
+
     // ── Slice 3: per-league rank snapshot ──────────────────────────────────────
 
     public async Task RecomputeRanksAsync(Guid eventId, CancellationToken ct = default)
@@ -103,16 +131,16 @@ public sealed class GauntletEntryRepository : IGauntletEntryRepository
 
         var dbTx = _db.Database.CurrentTransaction?.GetDbTransaction() as NpgsqlTransaction;
 
-        // One set-based UPDATE: ROW_NUMBER() partitions by league and orders by score DESC then
-        // tie_break_at ASC (earliest-to-reach wins ties). The CTE materialises the rank per entry id;
-        // the UPDATE writes it into last_rank. Re-running over an unchanged board produces identical
-        // ranks → idempotent.
+        // One set-based UPDATE: ROW_NUMBER() partitions by league. T76 — the PRIMARY metric is
+        // highest_stage (highest ladder stage completed, DotD-parity); cumulative damage then
+        // tie_break_at ASC (earliest-to-reach) break ties. The CTE materialises the rank per entry
+        // id; the UPDATE writes it into last_rank. Idempotent over an unchanged board.
         const string sql = """
             WITH ranked AS (
                 SELECT id,
                        ROW_NUMBER() OVER (
                            PARTITION BY league
-                           ORDER BY score DESC, tie_break_at ASC
+                           ORDER BY highest_stage DESC, score DESC, tie_break_at ASC
                        ) AS rn
                 FROM gauntlet_entries
                 WHERE gauntlet_event_id = @eventId
@@ -145,7 +173,8 @@ public sealed class GauntletEntryRepository : IGauntletEntryRepository
                    ge.player_id,
                    p.display_name,
                    p.username,
-                   ge.score
+                   ge.score,
+                   ge.highest_stage
             FROM gauntlet_entries ge
             JOIN players p ON p.id = ge.player_id
             WHERE ge.gauntlet_event_id = @eventId
@@ -169,10 +198,11 @@ public sealed class GauntletEntryRepository : IGauntletEntryRepository
             var username    = reader.GetString(3);
             rows.Add(new GauntletLeaderboardRow
             {
-                Rank        = reader.GetInt32(0),
-                PlayerId    = reader.GetGuid(1),
-                DisplayName = string.IsNullOrWhiteSpace(displayName) ? username : displayName,
-                Score       = reader.GetInt64(4),
+                Rank         = reader.GetInt32(0),
+                PlayerId     = reader.GetGuid(1),
+                DisplayName  = string.IsNullOrWhiteSpace(displayName) ? username : displayName,
+                Score        = reader.GetInt64(4),
+                HighestStage = reader.GetInt32(5),
             });
         }
 
@@ -190,7 +220,7 @@ public sealed class GauntletEntryRepository : IGauntletEntryRepository
         // The optional league predicate is a no-op when @league is NULL; otherwise the caller's
         // (single, locked) entry must be in that league to count toward that league's board.
         const string sql = """
-            SELECT last_rank, score
+            SELECT last_rank, score, highest_stage
             FROM gauntlet_entries
             WHERE gauntlet_event_id = @eventId
               AND player_id         = @playerId
@@ -214,7 +244,12 @@ public sealed class GauntletEntryRepository : IGauntletEntryRepository
             return null; // caller has no entry in this event
 
         int? rank = reader.IsDBNull(0) ? null : reader.GetInt32(0);
-        return new GauntletRankScore { Rank = rank, Score = reader.GetInt64(1) };
+        return new GauntletRankScore
+        {
+            Rank = rank,
+            Score = reader.GetInt64(1),
+            HighestStage = reader.GetInt32(2),
+        };
     }
 
     // ── Slice 3: count of ranked entries in a league ────────────────────────────

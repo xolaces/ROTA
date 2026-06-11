@@ -1302,6 +1302,14 @@ public sealed class RaidService : IRaidService
                             playerId, GauntletCurrency.Token, 1,
                             GauntletCurrencyTransactionType.RaidDefeatReward, tokenDefeatRef), ct);
                     }
+
+                    // T76 — record the ladder-stage defeat (the PRIMARY ranking metric: highest
+                    // stage completed). Atomic GREATEST in SQL, rides this advisory-lock tx;
+                    // naturally idempotent (a re-processed kill can never raise the peak twice).
+                    var stageDef = _gauntletContent.GetGauntletRaidByDefinitionId(lockedRaid.RaidDefinitionId);
+                    if (stageDef is not null)
+                        await _gauntletScoring.RecordStageDefeatAsync(
+                            playerId, lockedRaid.GauntletEventId.Value, stageDef.LadderStage, ct);
                 }
 
                 // GetAllForRaidAsync sees the participant saved above (same tx).

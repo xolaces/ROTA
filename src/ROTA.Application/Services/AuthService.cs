@@ -31,6 +31,8 @@ public sealed class AuthService : IAuthService
     private readonly IAuditLogRepository _auditLog;
     private readonly IBetaKeyRepository _betaKeys;
     private readonly IAchievementService _achievements;
+    private readonly IPasswordResetTokenRepository _resetTokens;
+    private readonly IEmailNotificationService _emails;
 
     public AuthService(
         IPlayerRepository players,
@@ -39,7 +41,9 @@ public sealed class AuthService : IAuthService
         IAuthLockoutService lockout,
         IAuditLogRepository auditLog,
         IBetaKeyRepository betaKeys,
-        IAchievementService achievements)
+        IAchievementService achievements,
+        IPasswordResetTokenRepository resetTokens,
+        IEmailNotificationService emails)
     {
         _players = players;
         _refreshTokens = refreshTokens;
@@ -48,6 +52,8 @@ public sealed class AuthService : IAuthService
         _auditLog = auditLog;
         _betaKeys = betaKeys;
         _achievements = achievements;
+        _resetTokens = resetTokens;
+        _emails = emails;
     }
 
     // -------------------------------------------------------------------
@@ -116,6 +122,8 @@ public sealed class AuthService : IAuthService
         var player = newPlayerId.HasValue
             ? Player.CreateWithId(newPlayerId.Value, request.Username, request.Email, passwordHash)
             : Player.Create(request.Username, request.Email, passwordHash);
+        // T68 — the validator already required the CURRENT version; stamp it on the new account.
+        player.AcceptTerms(request.AcceptedTermsVersion);
         await _players.CreateAsync(player, ct);
 
         await _auditLog.AppendAsync(AuditLog.Create(
@@ -277,6 +285,105 @@ public sealed class AuthService : IAuthService
     }
 
     // -------------------------------------------------------------------
+    // PASSWORD RESET (T65)
+    // -------------------------------------------------------------------
+
+    // Crockford-style base32 (no 0/1/I/L/O/U) — same alphabet as beta keys.
+    private const string ResetCodeAlphabet = "23456789ABCDEFGHJKMNPQRSTVWXYZ";
+
+    public async Task RequestPasswordResetAsync(PasswordResetRequest request, string ipAddress)
+    {
+        var player = await _players.FindByEmailAsync(request.Email);
+
+        // SECURITY: unknown / banned accounts get the same silent outcome as success — the endpoint
+        // always 202s, so the only observable difference is whether an email arrives.
+        if (player is null || player.IsBanned)
+        {
+            await _auditLog.AppendAsync(AuditLog.Create(
+                player?.Id, "PasswordResetRequested", null,
+                player is null ? "Unknown email — no code issued" : "Banned account — no code issued",
+                ipAddress));
+            return;
+        }
+
+        // One live code at a time: a new request invalidates any outstanding unused code.
+        await _resetTokens.InvalidateActiveAsync(player.Id);
+
+        var ttlMinutes = _config.GetValue("Auth:PasswordResetTokenMinutes", 15);
+        var code = GenerateResetCode();
+        await _resetTokens.CreateAsync(PasswordResetToken.Create(
+            player.Id, HashToken(NormalizeResetCode(code)), TimeSpan.FromMinutes(ttlMinutes)));
+
+        await _auditLog.AppendAsync(AuditLog.Create(
+            player.Id, "PasswordResetRequested", null,
+            $"Reset code issued (ttl={ttlMinutes}m)", ipAddress));
+
+        // Rides the T39 backbone with RecipientOverride — delivered to the PLAYER, not the operator.
+        await _emails.QueueAsync(new Models.EmailPayload
+        {
+            Type = EmailType.PasswordReset,
+            Subject = "Your ROTA password reset code",
+            Summary = $"Password reset code issued for {player.Username}",
+            TriggeringPlayerId = player.Id,
+            TriggeringSystem = "T65",
+            RecipientOverride = player.Email,
+            Detail = new Dictionary<string, object?>
+            {
+                ["code"] = code,
+                ["expiresMinutes"] = ttlMinutes,
+            },
+        }, ipAddress);
+    }
+
+    public async Task<bool> ResetPasswordAsync(ResetPasswordRequest request, string ipAddress)
+    {
+        var player = await _players.FindByEmailAsync(request.Email);
+        if (player is null || player.IsBanned)
+        {
+            await _auditLog.AppendAsync(AuditLog.Create(
+                player?.Id, "PasswordResetFailed", null,
+                player is null ? "Unknown email" : "Account banned", ipAddress));
+            return false;
+        }
+
+        // Atomic single-use consume — wrong, expired, superseded, and replayed codes all land here.
+        var codeHash = HashToken(NormalizeResetCode(request.Code));
+        if (!await _resetTokens.TryConsumeAsync(player.Id, codeHash))
+        {
+            await _auditLog.AppendAsync(AuditLog.Create(
+                player.Id, "PasswordResetFailed", null,
+                "Invalid, expired, or already-used reset code", ipAddress));
+            return false;
+        }
+
+        player.SetPasswordHash(BCrypt.Net.BCrypt.HashPassword(request.NewPassword, BcryptWorkFactor));
+        await _players.UpdateAsync(player);
+
+        // SECURITY: a reset is a credential-compromise recovery path — evict every session.
+        await _refreshTokens.RevokeAllActiveAsync(player.Id);
+
+        await _auditLog.AppendAsync(AuditLog.Create(
+            player.Id, "PasswordReset", null,
+            "Password reset — all sessions revoked", ipAddress));
+
+        return true;
+    }
+
+    /// <summary>8 chars in XXXX-XXXX form. ~49 bits of entropy at a 15-min single-use TTL.</summary>
+    private static string GenerateResetCode()
+    {
+        var bytes = RandomNumberGenerator.GetBytes(8);
+        var chars = new char[8];
+        for (int i = 0; i < 8; i++)
+            chars[i] = ResetCodeAlphabet[bytes[i] % ResetCodeAlphabet.Length];
+        return $"{new string(chars, 0, 4)}-{new string(chars, 4, 4)}";
+    }
+
+    /// <summary>Uppercases and strips separators/whitespace so player typos in form don't reject.</summary>
+    private static string NormalizeResetCode(string code)
+        => new(code.Trim().ToUpperInvariant().Where(c => c != '-' && c != ' ').ToArray());
+
+    // -------------------------------------------------------------------
     // PRIVATE HELPERS
     // -------------------------------------------------------------------
 
@@ -304,11 +411,16 @@ public sealed class AuthService : IAuthService
         var accessTokenExpiry = DateTimeOffset.UtcNow.Add(AccessTokenLifetime);
         var accessToken = GenerateAccessToken(player, accessTokenExpiry);
 
+        // T68 — flag stale terms acceptance on every token issue (login/refresh/register).
+        var currentTermsVersion = _config.GetValue("Legal:CurrentTermsVersion", 1);
+
         return new AuthResponse
         {
             AccessToken = accessToken,
             RefreshToken = rawToken,
             AccessTokenExpiry = accessTokenExpiry,
+            RequiresTermsAcceptance = player.AcceptedTermsVersion < currentTermsVersion,
+            CurrentTermsVersion = currentTermsVersion,
         };
     }
 

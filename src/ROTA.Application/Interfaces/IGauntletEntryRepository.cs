@@ -33,9 +33,18 @@ public interface IGauntletEntryRepository
         Guid eventId, Guid playerId, long delta, DateTimeOffset hitAt, CancellationToken ct = default);
 
     /// <summary>
+    /// T76 — atomically raises the entry's <c>highest_stage</c> to <paramref name="stage"/> when
+    /// higher (SQL GREATEST — concurrent kills never lose an update). The PRIMARY ladder metric.
+    /// No-op if the entry does not exist. Rides an ambient transaction when present.
+    /// </summary>
+    Task RecordStageDefeatAsync(
+        Guid eventId, Guid playerId, int stage, CancellationToken ct = default);
+
+    /// <summary>
     /// Snapshots per-league ranks for the event into <c>last_rank</c> via one UPDATE using
-    /// <c>ROW_NUMBER() OVER (PARTITION BY league ORDER BY score DESC, tie_break_at ASC)</c>.
-    /// Idempotent: re-running over an unchanged board yields identical ranks.
+    /// <c>ROW_NUMBER() OVER (PARTITION BY league ORDER BY highest_stage DESC, score DESC,
+    /// tie_break_at ASC)</c> (T76 — highest stage completed is the primary metric, DotD-parity;
+    /// damage and earliest-to-reach break ties). Idempotent.
     /// </summary>
     Task RecomputeRanksAsync(Guid eventId, CancellationToken ct = default);
 
@@ -67,12 +76,14 @@ public sealed class GauntletLeaderboardRow
     public int Rank { get; init; }
     public Guid PlayerId { get; init; }
     public string DisplayName { get; init; } = string.Empty;
+    public int HighestStage { get; init; }
     public long Score { get; init; }
 }
 
-/// <summary>The caller's own snapshot rank + score in an event (rank may be null pre-snapshot).</summary>
+/// <summary>The caller's own snapshot rank + standing in an event (rank may be null pre-snapshot).</summary>
 public sealed class GauntletRankScore
 {
     public int? Rank { get; init; }
+    public int HighestStage { get; init; }
     public long Score { get; init; }
 }

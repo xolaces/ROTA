@@ -70,6 +70,8 @@ public class AuthServiceTests
         var auditLog = new Mock<IAuditLogRepository>();
         var betaKeys = new Mock<IBetaKeyRepository>();
         var achievements = new Mock<IAchievementService>();
+        var resetTokens = new Mock<IPasswordResetTokenRepository>();
+        var emails = new Mock<IEmailNotificationService>();
 
         // Default: not locked out
         lockout.Setup(l => l.IsLockedOutAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -82,7 +84,9 @@ public class AuthServiceTests
             lockout.Object,
             auditLog.Object,
             betaKeys.Object,
-            achievements.Object);
+            achievements.Object,
+            resetTokens.Object,
+            emails.Object);
 
         return (service, players, tokens, lockout, auditLog);
     }
@@ -226,7 +230,8 @@ public class AuthServiceTests
         var service = new AuthService(
             players.Object, tokens.Object,
             BuildConfig(betaGateEnabled: true),
-            lockout.Object, auditLog.Object, betaKeys.Object, achievements.Object);
+            lockout.Object, auditLog.Object, betaKeys.Object, achievements.Object,
+            new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object);
 
         var result = await service.RegisterAsync(
             new RegisterRequest
@@ -295,7 +300,8 @@ public class AuthServiceTests
               .ReturnsAsync((RefreshToken t, CancellationToken _) => t);
 
         var service = new AuthService(players.Object, tokens.Object, BuildConfig(key),
-            lockout.Object, auditLog.Object, betaKeys.Object, achievements.Object);
+            lockout.Object, auditLog.Object, betaKeys.Object, achievements.Object,
+            new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object);
 
         // First login on a fresh player → counts the day.
         await service.LoginAsync(new LoginRequest { Email = player.Email, Password = "Correct1" }, "127.0.0.1");
@@ -333,7 +339,8 @@ public class AuthServiceTests
             .ThrowsAsync(new InvalidOperationException("boom"));
 
         var service = new AuthService(players.Object, tokens.Object, BuildConfig(key),
-            lockout.Object, auditLog.Object, betaKeys.Object, achievements.Object);
+            lockout.Object, auditLog.Object, betaKeys.Object, achievements.Object,
+            new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object);
 
         var result = await service.LoginAsync(new LoginRequest { Email = player.Email, Password = "Correct1" }, "127.0.0.1");
 

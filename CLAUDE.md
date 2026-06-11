@@ -591,6 +591,58 @@ Detail in docs/SESSION_HANDOFF.md.
   out of the summoner-only share body → ANY participant; kill prompts "press Loot", loot shows the spoils. Migration
   **AddRaidParticipantPendingDrops** (adds `pending_drops_json` text column).
 
+## Wave 2 — Public-beta blockers T65–T70 (2026-06-10) — COMPLETE (uncommitted, migrations applied)
+Build: 0 errors. Tests: **925 unit + 111 integration = 1036 green.** Client headless compile 0 errors.
+Migrations applied to dev DB: **AddPasswordResetTokens** (T65) + **AddTermsAcceptance** (T68).
+- **T65 password reset:** request → emailed single-use Crockford code (XXXX-XXXX, SHA256-hashed at
+  rest, 15-min TTL via `Auth:PasswordResetTokenMinutes`) → confirm replaces the password and revokes
+  ALL sessions. Anti-enumeration: request always 202. Rate-limited per-email (SHA-derived pseudo-Guid)
+  + per-IP via ISubmissionRateLimiter. `EmailPayload.RecipientOverride` lets the T39 pipeline send
+  PLAYER-facing mail (raw subject + dedicated body). POST /api/auth/password-reset/request|confirm.
+- **T66 deploy artifacts (host-agnostic):** multi-stage Dockerfile (non-root, :8080, content/ ships),
+  .dockerignore, appsettings.Production.json (secrets via env only), docker-compose.prod.yml,
+  config-gated ForwardedHeaders (trusted proxies), docs/DEPLOYMENT.md. EFCore.Relational pin → 9.*.
+- **T67 CI:** docker-image job + migration gate = hermetic `MigrationSnapshotTests`
+  (`Database.HasPendingModelChanges()`, no DB needed) inside the unit suite.
+- **T68 terms/privacy:** `Legal:CurrentTermsVersion` config; Player.AcceptedTermsVersion/+At
+  (monotonic AcceptTerms()); register requires the exact current version (validator → 400);
+  AuthResponse.{RequiresTermsAcceptance,CurrentTermsVersion} on every token issue; GET
+  /api/legal/terms|privacy (anonymous, content/legal/*.md, boot-validated provider) + POST
+  /api/legal/accept (409 stale). Legal text is PLACEHOLDER — replace before launch.
+- **T69 onboarding-lite (client):** TutorialOverlay 5-step first-run tour (PlayerPrefs latch).
+- **T70 (client):** tools/build-client.ps1 + Editor/BuildPlayer.cs (batchmode Win64 build + zip).
+- Client mirrors for T65/T68 (Dtos/IRotaApi/Http/Mock/LoginScreen rebuild) shipped in ROTA.Client6.
+
+## UX wave T72–T75 + T76 Gauntlet foundation (2026-06-10) — COMPLETE (uncommitted)
+Build: 0 errors. Tests: **947 unit + 111 integration = 1058 green.** Client compile clean.
+Migration **AddGauntletEventIdentity** applied. Detail: docs/SESSION_HANDOFF.md (canonical).
+- **T72:** Theme.uss root-cause fix — `.btn-link` was referenced but NEVER defined + no base
+  `Button` type rule → Unity-grey buttons. Base Button rule (gold-on-dark, readable :disabled),
+  .btn-link, themed Toggle. Grey buttons now impossible by construction.
+- **T73:** persistent LATEST-REWARDS box inside QuestScreen; item-drop pop-up optional
+  (PlayerPrefs `rota_reward_popups`, default OFF). Level-up overlay stays mandatory.
+- **T74:** `QuestAvailabilityResponse.HighestUnlockedDifficulty` (per-node gate-chain walk; new
+  IQuestDifficultyProgressRepository.GetAllForPlayerAsync); client renders 🔒 + "Clear <prev>
+  first" INSTEAD of a button; mock gates + tracks tiers.
+- **T75:** `[AdminOnly]` DevController /api/dev/grant|grant-item|refill → audited DevService
+  (XP grants fire real level-ups via MutateWithRetryAsync; gems = AdminGrant ledger). Client
+  DevToolsScreen += Player tab (grants, stateful in mock) + System tab (JWT decode, tutorial
+  reset, PlayerPrefs wipe).
+- **T76 (System 24, spec docs/specs/active/system-24-gauntlet-event-experience.md):** owner
+  locked — solo auto-summon ladder IS the DotD shape. 4 level brackets (GauntletLeague +=
+  Ancient: 1–999/1000–2499/2500–4999/5000+); rank by HIGHEST STAGE COMPLETED
+  (GauntletEntry.HighestStage, atomic GREATEST on stage kill; rank ORDER highest_stage→score→
+  tie_break); late HP ramp (LateRampStartStage 200 → growth 1.0493→×2.0 at 250; off by default,
+  on in appsettings); Neck/Ring event families (Kind/RunNumber/LoreBlurb/BannerKey; Neck→Neck
+  magic hand-off; kind-aware prize bands w/ RingBands fallback = magic-stripped Neck; CLI
+  `gauntlet-open ... [neck|ring]`); client event-identity header (kind badge, run #, lore,
+  live countdown) + "Stg N" leaderboard. REMAINING: seasonal rank-GEAR mechanism (needs T77
+  gear), settlement screen, CTA states, prize table UI.
+- Staleness sweep: CURRENT_TASK.md rewritten (pointer+snapshot), PROJECT_STATE.md banner'd
+  historical, specs 16/22/ops-social/23 → shipped/ + 24 → active/, changelog noted. NEW pre-beta
+  items: client TokenStore plaintext tokens (encrypt before beta); magic-shop catalogue endpoint
+  missing (Bazaar shows owned-only).
+
 ## PHASE-2 Deferred Items
 - DiscernmentInvestment effect: quest drop quality (raid crit shipped v0.2.3)
 - Explicit DB transaction scope for QUEST reward steps (energy committed but rewards not atomic; raids fixed v0.2.5)

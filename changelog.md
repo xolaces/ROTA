@@ -1,5 +1,8 @@
 ROTA - Personal Changelog & Learning Notes
 ==========================================
+[NOTE 2026-06-10: This journal stopped being maintained around v0.2.5 / System 12. It is kept
+ as a learning record only — release history now lives in CLAUDE.md (build status sections),
+ docs/SESSION_HANDOFF.md (current), and docs/specs/shipped/ (per-system decision records).]
 Started: 2026-05-20
 Developer: xolaces
 Stack: C# / ASP.NET Core / PostgreSQL / Redis / Unity (client, later)

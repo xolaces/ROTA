@@ -11,17 +11,26 @@ public class GauntletEvent
     private GauntletEvent() { }
 
     /// <summary>Creates a new event in the <see cref="GauntletEventState.Scheduled"/> state.</summary>
-    public static GauntletEvent Create(string name, DateTimeOffset startsAt, DateTimeOffset endsAt)
+    public static GauntletEvent Create(
+        string name, DateTimeOffset startsAt, DateTimeOffset endsAt,
+        GauntletEventKind kind = GauntletEventKind.Neck, int runNumber = 1,
+        string? loreBlurb = null, string? bannerKey = null)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Event name is required.", nameof(name));
         if (endsAt <= startsAt)
             throw new ArgumentException("endsAt must be after startsAt.", nameof(endsAt));
+        if (runNumber < 1)
+            throw new ArgumentException("runNumber must be ≥ 1.", nameof(runNumber));
 
         return new GauntletEvent
         {
             Id        = Guid.NewGuid(),
             Name      = name,
+            Kind      = kind,
+            RunNumber = runNumber,
+            LoreBlurb = loreBlurb,
+            BannerKey = bannerKey,
             State     = GauntletEventState.Scheduled,
             StartsAt  = startsAt,
             EndsAt    = endsAt,
@@ -34,6 +43,14 @@ public class GauntletEvent
 
     public Guid Id { get; private set; }
     public string Name { get; private set; } = string.Empty;
+
+    // T76 — event identity. Kind drives the prize set + seasonal-crown removal scope; RunNumber
+    // counts runs of the SAME kind ("3rd Neck Gauntlet"); blurb/banner feed the event page.
+    public GauntletEventKind Kind { get; private set; } = GauntletEventKind.Neck;
+    public int RunNumber { get; private set; } = 1;
+    public string? LoreBlurb { get; private set; }
+    public string? BannerKey { get; private set; }
+
     public GauntletEventState State { get; private set; }
     public DateTimeOffset StartsAt { get; private set; }
     public DateTimeOffset EndsAt { get; private set; }

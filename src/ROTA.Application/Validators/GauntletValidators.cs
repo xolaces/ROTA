@@ -28,5 +28,16 @@ public sealed class OpenGauntletEventRequestValidator : AbstractValidator<OpenGa
 
         RuleFor(x => x.EndsAt)
             .GreaterThan(x => x.StartsAt).WithMessage("endsAt must be after startsAt.");
+
+        // T76 — kind must be a valid GauntletEventKind name ("Neck"/"Ring").
+        RuleFor(x => x.Kind)
+            .Must(k => Enum.TryParse<ROTA.Domain.Enums.GauntletEventKind>(k, ignoreCase: true, out _))
+            .WithMessage("Kind must be 'Neck' or 'Ring'.");
+
+        RuleFor(x => x.LoreBlurb)
+            .MaximumLength(1000);
+
+        RuleFor(x => x.BannerKey)
+            .MaximumLength(64);
     }
 }

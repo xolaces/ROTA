@@ -68,7 +68,8 @@ public class BetaKeyServiceTests
         var service = new AuthService(
             players.Object, tokens.Object,
             BuildConfig(privateKey, betaGateEnabled),
-            lockout.Object, auditLog.Object, betaKeys.Object, new Mock<IAchievementService>().Object);
+            lockout.Object, auditLog.Object, betaKeys.Object, new Mock<IAchievementService>().Object,
+            new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object);
 
         return (service, players, tokens, betaKeys, auditLog);
     }

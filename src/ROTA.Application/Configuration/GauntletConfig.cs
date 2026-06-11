@@ -6,14 +6,16 @@ namespace ROTA.Application.Configuration;
 // covering the full valid level range from 1; no overlap).
 public class GauntletConfig
 {
-    // The three leagues' level bands, keyed by GauntletLeague name. Bands are stored on
-    // each entry at first join; the player's league is locked for the cycle.
+    // The four leagues' level bands, keyed by GauntletLeague name (T76 — DotD-parity brackets,
+    // owner-locked: 1–999 / 1000–2499 / 2500–4999 / 5000+). Bands are stored on each entry at
+    // first join; the player's league is locked for the cycle.
     public Dictionary<string, LeagueBound> LeagueBounds { get; set; } = new()
     {
-        ["Whelpling"] = new LeagueBound { Min = 1,     Max = 1999 },
-        ["Wyrm"]      = new LeagueBound { Min = 2000,  Max = 9999 },
-        // Dragon has no upper bound — int.MaxValue is the "no-max" sentinel.
-        ["Dragon"]    = new LeagueBound { Min = 10000, Max = NoMaxLevel },
+        ["Whelpling"] = new LeagueBound { Min = 1,    Max = 999 },
+        ["Wyrm"]      = new LeagueBound { Min = 1000, Max = 2499 },
+        ["Dragon"]    = new LeagueBound { Min = 2500, Max = 4999 },
+        // Ancient has no upper bound — int.MaxValue is the "no-max" sentinel.
+        ["Ancient"]   = new LeagueBound { Min = 5000, Max = NoMaxLevel },
     };
 
     // Sentinel for "no upper bound" on the top league.
@@ -63,6 +65,14 @@ public class GauntletConfig
     public long   StageBaseGoldReward       { get; set; } = 200;
     public int    StageBaseExperienceReward { get; set; } = 150;
     public double StageRewardGrowth         { get; set; } = 1.04;
+
+    // ── T76 — late-ladder brutality ramp (owner-locked, mirrors DotD's feel: "not brutal until
+    // ~230, near-doubling per stage by ~250"). Past LateRampStartStage the per-stage growth factor
+    // climbs LINEARLY from StageHpGrowth at the ramp start to LateRampFinalGrowth at MaxLadderStage.
+    // 0 = OFF (default, so unit fixtures and the documented base curve stay untouched);
+    // appsettings turns it on at stage 200 with a final growth of 2.0 (HP doubles per stage at 250).
+    public int    LateRampStartStage  { get; set; } = 0;
+    public double LateRampFinalGrowth { get; set; } = 2.0;
 }
 
 // T54 — the pure Gauntlet ladder curve. Shared by the content provider (stage generation) and the
@@ -70,7 +80,29 @@ public class GauntletConfig
 public static class GauntletStageCurve
 {
     public static long Hp(int stage, GauntletConfig c)
-        => (long)Math.Round(c.StageHpBase * Math.Pow(c.StageHpGrowth, stage - 1), MidpointRounding.AwayFromZero);
+    {
+        // Base regime: pure exponential. Applies to the whole ladder when the ramp is off,
+        // and to every stage at or below the ramp start when it is on.
+        bool rampOn = c.LateRampStartStage > 0 && c.MaxLadderStage > c.LateRampStartStage;
+        if (!rampOn || stage <= c.LateRampStartStage)
+            return (long)Math.Round(c.StageHpBase * Math.Pow(c.StageHpGrowth, stage - 1), MidpointRounding.AwayFromZero);
+
+        // T76 late ramp: growth interpolates linearly from StageHpGrowth (at the ramp start) to
+        // LateRampFinalGrowth (at MaxLadderStage). HP accumulates multiplicatively per stage, so
+        // the curve stays continuous at the ramp boundary and ends near-doubling per stage.
+        double hp = c.StageHpBase * Math.Pow(c.StageHpGrowth, c.LateRampStartStage - 1);
+        int rampSpan = c.MaxLadderStage - c.LateRampStartStage;
+        int top = Math.Min(stage, c.MaxLadderStage);
+        for (int n = c.LateRampStartStage + 1; n <= top; n++)
+        {
+            double t = (double)(n - c.LateRampStartStage) / rampSpan;
+            hp *= c.StageHpGrowth + (c.LateRampFinalGrowth - c.StageHpGrowth) * t;
+        }
+        // Stages past MaxLadderStage (shouldn't exist) keep the final growth factor.
+        for (int n = c.MaxLadderStage + 1; n <= stage; n++)
+            hp *= c.LateRampFinalGrowth;
+        return (long)Math.Round(hp, MidpointRounding.AwayFromZero);
+    }
 
     public static long Gold(int stage, GauntletConfig c)
         => (long)Math.Round(c.StageBaseGoldReward * Math.Pow(c.StageRewardGrowth, stage - 1), MidpointRounding.AwayFromZero);

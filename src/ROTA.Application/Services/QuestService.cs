@@ -47,6 +47,20 @@ public sealed class QuestService : IQuestService
             [QuestDifficulty.Nightmare] = QuestDifficulty.Legendary,
         };
 
+    // T74 — walks the gate chain: the highest tier whose prerequisite tier has ≥1 completion.
+    private static QuestDifficulty ComputeHighestUnlockedDifficulty(
+        IReadOnlySet<QuestDifficulty>? completed)
+    {
+        var highest = QuestDifficulty.Normal;
+        if (completed is null) return highest;
+        foreach (var tier in new[] { QuestDifficulty.Hard, QuestDifficulty.Legendary, QuestDifficulty.Nightmare })
+        {
+            if (!completed.Contains(DifficultyGates[tier]!.Value)) break;
+            highest = tier;
+        }
+        return highest;
+    }
+
     private readonly IQuestDefinitionProvider _definitions;
     private readonly IQuestProgressRepository _questProgress;
     private readonly IQuestDifficultyProgressRepository _difficultyProgress;
@@ -134,6 +148,13 @@ public sealed class QuestService : IQuestService
         var allProgress = await _questProgress.GetAllForPlayerAsync(playerId, ct);
         var progressByQuestId = allProgress.ToDictionary(p => p.QuestId);
 
+        // T74 — per-quest difficulty completions, so the client can render locked tiers as
+        // unselectable. One query; the attempt-time gate stays authoritative.
+        var difficultyCompletions = (await _difficultyProgress.GetAllForPlayerAsync(playerId, ct))
+            .Where(p => p.CompletionCount > 0)
+            .GroupBy(p => p.QuestId)
+            .ToDictionary(g => g.Key, g => g.Select(p => p.Difficulty).ToHashSet());
+
         // A node unlocks the next once the prerequisite has EVER been cleared (permanent latch) — so a
         // chapter-boss reset (T26), which clears IsCleared back to false, never re-locks earned content.
         var unlockedQuestIds = progressByQuestId
@@ -193,6 +214,8 @@ public sealed class QuestService : IQuestService
                 // attemptable. A boss additionally requires its whole zone to be depleted. Must be set
                 // explicitly: the client disables Attempt when false.
                 IsUnlocked         = isUnlocked,
+                HighestUnlockedDifficulty = ComputeHighestUnlockedDifficulty(
+                    difficultyCompletions.TryGetValue(quest.Id, out var done) ? done : null).ToString(),
             });
         }
         return result;

@@ -45,7 +45,10 @@ public sealed class GauntletAdminController : ControllerBase
 
         if (!await ActorIsAdminAsync(ct)) return Forbid();
 
-        var result = await _admin.OpenEventAsync(request.Name, request.StartsAt, request.EndsAt, ct);
+        // T76 — kind is validated by the request validator (must parse to GauntletEventKind).
+        var kind = Enum.Parse<GauntletEventKind>(request.Kind, ignoreCase: true);
+        var result = await _admin.OpenEventAsync(
+            request.Name, request.StartsAt, request.EndsAt, kind, request.LoreBlurb, request.BannerKey, ct);
         if (result.Success) return Ok(result.Event);
 
         // ≤1-active rejection is a conflict; everything else is a bad request.

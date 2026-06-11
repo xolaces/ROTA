@@ -3,7 +3,8 @@ using ROTA.Domain.Enums;
 
 namespace ROTA.Application.Interfaces;
 
-// BETA-PLACEHOLDER: stub for Slice 2 DI wiring. Full implementation added in Slice 3.
+// FINAL (System 15 Slice 3) — per-legion slot assignments. (Was a Slice-2 placeholder stub;
+// fully implemented by PlayerLegionSlotRepository since v0.2.7.)
 public interface IPlayerLegionSlotRepository
 {
     Task<IReadOnlyList<PlayerLegionSlot>> GetForLegionAsync(Guid playerId, string legionDefinitionId, CancellationToken ct = default);

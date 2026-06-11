@@ -64,6 +64,8 @@ public class QuestServiceTests
             .ReturnsAsync((PlayerQuestDifficultyProgress?)null);
         difficultyProgress.Setup(r => r.CreateAsync(It.IsAny<PlayerQuestDifficultyProgress>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+        difficultyProgress.Setup(r => r.GetAllForPlayerAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerQuestDifficultyProgress>());
         difficultyProgress.Setup(r => r.UpdateAsync(It.IsAny<PlayerQuestDifficultyProgress>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
@@ -208,6 +210,64 @@ public class QuestServiceTests
         var unlocked = await b.Service.GetAvailableQuestsAsync(playerId);
         unlocked.Should().HaveCount(2);
         unlocked.Should().Contain(r => r.Id == "q002");
+    }
+
+    // -----------------------------------------------------------------------
+    // GetAvailableQuestsAsync — T74 difficulty unlock hint
+    // -----------------------------------------------------------------------
+
+    [Theory]
+    [InlineData(new string[0], "Normal")]
+    [InlineData(new[] { "Normal" }, "Hard")]
+    [InlineData(new[] { "Normal", "Hard" }, "Legendary")]
+    [InlineData(new[] { "Normal", "Hard", "Legendary" }, "Nightmare")]
+    [InlineData(new[] { "Hard" }, "Normal")] // gap in the chain (shouldn't happen live) → still gated
+    public async Task GetAvailableQuests_ReportsHighestUnlockedDifficulty(
+        string[] completedTiers, string expected)
+    {
+        var b = BuildService();
+        var playerId = Guid.NewGuid();
+
+        b.Definitions.Setup(d => d.GetAll()).Returns(TwoQuestChain());
+        b.QuestProgress.Setup(r => r.GetAllForPlayerAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerQuestProgress>());
+
+        var rows = completedTiers.Select(t =>
+        {
+            var row = PlayerQuestDifficultyProgress.Create(
+                playerId, "q001", Enum.Parse<QuestDifficulty>(t));
+            row.RecordCompletion();
+            return row;
+        }).ToList();
+        b.DifficultyProgress.Setup(r => r.GetAllForPlayerAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(rows);
+
+        var result = await b.Service.GetAvailableQuestsAsync(playerId);
+
+        result.Should().ContainSingle(q => q.Id == "q001")
+              .Which.HighestUnlockedDifficulty.Should().Be(expected);
+    }
+
+    [Fact]
+    public async Task GetAvailableQuests_ZeroCompletionRows_DoNotUnlock()
+    {
+        var b = BuildService();
+        var playerId = Guid.NewGuid();
+
+        b.Definitions.Setup(d => d.GetAll()).Returns(TwoQuestChain());
+        b.QuestProgress.Setup(r => r.GetAllForPlayerAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerQuestProgress>());
+        // A row exists (e.g. created mid-attempt) but with zero completions — still locked.
+        b.DifficultyProgress.Setup(r => r.GetAllForPlayerAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerQuestDifficultyProgress>
+            {
+                PlayerQuestDifficultyProgress.Create(playerId, "q001", QuestDifficulty.Normal),
+            });
+
+        var result = await b.Service.GetAvailableQuestsAsync(playerId);
+
+        result.Should().ContainSingle(q => q.Id == "q001")
+              .Which.HighestUnlockedDifficulty.Should().Be("Normal");
     }
 
     // -----------------------------------------------------------------------

@@ -197,6 +197,9 @@ builder.Services.Configure<AchievementConfig>(
 builder.Services.Configure<RateLimitConfig>(
     builder.Configuration.GetSection("RateLimitConfig"));
 
+builder.Services.Configure<LegalConfig>(
+    builder.Configuration.GetSection("Legal"));
+
 builder.Services.AddRotaServices(builder.Environment.ContentRootPath);
 
 // Phase 2 (T39): out-of-band sender that drains the email queue without blocking requests.
@@ -262,6 +265,10 @@ app.Services.GetRequiredService<IAchievementDefinitionProvider>();
 // lists, unique keys, non-blank feedback category) throws at boot rather than on first submission.
 app.Services.GetRequiredService<ISubjectCatalogProvider>();
 
+// T68 — eagerly construct the legal-text provider so a missing/blank terms.md or privacy.md
+// throws at boot rather than on the first registration screen.
+app.Services.GetRequiredService<ILegalTextProvider>();
+
 // Dev-only auto-migrate: keeps a fresh local DB in sync without a manual
 // `dotnet ef database update`. Idempotent — safe to run even when the schema
 // is already current. Production deployments must run migrations explicitly
@@ -289,6 +296,25 @@ app.Map("/error", (HttpContext ctx) =>
         detail: null,
         statusCode: 500
     ));
+
+// [1b] Reverse-proxy client IPs (T66, host-agnostic deploys)
+// OFF by default. When the API sits behind a TLS-terminating proxy/load balancer, every
+// RemoteIpAddress is the proxy's — which would collapse per-IP rate limiting and audit IPs.
+// SECURITY: honoured ONLY for the explicitly-listed proxy IPs; X-Forwarded-For from anyone
+// else stays untrusted (the audit's "spoofable header" rule still holds end-to-end).
+if (app.Configuration.GetValue("ForwardedHeaders:Enabled", false))
+{
+    var fwd = new ForwardedHeadersOptions
+    {
+        ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor
+                         | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto,
+    };
+    fwd.KnownProxies.Clear();
+    fwd.KnownNetworks.Clear();
+    foreach (var proxy in app.Configuration.GetSection("ForwardedHeaders:TrustedProxies").Get<string[]>() ?? [])
+        fwd.KnownProxies.Add(System.Net.IPAddress.Parse(proxy));
+    app.UseForwardedHeaders(fwd);
+}
 
 // [2] HTTPS enforcement
 if (!app.Environment.IsDevelopment())
