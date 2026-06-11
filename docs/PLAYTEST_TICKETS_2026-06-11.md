@@ -2,7 +2,12 @@
 
 Source: owner live-server playtest of the just-deployed waves (backend `4bd9850`, client
 `d7f9609`). Five tickets, owner-indexed `TICKET-N-061126`. Analysis + pointers added by the
-sort/triage pass; **none started.** Priority is a recommendation — re-order freely.
+sort/triage pass. Priority is a recommendation — re-order freely.
+
+> **STATUS 2026-06-11 (fix session): T1 ✅ · T4 ✅ · T3 ✅ — built + green (957 unit + 111
+> integration; client Runtime compile 0 errors), UNCOMMITTED.** T5: chat removal + crit
+> verification done; economy/battalion decisions LOCKED by owner (system-24 spec §0b D6–D9);
+> battalion backend + UI overhaul remain. T2: not started (clusters with T5.5 Fable UI pass).
 
 > The new chat picks these up from here. Each ticket lists the affected layer (backend/client),
 > a root-cause hypothesis grounded in the code, file pointers, scope, and acceptance criteria.
@@ -24,7 +29,13 @@ correctness bugs and should land first.
 
 ---
 
-## TICKET-1-061126 — Campaign Difficulty Gate Not Enforced  **[P1 · Bug · Client]**
+## TICKET-1-061126 — Campaign Difficulty Gate Not Enforced  **[P1 · Bug · Client]** ✅ FIXED 2026-06-11
+
+> **Fix:** the global difficulty dropdown in QuestScreen only OFFERS tiers unlocked on at least
+> one node (`BuildDifficultyChoices`, rebuilt on every quest load) — locked tiers cannot be
+> selected at all; a 🔒 hint names the next tier and how to unlock it. Per-node T74 lock hints
+> kept for nodes lagging behind. Mock auto-covered (it already serves HighestUnlockedDifficulty
+> + gates attempts). Server gate confirmed authoritative (unit-tested DifficultyLocked path).
 
 **Owner:** Players can select higher campaign (quest) difficulties without completing the prior
 tier. Lock + make unselectable until the preceding difficulty is completed. Enforce on **both**
@@ -57,7 +68,14 @@ client display and server validation so it can't be bypassed.
 
 ---
 
-## TICKET-4-061126 — Energy/Stamina Delta on Stat Spend + HUD↔Profile Mismatch  **[P1 · Bug · Client]**
+## TICKET-4-061126 — Energy/Stamina Delta on Stat Spend + HUD↔Profile Mismatch  **[P1 · Bug · Client]** ✅ FIXED 2026-06-11
+
+> **Fix:** displayed resource values now have ONE source — `PlayerState.GetLiveResource`
+> (anchored extrapolation; re-anchors only when authoritative data arrives via Set/PatchResource).
+> HeaderBar, ProfileScreen health row, and RaidCombatView hit gating all read it, so they cannot
+> disagree. Root cause found: `PatchResource` used to re-snapshot ALL pools from stale profile
+> data on every raid hit, silently resetting regen timers — that was the drift. Mock allocate
+> already credited the delta (prior wave); backend T30 credit confirmed present.
 
 **Owner:** Spending SP into Energy/Stamina doesn't raise the **current** pool by the delta (T30
 regression), AND the top-left HUD resource values still don't match the profile screen. Resolve
@@ -92,7 +110,17 @@ identical resource values at all times.
 
 ---
 
-## TICKET-3-061126 — Raid Loot Enforcement and List Removal  **[P1 · Bug · Both]**
+## TICKET-3-061126 — Raid Loot Enforcement and List Removal  **[P1 · Bug · Both]** ✅ FIXED 2026-06-11
+
+> **Fix (backend):** `GetRaidByIdAsync` now returns null for the summoner once they've claimed
+> (RewardsClaimed latch) — a claimed raid is unreachable by id too (+1 regression test). List
+> paths audited: active list (Active-only + RewardedAt==null lootables), guild list (!IsDefeated),
+> Gauntlet ladder (own screen by design) — all correct.
+> **Fix (client):** Loot lives ONLY in Raids → Completed (new unclaimed-loot section with claim
+> button; card removed immediately on claim, spoils shown in status). RaidCombatView's Loot
+> button/path REMOVED — the kill log points to the Completed tab; share panel hides once defeated.
+> Public tab no longer lists Lootable raids. Mock mirrors all of it (lootable seed raid, Looted
+> raids vanish from list + 404 by id).
 
 **Owner:** Raids may only be looted from the completed-raids menu — nowhere else. On claim, the raid
 must be **immediately removed** from the completed-raids list and all other indexes; no longer
@@ -126,7 +154,17 @@ from all lists/indexes and not accessible by any route.
 
 ---
 
-## TICKET-5-061126 — Gauntlet Full UI Overhaul + System Clarification  **[P2 · Epic · Both]**
+## TICKET-5-061126 — Gauntlet Full UI Overhaul + System Clarification  **[P2 · Epic · Both]** ◐ PARTIAL 2026-06-11
+
+> **Done:** (1) per-stage chat removed — combat view shows no chat on Personal (solo) raids and
+> never joins the raid group (covers Gauntlet stages + solo sigil raids; hub already
+> participant-gated, no server change). (4) crits VERIFIED — the crit roll in
+> RaidService.HitRaidAsync sits outside every GauntletEventId gate, so strikes already crit.
+> **Decisions LOCKED by owner (now in system-24 spec §0b):** D6 single STRIKE action @ exactly
+> 1 ticket (hit sizes dropped in Gauntlet); D7 "ticket" = renamed Strike (same ledger, UI-only
+> rename); D8 dedicated Gauntlet BATTALION loadout (any unit/general, any race) drives hit power.
+> **Remaining:** battalion backend (entity/migration/endpoints/power formula/hit-fork) + the
+> single-strike API change + ticket rename in UI + the full Fable UI pass (mockups first).
 
 **Owner (system, now locked):** Complete Gauntlet UI overhaul. **Remove the per-stage chat** — not
 needed. The Gauntlet is a **staged solo-progression** event: each player runs their own stage

@@ -472,11 +472,17 @@ public sealed class RaidService : IRaidService
         // Ticket 50 — a defeated raid is normally not joinable, BUT the summoner may resolve a Lootable
         // raid so the client can show the loot/dismiss screen. Looted raids resolve for no one (they've
         // been dismissed). Non-summoners still get null on any defeated raid.
+        // TICKET-3-061126 — once the summoner has CLAIMED, the raid is gone for them too: a claimed
+        // Lootable raid must not stay reachable by id (the list already drops it via RewardedAt).
         if (raid.IsDefeated)
         {
             bool summonerViewingLootable =
                 raid.LifecycleState == RaidLifecycleState.Lootable && raid.SummonedByPlayerId == callerId;
             if (!summonerViewingLootable)
+                return null;
+
+            var callerParticipant = await _participants.FindByRaidAndPlayerAsync(activeRaidId, callerId, ct);
+            if (callerParticipant is not null && callerParticipant.RewardsClaimed)
                 return null;
         }
 

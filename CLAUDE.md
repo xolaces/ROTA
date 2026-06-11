@@ -484,7 +484,8 @@ plain bit in the existing int `roles` column, and the guild reuses the Guild/Gui
 - JWT: AuthService already emits a role claim per set flag, so Developer surfaces automatically.
 - Tests: 7 GuildService gate tests + 4 EnsureDevGuildAsync tests (create/idempotent/by-username+guid/
   empty-allowlist no-op) + 1 BrowseAsync exclusion (real Postgres). **887 green (794 unit + 93 integration),
-  0 errors, 0 CS warnings.** No EF migration. Developer allowlist is EMPTY (awaiting Nathan's identifier).
+  0 errors, 0 CS warnings.** No EF migration. Developer allowlist: OWNER DECISION 2026-06-11 — `Developer.Usernames:["Xolaces"]`
+  is INTENTIONAL (Xolaces stays flagged Developer + in the Dev guild); Nathan's identifier still pending.
 
 ## T44 + T45 — Chapter/Zone map + XP rebalance (2026-06-08) — COMPLETE (one coupled job)
 The questing spine becomes a data-driven **Chapter → Zone → Node** hierarchy and the previously-dead

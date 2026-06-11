@@ -1847,6 +1847,30 @@ public class RaidServiceTests
     }
 
     [Fact]
+    public async Task GetRaidById_SummonerAlreadyClaimed_ReturnsNull()
+    {
+        // TICKET-3-061126 — once the summoner has claimed their loot, the raid is gone for them
+        // too: not reachable by id, even though it stays Lootable for other participants.
+        var b = BuildService();
+        var summonerId = Guid.NewGuid();
+        var raid = MakeVisRaid(summonerId, RaidVisibility.Public);
+        raid.MarkDefeated();   // Lootable
+
+        var part = RaidParticipant.Create(raid.Id, summonerId);
+        part.MarkRewardsClaimed(DateTimeOffset.UtcNow);
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, summonerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(part);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.GetRaidByIdAsync(raid.Id, summonerId);
+
+        result.Should().BeNull("a claimed Lootable raid must not stay reachable by id for the claimant");
+    }
+
+    [Fact]
     public async Task GetRaidById_LootedRaid_ReturnsNull()
     {
         var b = BuildService();

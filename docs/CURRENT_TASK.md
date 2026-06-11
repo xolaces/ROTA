@@ -12,13 +12,11 @@
   integration green; client compiles clean. Migrations applied to dev DB.
 - **Live playtest done → 5 new tickets** in
   **[PLAYTEST_TICKETS_2026-06-11.md](PLAYTEST_TICKETS_2026-06-11.md)** — the active backlog.
-- **⚠️ Open decision:** committed config flagged `Xolaces` as Developer + created the Dev guild
-  (contradicts CLAUDE.md T43). Keep or revert — see handoff TL;DR.
+- **Xolaces dev-flag: KEPT** (owner-confirmed 2026-06-11) — Developer flag + Dev guild membership
+  are intentional; CLAUDE.md T43 note updated.
 - **Live server** may still be up on `http://localhost:5035` with an Active Neck event seeded.
 
 ## What now (priority order)
-0. **Resolve the Xolaces dev-flag** (keep or revert; revert = empty `Developer.Usernames` + commit +
-   `unflag-dev Xolaces`).
 1. **Playtest tickets** → [PLAYTEST_TICKETS_2026-06-11.md](PLAYTEST_TICKETS_2026-06-11.md),
    recommended order **T1 → T4 → T3 → T5 → T2**: T1 difficulty-gate (client selectability; server
    OK), T4 energy/stamina delta + HUD↔profile SSOT (client; backend OK), T3 raid-loot enforcement,

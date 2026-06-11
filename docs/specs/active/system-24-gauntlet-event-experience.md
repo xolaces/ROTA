@@ -21,6 +21,27 @@ Builds ON TOP of System 16.
 - **D4/D5 — Names now, hooks later:** runs get lore names/blurbs/banners (content wave supplies
   final text); Tibius-style per-run unique mechanics deferred to T77.
 
+## 0b. OWNER DECISIONS — LOCKED 2026-06-11 (TICKET-5-061126, the Gauntlet overhaul epic)
+- **D6 — Single strike action, 1 ticket:** the Gauntlet DROPS raid hit sizes. One STRIKE button
+  per press, costing exactly **1 ticket**; damage comes from battalion power (D8). Hit sizes
+  (×1/×5/×20) remain in normal raids only. `GauntletConfig.StrikeRatePerSize` becomes
+  irrelevant on the gauntlet fork (strike spend = flat 1).
+- **D7 — "Ticket" = renamed Strike:** SAME ledger and earn/buy mechanics (+10 per stage defeat,
+  gem purchase at `StrikeGemPrice`), surfaced as **tickets** everywhere player-facing (UI, shop,
+  copy). Internal names (StrikeTransaction, DTOs) keep their names — no migration.
+- **D8 — Dedicated Gauntlet BATTALION:** a separate loadout (base general + troop slots)
+  assembled from ANY owned unit/general, **no race restrictions**, configured on the Gauntlet
+  page. Battalion power replaces the inert "Gauntlet Legion Power" placeholder (T54) and drives
+  the gauntlet hit formula. Needs: battalion loadout state (new entity + migration), assign/read
+  endpoints, power computation, hit-fork wiring, and a battalion-builder UI.
+- **D9 — No per-stage chat:** Gauntlet stages are solo rooms; the combat view shows no chat on
+  Personal raids (SHIPPED 2026-06-11 client-side; the hub's participant gate already means a
+  solo group has one member, so no server change). Crits on strikes VERIFIED already live —
+  the crit roll in RaidService.HitRaidAsync is outside every GauntletEventId gate.
+- **UI overhaul (T5.5)** remains: clean stage display (current stage · battalion power · strike
+  action), prominent Leaderboard + Shop buttons, uncluttered, lore/art slots — Fable design pass
+  with mockups for owner approval before build.
+
 ---
 
 ## 1. What DotD's Gauntlet actually was (the target)

@@ -5,16 +5,15 @@ The 3.5 waves are now **committed and pushed**, the **lore Master Canon** is mer
 **live server playtest** was run, and the owner filed **5 new tickets**. That ticket batch is the
 **priority backlog** — everything below it is history.
 
-- **NEW WORK → [docs/PLAYTEST_TICKETS_2026-06-11.md](docs/PLAYTEST_TICKETS_2026-06-11.md)** — 5
-  triaged, pointer-grounded tickets from the live playtest (T1 difficulty-gate, T4 energy/stamina
-  delta + HUD↔profile, T3 raid-loot enforcement, T5 Gauntlet overhaul epic, T2 raid-summon remodel).
-  **Start here.** T1/T4/T3 are correctness bugs (server is fine on T1/T4 — the bugs are client-side);
-  T5 extends the system-24 spec; T2+T5 are Fable UI passes that cluster with lore→items.
-- **⚠️ OPEN DECISION (unresolved):** `appsettings.json` shipped `Developer.Usernames:["Xolaces"]`
-  (committed in the push), which on the live boot **flagged Xolaces as Developer (`roles=13`) and
-  auto-created the "The Dev Coffee Shop" guild**. This contradicts CLAUDE.md T43 ("allowlist EMPTY;
-  never flag Xolaces"). Likely a stray test value. **Revert** = empty the list, commit, run
-  `unflag-dev Xolaces` to clean the DB. Awaiting owner's keep-or-revert call.
+- **TICKETS → [docs/PLAYTEST_TICKETS_2026-06-11.md](docs/PLAYTEST_TICKETS_2026-06-11.md)** —
+  **UPDATE 2026-06-11 (fix session): T1 ✅ T4 ✅ T3 ✅ shipped + green (957 unit + 111 integration,
+  client compile clean) — UNCOMMITTED, awaiting owner review.** T5 partial: solo-raid chat removed,
+  crits verified; owner LOCKED the design (system-24 spec §0b D6–D9: single strike @1 ticket,
+  ticket=renamed Strike, dedicated battalion loadout). Remaining: T5 battalion backend + Fable UI
+  pass (mockups first), T2 raid-summon remodel — both cluster with lore→items.
+- **✅ RESOLVED (2026-06-11): Xolaces dev-flag KEPT.** Owner confirmed `Developer.Usernames:
+  ["Xolaces"]` is intentional — Xolaces stays flagged Developer (`roles=13`) and in "The Dev
+  Coffee Shop" guild. CLAUDE.md T43 note updated to match. Nathan's identifier still pending.
 - **Lore→items** integration is still **queued** (owner: playtest before lore goes in) and overlaps
   T2/T5 art/lore slots. Source of truth: [docs/Lore/ROTA_Master_Canon.md](docs/Lore/ROTA_Master_Canon.md).
 
@@ -152,8 +151,7 @@ Owner-locked: the shipped SOLO AUTO-SUMMON LADDER **is** the DotD shape (no shar
   Function Reference last refreshed T46-era (known to lag).
 
 ## NEXT (priority order)
-0. **⚠️ RESOLVE FIRST — Xolaces dev-flag** (see TL;DR): keep or revert the committed
-   `Developer.Usernames:["Xolaces"]`. Revert = empty list + commit + `unflag-dev Xolaces`.
+0. ~~Xolaces dev-flag~~ — RESOLVED: owner keeps it (see TL;DR).
 1. **PLAYTEST TICKETS → [docs/PLAYTEST_TICKETS_2026-06-11.md](docs/PLAYTEST_TICKETS_2026-06-11.md)**
    — the live-playtest backlog, recommended order T1 → T4 → T3 → T5 → T2. T1 (difficulty-gate
    client selectability) and T4 (energy/stamina delta + HUD↔profile SSOT) are quick-ish client
