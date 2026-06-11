@@ -1,34 +1,30 @@
 # ROTA — Current Task
 
-*Updated 2026-06-10. Short by design — answers "what now?" so a fresh session bootstraps cheaply.*
+*Updated 2026-06-11. Short by design — answers "what now?" so a fresh session bootstraps cheaply.*
 
 > **Canonical source: [SESSION_HANDOFF.md](SESSION_HANDOFF.md) (top section is always the freshest).**
 > This file is a pointer + snapshot; when the two disagree, the handoff wins.
 
-## Snapshot (2026-06-10)
-- **Built this cycle (ALL UNCOMMITTED, owner reviews → commits):** Wave 2 public-beta blockers
-  **T65–T70** (password reset · deploy artifacts · CI migration gate · terms/privacy ·
-  tutorial · Windows build script), UX wave **T72–T75** (no-grey-buttons theme fix ·
-  inline quest rewards/optional popups · locked difficulties unselectable · dev tools expansion
-  incl. [AdminOnly] DevController), and the **T76 Gauntlet event-experience foundation**
-  (4 level brackets incl. Ancient 5000+ · highest-stage-completed ranking · late-ladder HP ramp ·
-  Neck/Ring event kinds + run identity + countdown header).
-- **Green:** 956 unit + 111 integration = **1067**. Client (C:\Dev\ROTA.Client6) compiles clean.
-- **Session 2 (same day):** T76's non-blocked slices shipped — prize preview endpoint+table,
-  per-player settlement summary ("you placed #N"), Coming-Soon gate + three-state Home CTA,
-  stateful mock event phases + dev-tab toggle. Spec §6 updated.
-- **Migrations applied to dev DB:** through `AddGauntletEventIdentity` (incl.
-  `AddPasswordResetTokens`, `AddTermsAcceptance`). None pending.
-- Last commits: backend `bde33f5`, client `e0bdbfe`, docs `7d52270`.
+## Snapshot (2026-06-11)
+- **All committed + pushed.** The 3.5 waves (Wave 2 T65–T70 · UX T72–T75 · T76 Gauntlet foundation
+  + S2 page slice) are backend commit `4bd9850`; the **lore Master Canon** merge is `39d21d4`; both
+  **pushed to `origin/main`**. Client mirror is `d7f9609` (local — no remote). 956 unit + 111
+  integration green; client compiles clean. Migrations applied to dev DB.
+- **Live playtest done → 5 new tickets** in
+  **[PLAYTEST_TICKETS_2026-06-11.md](PLAYTEST_TICKETS_2026-06-11.md)** — the active backlog.
+- **⚠️ Open decision:** committed config flagged `Xolaces` as Developer + created the Dev guild
+  (contradicts CLAUDE.md T43). Keep or revert — see handoff TL;DR.
+- **Live server** may still be up on `http://localhost:5035` with an Active Neck event seeded.
 
 ## What now (priority order)
-1. **Owner:** review + commit both repos; replace placeholder legal text
-   (src/ROTA.Api/content/legal/); first real `tools/build-client.ps1` run.
-2. **T76 next slices** (spec: docs/specs/active/system-24-gauntlet-event-experience.md §6):
-   rank-GEAR seasonal grant/removal (needs T77 gear content), token-bonus parity at settle,
-   banner art slot. (Settlement screen, CTA states, prize table: DONE session 2.)
-3. **T77 content wave** (owner-led, lore-gated): Ch4–6 loot tables, raid pool 2→6-8,
-   pinnacle magics, Pano set bonus, Gauntlet run names.
-4. **Pre-beta hardening still open:** BanGateMiddleware HTTP-pipeline test; global soft-delete
-   filter sweep; client TokenStore stores tokens as PLAINTEXT JSON (encrypt-at-rest before
-   public beta); client magic-shop catalogue endpoint (BETA-PLACEHOLDER — shop shows owned-only).
+0. **Resolve the Xolaces dev-flag** (keep or revert; revert = empty `Developer.Usernames` + commit +
+   `unflag-dev Xolaces`).
+1. **Playtest tickets** → [PLAYTEST_TICKETS_2026-06-11.md](PLAYTEST_TICKETS_2026-06-11.md),
+   recommended order **T1 → T4 → T3 → T5 → T2**: T1 difficulty-gate (client selectability; server
+   OK), T4 energy/stamina delta + HUD↔profile SSOT (client; backend OK), T3 raid-loot enforcement,
+   T5 Gauntlet overhaul epic (extends system-24), T2 raid-summon remodel (Fable UI pass).
+2. **Lore → game asset items** (queued; playtest-before-lore): wire `docs/Lore/ROTA_Master_Canon.md`
+   into `content/items.json` + `gear.json` + Home lore; overlaps T2/T5 art/lore slots.
+3. **Owner housekeeping:** replace placeholder legal text; first `tools/build-client.ps1` run; add a
+   git remote for the client to push its work.
+4. **Then:** T77 content wave · T76 remaining (rank-gear/banner) · pre-beta hardening.

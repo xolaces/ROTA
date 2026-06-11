@@ -1,48 +1,53 @@
-# ROTA Session Handoff — 2026-06-10 (Wave 2 + UX wave + T76 foundation — ALL UNCOMMITTED)
+# ROTA Session Handoff — 2026-06-11 (waves COMMITTED + PUSHED · live playtest → 5 new tickets)
 
 ## TL;DR (resume here)
-This session built THREE waves on top of main, all green, **NOTHING COMMITTED** (owner reviews →
-commits; owner said commit only when told):
-1. **Wave 2 public-beta blockers T65–T70** — password reset, deploy artifacts, CI migration gate,
-   terms/privacy, tutorial overlay, Windows build script.
-2. **UX wave T72–T75** (owner feedback) — no-grey-buttons theme fix, locked difficulties
-   unselectable, inline quest rewards box + optional pop-ups, dev tools expansion.
-3. **T76 Gauntlet event-experience foundation** (System 24) — owner locked all 5 decisions same
-   day; 4 level brackets, highest-stage ranking, late HP ramp, Neck/Ring event families, event
-   identity header.
-4. **T76 S2-page slice (session 2, 2026-06-10)** — the three non-T77-blocked remaining slices:
-   prize preview (`GET /api/gauntlet/prizes`, kind-aware, name-hydrated + client PRIZES table),
-   per-player settlement summary (`GauntletOverviewResponse.LastSettlement` + "LAST RUN — YOUR
-   RESULT" card), Coming-Soon state (`SecondsUntilStart`; join/ladder gate on StartsAt with new
-   ladder flag `NotStarted`; Home CTA now THREE states: Coming Soon dim / LIVE glowing / Settled
-   "you placed #N"). Mock got a settable event phase + dev-tab MOCK EVENT PHASE toggle
-   (mock-only). Spec §6 updated. NOTE: GauntletService now injects `IMagicDefinitionProvider`.
-Plus a **repo staleness sweep** (stale docs fixed, specs reorganized, 2 new pre-beta items found).
+The 3.5 waves are now **committed and pushed**, the **lore Master Canon** is merged + committed, a
+**live server playtest** was run, and the owner filed **5 new tickets**. That ticket batch is the
+**priority backlog** — everything below it is history.
 
-**Final green: 956 unit + 111 integration = 1067. Client headless compile: 0 `error CS`.**
-THREE new migrations CREATED **and APPLIED to the dev DB**: `AddPasswordResetTokens` (T65),
-`AddTermsAcceptance` (T68), `AddGauntletEventIdentity` (T76). `MigrationSnapshotTests` (the new
-CI gate) passes — model and snapshot agree.
+- **NEW WORK → [docs/PLAYTEST_TICKETS_2026-06-11.md](docs/PLAYTEST_TICKETS_2026-06-11.md)** — 5
+  triaged, pointer-grounded tickets from the live playtest (T1 difficulty-gate, T4 energy/stamina
+  delta + HUD↔profile, T3 raid-loot enforcement, T5 Gauntlet overhaul epic, T2 raid-summon remodel).
+  **Start here.** T1/T4/T3 are correctness bugs (server is fine on T1/T4 — the bugs are client-side);
+  T5 extends the system-24 spec; T2+T5 are Fable UI passes that cluster with lore→items.
+- **⚠️ OPEN DECISION (unresolved):** `appsettings.json` shipped `Developer.Usernames:["Xolaces"]`
+  (committed in the push), which on the live boot **flagged Xolaces as Developer (`roles=13`) and
+  auto-created the "The Dev Coffee Shop" guild**. This contradicts CLAUDE.md T43 ("allowlist EMPTY;
+  never flag Xolaces"). Likely a stray test value. **Revert** = empty the list, commit, run
+  `unflag-dev Xolaces` to clean the DB. Awaiting owner's keep-or-revert call.
+- **Lore→items** integration is still **queued** (owner: playtest before lore goes in) and overlaps
+  T2/T5 art/lore slots. Source of truth: [docs/Lore/ROTA_Master_Canon.md](docs/Lore/ROTA_Master_Canon.md).
 
-READ IN ORDER for a fresh session:
+### What landed this session (now committed)
+1–4. The four waves (Wave 2 T65–T70 · UX T72–T75 · T76 Gauntlet foundation + S2 page slice) — detail
+preserved under "WHAT WAS BUILT" below. **All green: 956 unit + 111 integration = 1067; client
+compiles clean.** Migrations `AddPasswordResetTokens`, `AddTermsAcceptance`, `AddGauntletEventIdentity`
+created + applied to dev DB.
+5. **Lore Master Canon** — merged First+Second canon into `docs/Lore/ROTA_Master_Canon.md` (four
+overrides applied silently). Inert reference doc, separate commit.
+
+READ IN ORDER for the new chat:
 1. This file.
-2. `docs/CURRENT_TASK.md` (rewritten as pointer + snapshot — quick orientation).
-3. Memory: `wave2-public-beta-blockers`, `ux-wave-t72-t75`, `t76-gauntlet-foundation`,
-   `owner-ui-standards` (durable UI rules — check every new screen against them).
-4. CLAUDE.md build-status sections (history) + `docs/specs/active/system-24-gauntlet-event-experience.md`
-   (§0 locked decisions, §6 build state) if touching the Gauntlet.
+2. **`docs/PLAYTEST_TICKETS_2026-06-11.md`** (the active backlog).
+3. `docs/CURRENT_TASK.md` (snapshot).
+4. Memory: `owner-ui-standards`, `mock-fidelity-playtest`, `t76-gauntlet-foundation`,
+   `tickets-playtest-061126` (the new batch).
+5. `docs/specs/active/system-24-gauntlet-event-experience.md` if touching the Gauntlet (T5 extends it).
 
-## REPO STATE
-- **Backend** `C:\Users\xolac\OneDrive\Documentos\Projects\ROTA`, branch `main`:
-  last commit `bde33f5` (T59 wave) + docs `7d52270`. ON TOP: ~70 uncommitted files (this
-  session's three waves + docs). `git status` shows the full set.
-  All migrations through `AddGauntletEventIdentity` APPLIED to the dev DB; none pending.
-- **Unity client** `C:\Dev\ROTA.Client6`, branch `master`, last commit `e0bdbfe` (Wave 1).
-  ON TOP: uncommitted T65/T68 mirrors, LoginScreen rebuild, TutorialOverlay, theme fixes,
-  QuestScreen rework, dev tabs, Gauntlet header, Editor/BuildPlayer.cs + tools/build-client.ps1.
-  Unity 6000.4.9f1; no asmdefs (everything in Assembly-CSharp); no remote.
+## REPO STATE (post-push)
+- **Backend** `C:\Users\xolac\OneDrive\Documentos\Projects\ROTA`, branch `main`,
+  **last commit `39d21d4`** (lore) on top of `4bd9850` (the 3.5 waves, 101 files). **PUSHED to
+  `origin/main`** (github.com/xolaces/ROTA — remote was behind at `630b2e7`, now current). All
+  migrations applied to dev DB; none pending. Working tree clean.
+- **Unity client** `C:\Dev\ROTA.Client6`, branch `master`, **last commit `d7f9609`** (the waves'
+  client mirror). **Committed locally — NO REMOTE** (can't push). Unity 6000.4.9f1; no asmdefs.
 - **Ops dashboard** `C:\Dev\rota-ops-dashboard` — untouched.
-- Docker postgres+redis up; **don't run the dev server while testing** (locks the Api DLL).
+- **LIVE SERVER may still be running:** `dotnet run` on `http://localhost:5035` (http profile),
+  fresh build, DB migrated, with an **Active Neck event** open ("The Gauntlet of the Sunken Spire",
+  run #1) seeded for the playtest. To stop: `Get-Process ROTA.Api | Stop-Process`. To run CLI
+  against the built exe while it's NOT running: set `$env:ASPNETCORE_ENVIRONMENT=Development` and run
+  from `src/ROTA.Api` (content root). Docker postgres+redis up; **don't `dotnet test`/rebuild while a
+  server runs** (locks the Api DLL).
 
 ## WHAT WAS BUILT (by ticket)
 
@@ -147,24 +152,27 @@ Owner-locked: the shipped SOLO AUTO-SUMMON LADDER **is** the DotD shape (no shar
   Function Reference last refreshed T46-era (known to lag).
 
 ## NEXT (priority order)
-1. **OWNER:** review + commit both repos (suggest: one backend commit per wave or one squash;
-   one client commit). Replace placeholder legal text (src/ROTA.Api/content/legal/). First real
-   `tools/build-client.ps1` run.
-2. **T77 content wave (owner-led, lore-gated):** items/bosses ONLY against docs/LORE_HANDOFF.md,
-   heavy review per batch, nothing auto-dropped into content/. Covers: Ch4–6 loot tables
-  (~60 empty nodes), raid pool 2→6-8 bosses, 5 inert pinnacle magics → real effects, Pano set
-   bonus, **Gauntlet run names/blurbs + the Neck/Ring rank-gear sets (unblocks T76's
-   seasonal-gear slice)**, ring prize bands (gauntlet_prizes.json `ringBands`).
-3. **T76 remaining slices** (after/with T77 gear): rank-GEAR seasonal grant/removal (needs T77
-   gear + a PlayerEventGear-style ledger); token-bonus parity at settle (content tuning); banner
-   art slot. (Settlement screen, Coming-Soon/Settled CTA states, prize preview table SHIPPED in
-   session 2 — see TL;DR item 4.)
-4. **Pre-beta hardening:** TokenStore encryption; magic-shop catalogue endpoint;
-   BanGateMiddleware HTTP-pipeline integration test (first HTTP-level harness — pattern in
-   BetaKeyConcurrencyTests' WebApplicationFactory); global soft-delete query-filter sweep.
-5. **Dev-tools second wave** (list under T75 above).
-6. Wave 4 depth (unchanged): mastery raid threshold-drop Hoard scaling + quality upgrades,
-   achievement raid Collector hooks, guild succession auto-driver, guild-raid item loot.
+0. **⚠️ RESOLVE FIRST — Xolaces dev-flag** (see TL;DR): keep or revert the committed
+   `Developer.Usernames:["Xolaces"]`. Revert = empty list + commit + `unflag-dev Xolaces`.
+1. **PLAYTEST TICKETS → [docs/PLAYTEST_TICKETS_2026-06-11.md](docs/PLAYTEST_TICKETS_2026-06-11.md)**
+   — the live-playtest backlog, recommended order T1 → T4 → T3 → T5 → T2. T1 (difficulty-gate
+   client selectability) and T4 (energy/stamina delta + HUD↔profile SSOT) are quick-ish client
+   bugs with the backend already correct; T3 (raid-loot enforcement); T5 (Gauntlet overhaul epic,
+   extends system-24); T2 (raid-summon remodel, Fable UI pass).
+2. **Lore → game asset items** (queued; owner: playtest before lore goes in): wire Master Canon
+   names/descriptions into `content/items.json` + `gear.json`, surface lore on Home. Overlaps
+   T2/T5 art+lore slots. Source: `docs/Lore/ROTA_Master_Canon.md`.
+3. **OWNER housekeeping:** replace placeholder legal text (`src/ROTA.Api/content/legal/`); first
+   real `tools/build-client.ps1` run; client has no git remote (add one to push client work).
+4. **T77 content wave (owner-led, lore-gated):** Ch4–6 loot tables (~60 empty nodes), raid pool
+   2→6-8 bosses, pinnacle magics → real effects, Pano set bonus, Gauntlet Neck/Ring rank-gear
+   sets (unblocks T76's seasonal-gear slice) + ring prize bands.
+5. **T76 remaining slices** (after/with T77 gear): rank-GEAR seasonal grant/removal; token-bonus
+   parity at settle; banner art slot. (Settlement screen, CTA states, prize table already shipped.)
+6. **Pre-beta hardening:** TokenStore encryption; magic-shop catalogue endpoint; BanGateMiddleware
+   HTTP-pipeline test; global soft-delete query-filter sweep. Plus dev-tools second wave + Wave 4
+   depth (mastery threshold-drop Hoard scaling, achievement raid Collector hooks, guild succession
+   auto-driver, guild-raid item loot).
 
 ## STANDING OWNER RULES (do not violate)
 - No commits without owner review/say-so. Run game-changing design questions by the owner.
