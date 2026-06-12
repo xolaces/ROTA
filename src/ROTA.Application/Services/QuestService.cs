@@ -47,19 +47,8 @@ public sealed class QuestService : IQuestService
             [QuestDifficulty.Nightmare] = QuestDifficulty.Legendary,
         };
 
-    // T74 — walks the gate chain: the highest tier whose prerequisite tier has ≥1 completion.
-    private static QuestDifficulty ComputeHighestUnlockedDifficulty(
-        IReadOnlySet<QuestDifficulty>? completed)
-    {
-        var highest = QuestDifficulty.Normal;
-        if (completed is null) return highest;
-        foreach (var tier in new[] { QuestDifficulty.Hard, QuestDifficulty.Legendary, QuestDifficulty.Nightmare })
-        {
-            if (!completed.Contains(DifficultyGates[tier]!.Value)) break;
-            highest = tier;
-        }
-        return highest;
-    }
+    private static readonly QuestDifficulty[] GatedTiers =
+        { QuestDifficulty.Hard, QuestDifficulty.Legendary, QuestDifficulty.Nightmare };
 
     private readonly IQuestDefinitionProvider _definitions;
     private readonly IQuestProgressRepository _questProgress;
@@ -155,6 +144,11 @@ public sealed class QuestService : IQuestService
             .GroupBy(p => p.QuestId)
             .ToDictionary(g => g.Key, g => g.Select(p => p.Difficulty).ToHashSet());
 
+        // Owner 2026-06-12 — difficulty unlock is ZONE-scoped: a tier opens for a zone only once
+        // EVERY node in it (battles AND boss) has ≥1 completion at the prior tier. Computed once
+        // per zone; every node in the zone reports the same HighestUnlockedDifficulty.
+        var zoneHighest = new Dictionary<(int Chapter, int ZoneIndex), QuestDifficulty>();
+
         // A node unlocks the next once the prerequisite has EVER been cleared (permanent latch) — so a
         // chapter-boss reset (T26), which clears IsCleared back to false, never re-locks earned content.
         var unlockedQuestIds = progressByQuestId
@@ -163,6 +157,20 @@ public sealed class QuestService : IQuestService
             .ToHashSet();
 
         var allDefs = _definitions.GetAll();
+
+        foreach (var zone in allDefs.GroupBy(q => (q.Chapter, q.ZoneIndex)))
+        {
+            var highest = QuestDifficulty.Normal;
+            foreach (var tier in GatedTiers)
+            {
+                var prior = DifficultyGates[tier]!.Value;
+                bool zoneSwept = zone.All(n =>
+                    difficultyCompletions.TryGetValue(n.Id, out var done) && done.Contains(prior));
+                if (!zoneSwept) break;
+                highest = tier;
+            }
+            zoneHighest[zone.Key] = highest;
+        }
 
         var result = new List<QuestAvailabilityResponse>();
         foreach (var quest in allDefs)
@@ -214,8 +222,9 @@ public sealed class QuestService : IQuestService
                 // attemptable. A boss additionally requires its whole zone to be depleted. Must be set
                 // explicitly: the client disables Attempt when false.
                 IsUnlocked         = isUnlocked,
-                HighestUnlockedDifficulty = ComputeHighestUnlockedDifficulty(
-                    difficultyCompletions.TryGetValue(quest.Id, out var done) ? done : null).ToString(),
+                HighestUnlockedDifficulty = zoneHighest.TryGetValue((quest.Chapter, quest.ZoneIndex), out var zh)
+                    ? zh.ToString()
+                    : QuestDifficulty.Normal.ToString(),
             });
         }
         return result;
@@ -261,14 +270,27 @@ public sealed class QuestService : IQuestService
             return Fail(QuestFailureCode.NodeCleared,
                 "This node is cleared — defeat the chapter boss to reset it.");
 
-        // 3. Verify difficulty gate (Hard requires Normal, etc.)
+        // 3. Verify difficulty gate — ZONE-scoped (owner 2026-06-12, supersedes the per-node gate):
+        //    tier T is attemptable only once EVERY node in this node's zone (battles AND boss) has
+        //    ≥1 completion at the previous tier. The attempted node always counts toward the sweep
+        //    even when the provider has no sibling list (unit fixtures with a bare GetById).
         var requiredDifficulty = DifficultyGates[difficulty];
         if (requiredDifficulty.HasValue)
         {
-            var gate = await _difficultyProgress.GetAsync(playerId, questId, requiredDifficulty.Value, ct);
-            if (gate is null || gate.CompletionCount == 0)
+            var zoneNodeIds = _definitions.GetAll()
+                .Where(n => n.Chapter == quest.Chapter && n.ZoneIndex == quest.ZoneIndex)
+                .Select(n => n.Id)
+                .ToHashSet();
+            zoneNodeIds.Add(quest.Id);
+
+            var completedAtPrior = (await _difficultyProgress.GetAllForPlayerAsync(playerId, ct))
+                .Where(p => p.Difficulty == requiredDifficulty.Value && p.CompletionCount > 0)
+                .Select(p => p.QuestId)
+                .ToHashSet();
+
+            if (!zoneNodeIds.IsSubsetOf(completedAtPrior))
                 return Fail(QuestFailureCode.DifficultyLocked,
-                    $"Complete {requiredDifficulty.Value} first to unlock {difficulty}.");
+                    $"Complete every node in this zone on {requiredDifficulty.Value} — boss included — to unlock {difficulty}.");
         }
 
         // 4. Verify player is active
@@ -373,8 +395,17 @@ public sealed class QuestService : IQuestService
             }
         }
 
-        // 13. Sigil drop for Boss nodes
-        if (quest.IsBoss && quest.Sigils is not null
+        // 13. Sigil drop — ONLY from the zone's FINAL boss node (owner 2026-06-12). Every zone's
+        //     boss is its last node by content convention; the explicit max-NodeIndex check
+        //     guarantees a future mid-zone boss can never leak sigils.
+        bool isZoneFinalBoss = quest.IsBoss;
+        if (quest.IsBoss)
+        {
+            foreach (var n in _definitions.GetAll())
+                if (n.Chapter == quest.Chapter && n.ZoneIndex == quest.ZoneIndex && n.NodeIndex > quest.NodeIndex)
+                { isZoneFinalBoss = false; break; }
+        }
+        if (isZoneFinalBoss && quest.Sigils is not null
             && quest.Sigils.TryGetValue(difficulty.ToString(), out var sigilItemId))
         {
             bool dropSigil = false;
@@ -512,6 +543,17 @@ public sealed class QuestService : IQuestService
             return Math.Min(boosted, cap);
         }
 
+        // Owner 2026-06-12 — chase-set curve: asymptotic Discernment bonus instead of the
+        // per-point multiplier, so a 0.5% base reaches ~3.5% at 100k Discernment and can never
+        // exceed base + RareDropMaxBonus (~5%). Hoard still multiplies inside that ceiling.
+        double RareScale(double baseChance)
+        {
+            double d = discernmentInvestment;
+            double bonus = _questConfig.RareDropMaxBonus * (d / (d + _questConfig.RareDropDiscernmentHalfway));
+            double cap = baseChance + _questConfig.RareDropMaxBonus;
+            return Math.Min((baseChance + bonus) * hoardDropMultiplier, cap);
+        }
+
         if (loot.GuaranteedDrops is not null)
         {
             foreach (var drop in loot.GuaranteedDrops)
@@ -567,7 +609,7 @@ public sealed class QuestService : IQuestService
         if (loot.GearDrops is not null)
         {
             foreach (var drop in loot.GearDrops)
-                if (_random.NextDouble() < Scale(drop.Chance))
+                if (_random.NextDouble() < (drop.RareScaling ? RareScale(drop.Chance) : Scale(drop.Chance)))
                     await _equipment.GrantGearAsync(playerId, drop.GearDefinitionId, drop.Quantity, ct);
         }
     }

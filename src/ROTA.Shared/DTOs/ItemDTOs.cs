@@ -10,6 +10,10 @@ public class InventoryItemResponse
     public string ArtKey { get; set; } = string.Empty;
     public int Quantity { get; set; }
     public DateTimeOffset AcquiredAt { get; set; }
+    // TICKET-2-061126 — sigil summon target, hydrated from the item definition so the summon
+    // screen can group sigils by boss + difficulty without parsing ids. Null for non-sigils.
+    public string? SummonRaidId { get; set; }
+    public string? SummonDifficulty { get; set; }
 }
 
 public class UseItemResponse

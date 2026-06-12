@@ -67,4 +67,7 @@ public class GearDropChance
     public string GearDefinitionId { get; set; } = string.Empty;
     public int    Quantity         { get; set; } = 1;
     public double Chance           { get; set; } = 1.0;
+    // Owner 2026-06-12 — chase-set drops (Pano): use the asymptotic rare curve
+    // (QuestConfig.RareDrop*) instead of the generic Discernment multiplier.
+    public bool   RareScaling      { get; set; }
 }

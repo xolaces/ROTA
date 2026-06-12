@@ -327,50 +327,50 @@
     "id": "lt_quest_q001",
     "type": "Quest",
     "difficulties": {
-      "Normal":    { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 1, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_helm", "quantity": 1, "chance": 0.02 }, { "gearDefinitionId": "gear_pano_greaves", "quantity": 1, "chance": 0.02 } ] },
-      "Hard":      { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 2, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_helm", "quantity": 1, "chance": 0.035 }, { "gearDefinitionId": "gear_pano_greaves", "quantity": 1, "chance": 0.035 } ] },
-      "Legendary": { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 3, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_helm", "quantity": 1, "chance": 0.05 }, { "gearDefinitionId": "gear_pano_greaves", "quantity": 1, "chance": 0.05 } ] },
-      "Nightmare": { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 4, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_helm", "quantity": 1, "chance": 0.08 }, { "gearDefinitionId": "gear_pano_greaves", "quantity": 1, "chance": 0.08 } ] }
+      "Normal":    { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 1, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_helm", "quantity": 1, "chance": 0.005, "rareScaling": true }, { "gearDefinitionId": "gear_pano_greaves", "quantity": 1, "chance": 0.005, "rareScaling": true } ] },
+      "Hard":      { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 2, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_helm", "quantity": 1, "chance": 0.005, "rareScaling": true }, { "gearDefinitionId": "gear_pano_greaves", "quantity": 1, "chance": 0.005, "rareScaling": true } ] },
+      "Legendary": { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 3, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_helm", "quantity": 1, "chance": 0.005, "rareScaling": true }, { "gearDefinitionId": "gear_pano_greaves", "quantity": 1, "chance": 0.005, "rareScaling": true } ] },
+      "Nightmare": { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 4, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_helm", "quantity": 1, "chance": 0.005, "rareScaling": true }, { "gearDefinitionId": "gear_pano_greaves", "quantity": 1, "chance": 0.005, "rareScaling": true } ] }
     }
   },
   {
     "id": "lt_quest_q002",
     "type": "Quest",
     "difficulties": {
-      "Normal":    { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 1, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_amulet", "quantity": 1, "chance": 0.02 }, { "gearDefinitionId": "gear_pano_gauntlets", "quantity": 1, "chance": 0.02 } ] },
-      "Hard":      { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 2, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_amulet", "quantity": 1, "chance": 0.035 }, { "gearDefinitionId": "gear_pano_gauntlets", "quantity": 1, "chance": 0.035 } ] },
-      "Legendary": { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 3, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_amulet", "quantity": 1, "chance": 0.05 }, { "gearDefinitionId": "gear_pano_gauntlets", "quantity": 1, "chance": 0.05 } ] },
-      "Nightmare": { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 4, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_amulet", "quantity": 1, "chance": 0.08 }, { "gearDefinitionId": "gear_pano_gauntlets", "quantity": 1, "chance": 0.08 } ] }
+      "Normal":    { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 1, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_amulet", "quantity": 1, "chance": 0.005, "rareScaling": true }, { "gearDefinitionId": "gear_pano_gauntlets", "quantity": 1, "chance": 0.005, "rareScaling": true } ] },
+      "Hard":      { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 2, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_amulet", "quantity": 1, "chance": 0.005, "rareScaling": true }, { "gearDefinitionId": "gear_pano_gauntlets", "quantity": 1, "chance": 0.005, "rareScaling": true } ] },
+      "Legendary": { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 3, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_amulet", "quantity": 1, "chance": 0.005, "rareScaling": true }, { "gearDefinitionId": "gear_pano_gauntlets", "quantity": 1, "chance": 0.005, "rareScaling": true } ] },
+      "Nightmare": { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 4, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_amulet", "quantity": 1, "chance": 0.005, "rareScaling": true }, { "gearDefinitionId": "gear_pano_gauntlets", "quantity": 1, "chance": 0.005, "rareScaling": true } ] }
     }
   },
   {
     "id": "lt_quest_q003",
     "type": "Quest",
     "difficulties": {
-      "Normal":    { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 2, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_cuirass", "quantity": 1, "chance": 0.03 }, { "gearDefinitionId": "gear_pano_steed", "quantity": 1, "chance": 0.02 } ] },
-      "Hard":      { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 3, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_cuirass", "quantity": 1, "chance": 0.045 }, { "gearDefinitionId": "gear_pano_steed", "quantity": 1, "chance": 0.03 } ] },
-      "Legendary": { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 4, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_cuirass", "quantity": 1, "chance": 0.06 }, { "gearDefinitionId": "gear_pano_steed", "quantity": 1, "chance": 0.045 } ] },
-      "Nightmare": { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 6, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_cuirass", "quantity": 1, "chance": 0.10 }, { "gearDefinitionId": "gear_pano_steed", "quantity": 1, "chance": 0.07 } ] }
+      "Normal":    { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 2, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_cuirass", "quantity": 1, "chance": 0.005, "rareScaling": true }, { "gearDefinitionId": "gear_pano_steed", "quantity": 1, "chance": 0.005, "rareScaling": true } ] },
+      "Hard":      { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 3, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_cuirass", "quantity": 1, "chance": 0.005, "rareScaling": true }, { "gearDefinitionId": "gear_pano_steed", "quantity": 1, "chance": 0.005, "rareScaling": true } ] },
+      "Legendary": { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 4, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_cuirass", "quantity": 1, "chance": 0.005, "rareScaling": true }, { "gearDefinitionId": "gear_pano_steed", "quantity": 1, "chance": 0.005, "rareScaling": true } ] },
+      "Nightmare": { "guaranteedDrops": [ { "itemId": "mat_iron_shard", "quantity": 6, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_cuirass", "quantity": 1, "chance": 0.005, "rareScaling": true }, { "gearDefinitionId": "gear_pano_steed", "quantity": 1, "chance": 0.005, "rareScaling": true } ] }
     }
   },
   {
     "id": "lt_quest_q004",
     "type": "Quest",
     "difficulties": {
-      "Normal":    { "guaranteedDrops": [ { "itemId": "mat_arcane_dust", "quantity": 1, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_signet", "quantity": 1, "chance": 0.02 } ] },
-      "Hard":      { "guaranteedDrops": [ { "itemId": "mat_arcane_dust", "quantity": 2, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_signet", "quantity": 1, "chance": 0.035 } ] },
-      "Legendary": { "guaranteedDrops": [ { "itemId": "mat_arcane_dust", "quantity": 3, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_signet", "quantity": 1, "chance": 0.05 } ] },
-      "Nightmare": { "guaranteedDrops": [ { "itemId": "mat_arcane_dust", "quantity": 4, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_signet", "quantity": 1, "chance": 0.08 } ] }
+      "Normal":    { "guaranteedDrops": [ { "itemId": "mat_arcane_dust", "quantity": 1, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_signet", "quantity": 1, "chance": 0.005, "rareScaling": true } ] },
+      "Hard":      { "guaranteedDrops": [ { "itemId": "mat_arcane_dust", "quantity": 2, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_signet", "quantity": 1, "chance": 0.005, "rareScaling": true } ] },
+      "Legendary": { "guaranteedDrops": [ { "itemId": "mat_arcane_dust", "quantity": 3, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_signet", "quantity": 1, "chance": 0.005, "rareScaling": true } ] },
+      "Nightmare": { "guaranteedDrops": [ { "itemId": "mat_arcane_dust", "quantity": 4, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_signet", "quantity": 1, "chance": 0.005, "rareScaling": true } ] }
     }
   },
   {
     "id": "lt_quest_q005",
     "type": "Quest",
     "difficulties": {
-      "Normal":    { "guaranteedDrops": [ { "itemId": "mat_arcane_dust", "quantity": 2, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_band", "quantity": 1, "chance": 0.03 } ] },
-      "Hard":      { "guaranteedDrops": [ { "itemId": "mat_arcane_dust", "quantity": 3, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_band", "quantity": 1, "chance": 0.045 } ] },
-      "Legendary": { "guaranteedDrops": [ { "itemId": "mat_arcane_dust", "quantity": 4, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_band", "quantity": 1, "chance": 0.06 } ] },
-      "Nightmare": { "guaranteedDrops": [ { "itemId": "mat_arcane_dust", "quantity": 6, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_band", "quantity": 1, "chance": 0.10 } ] }
+      "Normal":    { "guaranteedDrops": [ { "itemId": "mat_arcane_dust", "quantity": 2, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_band", "quantity": 1, "chance": 0.005, "rareScaling": true } ] },
+      "Hard":      { "guaranteedDrops": [ { "itemId": "mat_arcane_dust", "quantity": 3, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_band", "quantity": 1, "chance": 0.005, "rareScaling": true } ] },
+      "Legendary": { "guaranteedDrops": [ { "itemId": "mat_arcane_dust", "quantity": 4, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_band", "quantity": 1, "chance": 0.005, "rareScaling": true } ] },
+      "Nightmare": { "guaranteedDrops": [ { "itemId": "mat_arcane_dust", "quantity": 6, "chance": 1.0 } ], "gearDrops": [ { "gearDefinitionId": "gear_pano_band", "quantity": 1, "chance": 0.005, "rareScaling": true } ] }
     }
   }
 ]

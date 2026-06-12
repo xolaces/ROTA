@@ -163,8 +163,20 @@ from all lists/indexes and not accessible by any route.
 > **Decisions LOCKED by owner (now in system-24 spec §0b):** D6 single STRIKE action @ exactly
 > 1 ticket (hit sizes dropped in Gauntlet); D7 "ticket" = renamed Strike (same ledger, UI-only
 > rename); D8 dedicated Gauntlet BATTALION loadout (any unit/general, any race) drives hit power.
-> **Remaining:** battalion backend (entity/migration/endpoints/power formula/hit-fork) + the
-> single-strike API change + ticket rename in UI + the full Fable UI pass (mockups first).
+> **UI OVERHAUL SHIPPED 2026-06-12, v2 after owner feedback ("pop-outs not expansions; match the
+> mockup; this is the app's UI template"):** GauntletScreen rebuilt to the mockup's two-column
+> layout — identity header (countdown/standing right-aligned), STAGE card (hero stage number,
+> boss-art slot, HP, single ⚔ STRIKE @1 ticket resolved inline, ticket chip), right rail with the
+> BATTALION card (editable!) + MY STANDING + Ranks/Shop/Prizes buttons that open POP-OUT overlays
+> (new reusable RotaClient.UI.OverlayPanel). The battalion editor works today: enlist any owned
+> general + up to 4 troops (any race), saved client-side (PlayerPrefs), power shown as a labeled
+> PREVIEW until the D8 backend slice wires it into strikes. NEW TEMPLATE CLASSES in Theme.uss
+> (.card/.kicker/.stat-hero/.chip/.btn-cta/.art-slot/.slot-tile/.overlay-*) — the app-wide
+> modernization standard; the summon screen already adopts them.
+> RaidHitResponse.NewStrikeBalance mirrored client-side; mock hits gauntlet stages with tickets.
+> **Remaining:** battalion backend slice (entity/migration/endpoints/power formula/hit-fork wiring,
+> replacing the PlayerPrefs preview) per spec D8; the true single-strike API (drop hitSize on the
+> gauntlet fork).
 
 **Owner (system, now locked):** Complete Gauntlet UI overhaul. **Remove the per-stage chat** — not
 needed. The Gauntlet is a **staged solo-progression** event: each player runs their own stage
@@ -214,7 +226,17 @@ memory `t76-gauntlet-foundation`, `raid-summon-economy`.
 
 ---
 
-## TICKET-2-061126 — Raid Summon Screen Remodel  **[P3 · Enhancement · Client]**
+## TICKET-2-061126 — Raid Summon Screen Remodel  **[P3 · Enhancement · Client]** ✅ BUILT 2026-06-12
+
+> **Built to the owner-approved mockup:** Raids → Summon is now hero-banner-art slot → boss
+> portrait cards (grouped by sigil SummonRaidId; gold-bordered selection; a sealed "??? — no
+> sigil owned" card keeps undiscovered bosses visible) → Master Canon lore-blurb slot → difficulty
+> picker where a tier is selectable ONLY if you own that tier's sigil (locked tiles are
+> unselectable lock-hints) → cost card ("1 × <sigil> (own N)" + Small/private note) + 🔥 SUMMON.
+> Backend (additive): `InventoryItemResponse.SummonRaidId/SummonDifficulty` hydrated from item
+> definitions (no id parsing client-side). Mock: stateful inventory (sigils decrement), sigil use
+> summons a real private raid into the list. All art/lore slots are explicit placeholders for the
+> content phase.
 
 **Owner:** Full visual overhaul of the raid summon screen. Use the **Fable model** as part of the
 broader UI-modernization effort. Lay groundwork for lore text + AI-generated imagery to be slotted
@@ -239,6 +261,31 @@ raid art that can be populated later without restructuring.
 LORE_HANDOFF / Master Canon (raid bosses: Iron Colossus, Sunken Leviathan, Kronarch, etc.).
 
 ---
+
+## FEEDBACK BATCH 2026-06-12 (post-UI-restructure) — ALL BUILT, green (964 unit + 111 integration)
+
+| # | Change | Layer |
+|---|--------|-------|
+| 1 | **Raid victory pop-out** — the player who lands the killing blow gets an exclusive VICTORY overlay (boss felled, killing blow, total damage, contribution); CONFIRM exits to the raid list | Client |
+| 2 | **Quest attempt pop-out** — Attempt opens an overlay: big ⚔ ATTEMPT button that never moves (dynamic content renders below it), depletion line, and a REWARDS box collecting every run's spoils; close refreshes the list | Client |
+| 3 | **Zone-scoped difficulty unlock** — tier T attemptable only once EVERY node of the zone (boss included) has ≥1 completion at T-1; HighestUnlockedDifficulty now zone-computed; mock mirrors | Backend + client |
+| 4 | **Sigils only from the zone's FINAL boss node** — explicit max-NodeIndex gate (today every zone boss is final; this hardens future content) | Backend |
+| 5 | **Pano chase-set curve** — all 20 drops → 0.5% base + `rareScaling`: asymptotic `base + 0.045·d/(d+50k)` ⇒ ~3.5% @100k Discernment, 5% ceiling (generic ×0.03/pt scaling would have blown to 95%). Crafting chase-upgrade recipe planned with crafting menus | Backend + content |
+| 6 | **Battalion power drives mock strikes** — gauntlet strike damage = battalion power × 15–25 (weak baseline when empty), so the editor's loadout is felt in playtest | Client (mock) |
+| 7 | **Mock XP curve = live curve** — `round(30·level^0.7)` replaces the flat 100/level (the "2-3 quests per level at L2500" playtest report was mock-only; live needs ≈7,180 XP at L2500) | Client (mock) |
+
+## FEEDBACK BATCH 2026-06-12 #3 — quest UI overhaul + reward-slot rules. ALL BUILT, compile clean.
+
+- **Quest screen on the app template** — header (title left, difficulty picker + lock hint
+  right), navigator card, zone kicker line with cleared count, node cards on `.card`. The T73
+  in-screen "LATEST REWARDS" box is REMOVED (superseded by owner rule below); the item-drop
+  pop-up toggle remains.
+- **Rewards never stack, never disrupt layout** — the attempt pop-out has ONE fixed REWARDS slot
+  ("REWARDS — LAST ATTEMPT", reserved footprint): each click REPLACES its contents; the big
+  ⚔ ATTEMPT button and everything around it never move (status/depletion lines have reserved
+  heights). This is the app-wide reward-display rule going forward.
+- **Mock Pano fidelity** — the mock dropped Pano at a flat 20% (why it felt common); it now
+  mirrors the live chase curve (0.5% + 4.5%·d/(d+50k) on mock Discernment).
 
 ## Cross-cutting notes for the new chat
 - **Server is authoritative** for T1 (gate) and T4 (delta) — both backends look correct; the bugs are

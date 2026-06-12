@@ -46,6 +46,8 @@ public sealed class ItemService : IItemService
                 ArtKey           = def.ArtKey,
                 Quantity         = inv.Quantity,
                 AcquiredAt       = inv.AcquiredAt,
+                SummonRaidId     = def.SummonRaidId,
+                SummonDifficulty = def.SummonDifficulty,
             });
         }
         return result;

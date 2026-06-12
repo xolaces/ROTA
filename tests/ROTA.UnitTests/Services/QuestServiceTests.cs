@@ -232,13 +232,16 @@ public class QuestServiceTests
         b.QuestProgress.Setup(r => r.GetAllForPlayerAsync(playerId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<PlayerQuestProgress>());
 
-        var rows = completedTiers.Select(t =>
-        {
-            var row = PlayerQuestDifficultyProgress.Create(
-                playerId, "q001", Enum.Parse<QuestDifficulty>(t));
-            row.RecordCompletion();
-            return row;
-        }).ToList();
+        // Owner 2026-06-12 — the unlock is ZONE-scoped, so the sweep must cover EVERY node of
+        // the zone (here q001 AND q002) at each completed tier.
+        var rows = new List<PlayerQuestDifficultyProgress>();
+        foreach (var t in completedTiers)
+            foreach (var id in new[] { "q001", "q002" })
+            {
+                var row = PlayerQuestDifficultyProgress.Create(playerId, id, Enum.Parse<QuestDifficulty>(t));
+                row.RecordCompletion();
+                rows.Add(row);
+            }
         b.DifficultyProgress.Setup(r => r.GetAllForPlayerAsync(playerId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(rows);
 
@@ -246,6 +249,27 @@ public class QuestServiceTests
 
         result.Should().ContainSingle(q => q.Id == "q001")
               .Which.HighestUnlockedDifficulty.Should().Be(expected);
+    }
+
+    [Fact]
+    public async Task GetAvailableQuests_HighestUnlocked_StaysNormal_WhenOnlyOneZoneNodeSwept()
+    {
+        // Owner 2026-06-12 — q001 alone at Normal does NOT open Hard: q002 (same zone) lacks one.
+        var b = BuildService();
+        var playerId = Guid.NewGuid();
+
+        b.Definitions.Setup(d => d.GetAll()).Returns(TwoQuestChain());
+        b.QuestProgress.Setup(r => r.GetAllForPlayerAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerQuestProgress>());
+        var only = PlayerQuestDifficultyProgress.Create(playerId, "q001", QuestDifficulty.Normal);
+        only.RecordCompletion();
+        b.DifficultyProgress.Setup(r => r.GetAllForPlayerAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerQuestDifficultyProgress> { only });
+
+        var result = await b.Service.GetAvailableQuestsAsync(playerId);
+
+        result.Should().ContainSingle(q => q.Id == "q001")
+              .Which.HighestUnlockedDifficulty.Should().Be("Normal");
     }
 
     [Fact]
@@ -321,17 +345,20 @@ public class QuestServiceTests
         b.Definitions.Setup(d => d.GetById("q_multi")).Returns(quest);
         SetupPlayerAndEnergy(b, player);
 
-        // Unlock the difficulty gate by marking prerequisite difficulties complete
+        // Unlock the ZONE-scoped difficulty gate (owner 2026-06-12): the gate sweeps every node
+        // of the zone via GetAllForPlayerAsync — with a bare GetById fixture the zone is just
+        // this node, so completing its prior tiers unlocks the attempt.
         if (difficulty > QuestDifficulty.Normal)
         {
+            var gateRows = new List<PlayerQuestDifficultyProgress>();
             for (var gd = QuestDifficulty.Normal; gd < difficulty; gd++)
             {
                 var gateProg = PlayerQuestDifficultyProgress.Create(player.Id, "q_multi", gd);
                 gateProg.RecordCompletion();
-                var captured = gd; // avoid closure bug
-                b.DifficultyProgress.Setup(r => r.GetAsync(player.Id, "q_multi", captured, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(gateProg);
+                gateRows.Add(gateProg);
             }
+            b.DifficultyProgress.Setup(r => r.GetAllForPlayerAsync(player.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(gateRows);
         }
 
         int expectedEnergy = (int)Math.Ceiling(10 * energyMult);
@@ -531,6 +558,84 @@ public class QuestServiceTests
         result.Success.Should().BeFalse();
         result.FailureCode.Should().Be(QuestFailureCode.DifficultyLocked);
         b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_ZoneDifficultyGate_Locked_WhenASiblingLacksPriorTierCompletion()
+    {
+        // Owner 2026-06-12 — the gate is ZONE-scoped: q001 has its Normal completion, but its
+        // zone sibling q002 does not, so Hard stays locked on EVERY node of the zone.
+        var b = BuildService();
+        var player = MakePlayer();
+        var defs = TwoQuestChain();
+        b.Definitions.Setup(d => d.GetById("q001")).Returns(defs[0]);
+        b.Definitions.Setup(d => d.GetAll()).Returns(defs);
+
+        var q1Normal = PlayerQuestDifficultyProgress.Create(player.Id, "q001", QuestDifficulty.Normal);
+        q1Normal.RecordCompletion();
+        b.DifficultyProgress.Setup(r => r.GetAllForPlayerAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerQuestDifficultyProgress> { q1Normal });
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q001", QuestDifficulty.Hard);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(QuestFailureCode.DifficultyLocked);
+        b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_ZoneDifficultyGate_Unlocks_WhenWholeZoneSweptAtPriorTier()
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+        var defs = TwoQuestChain();
+        b.Definitions.Setup(d => d.GetById("q001")).Returns(defs[0]);
+        b.Definitions.Setup(d => d.GetAll()).Returns(defs);
+        SetupPlayerAndEnergy(b, player);
+
+        var rows = new List<PlayerQuestDifficultyProgress>();
+        foreach (var id in new[] { "q001", "q002" })
+        {
+            var prog = PlayerQuestDifficultyProgress.Create(player.Id, id, QuestDifficulty.Normal);
+            prog.RecordCompletion();
+            rows.Add(prog);
+        }
+        b.DifficultyProgress.Setup(r => r.GetAllForPlayerAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(rows);
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q001", QuestDifficulty.Hard);
+
+        result.Success.Should().BeTrue("every node of the zone has a Normal completion, so Hard is open");
+    }
+
+    [Fact]
+    public async Task AttemptQuest_SigilDoesNotDrop_FromANonFinalBossNode()
+    {
+        // Owner 2026-06-12 — sigils drop ONLY from the zone's FINAL boss node. A boss with a
+        // later sibling in its zone (NodeIndex above it) must never drop one, even first-clear.
+        var b = BuildService();
+        var player = MakePlayer();
+        var boss = BossQuest();                       // NodeIndex 1
+        var after = new QuestDefinition
+        {
+            Id = "q_after", Name = "After Boss", Chapter = 1, ZoneIndex = 0, ZoneName = "Z0",
+            NodeIndex = 2, BaseEnergyCost = 5, GoldReward = 50, ExperienceReward = 25,
+        };
+        b.Definitions.Setup(d => d.GetById("q_boss")).Returns(boss);
+        b.Definitions.Setup(d => d.GetAll()).Returns(new List<QuestDefinition> { boss, after });
+        SetupPlayerAndEnergy(b, player);
+
+        // The zone-boss attempt gate needs every NON-boss sibling ever-cleared.
+        var afterProg = PlayerQuestProgress.Create(player.Id, "q_after");
+        afterProg.Deplete(100);
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q_after", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(afterProg);
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q_boss", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue();
+        result.ItemsGranted.Should().NotContain(i => i.ItemId.StartsWith("sigil_"),
+            "only the zone's final boss node may drop sigils");
     }
 
     // -----------------------------------------------------------------------
@@ -1082,7 +1187,8 @@ public class QuestServiceTests
         public override double NextDouble() => _value;
     }
 
-    private static (ServiceBundle b, Player player) GearDropFixture(double roll, int discernment)
+    private static (ServiceBundle b, Player player) GearDropFixture(
+        double roll, int discernment, bool rare = false, double baseChance = 0.10)
     {
         var b = BuildService(new FixedRandom(roll));
         var player = MakePlayer();
@@ -1095,7 +1201,6 @@ public class QuestServiceTests
         b.Definitions.Setup(d => d.GetById("q_disc")).Returns(quest);
         SetupPlayerAndEnergy(b, player);
 
-        // One gear chance-drop at a 10% base rate.
         var lootTable = new LootTableDefinition
         {
             Id = "lt_disc", Type = "Quest",
@@ -1105,7 +1210,7 @@ public class QuestServiceTests
                 {
                     GearDrops = new List<GearDropChance>
                     {
-                        new() { GearDefinitionId = "gear_pano_helm", Quantity = 1, Chance = 0.10 },
+                        new() { GearDefinitionId = "gear_pano_helm", Quantity = 1, Chance = baseChance, RareScaling = rare },
                     },
                 },
             },
@@ -1115,6 +1220,49 @@ public class QuestServiceTests
             .ReturnsAsync(new PlayerStatsResponse { DiscernmentInvestment = discernment });
 
         return (b, player);
+    }
+
+    // -----------------------------------------------------------------------
+    // Owner 2026-06-12 — chase-set ("rare") drop curve:
+    //   chance = base + RareDropMaxBonus(0.045) × d / (d + 50,000), hard-capped at base + bonus.
+    //   Pano base 0.005 → 0.5% at 0 Disc, ~3.5% at 100k Disc, asymptote 5%.
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task AttemptQuest_RareGearDrop_StaysAtBase_WithZeroDiscernment()
+    {
+        // base 0.005, Disc 0 → 0.005; roll 0.03 ≥ 0.005 → no drop.
+        var (b, player) = GearDropFixture(roll: 0.03, discernment: 0, rare: true, baseChance: 0.005);
+
+        await b.Service.AttemptQuestAsync(player.Id, "q_disc", QuestDifficulty.Normal);
+
+        b.Equipment.Verify(e => e.GrantGearAsync(
+            It.IsAny<Guid>(), "gear_pano_helm", It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_RareGearDrop_ReachesMidCurve_At100kDiscernment()
+    {
+        // base 0.005, Disc 100k → 0.005 + 0.045 × (100k / 150k) = 0.035; roll 0.03 < 0.035 → drops.
+        var (b, player) = GearDropFixture(roll: 0.03, discernment: 100_000, rare: true, baseChance: 0.005);
+
+        await b.Service.AttemptQuestAsync(player.Id, "q_disc", QuestDifficulty.Normal);
+
+        b.Equipment.Verify(e => e.GrantGearAsync(
+            player.Id, "gear_pano_helm", 1, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_RareGearDrop_NeverExceedsTheCap_EvenAtExtremeDiscernment()
+    {
+        // base 0.005, Disc 10M → asymptote ≈ 0.005 + 0.045 = 0.05 cap (the generic multiplier
+        // would have blown this to 95%); roll 0.06 ≥ 0.05 → still no drop.
+        var (b, player) = GearDropFixture(roll: 0.06, discernment: 10_000_000, rare: true, baseChance: 0.005);
+
+        await b.Service.AttemptQuestAsync(player.Id, "q_disc", QuestDifficulty.Normal);
+
+        b.Equipment.Verify(e => e.GrantGearAsync(
+            It.IsAny<Guid>(), "gear_pano_helm", It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -1180,17 +1328,18 @@ public class QuestServiceTests
         b.Definitions.Setup(d => d.GetById("q_xp")).Returns(XpNode(chapter, zoneIndex, nodeType));
         SetupPlayerAndEnergy(b, player);
 
-        // Unlock the difficulty gate for non-Normal difficulties.
+        // Unlock the ZONE-scoped difficulty gate (single-node zone with a bare GetById fixture).
         if (difficulty > QuestDifficulty.Normal)
         {
+            var gateRows = new List<PlayerQuestDifficultyProgress>();
             for (var gd = QuestDifficulty.Normal; gd < difficulty; gd++)
             {
                 var gateProg = PlayerQuestDifficultyProgress.Create(player.Id, "q_xp", gd);
                 gateProg.RecordCompletion();
-                var captured = gd;
-                b.DifficultyProgress.Setup(r => r.GetAsync(player.Id, "q_xp", captured, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(gateProg);
+                gateRows.Add(gateProg);
             }
+            b.DifficultyProgress.Setup(r => r.GetAllForPlayerAsync(player.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(gateRows);
         }
 
         var result = await b.Service.AttemptQuestAsync(player.Id, "q_xp", difficulty);

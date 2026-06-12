@@ -1,52 +1,74 @@
-# ROTA Session Handoff — 2026-06-11 (waves COMMITTED + PUSHED · live playtest → 5 new tickets)
+# ROTA Session Handoff — 2026-06-12 (UI-template era · 3 batches UNCOMMITTED · next: Profile overhaul)
 
 ## TL;DR (resume here)
-The 3.5 waves are now **committed and pushed**, the **lore Master Canon** is merged + committed, a
-**live server playtest** was run, and the owner filed **5 new tickets**. That ticket batch is the
-**priority backlog** — everything below it is history.
+The 2026-06-11/12 session: playtest tickets T1/T4/T3 fixed + COMMITTED (backend `ecf9277` pushed,
+client `6dbb9c5` local), then THREE further batches built + verified but **UNCOMMITTED** (owner was
+mid-playtest-loop; see UNCOMMITTED WORK below). **964 unit + 111 integration green; client
+scratch-compile 0 errors.**
 
-- **TICKETS → [docs/PLAYTEST_TICKETS_2026-06-11.md](docs/PLAYTEST_TICKETS_2026-06-11.md)** —
-  **UPDATE 2026-06-11 (fix session): T1 ✅ T4 ✅ T3 ✅ shipped + green (957 unit + 111 integration,
-  client compile clean) — UNCOMMITTED, awaiting owner review.** T5 partial: solo-raid chat removed,
-  crits verified; owner LOCKED the design (system-24 spec §0b D6–D9: single strike @1 ticket,
-  ticket=renamed Strike, dedicated battalion loadout). Remaining: T5 battalion backend + Fable UI
-  pass (mockups first), T2 raid-summon remodel — both cluster with lore→items.
-- **✅ RESOLVED (2026-06-11): Xolaces dev-flag KEPT.** Owner confirmed `Developer.Usernames:
-  ["Xolaces"]` is intentional — Xolaces stays flagged Developer (`roles=13`) and in "The Dev
-  Coffee Shop" guild. CLAUDE.md T43 note updated to match. Nathan's identifier still pending.
-- **Lore→items** integration is still **queued** (owner: playtest before lore goes in) and overlaps
-  T2/T5 art/lore slots. Source of truth: [docs/Lore/ROTA_Master_Canon.md](docs/Lore/ROTA_Master_Canon.md).
+- **➊ FIRST ACTION — owner review + commit** the uncommitted work in BOTH repos (file list below).
+- **➋ NEXT WORK (owner-declared 2026-06-12):**
+  1. **PROFILE screen UI overhaul** — template rollout target #2 (use Theme.uss `.card/.kicker/
+     .stat-hero/.chip/.btn-cta/.art-slot/.slot-tile/.overlay-*` + `RotaClient.UI.OverlayPanel`
+     pop-outs; the Gauntlet page is the reference implementation).
+  2. **CLASS-SPECIFIC ICONS** — the owner has GENERATED icons (ask where the files are!); they
+     display in the top-left HeaderBar portrait slot (`.header__portrait`, 32×32 gold-bordered)
+     keyed off `Profile.Class`. Suggested convention: drop files in
+     `Assets/ROTA.Client/Resources/UI/ClassIcons/<ClassName>.png` → `Resources.Load<Texture2D>`.
+  3. **Resource-bars stylistic overhaul** (HeaderBar) — pairs with the class icon; stylistic only,
+     the T4 PlayerState.GetLiveResource data flow stays.
+- **Owner standards are LAW** (memory `owner-ui-standards`): pop-outs not expansions; rewards in
+  ONE fixed replace-only slot (never stack/shift layout); action buttons never move; no grey
+  buttons; locked = unselectable; Gauntlet = the template.
+- T5 battalion BACKEND slice still pending (spec §0b D8, formula LOCKED — see below).
+- **Lore→items** still queued; overlaps the art/lore slots already reserved in the new screens.
 
-### What landed this session (now committed)
-1–4. The four waves (Wave 2 T65–T70 · UX T72–T75 · T76 Gauntlet foundation + S2 page slice) — detail
-preserved under "WHAT WAS BUILT" below. **All green: 956 unit + 111 integration = 1067; client
-compiles clean.** Migrations `AddPasswordResetTokens`, `AddTermsAcceptance`, `AddGauntletEventIdentity`
-created + applied to dev DB.
-5. **Lore Master Canon** — merged First+Second canon into `docs/Lore/ROTA_Master_Canon.md` (four
-overrides applied silently). Inert reference doc, separate commit.
+## UNCOMMITTED WORK (review → commit; all verified green)
+**Backend (ROTA, on top of `ecf9277`):** ItemDTOs.cs + ItemService.cs (sigil SummonRaidId/
+SummonDifficulty hydration for the summon screen); QuestService.cs + QuestConfig.cs +
+LootTableDefinition.cs + content/loot_tables.json (ZONE-scoped difficulty unlock · sigils only
+from the zone-FINAL boss node · Pano chase curve `0.5% + 4.5%·d/(d+50k)` cap 5%, all 20 drops
+flagged `rareScaling`); QuestServiceTests.cs (+7 tests, gate setups updated);
+docs/PLAYTEST_TICKETS + spec system-24 (§0b D6-D9 + D8 amendment).
+**Client (ROTA.Client6, on top of `6dbb9c5`):** Theme.uss (TEMPLATE classes + overlay system);
+NEW Runtime/UI/OverlayPanel.cs (+meta); GauntletScreen.cs (v2 two-column template page: inline
+single STRIKE @1 ticket, ticket rename, Ranks/Shop/Prizes POP-OUTS, BATTALION editor 6 generals
++ 20 troops, power = (pATK+ΣbATK)×4+(pDEF+ΣbDEF) — stat-inherent, Discernment crit passive/never
+shown); RaidScreen.cs (summon tab on template: boss cards/lore slot/tier picker, loot only in
+Completed); RaidCombatView.cs (VICTORY pop-out for the killer → confirm → raid list; no Loot
+button; no chat on solo raids); QuestScreen.cs (template overhaul: attempt POP-OUT with fixed
+⚔ ATTEMPT + replace-only REWARDS slot; T73 in-screen box REMOVED per owner rule); Dtos.cs
+(NewStrikeBalance + sigil fields); MockRotaApi.cs (stateful inventory/sigils, gauntlet hits spend
+tickets, battalion-power damage, live XP curve 30·level^0.7, Pano rare-rate, zone-scoped gates).
+
+## BATTALION (D8) — LOCKED FORMULA (owner 2026-06-12, spec §0b amended)
+`power = (playerATK + Σ battalionATK) × 4 + (playerDEF + Σ battalionDEF) × 1` — base stats
+inherent; power IS the gauntlet strike damage basis (× raid ±15% RNG); Discernment raises crit
+passively (NEVER shown in power); slots = 6 GENERALS + 20 TROOPS. Client editor + mock combat
+implement it (PlayerPrefs `rota_gauntlet_battalion`, migrates from the old 1+4 layout). The
+backend slice (entity/migration/endpoints/hit-fork + true 1-ticket strike API) must match.
 
 READ IN ORDER for the new chat:
 1. This file.
-2. **`docs/PLAYTEST_TICKETS_2026-06-11.md`** (the active backlog).
+2. **`docs/PLAYTEST_TICKETS_2026-06-11.md`** (tickets + the three 2026-06-12 feedback batches).
 3. `docs/CURRENT_TASK.md` (snapshot).
-4. Memory: `owner-ui-standards`, `mock-fidelity-playtest`, `t76-gauntlet-foundation`,
-   `tickets-playtest-061126` (the new batch).
-5. `docs/specs/active/system-24-gauntlet-event-experience.md` if touching the Gauntlet (T5 extends it).
+4. Memory: `owner-ui-standards` (the template + reward-slot rules), `tickets-playtest-061126`,
+   `mock-fidelity-playtest`.
+5. `docs/specs/active/system-24-gauntlet-event-experience.md` for the Gauntlet/battalion work.
 
-## REPO STATE (post-push)
-- **Backend** `C:\Users\xolac\OneDrive\Documentos\Projects\ROTA`, branch `main`,
-  **last commit `39d21d4`** (lore) on top of `4bd9850` (the 3.5 waves, 101 files). **PUSHED to
-  `origin/main`** (github.com/xolaces/ROTA — remote was behind at `630b2e7`, now current). All
-  migrations applied to dev DB; none pending. Working tree clean.
-- **Unity client** `C:\Dev\ROTA.Client6`, branch `master`, **last commit `d7f9609`** (the waves'
-  client mirror). **Committed locally — NO REMOTE** (can't push). Unity 6000.4.9f1; no asmdefs.
+## REPO STATE
+- **Backend** `C:\Users\xolac\OneDrive\Documentos\Projects\ROTA`, branch `main`, last commit
+  **`ecf9277`** (pushed to origin). **9 files modified, uncommitted** (list above). Migrations:
+  none pending (through `AddGauntletEventIdentity`).
+- **Unity client** `C:\Dev\ROTA.Client6`, branch `master`, last commit **`6dbb9c5`** (local — NO
+  REMOTE). **7 modified + OverlayPanel.cs new, uncommitted.** Unity 6000.4.9f1; no asmdefs.
+  Compile-check without the editor: `dotnet build %TEMP%\rota-client-check\check.csproj` (a scratch
+  csproj over Runtime/**/*.cs against the Unity managed DLLs — rebuild it if missing; the owner's
+  open editor recompiles on focus and holds the project lock for batchmode).
 - **Ops dashboard** `C:\Dev\rota-ops-dashboard` — untouched.
-- **LIVE SERVER may still be running:** `dotnet run` on `http://localhost:5035` (http profile),
-  fresh build, DB migrated, with an **Active Neck event** open ("The Gauntlet of the Sunken Spire",
-  run #1) seeded for the playtest. To stop: `Get-Process ROTA.Api | Stop-Process`. To run CLI
-  against the built exe while it's NOT running: set `$env:ASPNETCORE_ENVIRONMENT=Development` and run
-  from `src/ROTA.Api` (content root). Docker postgres+redis up; **don't `dotnet test`/rebuild while a
-  server runs** (locks the Api DLL).
+- **LIVE SERVER likely running** on `http://localhost:5035` WITH the uncommitted quest-rule backend
+  (Active Neck event seeded). Stop before rebuilding: `Get-Process ROTA.Api | Stop-Process`.
+  Docker postgres+redis up; **don't `dotnet test`/rebuild while the server runs** (DLL lock).
 
 ## WHAT WAS BUILT (by ticket)
 
@@ -151,15 +173,20 @@ Owner-locked: the shipped SOLO AUTO-SUMMON LADDER **is** the DotD shape (no shar
   Function Reference last refreshed T46-era (known to lag).
 
 ## NEXT (priority order)
-0. ~~Xolaces dev-flag~~ — RESOLVED: owner keeps it (see TL;DR).
-1. **PLAYTEST TICKETS → [docs/PLAYTEST_TICKETS_2026-06-11.md](docs/PLAYTEST_TICKETS_2026-06-11.md)**
-   — the live-playtest backlog, recommended order T1 → T4 → T3 → T5 → T2. T1 (difficulty-gate
-   client selectability) and T4 (energy/stamina delta + HUD↔profile SSOT) are quick-ish client
-   bugs with the backend already correct; T3 (raid-loot enforcement); T5 (Gauntlet overhaul epic,
-   extends system-24); T2 (raid-summon remodel, Fable UI pass).
-2. **Lore → game asset items** (queued; owner: playtest before lore goes in): wire Master Canon
-   names/descriptions into `content/items.json` + `gear.json`, surface lore on Home. Overlaps
-   T2/T5 art+lore slots. Source: `docs/Lore/ROTA_Master_Canon.md`.
+0. **Commit the uncommitted batches** (owner review — see UNCOMMITTED WORK in the TL;DR block).
+1. **PROFILE screen UI overhaul** (owner-declared next): rebuild ProfileScreen on the template
+   (cards/kickers/pop-outs — the alloc modal becomes an OverlayPanel pop-out; identity card gets
+   an art slot). Mock up first if the layout changes substantially (owner approves mockups).
+2. **CLASS ICONS + resource-bar restyle (HeaderBar):** owner has GENERATED class-specific icons —
+   ASK for the files; show them in the `.header__portrait` slot keyed off `Profile.Class`
+   (suggested: `Resources/UI/ClassIcons/<ClassName>.png`); restyle the resource bars (stylistic
+   only — keep the PlayerState.GetLiveResource single-source data flow from T4).
+3. **T5 battalion BACKEND slice** (spec §0b D8 — formula locked, client/mock already match):
+   loadout entity + migration, assign/read endpoints, server power computation, gauntlet hit-fork
+   damage = power, true 1-ticket strike API (drop hitSize), replace the client PlayerPrefs preview.
+4. **Lore → game asset items** (queued; owner: playtest before lore goes in): wire Master Canon
+   names/descriptions into `content/items.json` + `gear.json`, fill the art/lore slots reserved
+   across Gauntlet/summon/quest screens. Source: `docs/Lore/ROTA_Master_Canon.md`.
 3. **OWNER housekeeping:** replace placeholder legal text (`src/ROTA.Api/content/legal/`); first
    real `tools/build-client.ps1` run; client has no git remote (add one to push client work).
 4. **T77 content wave (owner-led, lore-gated):** Ch4–6 loot tables (~60 empty nodes), raid pool

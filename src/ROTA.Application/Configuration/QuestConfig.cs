@@ -16,6 +16,14 @@ public class QuestConfig
     public double DiscernmentDropMultiplier { get; set; } = 0.03;
     public double MaxDropChance { get; set; } = 0.95;
 
+    // Owner 2026-06-12 — chase-set ("rare") drop curve. Drops flagged rareScaling in the loot
+    // table SKIP the generic per-point multiplier above (which explodes at high Discernment) and
+    // use the asymptotic curve: chance = base + RareDropMaxBonus × d / (d + Halfway).
+    // With the Pano base of 0.005: 0 Disc → 0.5%, 100k Disc → ~3.5%, asymptote 5%.
+    // The Pano set is the chase set — a crafting upgrade recipe is planned with the crafting menus.
+    public double RareDropMaxBonus { get; set; } = 0.045;
+    public double RareDropDiscernmentHalfway { get; set; } = 50_000;
+
     // T44 — zone-indexed XP formula. ExperienceReward in quests.json is the per-node BASE that the
     // zone ratio multiplies (alongside the difficulty reward multiplier). A battle node's ratio scales
     // with its depth in the chapter (XpZoneRatioBase + ZoneIndex × XpZoneRatioPerZone); a boss node

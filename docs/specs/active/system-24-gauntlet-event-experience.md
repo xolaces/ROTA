@@ -29,18 +29,30 @@ Builds ON TOP of System 16.
 - **D7 — "Ticket" = renamed Strike:** SAME ledger and earn/buy mechanics (+10 per stage defeat,
   gem purchase at `StrikeGemPrice`), surfaced as **tickets** everywhere player-facing (UI, shop,
   copy). Internal names (StrikeTransaction, DTOs) keep their names — no migration.
-- **D8 — Dedicated Gauntlet BATTALION:** a separate loadout (base general + troop slots)
-  assembled from ANY owned unit/general, **no race restrictions**, configured on the Gauntlet
-  page. Battalion power replaces the inert "Gauntlet Legion Power" placeholder (T54) and drives
-  the gauntlet hit formula. Needs: battalion loadout state (new entity + migration), assign/read
-  endpoints, power computation, hit-fork wiring, and a battalion-builder UI.
+- **D8 — Dedicated Gauntlet BATTALION:** a separate loadout assembled from ANY owned
+  unit/general, **no race restrictions**, configured on the Gauntlet page. Battalion power
+  replaces the inert "Gauntlet Legion Power" placeholder (T54) and drives the gauntlet hit
+  formula. Needs: battalion loadout state (new entity + migration), assign/read endpoints,
+  power computation, hit-fork wiring, and a battalion-builder UI.
+  **AMENDED 2026-06-12 (owner):** slots = **6 GENERALS + 20 TROOPS**. **BATTALION POWER is the
+  gauntlet strike damage basis** with the raid weighting, base stats inherently included:
+  `power = (playerATK + Σ battalionATK) × 4 + (playerDEF + Σ battalionDEF) × 1`.
+  Strike damage = power × the raid RNG band; **Discernment raises crit chance passively as in
+  normal raids and is NEVER folded into the displayed power.** The client (editor + card) and
+  the mock combat already implement exactly this; the backend slice must match it.
 - **D9 — No per-stage chat:** Gauntlet stages are solo rooms; the combat view shows no chat on
   Personal raids (SHIPPED 2026-06-11 client-side; the hub's participant gate already means a
   solo group has one member, so no server change). Crits on strikes VERIFIED already live —
   the crit roll in RaidService.HitRaidAsync is outside every GauntletEventId gate.
-- **UI overhaul (T5.5)** remains: clean stage display (current stage · battalion power · strike
-  action), prominent Leaderboard + Shop buttons, uncluttered, lore/art slots — Fable design pass
-  with mockups for owner approval before build.
+- **UI overhaul (T5.5) — SHIPPED 2026-06-12 (UI-first, owner-approved mockups):** GauntletScreen
+  rebuilt — stage panel (stage number · boss-art slot · HP · single ⚔ STRIKE sending hit ×1,
+  which costs exactly 1 ticket at current `StrikeRatePerSize.Small=1`), INLINE combat (no
+  combat-view hand-off), ticket terminology throughout (D7), battalion placeholder card (D8
+  backend pending — no dead Edit button), Leaderboard/Shop/Prizes nav toggles, gem→ticket buy in
+  the Shop. Client mirrors `RaidHitResponse.NewStrikeBalance`; mock gauntlet hits spend tickets.
+  The raid-summon remodel (TICKET-2) shipped in the same pass with the same visual language.
+  REMAINING for D6-true: drop hitSize on the gauntlet fork server-side when the battalion slice
+  lands (the UI never sends anything but ×1 already).
 
 ---
 
