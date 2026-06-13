@@ -23,19 +23,51 @@ public sealed class GauntletController : ControllerBase
     private readonly IStrikeRepository _strikes;
     private readonly IGauntletCurrencyRepository _currency;
     private readonly IValidator<BuyStrikesRequest> _buyValidator;
+    private readonly IGauntletBattalionService _battalion;
+    private readonly IValidator<SetGauntletBattalionRequest> _battalionValidator;
 
     public GauntletController(
         IGauntletService gauntlet,
         IGauntletScoringService scoring,
         IStrikeRepository strikes,
         IGauntletCurrencyRepository currency,
-        IValidator<BuyStrikesRequest> buyValidator)
+        IValidator<BuyStrikesRequest> buyValidator,
+        IGauntletBattalionService battalion,
+        IValidator<SetGauntletBattalionRequest> battalionValidator)
     {
-        _gauntlet     = gauntlet;
-        _scoring      = scoring;
-        _strikes      = strikes;
-        _currency     = currency;
-        _buyValidator = buyValidator;
+        _gauntlet           = gauntlet;
+        _scoring            = scoring;
+        _strikes            = strikes;
+        _currency           = currency;
+        _buyValidator       = buyValidator;
+        _battalion          = battalion;
+        _battalionValidator = battalionValidator;
+    }
+
+    /// <summary>The caller's Gauntlet battalion (resolved units + computed power).</summary>
+    [HttpGet("battalion")]
+    [ProducesResponseType(typeof(GauntletBattalionResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetBattalion(CancellationToken ct)
+        => Ok(await _battalion.GetBattalionAsync(PlayerId(), ct));
+
+    /// <summary>
+    /// Assign the caller's battalion loadout (≤6 generals + ≤20 troops from owned units).
+    /// 200 + battalion · 400 malformed · 422 business rule (UnitNotOwned/WrongUnitType/DuplicateUnit).
+    /// </summary>
+    [HttpPut("battalion")]
+    [ProducesResponseType(typeof(GauntletBattalionResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> SetBattalion([FromBody] SetGauntletBattalionRequest request, CancellationToken ct)
+    {
+        var validation = await _battalionValidator.ValidateAsync(request, ct);
+        if (!validation.IsValid)
+            return BadRequest(validation.Errors.Select(e => e.ErrorMessage));
+
+        var result = await _battalion.SetBattalionAsync(PlayerId(), request.Generals, request.Troops, ct);
+        return result.Status == BattalionUpdateStatus.Success
+            ? Ok(result.Battalion)
+            : UnprocessableEntity(new { failureCode = result.Status.ToString() });
     }
 
     /// <summary>Current event (null if none active) + the caller's entry/league + balances.</summary>

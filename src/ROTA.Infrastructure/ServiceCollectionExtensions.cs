@@ -65,6 +65,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IStrikeRepository, StrikeRepository>();
         services.AddScoped<IGauntletCurrencyRepository, GauntletCurrencyRepository>();
         services.AddScoped<IPlayerGauntletTrophyRepository, PlayerGauntletTrophyRepository>();
+        services.AddScoped<IGauntletBattalionRepository, GauntletBattalionRepository>();   // System 24 (D8)
         services.AddScoped<IPlayerEventMagicRepository, PlayerEventMagicRepository>();
         services.AddScoped<IPlayerMagicHonorRepository, PlayerMagicHonorRepository>();
 
@@ -162,6 +163,9 @@ public static class ServiceCollectionExtensions
 
         // System 16 — Gauntlet (Slice 3) scoring / leaderboard read service
         services.AddScoped<IGauntletScoringService, GauntletScoringService>();
+
+        // System 24 (D8) — Gauntlet battalion read/assign + power
+        services.AddScoped<IGauntletBattalionService, GauntletBattalionService>();
 
         // FluentValidation — scan Application assembly for all IValidator<T> implementations
         services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();

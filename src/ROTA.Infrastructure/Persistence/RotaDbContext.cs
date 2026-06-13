@@ -59,6 +59,9 @@ public class RotaDbContext : DbContext
     public DbSet<PlayerEventMagic> PlayerEventMagics => Set<PlayerEventMagic>();
     public DbSet<PlayerMagicHonor> PlayerMagicHonors => Set<PlayerMagicHonor>();
 
+    // ----- System 24 (D8) — Gauntlet battalion -----
+    public DbSet<PlayerGauntletBattalion> PlayerGauntletBattalions => Set<PlayerGauntletBattalion>();
+
     // ----- Phase 2 — Ops & Social -----
     public DbSet<OutboundEmail> OutboundEmails => Set<OutboundEmail>();
     public DbSet<PinnacleFirstClaim> PinnacleFirstClaims => Set<PinnacleFirstClaim>();

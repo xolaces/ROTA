@@ -608,6 +608,7 @@ public class LeaderboardWriteHookTests
             .ReturnsAsync(new List<Friendship>());
         var achievements = new Mock<IAchievementService>();
 
+        var battalion = new Mock<IGauntletBattalionService>();
         var service = new RaidService(
             raids.Object, participants.Object, players.Object, resources.Object,
             energy.Object, gems.Object, stats.Object, inventory.Object,
@@ -620,7 +621,7 @@ public class LeaderboardWriteHookTests
             trophyRepo.Object, gauntletContent.Object, playerEventMagics.Object,
             playerMagicHonors.Object, strikes.Object, gauntletScoring.Object, gauntletCfg,
             gauntletCurrency.Object, guildMemberships.Object, guildEconomy.Object, mastery.Object,
-            achievements.Object, friendships.Object, random);
+            achievements.Object, friendships.Object, battalion.Object, random);
 
         return new RaidBundle(service, raids, participants, players, resources, energy,
             auditLog, definitions, hitCache, equipment, stats, leaderboards);

@@ -93,6 +93,7 @@ public sealed class RaidService : IRaidService
     private readonly IPlayerMagicHonorRepository      _playerMagicHonors;
     private readonly IStrikeRepository                _strikes;
     private readonly IGauntletScoringService          _gauntletScoring;
+    private readonly IGauntletBattalionService        _battalion;   // System 24 (D8) — Gauntlet strike power
     private readonly GauntletConfig                   _gauntletConfig;
     // System 16 Slice 5 — per-Gauntlet-raid-defeat Token reward (credited inside the advisory-lock tx).
     private readonly IGauntletCurrencyRepository       _gauntletCurrency;
@@ -149,6 +150,7 @@ public sealed class RaidService : IRaidService
         IMasteryService mastery,
         IAchievementService achievements,
         IFriendshipRepository friendships,
+        IGauntletBattalionService battalion,
         Random? random = null)
     {
         _raids           = raids;
@@ -192,6 +194,7 @@ public sealed class RaidService : IRaidService
         _mastery           = mastery;
         _achievements      = achievements;
         _friendships       = friendships;
+        _battalion         = battalion;
         _random          = random ?? Random.Shared;
     }
 
@@ -757,12 +760,9 @@ public sealed class RaidService : IRaidService
         bool isGauntlet = raid.GauntletEventId is not null;
         // System 21 Slice 3b — guild raids spend GuildStamina (= hit size) instead of Stamina/Strikes.
         bool isGuildRaid = raid.GuildId is not null;
-        int strikeCost = hitSize switch
-        {
-            5  => _gauntletConfig.StrikeRatePerSize.Medium,
-            20 => _gauntletConfig.StrikeRatePerSize.Large,
-            _  => _gauntletConfig.StrikeRatePerSize.Small,   // hitSize == 1
-        };
+        // D6 (System 24) — Gauntlet strikes are a FLAT 1 ticket: hit sizes don't apply on the
+        // Gauntlet fork, and strikeCost is only ever read on the Gauntlet (strike-spend) path.
+        int strikeCost = 1;
         string strikeRef = $"strikespend:{activeRaidId}:{idempotencyKey}";
 
         // 7. Apply hit atomically.
@@ -876,14 +876,26 @@ public sealed class RaidService : IRaidService
             var masteryMods = await _mastery.GetModifiersAsync(playerId, ct);
 
             var multiplier = 0.85 + _random.NextDouble() * 0.30; // uniform [0.85, 1.15]
+
+            // System 24 (D8) — Gauntlet FULL-REPLACE: the strike-damage base IS battalion power × the
+            // RNG band (owner decision — NO character base, legion, procs, trophy, auras, or PowerScaling).
+            // Crit still applies below; every additive block further down is gated off for the Gauntlet.
+            long battalionPower = isGauntlet
+                ? await _battalion.ComputePowerAsync(playerId, combat.EffectiveAttack, combat.EffectiveDefense, ct)
+                : 0L;
+
             long baseValue = (combat.EffectiveAttack * 4L) + combat.EffectiveDefense;
-            long charBase  = Math.Max(1, (long)(baseValue * hitSize * multiplier));
+            long charBase  = isGauntlet
+                ? Math.Max(1L, (long)(battalionPower * multiplier))
+                : Math.Max(1, (long)(baseValue * hitSize * multiplier));
 
             // Legion power — uses the SAME RNG multiplier and hitSize as charBase (no second roll).
             // Computed inline from the directly-injected repos; does NOT call
             // LegionService.ComputeLegionPowerAsync (that method returns raw power without
             // hitSize/multiplier/PowerScaling, so reusing it would give the wrong result).
-            var activeLegion = await _playerLegions.GetActiveAsync(playerId, ct);
+            // Gauntlet (D8) skips the legion entirely — battalion power already IS the base, so the
+            // legion block, its trophy/PowerScaling stages, and the unit-proc block below all no-op.
+            var activeLegion = isGauntlet ? null : await _playerLegions.GetActiveAsync(playerId, ct);
             if (activeLegion is not null)
             {
                 var legionContentDef = _legionDefs.GetById(activeLegion.LegionDefinitionId);
@@ -949,7 +961,7 @@ public sealed class RaidService : IRaidService
             damageFinal  = preProc;
 
             // Mount proc — once per hit, adds procPercent × pre-proc base damage as a bonus.
-            if (combat.MountProc is not null && _random.NextDouble() < combat.MountProc.ProcChance)
+            if (!isGauntlet && combat.MountProc is not null && _random.NextDouble() < combat.MountProc.ProcChance)
             {
                 procBonus   = Math.Max(0, (long)(preProc * combat.MountProc.ProcPercent));
                 damageFinal += procBonus;
@@ -959,7 +971,11 @@ public sealed class RaidService : IRaidService
             // Magic DamageProcs — each applied magic with effectType=DamageProc rolls
             // independently; all bonuses accumulate against preProc then are capped.
             // Loaded inside the advisory lock so we see the current applied-magic list.
-            var appliedMagics = await _raidMagics.GetForRaidAsync(activeRaidId, ct);
+            // Gauntlet (D8) applies no magics — an empty list zeroes BOTH the magic damage procs here
+            // and the CritChanceFlat magic-crit loop below, so the Gauntlet crit is pure Discernment.
+            var appliedMagics = isGauntlet
+                ? (IReadOnlyList<RaidMagic>)System.Array.Empty<RaidMagic>()
+                : await _raidMagics.GetForRaidAsync(activeRaidId, ct);
             long magicBonusRaw = 0;
             foreach (var raidMagic in appliedMagics)
             {
@@ -1006,36 +1022,9 @@ public sealed class RaidService : IRaidService
             magicProcBonus  = Math.Min(magicBonusRaw, magicBonusCap);
             damageFinal    += magicProcBonus;
 
-            // (B) Off-cap auras — Wrath/Blessing (System 16 Slice 4). GAUNTLET RAIDS ONLY. These are
-            // OUTSIDE the MaxAggregateProcBonus magic cap: their bonus is added directly to damageFinal
-            // and is NEVER folded into magicBonusRaw/the cap above. Added here (before crit) so crit
-            // amplifies it, consistent with mount/magic/unit procs. A non-owner/non-former gets NO aura
-            // ("neither" is not a base grant), so a Gauntlet hit by a player without the rank magic is
-            // unchanged. Ownership multiplier: current owner ×1.25, former owner (honor echo) ×1.10;
-            // current trumps former.
-            if (lockedRaid.GauntletEventId is not null)
-            {
-                foreach (var magicDef in _magicDefs.GetAll())
-                {
-                    if (!magicDef.OffCap) continue;
-
-                    double ownershipMult;
-                    var currentOwner = await _playerEventMagics.FindAsync(
-                        playerId, lockedRaid.GauntletEventId.Value, magicDef.Id, ct);
-                    if (currentOwner is not null)
-                        ownershipMult = 1.25;                                   // current owner
-                    else if (await _playerMagicHonors.HasHonorAsync(playerId, magicDef.Id, ct))
-                        ownershipMult = 1.10;                                   // former owner (honor echo)
-                    else
-                        continue;                                              // not owned → no aura at all
-
-                    double effChance = Math.Min(1.0, magicDef.ProcChance * ownershipMult);
-                    double effAmount = magicDef.ProcAmount * ownershipMult;
-                    if (_random.NextDouble() < effChance)
-                        offCapBonus += Math.Max(0, (long)(effAmount * preProc));
-                }
-                damageFinal += offCapBonus;   // off-cap: NOT clamped by MaxAggregateProcBonus
-            }
+            // (B) Off-cap Wrath/Blessing auras — REMOVED from the Gauntlet (System 24 D8 full-replace).
+            // They were Gauntlet-ONLY, so there is no longer any off-cap aura path at all; offCapBonus
+            // stays 0. (Former owners' honor still gates the rank-magic hand-off elsewhere — not here.)
 
             // Unit-ability procs — for each filled legion slot whose unit has a non-passive
             // DamageProc-style ability, roll procChance independently. Passive abilities
@@ -1093,7 +1082,7 @@ public sealed class RaidService : IRaidService
             // reach EffectiveCombatData because the row is in player_commander_gear, not
             // player_equipment. Only the ProcChance/ProcPercent are read here.
             // The proc fires off preProc (same as the mount proc) and is added to damageFinal.
-            var commanderRow = await _commanderGear.FindAsync(playerId, ct);
+            var commanderRow = isGauntlet ? null : await _commanderGear.FindAsync(playerId, ct);
             if (commanderRow is not null && !commanderRow.IsDeleted)
             {
                 var gearDef = _gearDefs.GetById(commanderRow.GearDefinitionId);
@@ -1131,7 +1120,8 @@ public sealed class RaidService : IRaidService
             // Conditional flat damage percent — applied last, after crit. (Bulwark, System 22 Phase A)
             // stacks additively here on GUILD RAIDS ONLY, already hard-capped in GetCombatModifiersAsync.
             double bulwarkFraction = lockedRaid.GuildId is not null ? masteryMods.Combat.BulwarkGuildDamageFraction : 0.0;
-            double flatDamageFraction = combat.FlatDamagePercent + bulwarkFraction;
+            // Gauntlet (D8) full-replace: no gear FlatDamagePercent / Bulwark on the Gauntlet path.
+            double flatDamageFraction = isGauntlet ? 0.0 : combat.FlatDamagePercent + bulwarkFraction;
             if (flatDamageFraction > 0)
             {
                 long beforeFlat = damageFinal;

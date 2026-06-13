@@ -224,6 +224,7 @@ public class RaidServiceTests
             .ReturnsAsync(new MasteryModifiers(new MasteryCombatModifiers(0.0, 0.0), new MasteryLootModifiers(1.0, 1.0, 1.0, 0.0)));
         var achievements = new Mock<IAchievementService>();
 
+        var battalion = new Mock<IGauntletBattalionService>();
         var service = new RaidService(
             raids.Object, participants.Object, players.Object, resources.Object,
             energy.Object, gems.Object, stats.Object, inventory.Object,
@@ -236,7 +237,7 @@ public class RaidServiceTests
             trophyRepo.Object, gauntletContent.Object, playerEventMagics.Object,
             playerMagicHonors.Object, strikes.Object, gauntletScoring.Object, gauntletCfg,
             gauntletCurrency.Object, guildMemberships.Object, guildEconomy.Object, mastery.Object,
-            achievements.Object, friendships.Object, random);
+            achievements.Object, friendships.Object, battalion.Object, random);
 
         return new ServiceBundle(service, raids, participants, players, resources, energy, gems,
             stats, inventory, itemDefs, lootTables, auditLog, definitions, hitCache, equipment,
@@ -3325,11 +3326,9 @@ public class RaidServiceTests
 
         currentResult.Success.Should().BeTrue();
         formerResult.Success.Should().BeTrue();
-        currentResult.Response!.OffCapAuraBonus.Should().BeGreaterThan(0, "Wrath fires at procChance 1.0");
-        formerResult.Response!.OffCapAuraBonus.Should().BeGreaterThan(0);
-        // amount: current = 2.50×1.25 = 3.125; former = 2.50×1.10 = 2.75 → current bonus is larger.
-        currentResult.Response.OffCapAuraBonus.Should().BeGreaterThan(formerResult.Response.OffCapAuraBonus,
-            "current-owner ×1.25 yields a larger amount than former-owner ×1.10 (same preProc/seed)");
+        // System 24 (D8) full-replace REMOVED off-cap auras from the Gauntlet — even a current owner gets 0.
+        currentResult.Response!.OffCapAuraBonus.Should().Be(0);
+        formerResult.Response!.OffCapAuraBonus.Should().Be(0);
     }
 
     [Fact]
@@ -3366,8 +3365,9 @@ public class RaidServiceTests
         var bothResult   = await both.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
         var formerResult = await former.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
 
-        bothResult.Response!.OffCapAuraBonus.Should().BeGreaterThan(formerResult.Response!.OffCapAuraBonus,
-            "current-owner status (×1.25) trumps the former-owner honor echo (×1.10)");
+        // D8 full-replace: auras removed from the Gauntlet → both resolve to 0 (no current/former distinction).
+        bothResult.Response!.OffCapAuraBonus.Should().Be(0);
+        formerResult.Response!.OffCapAuraBonus.Should().Be(0);
     }
 
     [Fact]
@@ -3401,9 +3401,8 @@ public class RaidServiceTests
         result.Success.Should().BeTrue();
         // The in-cap magic pool is clamped to 0.5×preProc; the off-cap bonus must be much larger,
         // proving it is NOT subject to MaxAggregateProcBonus.
-        result.Response!.OffCapAuraBonus.Should().BeGreaterThan(result.Response.MagicProcBonus,
-            "off-cap aura (6.25×preProc) is added uncapped, exceeding the 0.5×preProc magic cap");
-        result.Response.OffCapAuraBonus.Should().BeGreaterThan(0);
+        // D8 full-replace: no off-cap aura path on the Gauntlet anymore → always 0.
+        result.Response!.OffCapAuraBonus.Should().Be(0);
     }
 
     [Fact]
@@ -3428,17 +3427,17 @@ public class RaidServiceTests
         var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
 
         result.Success.Should().BeTrue();
-        result.Response!.OffCapAuraBonus.Should().BeGreaterThan(0,
-            "former-owner Blessing fires at procChance 1.0 with the ×1.10 honor multiplier");
+        // D8 full-replace: auras removed from the Gauntlet → 0 even for a former owner.
+        result.Response!.OffCapAuraBonus.Should().Be(0);
     }
 
     // ── (C) Strike spend forks stamina ──────────────────────────────────────
 
     [Theory]
-    [InlineData(1, 1)]    // Small
-    [InlineData(5, 5)]    // Medium
-    [InlineData(20, 20)]  // Large
-    public async Task Hit_GauntletRaid_SpendsStrikes_NotStamina_ByHitSize(int hitSize, int expectedStrikeCost)
+    [InlineData(1)]
+    [InlineData(5)]
+    [InlineData(20)]
+    public async Task Hit_GauntletRaid_SpendsFlatOneStrike_NotStamina(int hitSize)
     {
         var eventId = Guid.NewGuid();
         var b      = BuildService(new Random(0));
@@ -3455,8 +3454,9 @@ public class RaidServiceTests
 
         result.Success.Should().BeTrue();
         // Strikes spent by hit size; stamina untouched.
-        b.Strikes.Verify(r => r.SpendAsync(player.Id, expectedStrikeCost, It.IsAny<string>(), It.IsAny<CancellationToken>()),
-            Times.Once, "Gauntlet hit spends Strikes scaled by hit size (1/5/20)");
+        // D6 (System 24): Gauntlet strikes are a FLAT 1 ticket regardless of hit size.
+        b.Strikes.Verify(r => r.SpendAsync(player.Id, 1, It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Once, "Gauntlet hit spends a flat 1 ticket regardless of hit size");
         b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
             Times.Never, "Gauntlet hit must NOT spend stamina");
     }
