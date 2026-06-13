@@ -10,6 +10,8 @@ public class PlayerProfileResponse
     public string Class { get; set; } = string.Empty;
     public long Experience { get; set; }
     public long Gold { get; set; }
+    // Gem balance — never stored; SUMMED from the gem_transactions ledger (System 7) for header display.
+    public int Gems { get; set; }
     public Guid? GuildId { get; set; }
     public string? GuildRank { get; set; }
     public DateTimeOffset CreatedAt { get; set; }

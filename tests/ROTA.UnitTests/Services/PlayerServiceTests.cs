@@ -40,10 +40,14 @@ public class PlayerServiceTests
         var mastery = new Mock<IMasteryService>();
         // Achievements (TICKET 46) — default: zero AP, no-op evaluation.
         var achievements = new Mock<IAchievementService>();
+        // Gem balance (header display) — default: zero balance.
+        var gems = new Mock<IGemService>();
+        gems.Setup(g => g.GetBalanceAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(0);
 
         var service = new PlayerService(
             players.Object, energy.Object, auditLog.Object, equipment.Object,
-            masteryRepo.Object, mastery.Object, achievements.Object);
+            masteryRepo.Object, mastery.Object, achievements.Object, gems.Object);
         return (service, players, energy, auditLog);
     }
 

@@ -1,29 +1,59 @@
-# ROTA Session Handoff — 2026-06-12 (UI-template era · 3 batches UNCOMMITTED · next: Profile overhaul)
+# ROTA Session Handoff — 2026-06-12 (Obsidian Gilt UI swap · prior batches COMMITTED · profile+shell UNCOMMITTED)
 
 ## TL;DR (resume here)
-The 2026-06-11/12 session: playtest tickets T1/T4/T3 fixed + COMMITTED (backend `ecf9277` pushed,
-client `6dbb9c5` local), then THREE further batches built + verified but **UNCOMMITTED** (owner was
-mid-playtest-loop; see UNCOMMITTED WORK below). **964 unit + 111 integration green; client
-scratch-compile 0 errors.**
+Two sessions on 2026-06-12. **Session A (Fable):** the three quest/UI batches were COMMITTED —
+backend **`ba3dc62`** (push to origin BLOCKED by the auto-mode classifier on direct-to-`main`;
+**owner must `git push origin main`**), client **`bc290c5`**. **Session B (Opus 4.8, ultracode;
+Fable was disabled mid-session):** Profile rework + the Obsidian Gilt UI swap. Both UNCOMMITTED,
+pending owner Unity playtest. **964 unit + 111 integration green; client scratch-compile 0 errors.**
 
-- **➊ FIRST ACTION — owner review + commit** the uncommitted work in BOTH repos (file list below).
-- **➋ NEXT WORK (owner-declared 2026-06-12):**
-  1. **PROFILE screen UI overhaul** — template rollout target #2 (use Theme.uss `.card/.kicker/
-     .stat-hero/.chip/.btn-cta/.art-slot/.slot-tile/.overlay-*` + `RotaClient.UI.OverlayPanel`
-     pop-outs; the Gauntlet page is the reference implementation).
-  2. **CLASS-SPECIFIC ICONS** — the owner has GENERATED icons (ask where the files are!); they
-     display in the top-left HeaderBar portrait slot (`.header__portrait`, 32×32 gold-bordered)
-     keyed off `Profile.Class`. Suggested convention: drop files in
-     `Assets/ROTA.Client/Resources/UI/ClassIcons/<ClassName>.png` → `Resources.Load<Texture2D>`.
-  3. **Resource-bars stylistic overhaul** (HeaderBar) — pairs with the class icon; stylistic only,
-     the T4 PlayerState.GetLiveResource data flow stays.
+- **➊ BACKEND:** `git push origin main` for `ba3dc62` (committed, not pushed) — AND there is NEW
+  UNCOMMITTED backend gem-wiring on top (PlayerDTOs/PlayerService/PlayerServiceTests; 964 unit green)
+  to commit with it.
+- **➋ UNCOMMITTED, awaiting owner playtest → commit (client repo, on top of `bc290c5`):**
+  1. **ProfileScreen REBUILT on the template** (Gauntlet-mirror, owner-approved shape): left HERO
+     card (portrait + level/class + ATK/DEF/GOLD/AWARDS chips + INVESTMENTS sheet + LSI/BSI + one
+     ALLOCATE `.btn-cta`); right rail = EQUIPPED slot-tile grid + 🎒 Bag / 🏅 Awards. EVERY action
+     is an `OverlayPanel` pop-out (alloc steppers w/ live LSI/BSI; bag tabs whose rows open a
+     detail pop-out carrying Equip/Use; equipped-tile→Unequip; achievements summary off the AWARDS
+     chip). Portrait pre-wired to `Resources/UI/ClassIcons/<Class>` with a glyph fallback.
+  2. **OBSIDIAN GILT shell slice 1** (the CHOSEN UI direction — warm Gilded-Codex palette kept +
+     left icon RAIL + rounder gold-glass): **AppShell.cs** root → ROW `[rail | app-main(header+
+     content)]`; **BottomNav.cs** = vertical rail + 👑 `.nav__crest` (orientation is pure USS, same
+     6 destinations, API unchanged); **Theme.uss** v2 (`.nav` rail, `.app-main`, slim gold-edged
+     `.header`, refined `.bar` track, + a "rounding pass" bumping `.card/.panel/.overlay-panel/
+     .chip/...` radii). HeaderBar.cs UNCHANGED (re-skins via USS). Adversarially reviewed (3 lenses):
+     USS-validity + blast-radius CLEAN; the one "login breaks" finding was a verified FALSE POSITIVE
+     (login centres identically via `.screen--centered`). Known follow-up: wrap the rail in a
+     ScrollView ONLY if landscape/desktop is targeted (portrait fits 6 tiles + crest fine).
+  3. **Header + bars + rail polish (2026-06-13):** GEM balance wired end-to-end (backend
+     `PlayerProfileResponse.Gems` ← `IGemService` ledger SUM; client mirror + `MockProfile.Gems`);
+     header now shows GOLD + GEMS `.chip` plates (action buttons dropped to a row below); resource
+     bars RECOLORED (energy green · stamina yellow · guild purple · **HP red**); rail REORDERED to
+     Home·Profile·Quest·Raids·Guild·Legion + a ⚙ **Options** foot tile (pop-out: reward toggle +
+     replay tutorial). Backend 964 unit green; client compiles. Optional extras mocked, owner to
+     pick (crest level badge · active-tile accent · rail notif dots · XP sliver · daily-reward btn).
+  4. **Rail/header EXTRAS (2026-06-13) — all 5 added (UNCOMMITTED, compiles):** active-tile gold
+     accent · crest level badge (BottomNav now takes PlayerState) · rail notification dots +
+     `SetBadge` (Raids/Guild, seeded in MOCK only — no live count endpoint; cleared on visit) · XP
+     sliver under the bars · 🎁 daily-reward button → OverlayPanel STUB (no daily-claim backend yet).
+     A 2-lens adversarial review caught + FIXED a blocker (UI-Toolkit Button can't reliably host child
+     elements → each tile is now a `.nav__tile` wrapper; SetActive uses a button dict). Follow-ups:
+     live notif-dot data + daily-reward claim backend.
+  5. **CLASS EMBLEMS located (2026-06-13):** 8 GPT crests at `assets/classes/*.png` (GUID-named,
+     white-bg, circular = a TIER LADDER, not per-class). Proposed rank order sent to owner for
+     confirmation; once mapped, copy to client `Resources/UI/ClassIcons/` + wire crest/portrait by
+     tier (already `Resources.Load`-wired with glyph fallback).
+- **➌ NEXT (owner-declared):** Obsidian Gilt **slice 2** = screen-specific card polish (Quest/Raid/
+  Gauntlet detail surfaces adopt the rounded template); **class-icon FILES** (owner has them but NOT
+  READY yet — drop into `Resources/UI/ClassIcons/<ClassName>.png`, zero code); then **T5 battalion
+  BACKEND** slice (spec §0b D8, formula LOCKED — below).
 - **Owner standards are LAW** (memory `owner-ui-standards`): pop-outs not expansions; rewards in
-  ONE fixed replace-only slot (never stack/shift layout); action buttons never move; no grey
-  buttons; locked = unselectable; Gauntlet = the template.
-- T5 battalion BACKEND slice still pending (spec §0b D8, formula LOCKED — see below).
-- **Lore→items** still queued; overlaps the art/lore slots already reserved in the new screens.
+  ONE fixed replace-only slot; action buttons never move; no grey buttons; locked = unselectable;
+  Gauntlet = the template; **Obsidian Gilt = the chosen modern skin**.
+- **Lore→items** still queued; overlaps the art/lore slots reserved across the new screens.
 
-## UNCOMMITTED WORK (review → commit; all verified green)
+## WHAT'S IN THE COMMITTED BATCHES (backend `ba3dc62` · client `bc290c5`)
 **Backend (ROTA, on top of `ecf9277`):** ItemDTOs.cs + ItemService.cs (sigil SummonRaidId/
 SummonDifficulty hydration for the summon screen); QuestService.cs + QuestConfig.cs +
 LootTableDefinition.cs + content/loot_tables.json (ZONE-scoped difficulty unlock · sigils only

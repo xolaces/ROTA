@@ -14,6 +14,7 @@ public sealed class PlayerService : IPlayerService
     private readonly IPlayerMasteryRepository _masteryRepo;
     private readonly IMasteryService _mastery;
     private readonly IAchievementService _achievements;
+    private readonly IGemService _gems;
 
     public PlayerService(
         IPlayerRepository players,
@@ -22,7 +23,8 @@ public sealed class PlayerService : IPlayerService
         IEquipmentService equipment,
         IPlayerMasteryRepository masteryRepo,
         IMasteryService mastery,
-        IAchievementService achievements)
+        IAchievementService achievements,
+        IGemService gems)
     {
         _players      = players;
         _energy       = energy;
@@ -31,6 +33,7 @@ public sealed class PlayerService : IPlayerService
         _masteryRepo  = masteryRepo;
         _mastery      = mastery;
         _achievements = achievements;
+        _gems         = gems;
     }
 
     public async Task<PlayerProfileResponse?> GetProfileAsync(Guid playerId, CancellationToken ct = default)
@@ -85,6 +88,9 @@ public sealed class PlayerService : IPlayerService
             // swallow — AP display is non-critical to the profile load
         }
 
+        // Gem balance — SUMMED from the gem_transactions ledger (never stored), for header display.
+        int gemBalance = await _gems.GetBalanceAsync(playerId, ct);
+
         return new PlayerProfileResponse
         {
             Id               = player.Id,
@@ -95,6 +101,7 @@ public sealed class PlayerService : IPlayerService
             Class            = player.Class.ToString(),
             Experience       = player.Experience,
             Gold             = player.Gold,
+            Gems             = gemBalance,
             GuildId          = player.GuildId,
             GuildRank        = player.GuildRank,
             CreatedAt        = player.CreatedAt,
