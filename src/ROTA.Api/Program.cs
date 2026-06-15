@@ -72,8 +72,8 @@ builder.Services.AddCors(options =>
 // SECURITY: RS256 uses asymmetric keys. Private key signs tokens (server only).
 // Public key verifies them. HS256 is banned - shared secret is a single point of compromise.
 var rsaPublicKey = RSA.Create();
-rsaPublicKey.ImportFromPem(builder.Configuration["Jwt:PublicKey"]
-    ?? throw new InvalidOperationException("Jwt:PublicKey is not configured."));
+// PEM may arrive single-line with literal "\n" (a Docker .env can't hold real newlines) — normalize first.
+rsaPublicKey.ImportFromPem(ROTA.Application.Configuration.PemKey.Normalize(builder.Configuration["Jwt:PublicKey"]));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

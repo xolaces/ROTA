@@ -413,8 +413,8 @@ public sealed class AuthService : IAuthService
 
     private SigningCredentials GetSigningCredentials()
     {
-        var privateKeyPem = _config["Jwt:PrivateKey"]
-            ?? throw new InvalidOperationException("Jwt:PrivateKey is not configured.");
+        // PEM may arrive single-line with literal "\n" (a Docker .env can't hold real newlines) — normalize.
+        var privateKeyPem = Configuration.PemKey.Normalize(_config["Jwt:PrivateKey"]);
 
         return SigningCredentialsByPem.GetOrAdd(privateKeyPem, static pem =>
         {

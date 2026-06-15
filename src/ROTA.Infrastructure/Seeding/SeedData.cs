@@ -15,7 +15,7 @@ namespace ROTA.Infrastructure.Seeding;
 public static class SeedData
 {
     /// <summary>
-    /// Ensures the bootstrap admin account "Xolaces" exists.
+    /// Ensures the bootstrap admin account "Owner" exists.
     /// Reads <c>Seed:AdminPassword</c> from configuration — NEVER falls back to a hardcoded default.
     /// If the password is missing, logs a warning and returns without creating the account.
     /// Idempotent: a second call with the same account already present is a no-op.
@@ -38,23 +38,23 @@ public static class SeedData
         {
             logger.LogWarning(
                 "Seed: Seed:AdminPassword is not configured. " +
-                "Admin account 'Xolaces' was NOT created. " +
+                "Admin account 'Owner' was NOT created. " +
                 "Set the value via user-secrets or environment variable to enable seeding.");
             return;
         }
 
         // Idempotency guard: skip if the admin account already exists.
-        if (await players.UsernameExistsAsync("Xolaces"))
+        if (await players.UsernameExistsAsync("Owner"))
         {
-            logger.LogInformation("Seed: admin account 'Xolaces' already exists — skipping.");
+            logger.LogInformation("Seed: admin account 'Owner' already exists — skipping.");
             return;
         }
 
-        var adminEmail = config["Seed:AdminEmail"] ?? "xolaces@rota.dev";
+        var adminEmail = config["Seed:AdminEmail"] ?? "admin@rota.local";
 
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(adminPassword, workFactor: 12);
-        var admin = Player.Create("Xolaces", adminEmail, passwordHash);
-        admin.UpdateDisplayName("DEV_Xolaces");
+        var admin = Player.Create("Owner", adminEmail, passwordHash);
+        admin.UpdateDisplayName("DEV_Owner");
         admin.GrantRole(PlayerRoles.Admin);  // Roles = Player | Admin
 
         await players.CreateAsync(admin);
@@ -63,10 +63,10 @@ public static class SeedData
             admin.Id,
             "AdminSeeded",
             inputHash: null,
-            resultSummary: "Bootstrap admin account 'Xolaces' created at startup",
+            resultSummary: "Bootstrap admin account 'Owner' created at startup",
             ipAddress: null));
 
-        logger.LogInformation("Seed: admin account 'Xolaces' created (id={AdminId}).", admin.Id);
+        logger.LogInformation("Seed: admin account 'Owner' created (id={AdminId}).", admin.Id);
     }
 
     /// <summary>

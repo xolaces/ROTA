@@ -18,7 +18,7 @@ public static class ReservedUsernames
     {
         "admin", "administrator", "mod", "moderator", "staff",
         "dev", "developer", "gm", "gamemaster", "owner",
-        "official", "support", "system", "rota", "ancient", "xolaces",
+        "official", "support", "system", "rota", "ancient",
     };
 
     // Prefixes (case-insensitive) reserved for staff / system handles.

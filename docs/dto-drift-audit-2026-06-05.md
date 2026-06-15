@@ -68,7 +68,7 @@ fixed), ItemGrantDTO, EquipRequest, OwnedGearResponse, **all Leaderboard DTOs**.
   Fix: pass `null` as `periodKey` (the server resolves the correct current key for the selected
   period). `LeaderboardScreen.cs:156`.
 - **Backend/data — FIXED this batch (commit `c07969e` + snapshot):** root cause of "empty boards"
-  was eligibility, not a code bug — the only player is the admin `Xolaces` at L3, filtered by
+  was eligibility, not a code bug — the only player is the admin `Owner` at L3, filtered by
   `MinLevel=20` **and** `ExcludeAdmins=true`. Dev override (`appsettings.Development.json`:
   `MinLevel=1`, `ExcludeAdmins=false`) + `leaderboard-refresh-stat` now make all 6 boards show the
   owner's data. **Production keeps the locked L20 + exclude-admins rules.** Real boards populate once

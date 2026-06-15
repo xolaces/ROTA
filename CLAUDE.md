@@ -164,7 +164,7 @@ Migrations applied: AddPlayerRolesAndDisplayName (Component A), AddBetaKeys (Com
   AuthService transactional beta-gate (claim key, create player, rollback on failure),
   Player.CreateWithId factory, 18 unit tests + 1 concurrency integration test
 - Component C: SeedData.EnsureAdminAsync (idempotent, reads Seed:AdminPassword — REQUIRED,
-  never hardcoded; default email xolaces@rota.dev), wired in Program.cs pre-Run,
+  never hardcoded; default email admin@rota.local), wired in Program.cs pre-Run,
   4 unit-style tests; Seed:AdminEmail optional config
 - Component D: IPlayerRepository.FindByUsernameAsync + CountByRoleAsync,
   IRefreshTokenRepository.RevokeAllActiveAsync, IAdminService + AdminService
@@ -178,7 +178,7 @@ Migrations applied: AddPlayerRolesAndDisplayName (Component A), AddBetaKeys (Com
 Configuration keys (set via user-secrets or env vars):
   BetaGate:Enabled          default true — set to false to open registration
   Seed:AdminPassword        REQUIRED for seed-admin (never has a default)
-  Seed:AdminEmail           default xolaces@rota.dev
+  Seed:AdminEmail           default admin@rota.local
 
 ## Phase 1 BACKEND COMPLETE
 ## Phase 1 Extensions COMPLETE (2026-05-28)
@@ -464,13 +464,13 @@ completed→`Lootable`→`Looted` lifecycle (**`RaidLifecycleState`** {Active=0,
 The hidden developers-only guild. NO schema change — the new `PlayerRoles.Developer = 1 << 3` flag is a
 plain bit in the existing int `roles` column, and the guild reuses the Guild/GuildMembership tables.
 - **Enum/config:** `PlayerRoles.Developer`; new `DeveloperConfig` (bound from `Developer` section:
-  `Usernames[]` + `PlayerIds[]`, **EMPTY by default** — owner adds Nathan's identifier later, nothing
+  `Usernames[]` + `PlayerIds[]`, **EMPTY by default** — owner adds the owner's identifier later, nothing
   hardcoded); `GuildConfig.DevGuildTag="DEV"`/`DevGuildName="The Dev Coffee Shop"`/`DevGuildDescription`.
 - **Seeding:** `SeedData.EnsureDevGuildAsync` (wired in Program.cs right after EnsureAdminAsync) —
   idempotently grants the Developer flag to allowlisted accounts (by username AND guid), ensures the Dev
   guild exists (created **led by the first resolvable dev**, JoinPolicy=InviteOnly), and auto-joins devs.
   OWNER DECISION: if NO dev account resolves, guild creation is SKIPPED with a warning (a guild needs a
-  non-null leader FK and we must never flag/lock the seeded admin Xolaces into it) — it auto-seeds once a
+  non-null leader FK and we must never flag/lock the seeded admin Owner into it) — it auto-seeds once a
   dev is added to config and the server restarts. Audit actions: DevFlagGranted / DevGuildSeeded /
   DevGuildJoined (+ DevFlagRevoked on unflag).
 - **Visibility:** `GuildRepository.BrowseAsync` (injects IOptions<GuildConfig>) excludes the dev tag
@@ -484,8 +484,8 @@ plain bit in the existing int `roles` column, and the guild reuses the Guild/Gui
 - JWT: AuthService already emits a role claim per set flag, so Developer surfaces automatically.
 - Tests: 7 GuildService gate tests + 4 EnsureDevGuildAsync tests (create/idempotent/by-username+guid/
   empty-allowlist no-op) + 1 BrowseAsync exclusion (real Postgres). **887 green (794 unit + 93 integration),
-  0 errors, 0 CS warnings.** No EF migration. Developer allowlist: OWNER DECISION 2026-06-11 — `Developer.Usernames:["Xolaces"]`
-  is INTENTIONAL (Xolaces stays flagged Developer + in the Dev guild); Nathan's identifier still pending.
+  0 errors, 0 CS warnings.** No EF migration. Developer allowlist: OWNER DECISION 2026-06-11 — `Developer.Usernames:["Owner"]`
+  is INTENTIONAL (Owner stays flagged Developer + in the Dev guild); the owner's identifier still pending.
 
 ## T44 + T45 — Chapter/Zone map + XP rebalance (2026-06-08) — COMPLETE (one coupled job)
 The questing spine becomes a data-driven **Chapter → Zone → Node** hierarchy and the previously-dead
@@ -784,7 +784,7 @@ dotnet ef migrations add <Name> --project src/ROTA.Infrastructure --startup-proj
 dotnet ef database update --project src/ROTA.Infrastructure --startup-project src/ROTA.Api
 
 ## Admin CLI commands (replace Kestrel, no HTTP server started)
-dotnet run --project src/ROTA.Api -- seed-admin                    ← create Xolaces admin (reads Seed:AdminPassword)
+dotnet run --project src/ROTA.Api -- seed-admin                    ← create Owner admin (reads Seed:AdminPassword)
 dotnet run --project src/ROTA.Api -- gen-beta-key [count]          ← generate 1..100 ROTA-XXXX-XXXX-XXXX keys
 dotnet run --project src/ROTA.Api -- promote <user|guid> <Role>    ← grant Admin or Moderator role
 dotnet run --project src/ROTA.Api -- demote  <user|guid> <Role>    ← revoke Admin or Moderator role

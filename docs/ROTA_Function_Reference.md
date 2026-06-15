@@ -1203,7 +1203,7 @@ ROTA-XXXX-XXXX-XXXX Crockford base32 keygen via RandomNumberGenerator. GenerateA
 
 ### SeedData (static)
 `src/ROTA.Infrastructure/Seeding/SeedData.cs`
-EnsureAdminAsync: idempotent bootstrap. Reads Seed:AdminPassword (required, no default) and Seed:AdminEmail (default xolaces@rota.dev). Creates "Xolaces" with Player|Admin roles and DisplayName="DEV_Xolaces". BCrypt(12).
+EnsureAdminAsync: idempotent bootstrap. Reads Seed:AdminPassword (required, no default) and Seed:AdminEmail (default admin@rota.local). Creates "Owner" with Player|Admin roles and DisplayName="DEV_Owner". BCrypt(12).
 EnsureDevGuildAsync (T43): idempotent. Resolves the `Developer` allowlist (Usernames[]+PlayerIds[], EMPTY by default), grants `PlayerRoles.Developer`, ensures the Dev guild ("The Dev Coffee Shop", tag DEV, InviteOnly) led by the first resolvable dev, auto-joins devs. Skips guild creation (warns) when no dev resolves — never flags/locks the seeded admin. Audits DevFlagGranted/DevGuildSeeded/DevGuildJoined. Wired in Program.cs after EnsureAdminAsync.
 FlagDeveloperAsync(sp, target, grant) (T43): CLI helper for flag-dev/unflag-dev. grant=true grants the flag + ensures guild + auto-joins; grant=false removes from the dev guild + revokes the flag. Returns a status string (null when the target doesn't resolve).
 

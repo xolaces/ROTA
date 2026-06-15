@@ -1,6 +1,6 @@
 # System 13 — Moderation & Punishment Logging (SPEC, queued)
 
-*Drafted 2026-05-29 · Status: queued, builds after System 12 is merged · Owner: Xolaces*
+*Drafted 2026-05-29 · Status: queued, builds after System 12 is merged · Owner: Owner*
 
 Implements the Moderator role's actual powers and the binding governance rules from
 `docs/DESIGN_NORTHSTAR.md` §6. Depends on System 12 (roles, `ModeratorOrAdmin` policy,
@@ -10,7 +10,7 @@ admin tooling, punishment-actor plumbing). Server-only. No UI/Unity.
 - Moderator exists mostly for **world chat** and **staff reports**.
 - Moderator powers: **chat mute** and **temporary bans up to 3 days**.
 - **A reason must be stated before any ban** (and any mute). No reasonless punishments.
-- **Staff reports** escalate a **priority report to the admin (Xolaces)**.
+- **Staff reports** escalate a **priority report to the admin (Owner)**.
 - **Every punishment, by any role, against any player, must be logged.**
 
 ## Binding rules (non-negotiable)

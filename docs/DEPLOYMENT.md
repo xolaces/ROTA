@@ -35,7 +35,7 @@ Optional:
 | `Email__Username` / `Email__Password` | empty | SMTP creds (Gmail app password). Unset → sends skip, rows still persist |
 | `Email__Enabled` | `true` | Master email switch |
 | `BetaGate__Enabled` | `true` | Beta-key requirement on registration |
-| `Seed__AdminEmail` | `xolaces@rota.dev` | Seeded admin email |
+| `Seed__AdminEmail` | `admin@rota.local` | Seeded admin email |
 | `Admin__PlayerIds__0...` | — | Break-glass admin allowlist |
 | `Auth__PasswordResetTokenMinutes` | `15` | T65 reset-code TTL |
 | `ForwardedHeaders__Enabled` | `false` | Honour `X-Forwarded-For/-Proto` from trusted proxies |

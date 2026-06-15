@@ -4,7 +4,7 @@ ROTA - Personal Changelog & Learning Notes
  as a learning record only — release history now lives in CLAUDE.md (build status sections),
  docs/SESSION_HANDOFF.md (current), and docs/specs/shipped/ (per-system decision records).]
 Started: 2026-05-20
-Developer: xolaces
+Developer: owner
 Stack: C# / ASP.NET Core / PostgreSQL / Redis / Unity (client, later)
 
 ==========================================
@@ -347,7 +347,7 @@ Migration applied: AddBetaKeys
 COMPONENT C - ADMIN SEED
 --------------------------
 SeedData.EnsureAdminAsync runs at startup, before the HTTP server accepts
-any requests. It checks if "Xolaces" exists. If not, it reads the admin
+any requests. It checks if "Owner" exists. If not, it reads the admin
 password from Seed:AdminPassword in configuration (never hardcoded) and
 creates the account with Admin + Player roles.
 
@@ -384,7 +384,7 @@ COMPONENT E - BOOTSTRAP CLI
 AdminCli.cs lets you run admin operations directly from the command line
 without starting the HTTP server.
 
-  seed-admin                  create the Xolaces admin account
+  seed-admin                  create the Owner admin account
   gen-beta-key [count]        generate 1 to 100 beta keys
   promote {user|guid} {Role}  grant a role
   demote  {user|guid} {Role}  revoke a role

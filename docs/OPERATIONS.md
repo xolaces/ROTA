@@ -104,7 +104,7 @@ dotnet run --project src/ROTA.Api -- seed-admin
 dotnet run --project src/ROTA.Api -- gen-beta-key 5
 
 # Grant a role to a player (by username or GUID). Roles: Admin, Moderator
-dotnet run --project src/ROTA.Api -- promote Xolaces Moderator
+dotnet run --project src/ROTA.Api -- promote Owner Moderator
 dotnet run --project src/ROTA.Api -- promote 3f2b...-guid Admin
 
 # Revoke a role (last-admin demotion is blocked; demoting Admin/Moderator revokes their sessions)
@@ -119,9 +119,9 @@ dotnet run --project src/ROTA.Api -- demote SomeUser Moderator
 
 | Field | Value |
 |---|---|
-| Username | `Xolaces` (fixed) |
-| Display name | `DEV_Xolaces` (fixed) |
-| Email | `Seed:AdminEmail` (default `xolaces@rota.dev`) |
+| Username | `Owner` (fixed) |
+| Display name | `DEV_Owner` (fixed) |
+| Email | `Seed:AdminEmail` (default `admin@rota.local`) |
 | Password | `Seed:AdminPassword` user-secret (BCrypt(12)-hashed; never hardcoded) |
 | Roles | `Player | Admin` |
 
@@ -152,7 +152,7 @@ or re-login; demotion of Admin/Moderator revokes the target's refresh tokens imm
 |---|---|---|
 | `BetaGate:Enabled` | `true` | When true, registration requires a valid unredeemed beta key. Set `false` for open registration at public launch (no code change). |
 | `Seed:AdminPassword` | _(unset)_ | Required to create the admin account; unset ⇒ seeding skipped. |
-| `Seed:AdminEmail` | `xolaces@rota.dev` | Email used for the seeded admin. |
+| `Seed:AdminEmail` | `admin@rota.local` | Email used for the seeded admin. |
 | `Admin:PlayerIds` | _(empty)_ | Break-glass admin allowlist (GUIDs); grants `AdminOnly` even without the role claim. |
 
 > **Migration policy (resolved):** the web host auto-migrates in Development only. Production

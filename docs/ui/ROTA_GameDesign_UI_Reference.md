@@ -384,7 +384,7 @@ Hard requires Normal completion, Legendary requires Hard, Nightmare requires Leg
 │  ROSTER TAB                                              │
 │  [GuildMaster] Kaelar        Online  Lv.142              │
 │  [Officer]     Thornwood     2h ago  Lv.98               │
-│  [Member]      xolaces       Online  Lv.67               │
+│  [Member]      owner       Online  Lv.67               │
 │  [Recruit]     Daryn         4d ago  Lv.23               │
 │                                                          │
 │  Members: 24 / 30            [+ Invite] [Leave Guild]   │
@@ -437,7 +437,7 @@ Hard requires Normal completion, Legendary requires Hard, Nightmare requires Leg
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  [Avatar — tap to change cosmetic]                       │
-│  xolaces                     Level 67                    │
+│  owner                     Level 67                    │
 │  Class: Warlord               Guild: Iron Vanguard       │
 ├─────────────────────────────────────────────────────────┤
 │  STATS                                                   │
@@ -664,4 +664,4 @@ Note: difficulty is passed at summon time. Server computes finalHp = baseHp × m
 ---
 *Document version: Phase 1 Complete / Phase 1 Extensions In Progress*
 *Last updated: 2026-05-25*
-*Owner: xolaces*
+*Owner: owner*

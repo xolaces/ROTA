@@ -9,7 +9,7 @@ namespace ROTA.Application.Services;
 
 public sealed class StatService : IStatService
 {
-    private const double LsiCap = 9.0;
+    private const double LsiCap = 8.0;
 
     private readonly IPlayerRepository _players;
     private readonly IEnergyService _energy;

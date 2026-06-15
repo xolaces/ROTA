@@ -49,7 +49,7 @@ public class OutboundEmail
     /// <summary>Full subject line, already tagged: <c>[ROTA][PlayerReport] …</c>.</summary>
     public string Subject { get; private set; } = string.Empty;
 
-    /// <summary>Operator inbox (default rotadevteam@gmail.com).</summary>
+    /// <summary>Operator inbox (default operator@example.com).</summary>
     public string Recipient { get; private set; } = string.Empty;
 
     /// <summary>Player who triggered this (reporter, submitter, target, claimant) — nullable for system events.</summary>

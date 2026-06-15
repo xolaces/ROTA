@@ -24,7 +24,7 @@ public class EmailNotificationServiceTests
         var queue = new Mock<IEmailSendQueue>();
         var email = new Mock<IEmailService>();
         var audit = new Mock<IAuditLogRepository>();
-        var options = Options.Create(cfg ?? new EmailConfig { OperatorRecipient = "rotadevteam@gmail.com" });
+        var options = Options.Create(cfg ?? new EmailConfig { OperatorRecipient = "operator@example.com" });
         var log = new Mock<ILogger<EmailNotificationService>>();
         var service = new EmailNotificationService(
             emails.Object, queue.Object, email.Object, audit.Object, options, log.Object);
@@ -60,7 +60,7 @@ public class EmailNotificationServiceTests
         captured!.Id.Should().Be(id);
         captured.SendStatus.Should().Be(EmailSendStatus.Queued);
         captured.ReviewStatus.Should().Be(EmailReviewStatus.Pending);
-        captured.Recipient.Should().Be("rotadevteam@gmail.com");
+        captured.Recipient.Should().Be("operator@example.com");
         captured.Subject.Should().StartWith("[ROTA][PlayerReport]");
         captured.DetailJson.Should().Contain("harassment", "the structured payload is serialized to jsonb");
 
@@ -116,7 +116,7 @@ public class EmailNotificationServiceTests
     {
         var (service, emails, _, email, _) = BuildService();
         var row = OutboundEmail.Create(EmailType.BugReport, "[ROTA][BugReport] x",
-            "rotadevteam@gmail.com", "bug", null, "T38", "{}", null);
+            "operator@example.com", "bug", null, "T38", "{}", null);
         emails.Setup(r => r.GetByIdAsync(row.Id, It.IsAny<CancellationToken>())).ReturnsAsync(row);
         OutboundEmail? updated = null;
         emails.Setup(r => r.UpdateAsync(It.IsAny<OutboundEmail>(), It.IsAny<CancellationToken>()))
@@ -138,7 +138,7 @@ public class EmailNotificationServiceTests
     {
         var (service, emails, _, email, _) = BuildService();
         var row = OutboundEmail.Create(EmailType.ModerationAction, "[ROTA][ModerationAction] x",
-            "rotadevteam@gmail.com", "mute", null, "T40", null, null);
+            "operator@example.com", "mute", null, "T40", null, null);
         emails.Setup(r => r.GetByIdAsync(row.Id, It.IsAny<CancellationToken>())).ReturnsAsync(row);
         OutboundEmail? updated = null;
         emails.Setup(r => r.UpdateAsync(It.IsAny<OutboundEmail>(), It.IsAny<CancellationToken>()))
@@ -176,7 +176,7 @@ public class EmailNotificationServiceTests
     {
         var (service, emails, _, email, _) = BuildService(new EmailConfig { MaxSendAttempts = 5 });
         var row = OutboundEmail.Create(EmailType.BugReport, "[ROTA][BugReport] x",
-            "rotadevteam@gmail.com", "bug", null, "T38", "{}", null);
+            "operator@example.com", "bug", null, "T38", "{}", null);
         emails.Setup(r => r.GetByIdAsync(row.Id, It.IsAny<CancellationToken>())).ReturnsAsync(row);
         email.SetupSequence(s => s.SendAsync(It.IsAny<EmailMessage>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("smtp down"))
@@ -194,7 +194,7 @@ public class EmailNotificationServiceTests
     {
         var (service, emails, _, email, _) = BuildService(new EmailConfig { MaxSendAttempts = 2 });
         var row = OutboundEmail.Create(EmailType.BugReport, "[ROTA][BugReport] x",
-            "rotadevteam@gmail.com", "bug", null, "T38", "{}", null);
+            "operator@example.com", "bug", null, "T38", "{}", null);
         emails.Setup(r => r.GetByIdAsync(row.Id, It.IsAny<CancellationToken>())).ReturnsAsync(row);
         email.Setup(s => s.SendAsync(It.IsAny<EmailMessage>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("smtp down"));
@@ -212,7 +212,7 @@ public class EmailNotificationServiceTests
         // delivery attempt must no-op instead of double-sending.
         var (service, emails, _, email, _) = BuildService();
         var row = OutboundEmail.Create(EmailType.BugReport, "[ROTA][BugReport] x",
-            "rotadevteam@gmail.com", "bug", null, "T38", "{}", null);
+            "operator@example.com", "bug", null, "T38", "{}", null);
         row.MarkSent();
         emails.Setup(r => r.GetByIdAsync(row.Id, It.IsAny<CancellationToken>())).ReturnsAsync(row);
 

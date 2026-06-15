@@ -29,7 +29,7 @@ public sealed class UpdateDisplayNameRequestValidator : AbstractValidator<Update
             .WithMessage("DisplayName may only contain letters, digits, spaces, underscores, and hyphens.")
             // SECURITY (exploit audit 2026-06-14, finding F): block impersonating a reserved staff/system
             // handle (DEV_*, admin, owner, …). The username register/rename paths already enforce this;
-            // the display-name path did not, so a player could set "DEV_Xolaces" and impersonate staff
+            // the display-name path did not, so a player could set "DEV_Owner" and impersonate staff
             // across chat, leaderboards, and rosters. IsReserved is case-insensitive + prefix-aware.
             .Must(d => !ReservedUsernames.IsReserved(d))
             .WithMessage("That display name is reserved. Please choose another.");

@@ -4,7 +4,7 @@ Status: **BACKEND COMPLETE (2026-06-06)** — all 8 backend tickets built, teste
 `feat/phase2-ops-social` (524 unit + 35 integration green). **Client (Unity) UI still to build** (the
 Editor was open all session → no headless compile; API plumbing written UNVERIFIED on client branch
 `feat/phase2-client-plumbing`). See CLAUDE.md "Phase 2 — Ops & Social" for the shipped summary.
-Owner: Nathan (a.k.a. Xolaces / DEV_Xolaces). Operator email: **rotadevteam@gmail.com**.
+Owner: the owner (a.k.a. Owner / DEV_Owner). Operator email: **operator@example.com**.
 
 > **Provider note:** Decision #1 selected SendGrid, but the owner supplied Gmail SMTP credentials, so
 > the working `IEmailService` is `SmtpEmailService` (Gmail; creds in user-secrets). SendGrid remains the
@@ -46,7 +46,7 @@ Chat cluster (shares a real-time-delivery decision — see Open Decision #3):
 ## 1. Current repo state (start of this batch)
 
 - **Backend** (.NET 10): `C:\Users\xolac\OneDrive\Documentos\Projects\ROTA` — git `main` @ `c80927f`,
-  remote `origin` = github.com/xolaces/ROTA, **all pushed**. Docker (pg+redis) up; all migrations
+  remote `origin` = github.com/owner/ROTA, **all pushed**. Docker (pg+redis) up; all migrations
   applied (latest `AddQuestEverCleared`). **478 unit + 35 integration green.** Branch
   `chore/drift-control-tooling` still UNMERGED (drift tooling + `/audit-dtos`).
 - **Unity** (6.4 / 6000.4.9f1): `C:\Dev\ROTA.Client6` — git `master` @ `ff90627`, **local-only**.
@@ -78,7 +78,7 @@ Self-contained operator notification backbone. **Persist first, send second, nev
 - **Outbound log table** (the dashboard's source of truth): `outbound_emails`. snake_case; every table
   rule from CLAUDE.md applies — `id uuid DEFAULT gen_random_uuid()`, `created_at`, `updated_at`,
   `is_deleted`; FKs indexed. Suggested columns:
-  - `email_type` (enum/text), `subject`, `recipient` (default rotadevteam@gmail.com)
+  - `email_type` (enum/text), `subject`, `recipient` (default operator@example.com)
   - `triggering_player_id` (uuid, nullable, FK→players, indexed), `triggering_system` (text, nullable)
   - `summary` (text), `detail` (jsonb — the structured payload), `metadata` (jsonb)
   - `send_status` (queued | sent | failed), `send_attempts`, `last_send_error`
@@ -111,7 +111,7 @@ Self-contained operator notification backbone. **Persist first, send second, nev
 - **Lives in its own repository** (not inside this ROTA repo). Name TBD; e.g. `rota-ops-dashboard`.
 - Reads the admin API. Groups entries **by type**; each row: type **badge**, **timestamp**, triggering
   **player/system**, **summary**, and an **expand** for detail. Approve/Dismiss buttons → triage.
-- Auth: admin login (reuse RS256 JWT + AdminOnly). This is Nathan's triage tool — read + manual approve.
+- Auth: admin login (reuse RS256 JWT + AdminOnly). This is the owner's triage tool — read + manual approve.
 
 ### 2e. Security / hygiene
 - Player-triggered emails (T37/T38) MUST be rate-limited per-player AND per-IP (RateLimitMiddleware +

@@ -24,11 +24,11 @@ public sealed class EmailConfig
     /// <summary>SMTP password / app-password — from user-secrets (Email:Password). Temporary; rotate.</summary>
     public string Password { get; set; } = string.Empty;
 
-    public string FromAddress { get; set; } = "rotadevteam@gmail.com";
+    public string FromAddress { get; set; } = "operator@example.com";
     public string FromName { get; set; } = "ROTA Ops";
 
     /// <summary>Where every operator notification is delivered.</summary>
-    public string OperatorRecipient { get; set; } = "rotadevteam@gmail.com";
+    public string OperatorRecipient { get; set; } = "operator@example.com";
 
     // T71 ops hardening — send retry + startup recovery.
     /// <summary>Total SMTP attempts per row before it is left Failed for dashboard triage.</summary>

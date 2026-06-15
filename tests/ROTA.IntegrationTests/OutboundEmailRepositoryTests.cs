@@ -40,7 +40,7 @@ public class OutboundEmailRepositoryTests : IAsyncLifetime
     }
 
     private static OutboundEmail Make(EmailPriority priority, EmailType type = EmailType.GeneralTicket)
-        => OutboundEmail.Create(type, $"[ROTA] {priority}", "rotadevteam@gmail.com",
+        => OutboundEmail.Create(type, $"[ROTA] {priority}", "operator@example.com",
             $"summary {priority}", triggeringPlayerId: null, triggeringSystem: "T52",
             detailJson: null, metadataJson: null, priority: priority);
 

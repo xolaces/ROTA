@@ -1,7 +1,7 @@
 # ROTA — Design North Star
 
 *Version 0.1 — 2026-05-29*
-*Owner: Xolaces (DEV_Xolaces)*
+*Owner: Owner (DEV_Owner)*
 
 This is ROTA's design bible: the durable vision the backend (and later the Unity client)
 is built toward. It sits **above** the research paper `dotdhistoryresearchpaper.pdf`.
@@ -24,7 +24,7 @@ preserving the friction the dedicated base actually loved.
 ## 1. Friction philosophy — keep it, but make it a throttle, not a wall
 
 The research paper's headline prescription is "eliminate hard energy gates, combat always
-free." **We amend this.** The operator (Xolaces) values the energy/stamina friction
+free." **We amend this.** The operator (Owner) values the energy/stamina friction
 *specifically* because it powers the consumable economy — the buy/use-a-potion-to-keep-going
 loop is a feature, a resource sink, and a monetization lane all at once.
 
@@ -113,7 +113,7 @@ In Dawn, the Gauntlet was a periodic competitive PvE event:
 - **Top-500-per-league** rewards, some **permanent/prestige**.
 - A **separate Battalion loadout** with paid expansion slots; a **Gauntlet Token shop**.
 
-**Amendment — in ROTA the Gauntlet is core and recurring, not occasional.** Xolaces played
+**Amendment — in ROTA the Gauntlet is core and recurring, not occasional.** Owner played
 Dawn largely *for* the Gauntlet, running multiple accounts to win different brackets. ROTA
 elevates it to a first-class, regularly-cadenced ladder (e.g., recurring cycles + periodic
 grand brackets — exact cadence TBD), designed so:
@@ -165,7 +165,7 @@ exists.
 - **A reason must be stated before any ban or mute.** No reasonless punishments, ever.
 - **Moderator role** (world-chat era): chat **mute**, **temporary bans up to 3 days**
   (reason required), and **staff reports** that escalate a **priority report to the admin
-  (Xolaces)**. Admins retain permanent bans and full role management.
+  (Owner)**. Admins retain permanent bans and full role management.
 - **Roles are RBAC flags** (Player / Moderator / Admin), grantable/revocable by admins, with
   a last-admin lockout guard and immediate session revocation on demotion.
 

@@ -48,7 +48,7 @@ public class SeedDataTests
         var auditMock   = new Mock<IAuditLogRepository>();
 
         playersMock
-            .Setup(r => r.UsernameExistsAsync("Xolaces", It.IsAny<CancellationToken>()))
+            .Setup(r => r.UsernameExistsAsync("Owner", It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
         playersMock
             .Setup(r => r.CreateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>()))
@@ -60,10 +60,10 @@ public class SeedDataTests
 
         playersMock.Verify(r => r.CreateAsync(
             It.Is<Player>(p =>
-                p.Username == "Xolaces" &&
+                p.Username == "Owner" &&
                 p.HasRole(PlayerRoles.Admin) &&
                 p.HasRole(PlayerRoles.Player) &&
-                p.DisplayName == "DEV_Xolaces"),
+                p.DisplayName == "DEV_Owner"),
             It.IsAny<CancellationToken>()), Times.Once,
             "admin must be created with correct username, roles, and display name");
 
@@ -80,7 +80,7 @@ public class SeedDataTests
 
         // Password is configured AND admin already exists — pure no-op.
         playersMock
-            .Setup(r => r.UsernameExistsAsync("Xolaces", It.IsAny<CancellationToken>()))
+            .Setup(r => r.UsernameExistsAsync("Owner", It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
         var sp = BuildProvider(BuildConfig("SuperSecret1!"), playersMock.Object, auditMock.Object);
@@ -100,7 +100,7 @@ public class SeedDataTests
         var auditMock   = new Mock<IAuditLogRepository>();
 
         playersMock
-            .Setup(r => r.UsernameExistsAsync("Xolaces", It.IsAny<CancellationToken>()))
+            .Setup(r => r.UsernameExistsAsync("Owner", It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
         var sp = BuildProvider(BuildConfig(adminPassword: null), playersMock.Object, auditMock.Object);
@@ -119,7 +119,7 @@ public class SeedDataTests
         var auditMock   = new Mock<IAuditLogRepository>();
 
         playersMock
-            .Setup(r => r.UsernameExistsAsync("Xolaces", It.IsAny<CancellationToken>()))
+            .Setup(r => r.UsernameExistsAsync("Owner", It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
         playersMock
             .Setup(r => r.CreateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>()))
@@ -245,14 +245,14 @@ public class SeedDataTests
     public async Task EnsureDevGuildAsync_GrantsDeveloperFlag_ByUsernameAndByGuid_AndCreatesGuild()
     {
         var h = new DevHarness();
-        var nathan = h.AddPlayer("nathan");
+        var dev_one = h.AddPlayer("dev_one");
         var byGuid = h.AddPlayer("guiduser");
-        h.DevConfig.Usernames = new[] { "nathan" };
+        h.DevConfig.Usernames = new[] { "dev_one" };
         h.DevConfig.PlayerIds = new[] { byGuid.Id.ToString() };
 
         await SeedData.EnsureDevGuildAsync(h.Provider);
 
-        nathan.HasRole(PlayerRoles.Developer).Should().BeTrue("username allowlist entry must be flagged");
+        dev_one.HasRole(PlayerRoles.Developer).Should().BeTrue("username allowlist entry must be flagged");
         byGuid.HasRole(PlayerRoles.Developer).Should().BeTrue("GUID allowlist entry must be flagged");
 
         var devGuild = h.Guilds.Guilds.Should().ContainSingle().Subject;
@@ -261,9 +261,9 @@ public class SeedDataTests
         devGuild.JoinPolicy.Should().Be(GuildJoinPolicy.InviteOnly);
 
         // First resolvable dev leads; both devs end up in the dev guild.
-        nathan.GuildId.Should().Be(devGuild.Id);
+        dev_one.GuildId.Should().Be(devGuild.Id);
         byGuid.GuildId.Should().Be(devGuild.Id);
-        h.Memberships.Rows.Should().Contain(m => m.PlayerId == nathan.Id && m.Rank == GuildRank.Leader);
+        h.Memberships.Rows.Should().Contain(m => m.PlayerId == dev_one.Id && m.Rank == GuildRank.Leader);
         h.Memberships.Rows.Should().Contain(m => m.PlayerId == byGuid.Id && m.Rank == GuildRank.Member);
         devGuild.MemberCount.Should().Be(2);
     }
@@ -272,8 +272,8 @@ public class SeedDataTests
     public async Task EnsureDevGuildAsync_SecondCall_IsIdempotent()
     {
         var h = new DevHarness();
-        var nathan = h.AddPlayer("nathan");
-        h.DevConfig.Usernames = new[] { "nathan" };
+        var dev_one = h.AddPlayer("dev_one");
+        h.DevConfig.Usernames = new[] { "dev_one" };
 
         await SeedData.EnsureDevGuildAsync(h.Provider);
         var guildCountAfterFirst = h.Guilds.Guilds.Count;

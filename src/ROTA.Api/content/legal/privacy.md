@@ -12,4 +12,4 @@
    deletion soft-deletes your profile; ledger rows required for integrity are retained.
 5. **Third parties.** Email delivery is performed via the operator's SMTP provider; data is hosted
    with the operator's infrastructure provider. No analytics or advertising trackers.
-6. **Contact.** Questions or deletion requests: rotadevteam@gmail.com.
+6. **Contact.** Questions or deletion requests: operator@example.com.

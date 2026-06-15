@@ -1,6 +1,6 @@
 # System 12 — Beta Access Control (RBAC + beta keys + admin tooling) — SPEC
 
-*Drafted 2026-05-29 · Owner: Xolaces · Branch: `feature/system-12-beta-access-control`*
+*Drafted 2026-05-29 · Owner: Owner · Branch: `feature/system-12-beta-access-control`*
 
 Server-only. No UI/Unity, no game-mechanic changes. Implement exactly as written; do not
 redesign or add scope. If something is genuinely ambiguous or blocked, STOP and report —
@@ -79,9 +79,9 @@ change; PlayerId from the verified JWT `sub` claim; no silent stubs (`// PHASE-2
 
 ## Component C — Admin seed
 1. New `src/ROTA.Infrastructure/Seeding/SeedData.cs`, `static Task EnsureAdminAsync(IServiceProvider
-   sp)`: if no non-deleted player named `Xolaces`, read `Seed:AdminPassword` (REQUIRED — if missing,
+   sp)`: if no non-deleted player named `Owner`, read `Seed:AdminPassword` (REQUIRED — if missing,
    log a warning and return; NEVER hardcode a default) and `Seed:AdminEmail` (default
-   `xolaces@rota.dev`); create username `Xolaces`, `DisplayName = "DEV_Xolaces"`, `Roles = Player |
+   `admin@rota.local`); create username `Owner`, `DisplayName = "DEV_Owner"`, `Roles = Player |
    Admin`, BCrypt(12) password. Bypass the beta gate. Idempotent.
 2. `Program.cs`: after `var app = builder.Build();`, before `app.Run();`, scope + `await
    SeedData.EnsureAdminAsync(...)`.

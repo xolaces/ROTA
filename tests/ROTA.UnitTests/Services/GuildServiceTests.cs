@@ -619,7 +619,7 @@ public class GuildServiceTests
     public async Task Create_ByDeveloperAccount_RejectedDevGuildRestricted()
     {
         var h = new Harness();
-        var dev = h.AddDevPlayer("nathan");
+        var dev = h.AddDevPlayer("dev_one");
 
         var r = await h.Service.CreateGuildAsync(dev.Id, "Knights", "KN", "d", GuildJoinPolicy.Open);
 
@@ -633,7 +633,7 @@ public class GuildServiceTests
     {
         var h = new Harness();
         var leader = h.AddPlayer("alice");
-        var dev = h.AddDevPlayer("nathan");
+        var dev = h.AddDevPlayer("dev_one");
         var gid = await h.Found(leader, policy: GuildJoinPolicy.Open);
 
         var r = await h.Service.ApplyAsync(dev.Id, gid);
@@ -648,7 +648,7 @@ public class GuildServiceTests
     {
         var config = new GuildConfig();
         var h = new Harness(config);
-        var devLeader = h.AddDevPlayer("nathan");
+        var devLeader = h.AddDevPlayer("dev_one");
         var outsider = h.AddPlayer("bob");
         var gid = h.FoundDevGuild(devLeader, config);
 
@@ -664,7 +664,7 @@ public class GuildServiceTests
     {
         var h = new Harness();
         var leader = h.AddPlayer("alice");
-        var dev = h.AddDevPlayer("nathan");
+        var dev = h.AddDevPlayer("dev_one");
         var gid = await h.Found(leader, policy: GuildJoinPolicy.InviteOnly);
 
         // An officer of a normal guild crafts an invite directly (the dev isn't yet blocked from receiving
@@ -684,7 +684,7 @@ public class GuildServiceTests
     {
         var config = new GuildConfig();
         var h = new Harness(config);
-        var devLeader = h.AddDevPlayer("nathan");
+        var devLeader = h.AddDevPlayer("dev_one");
         var outsider = h.AddPlayer("bob");
         var gid = h.FoundDevGuild(devLeader, config);
 
@@ -700,7 +700,7 @@ public class GuildServiceTests
     {
         var config = new GuildConfig();
         var h = new Harness(config);
-        var devLeader = h.AddDevPlayer("nathan");
+        var devLeader = h.AddDevPlayer("dev_one");
         var outsider = h.AddPlayer("bob");
         var gid = h.FoundDevGuild(devLeader, config);
 
@@ -720,7 +720,7 @@ public class GuildServiceTests
     {
         var config = new GuildConfig();
         var h = new Harness(config);
-        var devLeader = h.AddDevPlayer("nathan");
+        var devLeader = h.AddDevPlayer("dev_one");
         var outsider = h.AddPlayer("bob");
         var gid = h.FoundDevGuild(devLeader, config);
 

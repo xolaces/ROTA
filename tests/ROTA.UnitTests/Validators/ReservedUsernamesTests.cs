@@ -23,14 +23,14 @@ public sealed class ReservedUsernamesTests
     [InlineData("support")]
     [InlineData("system")]
     [InlineData("rota")]
-    [InlineData("xolaces")]   // owner handle is protected from impersonation
+    [InlineData("ancient")]
     public void IsReserved_BlocksExactStaffHandles_CaseInsensitive(string name)
     {
         ReservedUsernames.IsReserved(name).Should().BeTrue();
     }
 
     [Theory]
-    [InlineData("DEV_Xolaces")]
+    [InlineData("DEV_Owner")]
     [InlineData("dev_hacker")]
     [InlineData("Mod_Smith")]
     [InlineData("admin_root")]

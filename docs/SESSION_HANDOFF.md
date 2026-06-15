@@ -12,7 +12,7 @@ the full-replace combat fork. **972 unit + 111 integration green; 0 build errors
 
 ## Repo state
 - **Backend** `C:\Users\xolac\OneDrive\Documentos\Projects\ROTA` — branch `main`, remote
-  `github.com/xolaces/ROTA.git`. **PUSHED** through `665f903` + annotated tag **`v0.3.1`**. Working tree
+  `github.com/owner/ROTA.git`. **PUSHED** through `665f903` + annotated tag **`v0.3.1`**. Working tree
   clean except untracked `assets/classes/` (raw white-bg crest source; transparent usable copies live in
   the client at `Resources/UI/ClassIcons/`).
 - **Client** `C:\Dev\ROTA.Client6` — branch `master`, committed through **`cc87b1f`**, **NO git remote**
