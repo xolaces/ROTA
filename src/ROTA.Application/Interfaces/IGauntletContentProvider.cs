@@ -22,7 +22,6 @@ public interface IGauntletContentProvider
     // RankFrom ascending. Feeds the event page's prize preview table.
     IReadOnlyList<GauntletPrizeBand> GetBands(GauntletEventKind kind);
 
-    // All trophy definitions.
     IReadOnlyList<GauntletTrophyDefinition> GetAllTrophies();
 
     // A trophy definition by id, or null.

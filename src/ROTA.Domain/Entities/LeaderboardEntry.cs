@@ -72,8 +72,6 @@ public class LeaderboardEntry
     public DateTimeOffset UpdatedAt { get; private set; }
     public bool IsDeleted { get; private set; }
 
-    // ── Domain methods ───────────────────────────────────────────────────────
-
     /// <summary>
     /// Sum board: adds <paramref name="delta"/> to Value and moves LastProgressAt forward.
     /// </summary>

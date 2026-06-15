@@ -66,10 +66,6 @@ public class PasswordResetTests
         }
     }
 
-    // -----------------------------------------------------------------------
-    // REQUEST
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task RequestPasswordResetAsync_UnknownEmail_SilentNoToken_NoEmail_Audited()
     {
@@ -135,10 +131,6 @@ public class PasswordResetTests
         code.Should().MatchRegex("^[2-9A-HJKMNP-TV-Z]{4}-[2-9A-HJKMNP-TV-Z]{4}$");
         stored.CodeHash.Should().NotContain(code!.Replace("-", ""), "only the hash is persisted");
     }
-
-    // -----------------------------------------------------------------------
-    // CONFIRM
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task ResetPasswordAsync_ValidCode_ChangesPassword_RevokesAllSessions()

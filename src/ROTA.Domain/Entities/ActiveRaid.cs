@@ -78,8 +78,6 @@ public class ActiveRaid
     // Navigation property â€” populated by repository Include() calls only
     public Player? SummonedByPlayer { get; private set; }
 
-    // Domain methods
-
     public void TakeDamage(long amount)
     {
         CurrentHp  = Math.Max(0, CurrentHp - amount);

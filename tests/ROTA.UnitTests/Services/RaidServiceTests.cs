@@ -14,9 +14,7 @@ namespace ROTA.UnitTests.Services;
 
 public class RaidServiceTests
 {
-    // -----------------------------------------------------------------------
     // FIXTURES
-    // -----------------------------------------------------------------------
 
     private record ServiceBundle(
         RaidService Service,
@@ -310,9 +308,7 @@ public class RaidServiceTests
             .ReturnsAsync(4);
     }
 
-    // -----------------------------------------------------------------------
     // SummonRaidAsync — difficulty HP multipliers
-    // -----------------------------------------------------------------------
 
     [Theory]
     [InlineData(RaidDifficulty.Normal,    100000,  "Green")]
@@ -339,9 +335,7 @@ public class RaidServiceTests
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    // -----------------------------------------------------------------------
     // HitRaidAsync — stamina cost per hit size
-    // -----------------------------------------------------------------------
 
     [Theory]
     [InlineData(1)]
@@ -365,9 +359,7 @@ public class RaidServiceTests
         b.Energy.Verify(e => e.SpendEnergyAsync(player.Id, ResourceType.Stamina, hitSize, It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    // -----------------------------------------------------------------------
     // HitRaidAsync — damage formula
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task Hit_ComputesDamage_FromPlayerStats_InExpectedRange()
@@ -390,9 +382,7 @@ public class RaidServiceTests
         result.Response.DamageDealt.Should().BeGreaterOrEqualTo(1);
     }
 
-    // -----------------------------------------------------------------------
     // HitRaidAsync — idempotency
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task Hit_ReturnsCachedResponse_OnDuplicateKey_ZeroReprocessing()
@@ -419,9 +409,7 @@ public class RaidServiceTests
         b.Raids.Verify(r => r.AtomicApplyHitAsync(It.IsAny<Guid>(), It.IsAny<Func<ActiveRaid, Task<bool>>>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    // -----------------------------------------------------------------------
     // HitRaidAsync — expired
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task Hit_ReturnsExpired_WhenTimerElapsed_StaminaUntouched()
@@ -439,9 +427,7 @@ public class RaidServiceTests
         b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    // -----------------------------------------------------------------------
     // HitRaidAsync — already defeated
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task Hit_ReturnsAlreadyDefeated_WhenRaidDead_StaminaUntouched()
@@ -459,9 +445,7 @@ public class RaidServiceTests
         b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    // -----------------------------------------------------------------------
     // HitRaidAsync — insufficient stamina
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task Hit_ReturnsInsufficientStamina_HpUnchanged()
@@ -492,9 +476,7 @@ public class RaidServiceTests
         b.Participants.Verify(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    // -----------------------------------------------------------------------
     // Kill rewards — tier multipliers applied correctly
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task Hit_Kill_AppliesTierMultiplier_ToGoldAndXp_ForLegendary1()
@@ -584,9 +566,7 @@ public class RaidServiceTests
             It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    // -----------------------------------------------------------------------
     // Kill rewards — participant gets no gems
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task Hit_Kill_ParticipantTierReceivesNoGems()
@@ -642,9 +622,7 @@ public class RaidServiceTests
             "p4 has <0.1% contribution so falls to Participant tier which receives no gems");
     }
 
-    // -----------------------------------------------------------------------
     // Kill rewards — cumulative threshold loot
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task Hit_Kill_AwardsCumulativeThresholdRewards_WhenPlayerQualifiesMultipleTiers()
@@ -713,9 +691,7 @@ public class RaidServiceTests
             "T57 — stat points are computed on the kill but granted when the participant presses Loot");
     }
 
-    // -----------------------------------------------------------------------
     // Kill — gem idempotency key format
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task Hit_Kill_DefersGems_NotGrantedUntilLoot()
@@ -747,9 +723,7 @@ public class RaidServiceTests
             It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    // -----------------------------------------------------------------------
     // GetActiveRaidsAsync — filtering and damage tracking
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task GetActiveRaids_ExcludesDefeatedAndExpiredRaids()
@@ -791,9 +765,7 @@ public class RaidServiceTests
         result[0].YourHitCount.Should().Be(1);
     }
 
-    // -----------------------------------------------------------------------
     // RaidSize — Personal raid summon uses PersonalBaseHp
-    // -----------------------------------------------------------------------
 
     [Theory]
     [InlineData(RaidDifficulty.Normal,    500)]
@@ -839,9 +811,7 @@ public class RaidServiceTests
         result.Response.Size.Should().Be("Large");
     }
 
-    // -----------------------------------------------------------------------
     // RaidSize — Personal raid hit access gate
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task Hit_PersonalRaid_BySummoner_Succeeds()
@@ -888,9 +858,7 @@ public class RaidServiceTests
             Times.Never, "access gate fires before the stamina-spend step");
     }
 
-    // -----------------------------------------------------------------------
     // Component D — On-hit XP and gold
-    // -----------------------------------------------------------------------
 
     [Theory]
     [InlineData(1)]
@@ -1005,7 +973,6 @@ public class RaidServiceTests
     [Fact]
     public async Task Hit_XpAndGold_PopulatedInResponse()
     {
-        // Verify XpGained and GoldGained fields are populated in the response.
         var b = BuildService(new Random(0));
         var player = MakePlayer();
         var raid = MakeRaid();
@@ -1023,9 +990,7 @@ public class RaidServiceTests
         result.Response.GoldGained.Should().BeGreaterOrEqualTo(1, "GoldGained must be populated (goldPerStamina=1, hitSize=1)");
     }
 
-    // -----------------------------------------------------------------------
     // Participant caps — RaidFull enforcement
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task Hit_NonParticipant_AtCap_ReturnsRaidFull_NoStaminaSpent()
@@ -1044,7 +1009,6 @@ public class RaidServiceTests
         for (int i = 0; i < 10; i++) raid.IncrementParticipantCount();
 
         b.Raids.Setup(r => r.FindByIdAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
-        // New player is not a participant
         b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, newPlayer.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync((RaidParticipant?)null);
         b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
@@ -1072,7 +1036,6 @@ public class RaidServiceTests
             DateTimeOffset.UtcNow.AddHours(48), RaidDifficulty.Normal, RaidSize.Small);
         for (int i = 0; i < 10; i++) raid.IncrementParticipantCount();
 
-        // Player is already a participant in this raid
         var existingPart = RaidParticipant.Create(raid.Id, player.Id);
 
         SetupHitScaffolding(b, player, raid);
@@ -1089,9 +1052,7 @@ public class RaidServiceTests
             Times.Once, "stamina is spent for existing participants as normal");
     }
 
-    // -----------------------------------------------------------------------
     // Resource split lock — energy=quest / stamina=raid (regression guard)
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task RaidHit_SpendsSamina_NotEnergy_ResourceTypeLocked()
@@ -1118,9 +1079,7 @@ public class RaidServiceTests
             Times.Never, "raid path must never touch Energy (quest resource)");
     }
 
-    // -----------------------------------------------------------------------
     // System 19 — visibility in GetActiveRaidsAsync (private-until-shared)
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task GetActiveRaids_PersonalRaid_VisibleOnlyToSummoner()
@@ -1208,9 +1167,7 @@ public class RaidServiceTests
         result[0].IsPublic.Should().BeTrue();
     }
 
-    // -----------------------------------------------------------------------
     // System 19 — GetRaidByIdAsync (join by UID)
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task GetRaidById_ReturnsPrivateNonPersonalRaid_ToNonSummoner()
@@ -1316,9 +1273,7 @@ public class RaidServiceTests
         result.Should().BeNull();
     }
 
-    // -----------------------------------------------------------------------
     // System 19 — ShareRaidAsync
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task ShareRaid_BySummoner_FlipsIsPublic_WritesAudit_ReturnsUpdatedRaid()
@@ -1939,9 +1894,7 @@ public class RaidServiceTests
             "a defeated raid transitions to Lootable so the summoner can dismiss it");
     }
 
-    // -----------------------------------------------------------------------
     // Component C — Discernment crit applied to raid hit damage
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task Hit_WithForcedCrit_DamageIsMultiplied_AndIsCritTrue()
@@ -2030,9 +1983,7 @@ public class RaidServiceTests
             "max crit multiplier 2.5 must produce at least 2.5× the non-crit floor damage");
     }
 
-    // -----------------------------------------------------------------------
     // Mount proc — fires when 2nd NextDouble < procChance
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task HitRaid_MountProcFires_DamageIncludesBonus()
@@ -2061,9 +2012,7 @@ public class RaidServiceTests
         result.Response.ProcBonus.Should().BeGreaterThan(0, "proc adds procPercent × base damage");
     }
 
-    // -----------------------------------------------------------------------
     // Conditional FlatDamagePercent — applied after crit
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task Hit_FlatDamagePercent_IncreasesBaseDamage()
@@ -2120,9 +2069,7 @@ public class RaidServiceTests
         result.Response.ProcBonus.Should().Be(0, "no proc means zero bonus damage");
     }
 
-    // -----------------------------------------------------------------------
     // Slice 4 — Magic DamageProc effects in combat
-    // -----------------------------------------------------------------------
 
     private static MagicDefinition MakeDamageProc(
         string id         = "magic_whetstone",
@@ -2262,9 +2209,7 @@ public class RaidServiceTests
             "capped bonus is still > 0 when at least one proc fires");
     }
 
-    // -----------------------------------------------------------------------
     // Slice 5 — Utility magic effects (crit / gold / xp)
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task Hit_CritChanceFlatMagic_RaisesEffectiveCritChance()
@@ -2415,9 +2360,7 @@ public class RaidServiceTests
             "participant RecordHit is called with damageFinal which includes the magic bonus");
     }
 
-    // -----------------------------------------------------------------------
     // Slice 6 — Magic drops from raid kill loot table
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task KillRewards_WithMagicDrop_CallsGrantMagicAsync()
@@ -2484,9 +2427,7 @@ public class RaidServiceTests
             Times.Once, "magic drop with chance=1.0 is granted on the Loot claim");
     }
 
-    // -----------------------------------------------------------------------
     // Slice 4 — Legion combat integration
-    // -----------------------------------------------------------------------
 
     // Helpers for legion setup
     private static PlayerLegion MakeActiveLegion(Guid playerId, string defId = "legion_warband")
@@ -2782,9 +2723,7 @@ public class RaidServiceTests
             "participant total includes legion damage (RecordHit called with damageFinal)");
     }
 
-    // -----------------------------------------------------------------------
     // SLICE 5 — Commander gear proc tests
-    // -----------------------------------------------------------------------
 
     /// <summary>
     /// Commander gear proc fires (seeded RNG always &lt; ProcChance=0.99) and its bonus
@@ -2885,9 +2824,7 @@ public class RaidServiceTests
             "commander BonusAttack=9999 must not inflate charBase beyond normal range");
     }
 
-    // -----------------------------------------------------------------------
     // G2: RaidService threshold gear drop wiring
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task Hit_Kill_GrantsGearDrop_WhenThresholdRewardHasGearDrops()
@@ -2955,9 +2892,7 @@ public class RaidServiceTests
             Times.Once, "gear drop with chance=1.0 is granted on the Loot claim");
     }
 
-    // -----------------------------------------------------------------------
     // PARTICIPANT RANKING
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task GetParticipants_AssignsSequentialRanks_FromRepoOrder()

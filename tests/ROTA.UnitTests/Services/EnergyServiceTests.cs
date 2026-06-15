@@ -11,10 +11,6 @@ namespace ROTA.UnitTests.Services;
 
 public class EnergyServiceTests
 {
-    // -----------------------------------------------------------------------
-    // HELPERS
-    // -----------------------------------------------------------------------
-
     /// <summary>
     /// Builds the service with a known class rate: minutesPerPoint for Energy/Stamina/GuildStamina
     /// all set to <paramref name="minutesPerPoint"/> (default 0.5 = 2 points/min).
@@ -89,10 +85,6 @@ public class EnergyServiceTests
         return r;
     }
 
-    // -----------------------------------------------------------------------
-    // GetCurrentEnergyAsync — regen from class config (not stored RegenPerMinute)
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task GetCurrentEnergy_ComputesRegenFromClassRate_NotStoredRegenPerMinute()
     {
@@ -160,10 +152,6 @@ public class EnergyServiceTests
         result.Should().Be(3, "minutesPerPoint=0 means no regen, value stays at checkpoint");
     }
 
-    // -----------------------------------------------------------------------
-    // GuildStamina — now regenerates from class config (behavior change v0.2.2)
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task GetCurrentEnergy_GuildStamina_RegeneratesAtClassRate()
     {
@@ -189,10 +177,6 @@ public class EnergyServiceTests
 
         result.Should().Be(5, "GuildStamina regenerates at class rate 2.0 min/point: floor(10/2.0)=5");
     }
-
-    // -----------------------------------------------------------------------
-    // ResourceType → class rate routing
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task GetCurrentEnergy_RoutesEnergyToEnergyRate()
@@ -242,10 +226,6 @@ public class EnergyServiceTests
 
         result.Should().Be(5, "Stamina rate (2.0 min/pt) used: floor(10/2.0)=5");
     }
-
-    // -----------------------------------------------------------------------
-    // SpendEnergyAsync
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task SpendEnergy_Succeeds_WithSufficientEnergy()

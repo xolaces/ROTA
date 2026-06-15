@@ -14,9 +14,7 @@ public class LegionController : ControllerBase
 
     public LegionController(ILegionService legions) => _legions = legions;
 
-    // ----------------------------------------------------------------
     // Slice 2 — ownership
-    // ----------------------------------------------------------------
 
     [HttpGet("api/units")]
     [ProducesResponseType(typeof(IReadOnlyList<OwnedUnitResponse>), StatusCodes.Status200OK)]
@@ -28,9 +26,7 @@ public class LegionController : ControllerBase
     public async Task<IActionResult> GetLegions()
         => Ok(await _legions.GetOwnedLegionsAsync(GetPlayerId()));
 
-    // ----------------------------------------------------------------
-    // Slice 3 — assembly (endpoints wired in Slice 3 commit)
-    // ----------------------------------------------------------------
+    // Slice 3 — assembly
 
     [HttpPut("api/legions/{legionDefinitionId}/active")]
     [ProducesResponseType(typeof(SetActiveLegionResult), StatusCodes.Status200OK)]
@@ -85,9 +81,7 @@ public class LegionController : ControllerBase
         return Ok(result);
     }
 
-    // ----------------------------------------------------------------
     // Slice 6 — Economy / acquisition
-    // ----------------------------------------------------------------
 
     [HttpPost("api/units/buy")]
     [ProducesResponseType(typeof(BuyUnitResult), StatusCodes.Status200OK)]
@@ -129,9 +123,7 @@ public class LegionController : ControllerBase
         };
     }
 
-    // ----------------------------------------------------------------
     // Slice 5 — Commander slot
-    // ----------------------------------------------------------------
 
     [HttpPut("api/legions/commander")]
     [ProducesResponseType(typeof(CommanderEquipResult), StatusCodes.Status200OK)]

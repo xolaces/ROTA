@@ -11,9 +11,7 @@ namespace ROTA.UnitTests.Services;
 
 public class ItemServiceTests
 {
-    // -----------------------------------------------------------------------
     // HELPERS
-    // -----------------------------------------------------------------------
 
     private record ServiceBundle(
         ItemService Service,
@@ -67,9 +65,7 @@ public class ItemServiceTests
     private static PlayerInventoryItem MakeInvItem(string itemId, int quantity)
         => PlayerInventoryItem.Create(Guid.NewGuid(), itemId, quantity);
 
-    // -----------------------------------------------------------------------
     // GetInventoryAsync
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task GetInventory_ReturnsMappedItems_HydratedFromDefinitions()
@@ -108,9 +104,7 @@ public class ItemServiceTests
         result.Should().BeEmpty("items with Quantity=0 should be filtered out");
     }
 
-    // -----------------------------------------------------------------------
     // UseItemAsync — StatBag grants skill points
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task UseItem_StatBag_GrantsSkillPoints_AndConsumesQuantity()
@@ -156,9 +150,7 @@ public class ItemServiceTests
         b.Stats.Verify(s => s.AddUnassignedPointsAsync(playerId, 15, It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    // -----------------------------------------------------------------------
     // UseItemAsync — Sigil summons raid
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task UseItem_Sigil_SummonsRaid_AndConsumesSignil()
@@ -190,9 +182,7 @@ public class ItemServiceTests
         b.Inventory.Verify(r => r.UpdateAsync(It.Is<PlayerInventoryItem>(i => i.Quantity == 0 && i.IsUsed), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    // -----------------------------------------------------------------------
     // UseItemAsync — insufficient quantity
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task UseItem_Returns_InsufficientItems_WhenQuantityTooLow()
@@ -212,9 +202,7 @@ public class ItemServiceTests
         b.Stats.Verify(s => s.AddUnassignedPointsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    // -----------------------------------------------------------------------
     // UseItemAsync — negative / zero quantity guard (audit fix: item+SP dup)
-    // -----------------------------------------------------------------------
 
     [Theory]
     [InlineData(-1)]
@@ -239,9 +227,7 @@ public class ItemServiceTests
         inv.Quantity.Should().Be(5, "inventory must be untouched on a rejected use");
     }
 
-    // -----------------------------------------------------------------------
     // UseItemAsync — non-usable item type
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task UseItem_Returns_ItemNotUsable_ForMaterialType()
@@ -261,9 +247,7 @@ public class ItemServiceTests
         b.Inventory.Verify(r => r.UpdateAsync(It.IsAny<PlayerInventoryItem>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    // -----------------------------------------------------------------------
     // UseItemAsync — item definition not found
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task UseItem_Returns_ItemNotFound_WhenDefinitionMissing()

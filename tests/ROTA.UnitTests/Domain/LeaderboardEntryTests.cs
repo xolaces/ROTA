@@ -8,8 +8,6 @@ public class LeaderboardEntryTests
 {
     private static readonly DateTimeOffset T0 = new DateTimeOffset(2026, 6, 3, 0, 0, 0, TimeSpan.Zero);
 
-    // ── Create factory ───────────────────────────────────────────────────────
-
     [Fact]
     public void Create_SetsAllFields_Correctly()
     {
@@ -34,8 +32,6 @@ public class LeaderboardEntryTests
         entry.UpdatedAt.Should().Be(T0);
         entry.IsDeleted.Should().BeFalse();
     }
-
-    // ── AddValue ─────────────────────────────────────────────────────────────
 
     [Fact]
     public void AddValue_PositiveDelta_AccumulatesAndMovesTimestamp()
@@ -86,8 +82,6 @@ public class LeaderboardEntryTests
         entry.Value.Should().Be(500L, "negative delta must not lower the value");
         entry.LastProgressAt.Should().Be(T0, "timestamp must not move when delta is ignored");
     }
-
-    // ── MaxValue ─────────────────────────────────────────────────────────────
 
     [Fact]
     public void MaxValue_LargerCandidate_RaisesAndReturnsTrue()
@@ -145,8 +139,6 @@ public class LeaderboardEntryTests
         entry.LastProgressAt.Should().Be(T0.AddSeconds(3));
     }
 
-    // ── SetRank ───────────────────────────────────────────────────────────────
-
     [Fact]
     public void SetRank_StoresTheRank()
     {
@@ -156,8 +148,6 @@ public class LeaderboardEntryTests
 
         entry.Rank.Should().Be(7);
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private static LeaderboardEntry MakeEntry(long initialValue, DateTimeOffset at)
         => LeaderboardEntry.Create(

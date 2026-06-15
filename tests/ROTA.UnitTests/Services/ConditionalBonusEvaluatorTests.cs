@@ -6,9 +6,7 @@ namespace ROTA.UnitTests.Services;
 
 public class ConditionalBonusEvaluatorTests
 {
-    // -----------------------------------------------------------------------
     // OwnedUnitCount — floor division
-    // -----------------------------------------------------------------------
 
     [Fact]
     public void Evaluate_OwnedUnitCount_FloorDivision_StacksCorrectly()
@@ -81,9 +79,7 @@ public class ConditionalBonusEvaluatorTests
         result.FlatAttack.Should().Be(0, "5 < perCount(10) → 0 stacks");
     }
 
-    // -----------------------------------------------------------------------
     // OwnedTypeCount — tag accumulation
-    // -----------------------------------------------------------------------
 
     [Fact]
     public void Evaluate_OwnedTypeCount_AccumulatesAcrossItems()
@@ -110,9 +106,7 @@ public class ConditionalBonusEvaluatorTests
         result.FlatDefense.Should().Be(3, "floor(5/5)=1 stack × 3 = 3");
     }
 
-    // -----------------------------------------------------------------------
     // EquippedSlot — binary check
-    // -----------------------------------------------------------------------
 
     [Fact]
     public void Evaluate_EquippedSlot_Occupied_GivesBonus()
@@ -160,9 +154,7 @@ public class ConditionalBonusEvaluatorTests
         result.FlatDamagePercent.Should().Be(0, "Mount slot is empty → 0 stacks");
     }
 
-    // -----------------------------------------------------------------------
     // Multiple bonus types accumulated in one call
-    // -----------------------------------------------------------------------
 
     [Fact]
     public void Evaluate_MultipleBonusTypes_AllAccumulated()

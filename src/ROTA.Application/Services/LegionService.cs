@@ -45,10 +45,6 @@ public sealed class LegionService : ILegionService
         _legionConfig  = legionConfig.Value;
     }
 
-    // ----------------------------------------------------------------
-    // Slice 2 — ownership
-    // ----------------------------------------------------------------
-
     public async Task<IReadOnlyList<OwnedUnitResponse>> GetOwnedUnitsAsync(
         Guid playerId, CancellationToken ct = default)
     {
@@ -103,10 +99,6 @@ public sealed class LegionService : ILegionService
         return result;
     }
 
-    // ----------------------------------------------------------------
-    // Slice 3 — assembly + power computation
-    // ----------------------------------------------------------------
-
     public async Task<SetActiveLegionResult> SetActiveLegionAsync(
         Guid playerId, string legionDefinitionId, CancellationToken ct = default)
     {
@@ -118,7 +110,6 @@ public sealed class LegionService : ILegionService
         if (owned is null || owned.IsDeleted)
             return new SetActiveLegionResult { FailureReason = "You do not own this legion." };
 
-        // Clear IsActive on all others, then set this one.
         var allOwned = await _legions.GetOwnedAsync(playerId, ct);
         foreach (var other in allOwned.Where(l => l.IsActive && l.LegionDefinitionId != legionDefinitionId))
         {
@@ -274,10 +265,6 @@ public sealed class LegionService : ILegionService
         };
     }
 
-    // ----------------------------------------------------------------
-    // Slice 5 — Commander slot
-    // ----------------------------------------------------------------
-
     public async Task<CommanderEquipResult> EquipCommanderAsync(
         Guid playerId, string gearDefinitionId, CancellationToken ct = default)
     {
@@ -352,10 +339,6 @@ public sealed class LegionService : ILegionService
             ProcPercent      = def.ProcPercent,
         };
     }
-
-    // ----------------------------------------------------------------
-    // Slice 6 — Economy / acquisition
-    // ----------------------------------------------------------------
 
     /// <summary>Idempotent unit grant — re-grant of an already-owned unit is a silent no-op.</summary>
     public async Task GrantUnitAsync(Guid playerId, string unitDefinitionId, CancellationToken ct = default)
@@ -448,10 +431,6 @@ public sealed class LegionService : ILegionService
             GemsSpent          = def.GemPrice,
         };
     }
-
-    // ----------------------------------------------------------------
-    // HELPERS
-    // ----------------------------------------------------------------
 
     private void AddSlots(
         IList<SlotSpec> specs, LegionSlotFamily family,

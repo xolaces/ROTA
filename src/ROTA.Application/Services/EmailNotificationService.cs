@@ -60,10 +60,10 @@ public sealed class EmailNotificationService : IEmailNotificationService
             metadataJson,
             payload.Priority);
 
-        // [1] Persist first — the row survives even if the send never succeeds.
+        // Persist first — the row survives even if the send never succeeds.
         await _emails.AddAsync(email, ct);
 
-        // [2] Audit every state change (CLAUDE.md).
+        // Audit every state change (CLAUDE.md).
         await _audit.AppendAsync(AuditLog.Create(
             payload.TriggeringPlayerId,
             "EmailQueued",
@@ -71,7 +71,7 @@ public sealed class EmailNotificationService : IEmailNotificationService
             resultSummary: $"type={payload.Type} id={email.Id} system={payload.TriggeringSystem ?? "-"}",
             ipAddress), ct);
 
-        // [3] Send second — off the request path. Caller is never blocked.
+        // Send off the request path — caller is never blocked.
         _queue.Enqueue(email.Id);
         return email.Id;
     }

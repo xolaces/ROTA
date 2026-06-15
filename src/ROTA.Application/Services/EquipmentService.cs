@@ -167,12 +167,10 @@ public sealed class EquipmentService : IEquipmentService
     {
         var rows = await _repo.GetEquippedAsync(playerId, ct);
 
-        // Base gear stats
         int bonusAtk = 0;
         int bonusDef = 0;
         GearProcData? mountProc = null;
 
-        // Collect all conditional bonuses declared across equipped gear
         var allConditionalBonuses = new List<ConditionalBonus>();
         var equippedSlots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -195,7 +193,6 @@ public sealed class EquipmentService : IEquipmentService
             equippedSlots.Add(row.Slot.ToString());
         }
 
-        // Evaluate conditional bonuses if any gear declares them
         var flatDmgPct = 0.0;
         if (allConditionalBonuses.Count > 0)
         {
@@ -204,7 +201,6 @@ public sealed class EquipmentService : IEquipmentService
             var ownedById = inventoryItems.ToDictionary(
                 i => i.ItemDefinitionId, i => i.Quantity);
 
-            // Accumulate owned quantities by tag
             var ownedByTag = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             foreach (var inv in inventoryItems)
             {

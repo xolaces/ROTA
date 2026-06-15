@@ -14,10 +14,6 @@ namespace ROTA.UnitTests.Services;
 /// </summary>
 public class BetaKeyServiceTests
 {
-    // -----------------------------------------------------------------------
-    // FIXTURES
-    // -----------------------------------------------------------------------
-
     private static BetaKeyService BuildBetaKeyService(
         out Mock<IBetaKeyRepository> betaKeysMock,
         out Mock<IAuditLogRepository> auditMock)
@@ -74,10 +70,6 @@ public class BetaKeyServiceTests
         return (service, players, tokens, betaKeys, auditLog);
     }
 
-    // -----------------------------------------------------------------------
-    // BetaKeyService.GenerateAsync
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task GenerateAsync_ReturnsCorrectCount_AndFormatsKeys()
     {
@@ -128,10 +120,6 @@ public class BetaKeyServiceTests
         captured!.CreatedByPlayerId.Should().BeNull("Guid.Empty actor is the CLI — CreatedByPlayerId must be null");
     }
 
-    // -----------------------------------------------------------------------
-    // BetaKeyService.ValidateAndRedeemAsync
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task ValidateAndRedeemAsync_ValidKey_ReturnsTrue()
     {
@@ -157,10 +145,6 @@ public class BetaKeyServiceTests
 
         result.Should().BeFalse();
     }
-
-    // -----------------------------------------------------------------------
-    // AuthService.RegisterAsync — beta gate path
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task RegisterAsync_BetaGateEnabled_InvalidKey_ReturnsNull_NoPlayerCreated()

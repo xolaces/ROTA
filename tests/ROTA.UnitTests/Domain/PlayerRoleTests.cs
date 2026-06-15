@@ -18,10 +18,6 @@ namespace ROTA.UnitTests.Domain;
 /// </summary>
 public class PlayerRoleTests
 {
-    // -----------------------------------------------------------------------
-    // GrantRole / RevokeRole / HasRole
-    // -----------------------------------------------------------------------
-
     [Fact]
     public void Player_DefaultRoles_IsPlayer()
     {
@@ -68,7 +64,6 @@ public class PlayerRoleTests
     {
         var player = Player.Create("eve", "eve@rota.test", "hash");
 
-        // Attempt to revoke the Player flag directly
         player.RevokeRole(PlayerRoles.Player);
 
         player.HasRole(PlayerRoles.Player).Should().BeTrue(
@@ -85,10 +80,6 @@ public class PlayerRoleTests
         player.HasRole(PlayerRoles.Player).Should().BeTrue();
         player.HasRole(PlayerRoles.Moderator).Should().BeFalse();
     }
-
-    // -----------------------------------------------------------------------
-    // JWT role claims
-    // -----------------------------------------------------------------------
 
     private static string GenerateTestRsaPrivateKey()
     {
@@ -159,7 +150,6 @@ public class PlayerRoleTests
     {
         var key = GenerateTestRsaPrivateKey();
 
-        // Build a player who has Admin role
         var adminPlayer = Player.Create("adminuser", "admin@rota.test",
             BCrypt.Net.BCrypt.HashPassword("Secure1Pass", 4));
         adminPlayer.GrantRole(PlayerRoles.Admin);

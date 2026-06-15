@@ -55,8 +55,6 @@ public class AchievementDefinitionProviderTests : IDisposable
         provider.GetById("nope").Should().BeNull();
     }
 
-    // ── Startup validation ─────────────────────────────────────────────────────
-
     [Fact]
     public void Provider_MissingFile_Throws()
     {
@@ -171,8 +169,6 @@ public class AchievementDefinitionProviderTests : IDisposable
         var act = () => WriteAndLoad(list);
         act.Should().Throw<InvalidOperationException>().WithMessage("*missing collectorKey*");
     }
-
-    // ── Helpers ─────────────────────────────────────────────────────────────────
 
     private static AchievementDefinition Make(
         string id, AchievementCategory cat, AchievementMetric metric, int points, long threshold,

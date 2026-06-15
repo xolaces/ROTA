@@ -74,14 +74,13 @@ public sealed class MagicService : IMagicService
         Guid playerId, Guid raidId, string magicDefinitionId, bool isAdmin,
         CancellationToken ct = default)
     {
-        // 1. Raid exists and is active.
         var raid = await _raids.FindByIdAsync(raidId, ct);
         if (raid is null)
             return Fail(MagicApplyFailureCode.RaidNotFound, "Raid not found.");
         if (raid.IsDefeated || raid.ExpiresAt < DateTimeOffset.UtcNow)
             return Fail(MagicApplyFailureCode.RaidNotActive, "Raid is no longer active.");
 
-        // 2. World gate: World raids are Admin-only for magic.
+        // World gate: World raids are Admin-only for magic.
         var raidDef    = _raidDefs.GetById(raid.RaidDefinitionId);
         bool isWorld   = raidDef is not null
                       && _config.DevOnlyTiers.Contains(raidDef.Tier, StringComparer.OrdinalIgnoreCase);
@@ -89,12 +88,11 @@ public sealed class MagicService : IMagicService
             return Fail(MagicApplyFailureCode.WorldGateBlocked,
                 "Only Admins may apply magic to World raids.");
 
-        // 3. Player owns the magic.
         var owned = await _magicRepo.FindAsync(playerId, magicDefinitionId, ct);
         if (owned is null || owned.IsDeleted)
             return Fail(MagicApplyFailureCode.MagicNotOwned, "You do not own this magic.");
 
-        // 4. Player is summoner or participant (non-world only; Admins on world are exempt).
+        // Summoner or participant required (non-world only; Admins on world are exempt).
         if (!isWorld)
         {
             bool isSummoner     = raid.SummonedByPlayerId == playerId;
@@ -105,10 +103,10 @@ public sealed class MagicService : IMagicService
                     "You must be the summoner or a participant to apply magic.");
         }
 
-        // 5–7. Advisory-lock: one-per-player + duplicate check + slot cap must all be atomic.
-        //      The one-per-player check is inside the lock (not before it) so two concurrent
-        //      applies by the same player with two different magics cannot both pass the check
-        //      and both insert. Ordering: player-check → dup-check → slot-cap → insert.
+        // Advisory-lock: one-per-player + duplicate check + slot cap must all be atomic.
+        // The one-per-player check is inside the lock (not before it) so two concurrent
+        // applies by the same player with two different magics cannot both pass the check
+        // and both insert. Ordering: player-check → dup-check → slot-cap → insert.
         bool alreadyByPlayer = false;
         bool duplicateMagic  = false;
         bool slotsFull       = false;
@@ -136,7 +134,6 @@ public sealed class MagicService : IMagicService
                 return false;
             }
 
-            // Slot cap check.
             int slotCount = _config.GetSlotCount(raid.Size.ToString());
             int current   = await _raidMagics.CountForRaidAsync(raidId, ct);
             if (current >= slotCount)
@@ -176,17 +173,15 @@ public sealed class MagicService : IMagicService
         Guid playerId, Guid raidId, string magicDefinitionId, bool isAdmin,
         CancellationToken ct = default)
     {
-        // 1. Raid exists.
         var raid = await _raids.FindByIdAsync(raidId, ct);
         if (raid is null)
             return Fail(MagicApplyFailureCode.RaidNotFound, "Raid not found.");
 
-        // 2. Find magic on raid.
         var raidMagic = await _raidMagics.FindAsync(raidId, magicDefinitionId, ct);
         if (raidMagic is null)
             return Fail(MagicApplyFailureCode.MagicNotFound, "Magic is not applied to this raid.");
 
-        // 3. World gate: only Admin may remove.
+        // World gate: only Admin may remove.
         var raidDef  = _raidDefs.GetById(raid.RaidDefinitionId);
         bool isWorld = raidDef is not null
                     && _config.DevOnlyTiers.Contains(raidDef.Tier, StringComparer.OrdinalIgnoreCase);
@@ -194,7 +189,7 @@ public sealed class MagicService : IMagicService
             return Fail(MagicApplyFailureCode.WorldGateBlocked,
                 "Only Admins may remove magic from World raids.");
 
-        // 4. Non-world: only the summoner may remove.
+        // Non-world: only the summoner may remove.
         if (!isWorld && raid.SummonedByPlayerId != playerId)
             return Fail(MagicApplyFailureCode.RemoveNotAllowed,
                 "Only the raid summoner may remove magic.");

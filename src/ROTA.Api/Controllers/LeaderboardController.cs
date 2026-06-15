@@ -50,20 +50,15 @@ public sealed class LeaderboardController : ControllerBase
         [FromQuery] string? periodKey,
         [FromQuery] int page = 1)
     {
-        // Parse board enum
         if (!Enum.TryParse<LeaderboardBoard>(board, ignoreCase: true, out var boardEnum))
             return BadRequest(new { message = $"Unknown board '{board}'." });
 
-        // Parse period enum; default to the board's first supported period when omitted.
-        // The service validates the combo.
         if (period != null && !Enum.TryParse<LeaderboardPeriod>(period, ignoreCase: true, out var periodEnum))
             return BadRequest(new { message = $"Unknown period '{period}'." });
 
         LeaderboardPeriod resolvedPeriod;
         if (period == null)
         {
-            // Default to the first valid period for this board.
-            // Service will validate the combo regardless.
             resolvedPeriod = DefaultPeriodForBoard(boardEnum);
         }
         else
@@ -79,8 +74,6 @@ public sealed class LeaderboardController : ControllerBase
 
         return Ok(result.Page);
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private Guid GetPlayerId()
         => Guid.Parse(User.FindFirst(JwtRegisteredClaimNames.Sub)!.Value);

@@ -13,8 +13,6 @@ namespace ROTA.UnitTests.Services;
 // is covered by integration tests (LeaderboardStatSnapshotIntegrationTests).
 public class LeaderboardStatSnapshotTests
 {
-    // ── Helpers ───────────────────────────────────────────────────────────────
-
     private static (LeaderboardService service,
                     Mock<ILeaderboardEntryRepository> repo)
         Build(int minLevel = 20, bool excludeAdmins = true)
@@ -36,8 +34,6 @@ public class LeaderboardStatSnapshotTests
         var service = new LeaderboardService(repo.Object, players.Object, resolver.Object, cfg);
         return (service, repo);
     }
-
-    // ── Test 1: eligible players each get 3 SetValueAsync calls (ATK/DEF/DISC) ─
 
     [Fact]
     public async Task Snapshot_CallsSetValueAsync_ThreeTimesPerEligiblePlayer()
@@ -66,14 +62,11 @@ public class LeaderboardStatSnapshotTests
 
         count.Should().Be(2, "two eligible players were returned by the repository");
 
-        // Each player gets SetValueAsync called for StatAttack, StatDefense, StatDiscernment.
         repo.Verify(r => r.SetValueAsync(
             It.IsAny<Guid>(), It.IsAny<LeaderboardBoard>(), LeaderboardPeriod.Live,
             "live", It.IsAny<long>(), It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()),
             Times.Exactly(6), "3 boards × 2 players = 6 SetValueAsync calls");
     }
-
-    // ── Test 2: correct raw stat values passed for each board ─────────────────
 
     [Fact]
     public async Task Snapshot_PassesCorrectRawValues_ToEachBoard()
@@ -104,14 +97,11 @@ public class LeaderboardStatSnapshotTests
         calls.Should().Contain((LeaderboardBoard.StatDiscernment, 20L),  "DiscernmentInvestment maps to StatDiscernment");
     }
 
-    // ── Test 3: ineligible players are not snapshotted ────────────────────────
-
     [Fact]
     public async Task Snapshot_IneligiblePlayersAbsent_NoSetValueCalled()
     {
         var (service, repo) = Build();
 
-        // GetEligibleStatSnapshotAsync returns an empty list (all players ineligible).
         repo.Setup(r => r.GetEligibleStatSnapshotAsync(20, true, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<EligibleStatSnapshot>());
 
@@ -124,8 +114,6 @@ public class LeaderboardStatSnapshotTests
             It.IsAny<CancellationToken>()),
             Times.Never, "no SetValueAsync calls when no eligible players");
     }
-
-    // ── Test 4: period_key is always "live" ───────────────────────────────────
 
     [Fact]
     public async Task Snapshot_UsesPeriodKeyLive_ForAllBoards()
@@ -152,8 +140,6 @@ public class LeaderboardStatSnapshotTests
 
         periodKeys.Should().AllBe("live", "Stat boards always use period_key = \"live\"");
     }
-
-    // ── Test 5: config minLevel and excludeAdmins forwarded to repo ───────────
 
     [Fact]
     public async Task Snapshot_ForwardsConfigToRepo()

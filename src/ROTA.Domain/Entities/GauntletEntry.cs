@@ -54,8 +54,6 @@ public class GauntletEntry
     public DateTimeOffset UpdatedAt { get; private set; }
     public bool IsDeleted { get; private set; }
 
-    // ── Domain methods ─────────────────────────────────────────────────────────
-
     /// <summary>
     /// Adds <paramref name="delta"/> to Score and moves TieBreakAt to <paramref name="hitAt"/>.
     /// Negative/zero deltas are ignored (TieBreakAt only advances on a real increase). Wired by Slice 4.

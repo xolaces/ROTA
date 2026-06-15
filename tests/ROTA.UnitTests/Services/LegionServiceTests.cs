@@ -12,9 +12,7 @@ namespace ROTA.UnitTests.Services;
 
 public class LegionServiceTests
 {
-    // ----------------------------------------------------------------
     // FIXTURES (Slice 2 — ownership)
-    // ----------------------------------------------------------------
 
     private record Bundle(
         LegionService                            Service,
@@ -40,11 +38,9 @@ public class LegionServiceTests
         var gearRepo      = new Mock<IPlayerGearRepository>();
         var gems          = new Mock<IGemService>();
 
-        // Default: empty slots
         slots.Setup(s => s.GetForLegionAsync(
                 It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<PlayerLegionSlot>());
-        // Default: no commander gear row
         commanderGear.Setup(r => r.FindAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((PlayerCommanderGear?)null);
         // Default: the player owns any gear they commander-equip (exploit audit 2026-06-14 finding C;
@@ -96,10 +92,6 @@ public class LegionServiceTests
             TroopSlots   = new() { new SlotSpec() },
         };
 
-    // ----------------------------------------------------------------
-    // GetOwnedUnitsAsync
-    // ----------------------------------------------------------------
-
     [Fact]
     public async Task GetOwnedUnits_ReturnsHydratedUnits()
     {
@@ -146,10 +138,6 @@ public class LegionServiceTests
         result.Should().BeEmpty("orphaned rows with no matching definition are silently skipped");
     }
 
-    // ----------------------------------------------------------------
-    // GetOwnedLegionsAsync
-    // ----------------------------------------------------------------
-
     [Fact]
     public async Task GetOwnedLegions_ReturnsHydratedLegions()
     {
@@ -183,9 +171,7 @@ public class LegionServiceTests
         result.Should().BeEmpty();
     }
 
-    // ----------------------------------------------------------------
     // Slice 3 — AssignSlotAsync validation
-    // ----------------------------------------------------------------
 
     [Fact]
     public async Task AssignSlot_Success_NoneConstraint()
@@ -218,7 +204,7 @@ public class LegionServiceTests
             .ReturnsAsync(MakeLegion(playerId, "legion_warband"));
         b.UnitDefs.Setup(d => d.GetById("gen_ironward")).Returns(MakeUnitDef("gen_ironward"));
         b.Units.Setup(r => r.FindAsync(playerId, "gen_ironward", It.IsAny<CancellationToken>()))
-            .ReturnsAsync((PlayerUnit?)null); // not owned
+            .ReturnsAsync((PlayerUnit?)null);
 
         var result = await b.Service.AssignSlotAsync(playerId, "legion_warband", "General", 0, "gen_ironward");
 
@@ -352,9 +338,7 @@ public class LegionServiceTests
         result.FailureCode.Should().Be(AssignSlotFailureCode.UnitAlreadyAssigned);
     }
 
-    // ----------------------------------------------------------------
     // Slice 3 — SetActiveLegionAsync
-    // ----------------------------------------------------------------
 
     [Fact]
     public async Task SetActive_FlipsOtherLegionsToInactive()
@@ -365,7 +349,7 @@ public class LegionServiceTests
         b.LegionDefs.Setup(d => d.GetById("legion_warband")).Returns(MakeLegionDef("legion_warband"));
 
         var target  = MakeLegion(playerId, "legion_warband");
-        var other   = MakeLegion(playerId, "legion_vanguard", isActive: true); // currently active
+        var other   = MakeLegion(playerId, "legion_vanguard", isActive: true);
 
         b.Legions.Setup(r => r.FindAsync(playerId, "legion_warband", It.IsAny<CancellationToken>()))
             .ReturnsAsync(target);
@@ -381,9 +365,7 @@ public class LegionServiceTests
         target.IsActive.Should().BeTrue("target legion is now active");
     }
 
-    // ----------------------------------------------------------------
     // Slice 3 — ComputeLegionPowerAsync
-    // ----------------------------------------------------------------
 
     [Fact]
     public async Task ComputePower_MatchesFormula_ForKnownLoadout()
@@ -412,9 +394,7 @@ public class LegionServiceTests
             "184 * (1 + 0.55) = 285.2");
     }
 
-    // ----------------------------------------------------------------
     // Slice 5 — Commander slot
-    // ----------------------------------------------------------------
 
     [Fact]
     public async Task EquipCommander_Success_NoExistingRow_CreatesRow()
@@ -530,9 +510,7 @@ public class LegionServiceTests
         b.CommanderGear.Verify(r => r.UpdateAsync(It.IsAny<PlayerCommanderGear>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    // ----------------------------------------------------------------
     // Slice 6 — Economy / acquisition
-    // ----------------------------------------------------------------
 
     [Fact]
     public async Task GrantUnit_Idempotent_CallsUpsert_NoError()
@@ -544,7 +522,6 @@ public class LegionServiceTests
         b.Units.Setup(r => r.UpsertAsync(playerId, "gen_ironward", It.IsAny<CancellationToken>()))
             .ReturnsAsync(unitRow);
 
-        // First grant
         await b.Service.GrantUnitAsync(playerId, "gen_ironward");
         // Second grant — same call, no error (UpsertAsync is idempotent)
         await b.Service.GrantUnitAsync(playerId, "gen_ironward");
@@ -562,7 +539,6 @@ public class LegionServiceTests
         def.GemPrice = 50;
 
         b.UnitDefs.Setup(d => d.GetById("gen_ironward")).Returns(def);
-        // Not yet owned
         b.Units.Setup(r => r.FindAsync(playerId, "gen_ironward", It.IsAny<CancellationToken>()))
             .ReturnsAsync((PlayerUnit?)null);
         b.Gems.Setup(g => g.SpendGemsAsync(playerId, 50, GemTransactionType.UnitPurchase,

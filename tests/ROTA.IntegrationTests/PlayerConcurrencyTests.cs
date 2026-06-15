@@ -55,10 +55,7 @@ public class PlayerConcurrencyTests : IAsyncLifetime
         return player.Id;
     }
 
-    // -----------------------------------------------------------------------
     // The token itself: a stale full-column save must throw, not silently win.
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task StaleFullColumnSave_Throws_InsteadOfLastWriteWins()
     {
@@ -81,10 +78,7 @@ public class PlayerConcurrencyTests : IAsyncLifetime
             "the xmin token must reject a save based on a stale read of the players row");
     }
 
-    // -----------------------------------------------------------------------
     // The retry chokepoint: simultaneous reward writes converge with no loss.
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task ConcurrentMutations_GoldAndXp_NothingLost()
     {

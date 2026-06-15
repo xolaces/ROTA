@@ -10,7 +10,6 @@ public class PlayerMastery
 {
     public const int MaxLevel = 5;
 
-    // Required by EF Core
     private PlayerMastery() { }
 
     public static PlayerMastery Create(Guid playerId, MasteryAncient ancient)

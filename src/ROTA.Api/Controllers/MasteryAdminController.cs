@@ -78,7 +78,6 @@ public sealed class MasteryAdminController : ControllerBase
         if (actor is null || !actor.HasRole(PlayerRoles.Admin))
             return Forbid();
 
-        // Parse + validate the requested levels.
         var levels = new Dictionary<MasteryAncient, int>();
         foreach (var (key, value) in request.Levels)
         {

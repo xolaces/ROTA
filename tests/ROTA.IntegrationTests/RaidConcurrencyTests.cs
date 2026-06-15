@@ -29,10 +29,6 @@ public class RaidConcurrencyTests : IAsyncLifetime
     private RedisContainer _redis = null!;
     private WebApplicationFactory<Program> _factory = null!;
 
-    // -----------------------------------------------------------------------
-    // Lifecycle
-    // -----------------------------------------------------------------------
-
     public async Task InitializeAsync()
     {
         _postgres = new PostgreSqlBuilder()
@@ -85,10 +81,6 @@ public class RaidConcurrencyTests : IAsyncLifetime
         await _postgres.DisposeAsync();
         await _redis.DisposeAsync();
     }
-
-    // -----------------------------------------------------------------------
-    // Concurrency test
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task ConcurrentKillingHits_ExactlyOneKill_LoserStaminaRefunded()
@@ -230,9 +222,7 @@ public class RaidConcurrencyTests : IAsyncLifetime
             "the loser's stamina deduction is inside the advisory-lock transaction and rolls back atomically — net zero");
     }
 
-    // -----------------------------------------------------------------------
     // Helper
-    // -----------------------------------------------------------------------
 
     // Advance a player to targetLevel with exactly 0 progress into the level, using the real
     // XP-per-level formula (one level per AddExperience call, fed exactly the XP required).

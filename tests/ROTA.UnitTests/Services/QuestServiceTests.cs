@@ -14,10 +14,6 @@ namespace ROTA.UnitTests.Services;
 
 public class QuestServiceTests
 {
-    // -----------------------------------------------------------------------
-    // HELPERS
-    // -----------------------------------------------------------------------
-
     private record ServiceBundle(
         QuestService Service,
         Mock<IQuestDefinitionProvider> Definitions,
@@ -167,9 +163,7 @@ public class QuestServiceTests
             .Returns(Task.CompletedTask);
     }
 
-    // -----------------------------------------------------------------------
     // GetAvailableQuestsAsync — prerequisite filtering
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task GetAvailableQuests_ReturnsOnlyUnlockedQuests_WhenNoQuestsCompleted()
@@ -218,9 +212,7 @@ public class QuestServiceTests
         unlocked.Should().Contain(r => r.Id == "q002");
     }
 
-    // -----------------------------------------------------------------------
     // GetAvailableQuestsAsync — T74 difficulty unlock hint
-    // -----------------------------------------------------------------------
 
     [Theory]
     [InlineData(new string[0], "Normal")]
@@ -300,9 +292,7 @@ public class QuestServiceTests
               .Which.HighestUnlockedDifficulty.Should().Be("Normal");
     }
 
-    // -----------------------------------------------------------------------
     // AttemptQuestAsync — Normal difficulty success
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task AttemptQuest_Succeeds_OnNormal_SpendingBaseEnergyCost()
@@ -328,9 +318,7 @@ public class QuestServiceTests
         b.AuditLog.Verify(a => a.AppendAsync(It.IsAny<AuditLog>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    // -----------------------------------------------------------------------
     // AttemptQuestAsync — difficulty energy/reward multipliers
-    // -----------------------------------------------------------------------
 
     [Theory]
     [InlineData(QuestDifficulty.Normal,    1.0f, 1.0f,  "Green")]
@@ -379,9 +367,7 @@ public class QuestServiceTests
         b.Energy.Verify(e => e.SpendEnergyAsync(player.Id, ResourceType.Energy, expectedEnergy, It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    // -----------------------------------------------------------------------
     // AttemptQuestAsync — node depletion (System 20)
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task AttemptQuest_DepletesBattleNode_By5_OnFreshAttempt()
@@ -544,9 +530,7 @@ public class QuestServiceTests
         b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    // -----------------------------------------------------------------------
     // AttemptQuestAsync — difficulty gate enforcement
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task AttemptQuest_RejectsDifficulty_WhenPreviousTierNotCompleted()
@@ -645,9 +629,7 @@ public class QuestServiceTests
             "only the zone's final boss node may drop sigils");
     }
 
-    // -----------------------------------------------------------------------
     // AttemptQuestAsync — insufficient energy (no side effects)
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task AttemptQuest_ReturnsFailure_WhenEnergyInsufficient_WithNoSideEffects()
@@ -667,9 +649,7 @@ public class QuestServiceTests
         b.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    // -----------------------------------------------------------------------
     // AttemptQuestAsync — prerequisite not met
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task AttemptQuest_ReturnsFailure_WhenPrerequisiteNotCompleted()
@@ -689,9 +669,7 @@ public class QuestServiceTests
         b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    // -----------------------------------------------------------------------
     // AttemptQuestAsync — quest not found
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task AttemptQuest_ReturnsFailure_WhenQuestIdNotFound()
@@ -707,10 +685,8 @@ public class QuestServiceTests
         b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    // -----------------------------------------------------------------------
     // AttemptQuestAsync — level-up wiring (AddExperience with milestone formula)
     // XpToNextLevel is mocked to return 1000 (from BuildService default).
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task AttemptQuest_ExactLevelUp_AtThreshold_GrantsLevelUpPoints()
@@ -818,9 +794,7 @@ public class QuestServiceTests
             Times.Exactly(2), "GrantLevelUpPointsAsync called once per level gained, not more");
     }
 
-    // -----------------------------------------------------------------------
     // AttemptQuestAsync — sigil drop (Boss node first completion = guaranteed)
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task AttemptQuest_BossNode_DropsSignature_OnFirstDifficultyCompletion()
@@ -853,13 +827,7 @@ public class QuestServiceTests
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    // -----------------------------------------------------------------------
-    // AttemptQuestAsync — sigil drop (Boss node subsequent — uses RNG)
-    // -----------------------------------------------------------------------
-
-    // -----------------------------------------------------------------------
     // System 22 Phase A Slice 7 — Discernment drop-quality (rarity-upgrade)
-    // -----------------------------------------------------------------------
 
     private QuestDefinition ChanceDropQuest(string lootTableId = "lt_qual") => new()
     {
@@ -944,9 +912,7 @@ public class QuestServiceTests
         result.ItemsGranted.Should().ContainSingle(i => i.ItemId == "mat_base", "zero quality chance → base item");
     }
 
-    // -----------------------------------------------------------------------
     // System 22 Phase A Slice 6 — Hoard (gold) + Discernment (sigil-find)
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task AttemptQuest_HoardGoldMultiplier_BoostsGoldReward()
@@ -1068,9 +1034,7 @@ public class QuestServiceTests
         result.ItemsGranted.Should().BeEmpty("SigilDropChance=0.0 means the sigil never drops after the first");
     }
 
-    // -----------------------------------------------------------------------
     // AttemptQuestAsync — loot table items granted
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task AttemptQuest_GrantsGuaranteedLootItems_FromLootTable()
@@ -1117,9 +1081,7 @@ public class QuestServiceTests
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    // -----------------------------------------------------------------------
     // AttemptQuestAsync — gem idempotency key includes difficulty
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task AttemptQuest_UsesCorrectGemIdempotencyKey_IncludesDifficulty()
@@ -1141,9 +1103,7 @@ public class QuestServiceTests
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    // -----------------------------------------------------------------------
     // G2: QuestService gear drop wiring
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task AttemptQuest_GrantsGearDrop_WhenLootTableHasGearDropWithChanceOne()
@@ -1182,9 +1142,7 @@ public class QuestServiceTests
             player.Id, "gear_conscript_helm", 1, It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    // -----------------------------------------------------------------------
     // AttemptQuestAsync — Discernment-scaled chance drops (System 20 Slice 2)
-    // -----------------------------------------------------------------------
 
     // Returns a fixed roll from NextDouble() so chance thresholds are deterministic.
     private sealed class FixedRandom : Random
@@ -1229,11 +1187,9 @@ public class QuestServiceTests
         return (b, player);
     }
 
-    // -----------------------------------------------------------------------
     // Owner 2026-06-12 — chase-set ("rare") drop curve:
     //   chance = base + RareDropMaxBonus(0.045) × d / (d + 50,000), hard-capped at base + bonus.
     //   Pano base 0.005 → 0.5% at 0 Disc, ~3.5% at 100k Disc, asymptote 5%.
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task AttemptQuest_RareGearDrop_StaysAtBase_WithZeroDiscernment()
@@ -1296,12 +1252,10 @@ public class QuestServiceTests
             player.Id, "gear_pano_helm", 1, It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    // -----------------------------------------------------------------------
     // Owner 2026-06-14 — XP scales with ENERGY SPENT, not authored XP, not node type, not player level.
     // XP = summed roll(min..max) per energy spent. Energy carries chapter/zone/difficulty scaling, so XP
     // inherits all of it (a boss earns more only because it costs more energy). Pinning min==max collapses
     // the roll to a constant (PinnedXp), giving exact assertions: XP = energyCost × perEnergy.
-    // -----------------------------------------------------------------------
 
     private static QuestDefinition XpNode(
         int chapter, int zoneIndex, string nodeType = "Battle", int experienceReward = 100)
@@ -1396,9 +1350,7 @@ public class QuestServiceTests
         highRes.ExperienceGranted.Should().Be(10);   // identical despite the level gap
     }
 
-    // -----------------------------------------------------------------------
     // T45 — zone-boss gate (a per-zone boss requires all preceding zone nodes cleared)
-    // -----------------------------------------------------------------------
 
     // Ch1 Z0 = { zn0 battle, zn1 battle, zb boss }. The boss prereq is the last battle.
     private static IReadOnlyList<QuestDefinition> ZoneWithBoss() => new List<QuestDefinition>
@@ -1463,9 +1415,7 @@ public class QuestServiceTests
         b.Energy.Verify(e => e.SpendEnergyAsync(player.Id, ResourceType.Energy, It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    // -----------------------------------------------------------------------
     // T45 — cross-zone ordering (a zone's first node is prereq-locked on the previous zone's boss)
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task AttemptQuest_NextZoneFirstNode_LockedUntilPreviousZoneBossEverCleared()
@@ -1501,9 +1451,7 @@ public class QuestServiceTests
         unlocked.Success.Should().BeTrue();
     }
 
-    // -----------------------------------------------------------------------
     // T45 — availability DTO carries zone fields + greys a boss whose zone isn't depleted
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task GetAvailableQuests_PopulatesZoneFields_AndGreysBoss_UntilZoneDepleted()

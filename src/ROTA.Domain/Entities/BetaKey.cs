@@ -6,7 +6,6 @@ namespace ROTA.Domain.Entities;
 /// </summary>
 public class BetaKey
 {
-    // Required by EF Core
     private BetaKey() { }
 
     /// <summary>

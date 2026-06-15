@@ -56,7 +56,6 @@ public class AdminLeaderboardControllerTests
 
     private static Player MakeAdmin(Guid id)
     {
-        // Create a player and grant Admin role so HasRole(Admin) returns true.
         var suffix = id.ToString("N")[..8];
         var player = Player.Create($"adm_{suffix}", $"{suffix}@admin.test", "hash");
         player.GrantRole(PlayerRoles.Admin);

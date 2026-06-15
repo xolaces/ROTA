@@ -77,7 +77,6 @@ public sealed class StatService : IStatService
                 return Fail($"Allocation would exceed LSI cap of {LsiCap:F1}. Current LSI: {stats.ComputeLSI(player.Level):F2}");
         }
 
-        // Apply the investment to the correct stat field
         switch (statType)
         {
             case StatType.Energy:      stats.AllocateToEnergy(amount);      break;

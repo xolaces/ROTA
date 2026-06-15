@@ -54,7 +54,6 @@ public class RateLimitMiddleware
 
         if (path.StartsWith("/api/auth", StringComparison.OrdinalIgnoreCase))
         {
-            // Per-IP limit for auth endpoints
             var segment = path.Replace('/', '_').Trim('_').ToLowerInvariant();
             var key = $"ratelimit:ip:{ip}:{segment}";
 

@@ -212,7 +212,6 @@ public class GauntletLedgerRepositoryTests : IAsyncLifetime
     {
         var playerId = await SeedPlayerAsync();
 
-        // Seed an event.
         Guid eventId;
         await using (var db = NewDbContext())
         {
@@ -237,7 +236,6 @@ public class GauntletLedgerRepositoryTests : IAsyncLifetime
         second.Id.Should().Be(first.Id, "the same (event, player) entry must be returned");
         second.League.Should().Be(GauntletLeague.Whelpling, "league is locked at first join");
 
-        // Exactly one row exists.
         await using var readDb = NewDbContext();
         var count = await readDb.GauntletEntries.CountAsync(e => e.GauntletEventId == eventId && e.PlayerId == playerId);
         count.Should().Be(1);

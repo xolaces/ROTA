@@ -48,7 +48,6 @@ public class LeaderboardEntryRepositoryTests : IAsyncLifetime
     private async Task<ILeaderboardEntryRepository> NewRepoAsync()
     {
         var db = NewDbContext();
-        // Ensure the connection is open once at the start.
         await db.Database.OpenConnectionAsync();
         return new LeaderboardEntryRepository(db);
     }
@@ -216,7 +215,6 @@ public class LeaderboardEntryRepositoryTests : IAsyncLifetime
         await using var db = NewDbContext();
         var repo = new LeaderboardEntryRepository(db);
 
-        // Insert via IncrementAsync so the rows are in the DB.
         await repo.IncrementAsync(p3, LeaderboardBoard.DamageDealt, LeaderboardPeriod.Weekly, periodKey, 5000L, t);
         await repo.IncrementAsync(p1, LeaderboardBoard.DamageDealt, LeaderboardPeriod.Weekly, periodKey, 3000L, t.AddMinutes(1));
         await repo.IncrementAsync(p2, LeaderboardBoard.DamageDealt, LeaderboardPeriod.Weekly, periodKey, 3000L, t.AddMinutes(2));  // same value, later timestamp

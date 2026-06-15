@@ -19,9 +19,7 @@ public class MasteryDefinitionProviderTests : IDisposable
 
     public void Dispose() => Directory.Delete(_tmpDir, recursive: true);
 
-    // -----------------------------------------------------------------------
     // Happy path — the shipped content/masteries.json
-    // -----------------------------------------------------------------------
 
     [Fact]
     public void Provider_LoadsShippedRoster_FourAncients()
@@ -88,9 +86,7 @@ public class MasteryDefinitionProviderTests : IDisposable
         provider.GetTierChallenge(MasteryAncient.Wrath, 9).Should().BeNull(); // no tier advances from L9
     }
 
-    // -----------------------------------------------------------------------
     // Startup validation
-    // -----------------------------------------------------------------------
 
     [Fact]
     public void Provider_MissingFile_Throws()
@@ -183,9 +179,7 @@ public class MasteryDefinitionProviderTests : IDisposable
         act.Should().Throw<InvalidOperationException>().WithMessage("*≥2 distinct activity types*");
     }
 
-    // -----------------------------------------------------------------------
     // Helpers
-    // -----------------------------------------------------------------------
 
     private static AncientDefinition MakeAncient(MasteryAncient ancient, double[] globals) => new()
     {

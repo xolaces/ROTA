@@ -12,9 +12,7 @@ namespace ROTA.UnitTests.Services;
 
 public class PlayerServiceTests
 {
-    // -----------------------------------------------------------------------
     // HELPERS
-    // -----------------------------------------------------------------------
 
     private static (PlayerService service,
                     Mock<IPlayerRepository> players,
@@ -54,9 +52,7 @@ public class PlayerServiceTests
     private static Player MakePlayer(string username = "testuser")
         => Player.Create(username, $"{username}@rota.test", "hash");
 
-    // -----------------------------------------------------------------------
     // GET /api/players/me — live resource values
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task GetProfile_ReturnsLiveEnergyValues_NotStoredCheckpoints()
@@ -197,9 +193,7 @@ public class PlayerServiceTests
         result.Should().BeNull("deleted or missing players are filtered by the repository and return null → 404");
     }
 
-    // -----------------------------------------------------------------------
     // PUT /api/players/me — username update
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task UpdateUsername_Succeeds_WithValidAvailableUsername()
@@ -252,9 +246,7 @@ public class PlayerServiceTests
         result.Status.Should().Be(PlayerUpdateStatus.NotFound);
     }
 
-    // -----------------------------------------------------------------------
     // UpdateUsernameRequestValidator
-    // -----------------------------------------------------------------------
 
     [Theory]
     [InlineData("ab")]                                 // 2 chars — too short
@@ -280,9 +272,7 @@ public class PlayerServiceTests
         result.IsValid.Should().BeTrue($"'{username}' should pass validation");
     }
 
-    // -----------------------------------------------------------------------
     // PUT /api/players/me/display-name — display name update
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task UpdateDisplayName_Succeeds_WithValidDisplayName()
@@ -319,9 +309,7 @@ public class PlayerServiceTests
         players.Verify(p => p.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    // -----------------------------------------------------------------------
     // UpdateDisplayNameRequestValidator
-    // -----------------------------------------------------------------------
 
     [Theory]
     [InlineData("John_Doe-99")]                                              // letters, digits, underscore, hyphen

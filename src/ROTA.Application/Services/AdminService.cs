@@ -78,7 +78,6 @@ public sealed class AdminService : IAdminService
                 return AdminActionResult.Fail("Actor is not an admin.");
         }
 
-        // Cannot revoke the base Player role.
         if (role == PlayerRoles.Player)
             return AdminActionResult.Fail("Cannot revoke the base Player role.");
 
@@ -116,9 +115,7 @@ public sealed class AdminService : IAdminService
         return AdminActionResult.Ok();
     }
 
-    // -----------------------------------------------------------------------
     // Moderation — punitive actions (ban / mute / unmute) — T40
-    // -----------------------------------------------------------------------
 
     /// <inheritdoc/>
     public async Task<AdminActionResult> BanPlayerAsync(
@@ -211,9 +208,7 @@ public sealed class AdminService : IAdminService
         return AdminActionResult.Ok();
     }
 
-    // -----------------------------------------------------------------------
     // Private helpers
-    // -----------------------------------------------------------------------
 
     /// <summary>True if the actor may take moderation actions. CLI actor (Guid.Empty) always passes.</summary>
     private async Task<bool> ActorIsModeratorOrAdminAsync(Guid actorId, CancellationToken ct)

@@ -80,7 +80,6 @@ public class LeaderboardWriteHookTests
             expectedMonth, amount, at, It.IsAny<CancellationToken>()),
             Times.Once, "must increment EnergySpent/Monthly by the spent amount");
 
-        // No MaxUpdateAsync calls for energy boards
         repo.Verify(r => r.MaxUpdateAsync(
             It.IsAny<Guid>(), It.IsAny<LeaderboardBoard>(), It.IsAny<LeaderboardPeriod>(),
             It.IsAny<string>(), It.IsAny<long>(), It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()),
@@ -220,7 +219,6 @@ public class LeaderboardWriteHookTests
     [Fact]
     public async Task SpendEnergy_LeaderboardFailure_DoesNotFailTheSpend()
     {
-        // Arrange: leaderboard throws an exception on RecordEnergySpendAsync.
         var resources    = new Mock<IPlayerResourceRepository>();
         var auditLog     = new Mock<IAuditLogRepository>();
         var players      = new Mock<IPlayerRepository>();
@@ -240,7 +238,6 @@ public class LeaderboardWriteHookTests
         players.Setup(p => p.FindByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Player.Create("u", "u@t.com", "h"));
 
-        // Resource with enough energy to spend
         var resource = PlayerResource.Create(Guid.NewGuid(), ResourceType.Energy, 50, regenPerMinute: 0);
         resource.SaveCheckpoint(20, DateTimeOffset.UtcNow);
 
@@ -263,10 +260,9 @@ public class LeaderboardWriteHookTests
             resources.Object, auditLog.Object, players.Object, classService.Object,
             leaderboards.Object, NullLogger<EnergyService>.Instance);
 
-        // Act
         var result = await service.SpendEnergyAsync(Guid.NewGuid(), ResourceType.Energy, 5);
 
-        // Assert — spend succeeded despite leaderboard throw
+        // spend succeeded despite leaderboard throw
         result.Should().BeTrue("energy spend must succeed even when the leaderboard write throws");
         leaderboards.Verify(l => l.RecordEnergySpendAsync(
             It.IsAny<Guid>(), 5L, It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()),

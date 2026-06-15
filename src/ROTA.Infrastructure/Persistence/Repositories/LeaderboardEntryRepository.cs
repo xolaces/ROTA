@@ -33,8 +33,6 @@ public sealed class LeaderboardEntryRepository : ILeaderboardEntryRepository
         _db = db;
     }
 
-    // ── IncrementAsync ───────────────────────────────────────────────────────
-
     public async Task IncrementAsync(
         Guid playerId,
         LeaderboardBoard board,
@@ -71,8 +69,6 @@ public sealed class LeaderboardEntryRepository : ILeaderboardEntryRepository
         cmd.Parameters.AddWithValue("delta", NpgsqlDbType.Bigint, delta);
         await cmd.ExecuteNonQueryAsync(ct);
     }
-
-    // ── MaxUpdateAsync ───────────────────────────────────────────────────────
 
     public async Task MaxUpdateAsync(
         Guid playerId,
@@ -116,8 +112,6 @@ public sealed class LeaderboardEntryRepository : ILeaderboardEntryRepository
         await cmd.ExecuteNonQueryAsync(ct);
     }
 
-    // ── GetPageAsync ─────────────────────────────────────────────────────────
-
     public async Task<IReadOnlyList<LeaderboardEntry>> GetPageAsync(
         LeaderboardBoard board,
         string periodKey,
@@ -139,8 +133,6 @@ public sealed class LeaderboardEntryRepository : ILeaderboardEntryRepository
             .ToListAsync(ct);
     }
 
-    // ── GetPlayerEntryAsync ──────────────────────────────────────────────────
-
     public async Task<LeaderboardEntry?> GetPlayerEntryAsync(
         Guid playerId,
         LeaderboardBoard board,
@@ -153,8 +145,6 @@ public sealed class LeaderboardEntryRepository : ILeaderboardEntryRepository
                      && e.PeriodKey == periodKey
                      && !e.IsDeleted)
             .FirstOrDefaultAsync(ct);
-
-    // ── GetEligiblePageAsync ─────────────────────────────────────────────────
 
     public async Task<IReadOnlyList<EligibleLeaderboardEntry>> GetEligiblePageAsync(
         LeaderboardBoard board,
@@ -219,8 +209,6 @@ public sealed class LeaderboardEntryRepository : ILeaderboardEntryRepository
         return results;
     }
 
-    // ── CountEligibleAsync ───────────────────────────────────────────────────
-
     public async Task<int> CountEligibleAsync(
         LeaderboardBoard board,
         string periodKey,
@@ -253,8 +241,6 @@ public sealed class LeaderboardEntryRepository : ILeaderboardEntryRepository
         var result = await cmd.ExecuteScalarAsync(ct);
         return result is int i ? i : Convert.ToInt32(result);
     }
-
-    // ── GetCallerRankAsync ───────────────────────────────────────────────────
 
     public async Task<CallerRankEntry?> GetCallerRankAsync(
         Guid callerId,
@@ -321,8 +307,6 @@ public sealed class LeaderboardEntryRepository : ILeaderboardEntryRepository
         };
     }
 
-    // ── SetValueAsync ────────────────────────────────────────────────────────
-
     public async Task SetValueAsync(
         Guid playerId,
         LeaderboardBoard board,
@@ -364,8 +348,6 @@ public sealed class LeaderboardEntryRepository : ILeaderboardEntryRepository
         cmd.Parameters.AddWithValue("value", NpgsqlDbType.Bigint, value);
         await cmd.ExecuteNonQueryAsync(ct);
     }
-
-    // ── GetEligibleStatSnapshotAsync ─────────────────────────────────────────
 
     public async Task<IReadOnlyList<EligibleStatSnapshot>> GetEligibleStatSnapshotAsync(
         int minLevel,
@@ -409,8 +391,6 @@ public sealed class LeaderboardEntryRepository : ILeaderboardEntryRepository
 
         return results;
     }
-
-    // ── Private helpers ──────────────────────────────────────────────────────
 
     private static void AddCommonParams(
         NpgsqlCommand cmd,

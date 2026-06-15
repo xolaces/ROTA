@@ -4,7 +4,6 @@ namespace ROTA.Domain.Entities;
 
 public class RefreshToken
 {
-    // Required by EF Core
     private RefreshToken() { }
 
     public RefreshToken(Guid playerId, string tokenHash, DateTimeOffset expiresAt, string? ipAddress)

@@ -149,10 +149,6 @@ public sealed class EnergyService : IEnergyService
         }, ct);
     }
 
-    // -------------------------------------------------------------------
-    // DOMAIN LOGIC — live value computation
-    // -------------------------------------------------------------------
-
     // BEHAVIOR CHANGE (v0.2.2): GuildStamina previously had RegenPerMinute=0 (no regen).
     // Now all resource types regen at the class-configured rate from ClassConfig.
     // GuildStamina now regenerates at ClassConfig.GuildStaminaRegenMinutes (default 2.0 min/point).

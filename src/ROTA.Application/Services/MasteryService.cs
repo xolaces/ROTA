@@ -53,8 +53,6 @@ public sealed class MasteryService : IMasteryService
         _config       = config.Value;
     }
 
-    // ── GetMasteriesAsync ─────────────────────────────────────────────────────
-
     public async Task<MasteryOverviewResponse> GetMasteriesAsync(Guid playerId, CancellationToken ct = default)
     {
         var player = await _players.FindByIdAsync(playerId, ct);
@@ -129,8 +127,6 @@ public sealed class MasteryService : IMasteryService
         var (levels, pledge) = await LoadLevelsAndPledgeAsync(playerId, ct);
         return new MasteryModifiers(ComputeCombatModifiers(levels, pledge), ComputeLootModifiers(levels, pledge));
     }
-
-    // ── Rating-board snapshot ─────────────────────────────────────────────────
 
     public async Task<int> SnapshotRatingBoardAsync(CancellationToken ct = default)
     {
@@ -303,8 +299,6 @@ public sealed class MasteryService : IMasteryService
         if (_config.IncludeWeakestPillarFloor) rating += 2 * all.Min();
         return rating;
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private const int PlayerMasteryMax = 5;
 

@@ -9,10 +9,6 @@ namespace ROTA.UnitTests.Services;
 
 public class GemServiceTests
 {
-    // -----------------------------------------------------------------------
-    // HELPERS
-    // -----------------------------------------------------------------------
-
     private static (GemService service,
                     Mock<IGemTransactionRepository> repo,
                     Mock<IAuditLogRepository> auditLog)
@@ -24,9 +20,7 @@ public class GemServiceTests
         return (service, repo, auditLog);
     }
 
-    // -----------------------------------------------------------------------
     // GetBalanceAsync — ledger sum
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task GetBalance_ReturnsSumOfAllTransactions()
@@ -42,9 +36,7 @@ public class GemServiceTests
         balance.Should().Be(15);
     }
 
-    // -----------------------------------------------------------------------
     // GrantGemsAsync — idempotency
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task GrantGems_ReturnsFalse_WhenReferenceIdAlreadyUsed()
@@ -101,9 +93,7 @@ public class GemServiceTests
             "no grant audit entry when nothing was granted");
     }
 
-    // -----------------------------------------------------------------------
     // SpendGemsAsync — delegates to the atomic repository spend (audit fix)
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task SpendGems_ReturnsInsufficientBalance_WhenBalanceTooLow()
@@ -161,9 +151,7 @@ public class GemServiceTests
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    // -----------------------------------------------------------------------
     // DailyRefillAsync — once-per-day enforcement
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task DailyRefill_Succeeds_WhenNotYetClaimedToday()

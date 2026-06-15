@@ -57,7 +57,6 @@ public sealed class GauntletEntryRepository : IGauntletEntryRepository
             when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
         {
             _db.ChangeTracker.Clear();
-            // Re-read the row the winning insert committed.
             return (await FindByEventAndPlayerAsync(entry.GauntletEventId, entry.PlayerId, ct))!;
         }
     }

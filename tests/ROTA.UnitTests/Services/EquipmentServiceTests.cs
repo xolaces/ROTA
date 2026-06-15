@@ -11,10 +11,6 @@ namespace ROTA.UnitTests.Services;
 
 public class EquipmentServiceTests
 {
-    // -----------------------------------------------------------------------
-    // HELPERS
-    // -----------------------------------------------------------------------
-
     private static (EquipmentService service,
                     Mock<IPlayerEquipmentRepository> repo,
                     Mock<IGearDefinitionProvider> gearDefs,
@@ -80,10 +76,6 @@ public class EquipmentServiceTests
         IconPath     = "icons/gear/draft_horse.png",
     };
 
-    // -----------------------------------------------------------------------
-    // EquipAsync — success
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task Equip_ValidItem_ReturnsSuccess()
     {
@@ -105,10 +97,6 @@ public class EquipmentServiceTests
         repo.Verify(r => r.CreateAsync(It.IsAny<PlayerEquipment>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    // -----------------------------------------------------------------------
-    // EquipAsync — unknown slot
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task Equip_UnknownSlot_ReturnsFailure()
     {
@@ -119,10 +107,6 @@ public class EquipmentServiceTests
         result.Success.Should().BeFalse();
         result.FailureReason.Should().Contain("Unknown slot");
     }
-
-    // -----------------------------------------------------------------------
-    // EquipAsync — gear not found
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task Equip_GearNotFound_ReturnsFailure()
@@ -137,10 +121,6 @@ public class EquipmentServiceTests
         result.FailureReason.Should().Contain("not found");
     }
 
-    // -----------------------------------------------------------------------
-    // EquipAsync — slot mismatch
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task Equip_SlotMismatch_ReturnsFailure()
     {
@@ -154,9 +134,7 @@ public class EquipmentServiceTests
         result.FailureReason.Should().Contain("belongs to slot");
     }
 
-    // -----------------------------------------------------------------------
     // EquipAsync — existing slot swaps gear (UpdateAsync, not CreateAsync)
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task Equip_ExistingSlot_SwapsGear()
@@ -178,10 +156,6 @@ public class EquipmentServiceTests
         repo.Verify(r => r.CreateAsync(It.IsAny<PlayerEquipment>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    // -----------------------------------------------------------------------
-    // UnequipAsync — success
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task Unequip_EquippedSlot_ReturnsSuccess()
     {
@@ -197,10 +171,6 @@ public class EquipmentServiceTests
         repo.Verify(r => r.UpdateAsync(existingRow, It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    // -----------------------------------------------------------------------
-    // UnequipAsync — empty slot
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task Unequip_EmptySlot_ReturnsFailure()
     {
@@ -214,10 +184,6 @@ public class EquipmentServiceTests
         result.Success.Should().BeFalse();
         result.FailureReason.Should().Contain("No item equipped");
     }
-
-    // -----------------------------------------------------------------------
-    // GetEffectiveCombatDataAsync — gear adds stat bonuses
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task GetEffectiveCombatData_WithGear_AddsStatBonuses()
@@ -252,10 +218,6 @@ public class EquipmentServiceTests
         result.MountProc.Should().BeNull("no mount equipped");
     }
 
-    // -----------------------------------------------------------------------
-    // GetEffectiveCombatDataAsync — mount returns proc data
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task GetEffectiveCombatData_WithMount_ReturnsProcData()
     {
@@ -274,10 +236,6 @@ public class EquipmentServiceTests
         result.MountProc.Should().NotBeNull("a mount with procChance is equipped");
         result.MountProc!.ProcChance.Should().BeApproximately(0.05, 1e-9);
     }
-
-    // -----------------------------------------------------------------------
-    // Conditional bonus — FlatAttack from OwnedUnitCount
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task GetEffectiveCombatData_ConditionalFlatAttack_AddsToEffectiveAttack()
@@ -322,10 +280,6 @@ public class EquipmentServiceTests
         result.EffectiveDefense.Should().Be(10, "no defense bonus");
     }
 
-    // -----------------------------------------------------------------------
-    // Conditional bonus — ProcChanceFlat clamped to 1.0
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task GetEffectiveCombatData_ConditionalProcChanceClamped_NeverExceedsOne()
     {
@@ -369,10 +323,6 @@ public class EquipmentServiceTests
             "0.8 base + 0.5 conditional = 1.3, clamped to 1.0");
     }
 
-    // -----------------------------------------------------------------------
-    // Conditional bonus — FlatDamagePercent propagates to result
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task GetEffectiveCombatData_FlatDamagePercent_PropagatesInResult()
     {
@@ -414,10 +364,6 @@ public class EquipmentServiceTests
         result.FlatDamagePercent.Should().BeApproximately(0.2, 1e-9,
             "floor(10/5)=2 stacks × 0.1 = 0.2 FlatDamagePercent");
     }
-
-    // -----------------------------------------------------------------------
-    // Conditional bonus — OwnedTypeCount via item tags
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task GetEffectiveCombatData_TagBasedBonus_AccumulatesAcrossItems()
@@ -465,10 +411,7 @@ public class EquipmentServiceTests
             "base 10 + floor(7/5)=1 stack × 2 ATK = 12");
     }
 
-    // -----------------------------------------------------------------------
-    // GetOwnedGearAsync — owned gear bag with available = owned − equipped
-    // -----------------------------------------------------------------------
-
+    // GetOwnedGearAsync — available = owned − equipped
     private static (EquipmentService service,
                     Mock<IPlayerGearRepository> gearRepo,
                     Mock<IPlayerEquipmentRepository> equipRepo,
@@ -565,10 +508,7 @@ public class EquipmentServiceTests
         owned.Should().BeEmpty("a gear def no longer present in content is skipped");
     }
 
-    // -----------------------------------------------------------------------
     // G2: GrantGearAsync — new row creates, existing row stacks
-    // -----------------------------------------------------------------------
-
     private static (EquipmentService service, Mock<IPlayerGearRepository> gearRepo)
         BuildServiceForGrant()
     {
@@ -657,10 +597,7 @@ public class EquipmentServiceTests
             playerId, AchievementMetric.EquipmentPiecesOwned, 25, It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    // -----------------------------------------------------------------------
     // EquipAsync — G3 ownership gate
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task EquipAsync_OwnershipCheck_Fail_NotOwned()
     {

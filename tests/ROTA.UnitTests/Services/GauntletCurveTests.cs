@@ -96,8 +96,6 @@ public class GauntletCurveTests
         _out.WriteLine($"   Same push WITH double-power active (effective {midPower * 2:N0}): ~{gemsDoubled:N0} gems.");
     }
 
-    // ── helpers ──────────────────────────────────────────────────────────────
-
     private void PrintRow(GauntletConfig c, int n)
         => _out.WriteLine($"{n,5} | {GauntletStageCurve.Hp(n, c),15:N0} | {GauntletStageCurve.BreakEvenPower(n, c),16:N0} | {GauntletStageCurve.Gold(n, c),11:N0} | {GauntletStageCurve.Xp(n, c),7:N0}");
 

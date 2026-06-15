@@ -3,7 +3,6 @@ namespace ROTA.Shared.DTOs;
 /// <summary>Result of an admin service operation.</summary>
 public class AdminActionResult
 {
-    /// <summary>True if the operation succeeded.</summary>
     public bool Success { get; init; }
 
     /// <summary>Human-readable failure reason when <see cref="Success"/> is false.</summary>

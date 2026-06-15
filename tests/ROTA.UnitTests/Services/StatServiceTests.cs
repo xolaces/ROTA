@@ -12,10 +12,6 @@ namespace ROTA.UnitTests.Services;
 
 public class StatServiceTests
 {
-    // -----------------------------------------------------------------------
-    // HELPERS
-    // -----------------------------------------------------------------------
-
     private record ServiceBundle(
         StatService Service,
         Mock<IPlayerRepository> Players,
@@ -119,10 +115,6 @@ public class StatServiceTests
             .ReturnsAsync(player);
     }
 
-    // -----------------------------------------------------------------------
-    // AllocateStatPointAsync — happy path
-    // -----------------------------------------------------------------------
-
     [Theory]
     [InlineData(StatType.Attack)]
     [InlineData(StatType.Defense)]
@@ -140,10 +132,6 @@ public class StatServiceTests
         result.NewSkillPointsRemaining.Should().Be(2);
         b.Players.Verify(p => p.UpdateStatsAsync(player.Stats!, It.IsAny<CancellationToken>()), Times.Once);
     }
-
-    // -----------------------------------------------------------------------
-    // AllocateStatPointAsync — LSI cap enforced
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task AllocateEnergy_RejectsAllocation_WhenLsiCapWouldBeExceeded()
@@ -180,9 +168,7 @@ public class StatServiceTests
             PlayerStats.BaseMaxEnergy + 9, It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    // -----------------------------------------------------------------------
     // AllocateStatPointAsync — T30: gained max delta credited to current pool
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task AllocateEnergy_CreditsGainedDeltaToCurrentPool()
@@ -246,10 +232,6 @@ public class StatServiceTests
         result.FailureReason.Should().Contain("LSI cap");
     }
 
-    // -----------------------------------------------------------------------
-    // AllocateStatPointAsync — insufficient skill points
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task AllocateStat_Fails_WhenSkillPointsInsufficient()
     {
@@ -263,10 +245,6 @@ public class StatServiceTests
         result.FailureReason.Should().Contain("Insufficient");
         b.Players.Verify(p => p.UpdateStatsAsync(It.IsAny<PlayerStats>(), It.IsAny<CancellationToken>()), Times.Never);
     }
-
-    // -----------------------------------------------------------------------
-    // GrantLevelUpPointsAsync — +10 SP per level
-    // -----------------------------------------------------------------------
 
     [Theory]
     [InlineData(1, false)]
@@ -301,9 +279,7 @@ public class StatServiceTests
         }
     }
 
-    // -----------------------------------------------------------------------
     // GrantLevelUpPointsAsync — T32 pinnacle gem rewards
-    // -----------------------------------------------------------------------
 
     [Theory]
     [InlineData(1000, 250)]
@@ -359,9 +335,7 @@ public class StatServiceTests
             GemTransactionType.PinnacleReward, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    // -----------------------------------------------------------------------
     // GrantLevelUpPointsAsync — T33 pinnacle first-claim hook
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task GrantLevelUpPoints_RecordsFirstClaim_AtPinnacleLevel()
@@ -415,10 +389,6 @@ public class StatServiceTests
         player.Stats!.CurrentHealth.Should().Be(player.Stats.BaseMaxHealth);
     }
 
-    // -----------------------------------------------------------------------
-    // AddUnassignedPointsAsync — raid/item stat point rewards
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task AddUnassignedPoints_AddsToSkillPoints_WithoutLsiCheck()
     {
@@ -434,10 +404,8 @@ public class StatServiceTests
         b.Energy.Verify(e => e.UpdateMaxAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    // -----------------------------------------------------------------------
     // XpToNextLevel — formula and milestone floors
     // Formula: Math.Max(floor, (int)Math.Round(30.0 × level^0.7))
-    // -----------------------------------------------------------------------
 
     [Fact]
     public void XpToNextLevel_Level1_ReturnsFormulaValue_NoFloor()
@@ -499,12 +467,10 @@ public class StatServiceTests
         result.Should().BeInRange(3770, 3780);
     }
 
-    // -----------------------------------------------------------------------
     // GetCritProfile — discernment crit chance and multiplier
     // Formulas:
     //   Chance     = 0.05 + min(0.10, discernment × 0.0001)   cap at 0.15
     //   Multiplier = 1.50 + min(1.00, discernment × 0.0002)   cap at 2.50
-    // -----------------------------------------------------------------------
 
     [Fact]
     public void GetCritProfile_ZeroDiscernment_ReturnsBaseValues()

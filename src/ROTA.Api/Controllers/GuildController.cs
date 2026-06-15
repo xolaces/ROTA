@@ -35,8 +35,6 @@ public sealed class GuildController : ControllerBase
         _inviteValidator = inviteValidator;
     }
 
-    // ── Browse + detail ──────────────────────────────────────────────────────
-
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<GuildSummaryDto>>> Browse(
         [FromQuery] string? query, [FromQuery] int page = 1)
@@ -50,8 +48,6 @@ public sealed class GuildController : ControllerBase
         var detail = await _guilds.GetGuildAsync(id, PlayerId());
         return detail is null ? NotFound(new { message = "Guild not found." }) : Ok(detail);
     }
-
-    // ── Lifecycle ──────────────────────────────────────────────────────────
 
     [HttpPost]
     [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
@@ -84,8 +80,6 @@ public sealed class GuildController : ControllerBase
     public async Task<IActionResult> Disband(Guid id)
         => Map(await _guilds.DisbandGuildAsync(PlayerId(), id));
 
-    // ── Join flow ──────────────────────────────────────────────────────────
-
     [HttpPost("{id:guid}/apply")]
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -117,8 +111,6 @@ public sealed class GuildController : ControllerBase
     public async Task<IActionResult> AcceptInvite(Guid reqId)
         => Map(await _guilds.AcceptInviteAsync(PlayerId(), reqId));
 
-    // ── Membership ─────────────────────────────────────────────────────────
-
     [HttpPost("{id:guid}/leave")]
     public async Task<IActionResult> Leave(Guid id)
         => Map(await _guilds.LeaveAsync(PlayerId(), id));
@@ -138,8 +130,6 @@ public sealed class GuildController : ControllerBase
     [HttpPost("{id:guid}/transfer")]
     public async Task<IActionResult> Transfer(Guid id, [FromBody] TransferLeadershipRequest req)
         => Map(await _guilds.TransferLeadershipAsync(PlayerId(), id, req.TargetPlayerId));
-
-    // ── Helpers ──────────────────────────────────────────────────────────────
 
     private static GuildJoinPolicy? ParsePolicy(string? value)
         => Enum.TryParse<GuildJoinPolicy>(value, ignoreCase: true, out var p) ? p : null;

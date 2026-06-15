@@ -12,7 +12,6 @@ using ROTA.Shared.DTOs;
 
 namespace ROTA.Application.Services;
 
-//        per-IP and per-player throttling. Service enforces business rules only.
 public sealed class AuthService : IAuthService
 {
     private const int BcryptWorkFactor = 12;
@@ -55,10 +54,6 @@ public sealed class AuthService : IAuthService
         _resetTokens = resetTokens;
         _emails = emails;
     }
-
-    // -------------------------------------------------------------------
-    // REGISTER
-    // -------------------------------------------------------------------
 
     public async Task<AuthResponse?> RegisterAsync(RegisterRequest request, string ipAddress)
     {
@@ -133,10 +128,6 @@ public sealed class AuthService : IAuthService
         return await IssueTokenPairAsync(player, ipAddress);
     }
 
-    // -------------------------------------------------------------------
-    // LOGIN
-    // -------------------------------------------------------------------
-
     public async Task<AuthResponse?> LoginAsync(LoginRequest request, string ipAddress)
     {
         // Check lockout BEFORE touching the DB — cheap Redis check first.
@@ -200,10 +191,6 @@ public sealed class AuthService : IAuthService
         return await IssueTokenPairAsync(player, ipAddress);
     }
 
-    // -------------------------------------------------------------------
-    // REFRESH
-    // -------------------------------------------------------------------
-
     public async Task<AuthResponse?> RefreshAsync(RefreshRequest request, string ipAddress)
     {
         var tokenHash = HashToken(request.RefreshToken);
@@ -265,10 +252,6 @@ public sealed class AuthService : IAuthService
         return await IssueTokenPairAsync(player, ipAddress);
     }
 
-    // -------------------------------------------------------------------
-    // LOGOUT
-    // -------------------------------------------------------------------
-
     public async Task LogoutAsync(RefreshRequest request)
     {
         var tokenHash = HashToken(request.RefreshToken);
@@ -284,9 +267,7 @@ public sealed class AuthService : IAuthService
             "Session ended", null));
     }
 
-    // -------------------------------------------------------------------
     // PASSWORD RESET (T65)
-    // -------------------------------------------------------------------
 
     // Crockford-style base32 (no 0/1/I/L/O/U) — same alphabet as beta keys.
     private const string ResetCodeAlphabet = "23456789ABCDEFGHJKMNPQRSTVWXYZ";
@@ -383,10 +364,6 @@ public sealed class AuthService : IAuthService
     private static string NormalizeResetCode(string code)
         => new(code.Trim().ToUpperInvariant().Where(c => c != '-' && c != ' ').ToArray());
 
-    // -------------------------------------------------------------------
-    // PRIVATE HELPERS
-    // -------------------------------------------------------------------
-
     private async Task<AuthResponse> IssueTokenPairAsync(Player player, string ipAddress)
     {
         // Trim to the cap, not by one: if races (or historical drift) ever push the count past the
@@ -451,7 +428,6 @@ public sealed class AuthService : IAuthService
     {
         var credentials = GetSigningCredentials();
 
-        // Build base claims
         var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub,   player.Id.ToString()),

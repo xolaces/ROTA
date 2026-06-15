@@ -44,8 +44,6 @@ public sealed class LeaderboardService : ILeaderboardService
         _cfg         = cfg;
     }
 
-    // ── GetBoardsAsync ────────────────────────────────────────────────────────
-
     public Task<List<LeaderboardSummary>> GetBoardsAsync(CancellationToken ct = default)
     {
         var now = DateTimeOffset.UtcNow;
@@ -68,8 +66,6 @@ public sealed class LeaderboardService : ILeaderboardService
         return Task.FromResult(summaries);
     }
 
-    // ── GetPageAsync ──────────────────────────────────────────────────────────
-
     public async Task<LeaderboardPageResult> GetPageAsync(
         LeaderboardBoard board,
         LeaderboardPeriod period,
@@ -78,11 +74,9 @@ public sealed class LeaderboardService : ILeaderboardService
         Guid callerId,
         CancellationToken ct = default)
     {
-        // ── Validate page ────────────────────────────────────────────────────
         if (page < 1)
             return LeaderboardPageResult.Fail("Page must be 1 or greater.");
 
-        // ── Validate board/period combo ──────────────────────────────────────
         if (!AllBoards.TryGetValue(board, out var meta))
             return LeaderboardPageResult.Fail($"Unknown board '{board}'.");
 
@@ -91,7 +85,6 @@ public sealed class LeaderboardService : ILeaderboardService
                 $"Board '{board}' does not support period '{period}'. " +
                 $"Valid periods: {string.Join(", ", meta.Periods)}.");
 
-        // ── Validate / resolve periodKey ─────────────────────────────────────
         string finalKey;
         if (periodKey != null)
         {
@@ -106,20 +99,18 @@ public sealed class LeaderboardService : ILeaderboardService
             finalKey = _keyResolver.Resolve(DateTimeOffset.UtcNow, period);
         }
 
-        // ── Config ───────────────────────────────────────────────────────────
         var cfg        = _cfg.Value;
         var pageSize   = cfg.PageSize;
         var minLevel   = cfg.MinLevel;
         var excludeAdm = cfg.ExcludeAdmins;
 
-        // ── Read the eligible ranked page ────────────────────────────────────
         var entries = await _repo.GetEligiblePageAsync(
             board, finalKey, page, pageSize, minLevel, excludeAdm, ct);
 
         var totalRanked = await _repo.CountEligibleAsync(
             board, finalKey, minLevel, excludeAdm, ct);
 
-        // ── Assign contiguous ranks (1-based, accounting for page offset) ────
+        // Contiguous 1-based ranks, accounting for the page offset.
         var offset  = (page - 1) * pageSize;
         var dtoList = entries.Select((e, i) => new LeaderboardEntryDto
         {
@@ -129,7 +120,6 @@ public sealed class LeaderboardService : ILeaderboardService
             Value       = e.Value,
         }).ToList();
 
-        // ── Caller rank ──────────────────────────────────────────────────────
         var callerRank = await _repo.GetCallerRankAsync(
             callerId, board, finalKey, minLevel, excludeAdm, ct);
 
@@ -257,7 +247,5 @@ public sealed class LeaderboardService : ILeaderboardService
         return ResolveDisplayName(player.DisplayName, player.Username);
     }
 }
-
-// ── Internal metadata record ─────────────────────────────────────────────────
 
 internal sealed record BoardMeta(string Title, LeaderboardPeriod[] Periods);

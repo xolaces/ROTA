@@ -29,15 +29,12 @@ public enum MasteryActivityType
     /// <summary>A Gauntlet placement settled inside the prize ranks.</summary>
     GauntletRankEarned = 6,
 
-    /// <summary>A character level gained.</summary>
     LevelGained = 7,
 
-    /// <summary>Energy spent.</summary>
     EnergySpent = 8,
 
     /// <summary>Stamina (or guild stamina) spent.</summary>
     StaminaSpent = 9,
 
-    /// <summary>Gold earned.</summary>
     GoldEarned = 10,
 }

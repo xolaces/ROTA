@@ -39,8 +39,6 @@ public class LeaderboardEligibilityTests : IAsyncLifetime
 
     public async Task DisposeAsync() => await _postgres.DisposeAsync();
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
-
     private RotaDbContext NewDbContext()
     {
         var options = new DbContextOptionsBuilder<RotaDbContext>()
@@ -89,7 +87,6 @@ public class LeaderboardEligibilityTests : IAsyncLifetime
                 displayName ?? player.DisplayName,
                 player.Id);
 
-            // Insert a leaderboard entry for this player.
             var repo = new LeaderboardEntryRepository(db);
             await repo.IncrementAsync(
                 player.Id, LeaderboardBoard.DamageDealt, LeaderboardPeriod.Weekly,
@@ -102,8 +99,6 @@ public class LeaderboardEligibilityTests : IAsyncLifetime
     private const string PeriodKey     = "week:2026-W23";
     private const int    MinLevel      = 20;
     private const bool   ExcludeAdmins = true;
-
-    // ── Test 1: banned player is excluded from page and count ─────────────────
 
     [Fact]
     public async Task BannedPlayer_IsExcludedFromPageAndCount()
@@ -121,10 +116,8 @@ public class LeaderboardEligibilityTests : IAsyncLifetime
         page.Select(e => e.PlayerId).Should().Contain(eligibleId);
         page.Select(e => e.PlayerId).Should().NotContain(bannedId,
             "banned players must not appear on any leaderboard");
-        count.Should().NotBe(0); // at least the eligible player is counted
+        count.Should().NotBe(0);
     }
-
-    // ── Test 2: soft-deleted player is excluded ───────────────────────────────
 
     [Fact]
     public async Task SoftDeletedPlayer_IsExcludedFromPageAndCount()
@@ -141,8 +134,6 @@ public class LeaderboardEligibilityTests : IAsyncLifetime
         page.Select(e => e.PlayerId).Should().NotContain(deletedId,
             "soft-deleted players must not appear on any leaderboard");
     }
-
-    // ── Test 3: player below MinLevel is excluded ─────────────────────────────
 
     [Fact]
     public async Task PlayerBelowMinLevel_IsExcludedFromPage()
@@ -161,8 +152,6 @@ public class LeaderboardEligibilityTests : IAsyncLifetime
         page.Select(e => e.PlayerId).Should().NotContain(tooLowId, "below MinLevel — excluded");
     }
 
-    // ── Test 4: Admin excluded; Moderator included ────────────────────────────
-
     [Fact]
     public async Task AdminExcluded_ModeratorIncluded()
     {
@@ -179,8 +168,6 @@ public class LeaderboardEligibilityTests : IAsyncLifetime
         page.Select(e => e.PlayerId).Should().Contain(modId,     "Moderator appears as a regular player");
         page.Select(e => e.PlayerId).Should().NotContain(adminId, "Admin is excluded when ExcludeAdmins=true");
     }
-
-    // ── Test 5: tiebreak — two equal values, earlier last_progress_at ranks first ─
 
     [Fact]
     public async Task Tiebreak_EarlierLastProgressAt_RanksFirst()
@@ -203,8 +190,6 @@ public class LeaderboardEligibilityTests : IAsyncLifetime
         earlyPos.Should().BeLessThan(latePos,
             "equal values: the player who reached it FIRST (earlier last_progress_at) ranks higher");
     }
-
-    // ── Test 6: caller rank correct with ineligible players interleaved ────────
 
     [Fact]
     public async Task CallerRank_IneligiblePlayersInterleaved_DoNotOccupyRanks()
@@ -255,8 +240,6 @@ public class LeaderboardEligibilityTests : IAsyncLifetime
         ranked[4].PlayerId.Should().Be(below1);
     }
 
-    // ── Test 7: caller ineligible (banned) → CallerRank null ──────────────────
-
     [Fact]
     public async Task CallerIneligible_BannedCaller_ReturnsNullCallerRank()
     {
@@ -269,8 +252,6 @@ public class LeaderboardEligibilityTests : IAsyncLifetime
 
         callerRank.Should().BeNull("a banned caller is ineligible and should not get a rank");
     }
-
-    // ── Test 8: CountEligible excludes ineligible players ────────────────────
 
     [Fact]
     public async Task CountEligible_ExcludesIneligiblePlayers()
@@ -293,8 +274,6 @@ public class LeaderboardEligibilityTests : IAsyncLifetime
         count.Should().BeGreaterThanOrEqualTo(2,
             "at least the two eligible players must be counted");
     }
-
-    // ── Test 9: DisplayName hydrated; empty DisplayName falls back to Username ─
 
     [Fact]
     public async Task GetEligiblePage_HydratesDisplayName_FallsBackToUsername()

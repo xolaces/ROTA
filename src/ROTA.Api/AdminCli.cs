@@ -96,10 +96,6 @@ public static class AdminCli
         }
     }
 
-    // -----------------------------------------------------------------------
-    // Command implementations
-    // -----------------------------------------------------------------------
-
     private static async Task<int> RunSeedAdmin(IServiceProvider services)
     {
         await SeedData.EnsureAdminAsync(services);

@@ -47,8 +47,6 @@ public class GuildMembership
     public DateTimeOffset UpdatedAt { get; private set; } = DateTimeOffset.UtcNow;
     public bool IsDeleted { get; private set; }
 
-    // ── Domain methods ────────────────────────────────────────────────────────
-
     public void SetRank(GuildRank rank)
     {
         Rank = rank;

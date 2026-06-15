@@ -19,10 +19,6 @@ using ROTA.Infrastructure.Seeding;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ---------------------------------------------------------------
-// SERVICES
-// ---------------------------------------------------------------
-
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -47,7 +43,6 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// CORS
 var allowedOrigins = builder.Configuration
     .GetSection("Cors:AllowedOrigins")
     .Get<string[]>() ?? Array.Empty<string>();
@@ -137,7 +132,6 @@ builder.Services.AddAuthorization(options =>
                       ctx.User.FindFirst("sub")?.Value ?? "",
                       StringComparer.OrdinalIgnoreCase)));
 
-    // "ModeratorOrAdmin": moderators and admins both satisfy this policy.
     options.AddPolicy("ModeratorOrAdmin", policy =>
         policy.RequireAuthenticatedUser()
               .RequireAssertion(ctx =>
@@ -151,7 +145,6 @@ builder.Services.AddSignalR();
 // (MapInboundClaims is off, so sub is not remapped to NameIdentifier).
 builder.Services.AddSingleton<IUserIdProvider, SubUserIdProvider>();
 
-// EF Core + PostgreSQL
 builder.Services.AddDbContext<RotaDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -215,12 +208,9 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     ConnectionMultiplexer.Connect(
         sp.GetRequiredService<IConfiguration>().GetConnectionString("Redis")!));
 
-// Health checks
 builder.Services.AddHealthChecks();
 
-// ---------------------------------------------------------------
 // MIDDLEWARE PIPELINE - ORDER IS SECURITY-CRITICAL
-// ---------------------------------------------------------------
 // 1. Exception handler   - catches anything that escapes lower layers
 // 2. HTTPS               - redirects HTTP to HTTPS in production
 // 3. Request logging     - structured log, never logs tokens or passwords
@@ -231,7 +221,6 @@ builder.Services.AddHealthChecks();
 // 8. Authorization       - checks [Authorize] attributes
 // 9. Audit logging       - records state-changing requests with verified PlayerId
 // 10. Endpoints          - controllers and hubs
-// ---------------------------------------------------------------
 
 // ADMIN CLI — runs the requested command instead of starting Kestrel.
 // MUST be placed after ALL service registration (incl. the Redis factory) so the CLI's

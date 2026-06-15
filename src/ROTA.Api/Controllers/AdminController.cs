@@ -168,10 +168,6 @@ public sealed class AdminController : ControllerBase
         });
     }
 
-    // -----------------------------------------------------------------------
-    // Helpers
-    // -----------------------------------------------------------------------
-
     private Guid GetActorId()
         => Guid.Parse(User.FindFirst(JwtRegisteredClaimNames.Sub)!.Value);
 

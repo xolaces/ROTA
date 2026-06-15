@@ -35,10 +35,6 @@ public class BuyUnitIdempotencyTests : IAsyncLifetime
     private RedisContainer      _redis    = null!;
     private WebApplicationFactory<Program> _factory = null!;
 
-    // -----------------------------------------------------------------------
-    // Lifecycle
-    // -----------------------------------------------------------------------
-
     public async Task InitializeAsync()
     {
         _postgres = new PostgreSqlBuilder()
@@ -115,10 +111,6 @@ public class BuyUnitIdempotencyTests : IAsyncLifetime
         await _postgres.DisposeAsync();
         await _redis.DisposeAsync();
     }
-
-    // -----------------------------------------------------------------------
-    // Recovery test
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task BuyUnit_LostGrantRecovery_RetryDeliverUnitWithoutDoubleCharge()
@@ -226,10 +218,6 @@ public class BuyUnitIdempotencyTests : IAsyncLifetime
                 "balance must reflect a single 50-gem deduction from the original 100-gem seed");
         }
     }
-
-    // -----------------------------------------------------------------------
-    // Helpers
-    // -----------------------------------------------------------------------
 
     private static string FindApiContentRoot()
     {

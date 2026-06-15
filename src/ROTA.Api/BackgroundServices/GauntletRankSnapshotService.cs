@@ -61,7 +61,7 @@ public sealed class GauntletRankSnapshotService : BackgroundService
 
             var active = await events.GetActiveAsync(ct);
             if (active is null)
-                return; // no-op when nothing is running
+                return;
 
             await scoring.RecomputeRanksAsync(active.Id, ct);
         }

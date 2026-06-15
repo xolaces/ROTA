@@ -35,8 +35,6 @@ public sealed class SocialController : ControllerBase
         _messageValidator = messageValidator;
     }
 
-    // ---- friends ----
-
     [HttpGet("friends")]
     public async Task<ActionResult<IReadOnlyList<FriendDto>>> Friends()
         => Ok(await _social.ListFriendsAsync(PlayerId()));
@@ -53,8 +51,6 @@ public sealed class SocialController : ControllerBase
     public async Task<IActionResult> RemoveFriend([FromBody] FriendTargetRequest req)
         => Respond(await _social.RemoveFriendAsync(PlayerId(), req.Target));
 
-    // ---- blocks ----
-
     [HttpGet("blocks")]
     public async Task<ActionResult<IReadOnlyList<BlockDto>>> Blocks()
         => Ok(await _social.ListBlocksAsync(PlayerId()));
@@ -66,8 +62,6 @@ public sealed class SocialController : ControllerBase
     [HttpPost("blocks/remove")]
     public async Task<IActionResult> Unblock([FromBody] BlockRequest req)
         => Respond(await _social.UnblockAsync(PlayerId(), req.Target));
-
-    // ---- private messages ----
 
     [HttpGet("messages/{target}")]
     public async Task<ActionResult<IReadOnlyList<PrivateMessageDto>>> Conversation(string target, [FromQuery] int count = 50)
@@ -97,8 +91,6 @@ public sealed class SocialController : ControllerBase
         return Ok(result.Message);
     }
 
-    // ---- report ----
-
     [HttpPost("report")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -117,8 +109,6 @@ public sealed class SocialController : ControllerBase
             return StatusCode(StatusCodes.Status429TooManyRequests, new { message = result.FailureReason });
         return BadRequest(new { message = result.FailureReason });
     }
-
-    // ---- helpers ----
 
     private IActionResult Respond(AdminActionResult r)
     {

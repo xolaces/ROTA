@@ -83,8 +83,6 @@ public class GuildSigilEconomyIntegrationTests : IAsyncLifetime
         await _redis.DisposeAsync();
     }
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
-
     /// <summary>Seeds a player who is the leader + member of a fresh guild, returning (playerId, guildId).</summary>
     private async Task<(Guid playerId, Guid guildId)> SeedGuildedPlayerAsync(string username, string name, string tag)
     {
@@ -101,8 +99,6 @@ public class GuildSigilEconomyIntegrationTests : IAsyncLifetime
 
     private IServiceScope NewScope() => _factory.Services.CreateScope();
     private IGuildEconomyService Economy(IServiceScope s) => s.ServiceProvider.GetRequiredService<IGuildEconomyService>();
-
-    // ── Tests ────────────────────────────────────────────────────────────────
 
     [Fact]
     public async Task DailyClaim_IsIdempotentAcrossScopes_AndBalancesPersist()

@@ -12,7 +12,6 @@ namespace ROTA.Application.Services;
 // BETA
 public sealed class RaidService : IRaidService
 {
-    // HP multipliers per difficulty
     private static readonly IReadOnlyDictionary<RaidDifficulty, double> HpMultipliers =
         new Dictionary<RaidDifficulty, double>
         {
@@ -1432,9 +1431,7 @@ public sealed class RaidService : IRaidService
         return new RaidHitResult { Success = true, Response = response };
     }
 
-    // -------------------------------------------------------------------
     // KILL REWARD DISTRIBUTION
-    // -------------------------------------------------------------------
 
     // T56 — per-hit health cost. Ordinary/guild raids pay a flat cost by difficulty; the Gauntlet pays a
     // Defense-scaled mob-damage curve that ramps past the configured stage (~200). Always returns ≥ 1 for
@@ -1662,9 +1659,7 @@ public sealed class RaidService : IRaidService
         };
     }
 
-    // -------------------------------------------------------------------
     // HELPERS
-    // -------------------------------------------------------------------
 
     private static string ComputeTier(long damage, int totalParticipants, RaidParticipant? p, IReadOnlyList<RaidParticipant>? all)
         => "Participant"; // placeholder for live tier shown before kill

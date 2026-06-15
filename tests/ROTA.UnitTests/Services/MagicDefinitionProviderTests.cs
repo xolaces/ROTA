@@ -20,9 +20,7 @@ public class MagicDefinitionProviderTests : IDisposable
     private void WriteJson(string json)
         => File.WriteAllText(Path.Combine(_tmpDir, "content", "magics.json"), json);
 
-    // -----------------------------------------------------------------------
     // Happy path
-    // -----------------------------------------------------------------------
 
     [Fact]
     public void Provider_LoadsStarterAndPinnaclePlaceholderMagics()
@@ -65,9 +63,7 @@ public class MagicDefinitionProviderTests : IDisposable
         provider.GetById("magic_does_not_exist").Should().BeNull();
     }
 
-    // -----------------------------------------------------------------------
     // Startup validation
-    // -----------------------------------------------------------------------
 
     [Fact]
     public void Provider_DuplicateId_ThrowsOnStartup()
@@ -123,9 +119,7 @@ public class MagicDefinitionProviderTests : IDisposable
         provider.GetAll().Should().BeEmpty();
     }
 
-    // -----------------------------------------------------------------------
     // Helper
-    // -----------------------------------------------------------------------
 
     private static string FindApiContentRoot()
     {

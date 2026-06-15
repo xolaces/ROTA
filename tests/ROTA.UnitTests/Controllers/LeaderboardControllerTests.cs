@@ -14,8 +14,6 @@ namespace ROTA.UnitTests.Controllers;
 // Thin-controller tests: verify correct HTTP status codes and delegation to ILeaderboardService.
 public class LeaderboardControllerTests
 {
-    // ── Helpers ───────────────────────────────────────────────────────────────
-
     private static LeaderboardController BuildController(Mock<ILeaderboardService> svc)
     {
         var controller = new LeaderboardController(svc.Object);
@@ -44,8 +42,6 @@ public class LeaderboardControllerTests
         You         = null,
     };
 
-    // ── GET /api/leaderboards — discovery ────────────────────────────────────
-
     [Fact]
     public async Task GetBoards_Returns200WithSummaries()
     {
@@ -64,8 +60,6 @@ public class LeaderboardControllerTests
         result!.StatusCode.Should().Be(200);
     }
 
-    // ── GET /api/leaderboards/{board} — valid ─────────────────────────────────
-
     [Fact]
     public async Task GetBoard_ValidCombo_Returns200()
     {
@@ -82,8 +76,6 @@ public class LeaderboardControllerTests
         result!.StatusCode.Should().Be(200);
     }
 
-    // ── GET /api/leaderboards/{board} — unknown board → 400 ──────────────────
-
     [Fact]
     public async Task GetBoard_UnknownBoard_Returns400()
     {
@@ -95,8 +87,6 @@ public class LeaderboardControllerTests
         result.Should().NotBeNull();
         result!.StatusCode.Should().Be(400);
     }
-
-    // ── GET /api/leaderboards/{board} — unknown period → 400 ─────────────────
 
     [Fact]
     public async Task GetBoard_UnknownPeriod_Returns400()
@@ -111,13 +101,10 @@ public class LeaderboardControllerTests
         result!.StatusCode.Should().Be(400);
     }
 
-    // ── GET /api/leaderboards/{board} — service returns failure → 400 ────────
-
     [Fact]
     public async Task GetBoard_ServiceValidationFailure_Returns400()
     {
         var svc = new Mock<ILeaderboardService>();
-        // Service returns failure for bad board/period combo.
         svc.Setup(s => s.GetPageAsync(
                 It.IsAny<LeaderboardBoard>(), It.IsAny<LeaderboardPeriod>(),
                 It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -129,8 +116,6 @@ public class LeaderboardControllerTests
         result.Should().NotBeNull();
         result!.StatusCode.Should().Be(400);
     }
-
-    // ── GET /api/leaderboards/{board} — page param forwarded correctly ────────
 
     [Fact]
     public async Task GetBoard_ForwardsPageParameterToService()
@@ -150,8 +135,6 @@ public class LeaderboardControllerTests
 
         capturedPage.Should().Be(3);
     }
-
-    // ── GET /api/leaderboards/{board} — periodKey forwarded correctly ─────────
 
     [Fact]
     public async Task GetBoard_ForwardsPeriodKeyToService()

@@ -75,23 +75,19 @@ public class Player
     /// <summary>BCrypt(12) password hash.</summary>
     public string PasswordHash { get; private set; } = string.Empty;
 
-    // Progression
     public int Level { get; private set; } = 1;
     public long Experience { get; private set; } = 0;
     public PlayerClass Class { get; private set; } = PlayerClass.Conscript;
 
-    // Economy
     public long Gold { get; private set; } = 0;
     // Gem balance is never stored - computed from gem_transactions ledger
 
-    // Roles & identity
     /// <summary>Bitwise role flags. Defaults to <see cref="PlayerRoles.Player"/>.</summary>
     public PlayerRoles Roles { get; private set; } = PlayerRoles.Player;
 
     /// <summary>Display name shown in the game UI (max 48 chars).</summary>
     public string DisplayName { get; private set; } = string.Empty;
 
-    // Guild
     public Guid? GuildId { get; private set; }
     public string? GuildRank { get; private set; }
 
@@ -99,7 +95,6 @@ public class Player
     // MasteryService is the single writer. The four mastery LEVELS live in player_masteries rows.
     public MasteryAncient? ActivePledgeAncient { get; private set; }
 
-    // Status
     public bool IsBanned { get; private set; } = false;
     public string? BanReason { get; private set; }
 
@@ -126,7 +121,6 @@ public class Player
     /// <summary>True while an unexpired mute is in effect. Derived — not mapped (Ignore in config).</summary>
     public bool IsMuted => MuteExpiresAt.HasValue && MuteExpiresAt.Value > DateTimeOffset.UtcNow;
 
-    // Timestamps
     public DateTimeOffset CreatedAt { get; private set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedAt { get; private set; } = DateTimeOffset.UtcNow;
     public bool IsDeleted { get; private set; } = false;
@@ -134,8 +128,6 @@ public class Player
     // Navigation properties (EF Core)
     public PlayerStats? Stats { get; private set; }
     public ICollection<PlayerResource> Resources { get; private set; } = new List<PlayerResource>();
-
-    // Domain methods
 
     /// <summary>Grants the specified role flag. Bumps UpdatedAt.</summary>
     public void GrantRole(PlayerRoles role)

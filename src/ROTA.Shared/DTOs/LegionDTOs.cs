@@ -1,8 +1,6 @@
 namespace ROTA.Shared.DTOs;
 
-// ----------------------------------------------------------------
 // Slice 2 — ownership list responses
-// ----------------------------------------------------------------
 
 public class OwnedUnitResponse
 {
@@ -34,9 +32,7 @@ public class OwnedLegionResponse
     public string IconPath           { get; set; } = string.Empty;
 }
 
-// ----------------------------------------------------------------
 // Slice 3 — assembly endpoints + power computation
-// ----------------------------------------------------------------
 
 public class SetActiveLegionResult
 {
@@ -94,9 +90,7 @@ public class LegionDetailResponse
     public LegionPowerResult ComputedPower    { get; set; } = new();
 }
 
-// ----------------------------------------------------------------
 // Slice 5 — Commander slot
-// ----------------------------------------------------------------
 
 public enum CommanderEquipFailureCode
 {
@@ -130,9 +124,7 @@ public class CommanderGearResponse
     public string Note             { get; set; } = "Stat bonuses are ignored in combat; only the proc applies.";
 }
 
-// ----------------------------------------------------------------
 // Slice 6 — Economy / acquisition
-// ----------------------------------------------------------------
 
 public enum BuyFailureCode
 {

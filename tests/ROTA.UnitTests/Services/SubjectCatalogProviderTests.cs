@@ -20,10 +20,6 @@ public class SubjectCatalogProviderTests : IDisposable
     private void WriteJson(string json)
         => File.WriteAllText(Path.Combine(_tmpDir, "content", "subjects.json"), json);
 
-    // -----------------------------------------------------------------------
-    // Happy path — loads the shipped catalog
-    // -----------------------------------------------------------------------
-
     [Fact]
     public void Provider_LoadsShippedSubjects()
     {
@@ -54,10 +50,6 @@ public class SubjectCatalogProviderTests : IDisposable
         provider.IsValidReportSubject("nope").Should().BeFalse();
         provider.NormalizeBugSubject("nope").Should().BeNull();
     }
-
-    // -----------------------------------------------------------------------
-    // Startup validation
-    // -----------------------------------------------------------------------
 
     [Fact]
     public void Provider_EmptyBugList_ThrowsOnStartup()
@@ -113,10 +105,6 @@ public class SubjectCatalogProviderTests : IDisposable
         var act = () => new SubjectCatalogProvider(ContentPath); // no subjects.json written
         act.Should().Throw<InvalidOperationException>().WithMessage("*subjects.json not found*");
     }
-
-    // -----------------------------------------------------------------------
-    // Helper
-    // -----------------------------------------------------------------------
 
     private static string FindApiContentRoot()
     {

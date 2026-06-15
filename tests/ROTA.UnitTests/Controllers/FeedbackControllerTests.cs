@@ -33,7 +33,7 @@ public class FeedbackControllerTests
 
         var validator = new Mock<IValidator<FeedbackRequest>>();
         validator.Setup(v => v.ValidateAsync(It.IsAny<FeedbackRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ValidationResult()); // valid
+            .ReturnsAsync(new ValidationResult());
 
         var controller = new FeedbackController(
             emails.Object, limiter.Object, validator.Object, SubjectCatalogFixture.Real);

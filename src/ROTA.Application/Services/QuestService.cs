@@ -8,7 +8,8 @@ using ROTA.Shared.DTOs;
 
 namespace ROTA.Application.Services;
 
-//        a server crash mid-reward would be unfair but acceptable. Phase 2: wrap in an explicit transaction.
+// Reward steps after the energy spend are not wrapped in an explicit transaction — a server crash
+// mid-reward would be unfair but acceptable. PHASE-2: wrap quest reward steps in an explicit transaction.
 public sealed class QuestService : IQuestService
 {
     private static readonly IReadOnlyDictionary<QuestDifficulty, float> EnergyMultipliers =
@@ -247,12 +248,11 @@ public sealed class QuestService : IQuestService
     private async Task<QuestResultResponse> AttemptQuestCoreAsync(
         Guid playerId, string questId, QuestDifficulty difficulty, CancellationToken ct = default)
     {
-        // 1. Verify quest exists
         var quest = _definitions.GetById(questId);
         if (quest is null)
             return Fail(QuestFailureCode.QuestNotFound, "Quest not found.");
 
-        // 2. Verify node prerequisite has ever been cleared (permanent latch) — difficulty-agnostic.
+        // Verify node prerequisite has ever been cleared (permanent latch) — difficulty-agnostic.
         if (quest.PrerequisiteQuestId is not null)
         {
             var prereq = await _questProgress.GetAsync(playerId, quest.PrerequisiteQuestId, ct);
@@ -307,7 +307,6 @@ public sealed class QuestService : IQuestService
                     $"Complete every node in this zone on {requiredDifficulty.Value} — boss included — to unlock {difficulty}.");
         }
 
-        // 4. Verify player is active
         var player = await _players.FindByIdAsync(playerId, ct);
         if (player is null)
             return Fail(QuestFailureCode.PlayerNotFound, "Player not found.");
@@ -344,7 +343,6 @@ public sealed class QuestService : IQuestService
             return p.AddExperience(xpReward, lvl => _stats.XpToNextLevel(lvl));
         }, ct);
 
-        // Fire level-up side effects for each level gained
         foreach (var newLevel in levelUps)
             await _stats.GrantLevelUpPointsAsync(playerId, newLevel, ct);
 
@@ -377,14 +375,12 @@ public sealed class QuestService : IQuestService
             zoneReset = true;
         }
 
-        // 9. Record per-difficulty progress
         var diffProg = await _difficultyProgress.GetAsync(playerId, questId, difficulty, ct);
         bool isNewDiffProg = diffProg is null;
         if (isNewDiffProg)
             diffProg = PlayerQuestDifficultyProgress.Create(playerId, questId, difficulty);
         diffProg!.RecordCompletion();
 
-        // 10. Grant gems if applicable
         int gemsGranted = 0;
         if (gemReward > 0)
         {
@@ -483,7 +479,6 @@ public sealed class QuestService : IQuestService
         }
         catch (Exception) when (!ct.IsCancellationRequested) { /* best-effort — never break the attempt */ }
 
-        // 15. Audit log
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, "QuestAttempt", null,
             $"Quest {questId} [{difficulty}] completed #{progress.CompletionCount}. Gold +{goldReward}, XP +{xpReward}, Gems +{gemsGranted}",
@@ -534,10 +529,6 @@ public sealed class QuestService : IQuestService
             await _questProgress.UpdateAsync(p, ct);
         }
     }
-
-    // -------------------------------------------------------------------
-    // HELPERS
-    // -------------------------------------------------------------------
 
     private async Task ProcessQuestLootAsync(
         Guid playerId,

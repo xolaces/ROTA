@@ -47,8 +47,6 @@ public class LeaderboardStatSnapshotIntegrationTests : IAsyncLifetime
 
     public async Task DisposeAsync() => await _postgres.DisposeAsync();
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
-
     private RotaDbContext NewDbContext()
     {
         var options = new DbContextOptionsBuilder<RotaDbContext>()
@@ -104,15 +102,12 @@ public class LeaderboardStatSnapshotIntegrationTests : IAsyncLifetime
             "UPDATE players SET level = {0}, is_banned = {1}, is_deleted = {2}, roles = {3} WHERE id = {4}",
             level, isBanned, isDeleted, (int)roles, player.Id);
 
-        // Set raw stat values directly.
         await db.Database.ExecuteSqlRawAsync(
             "UPDATE player_stats SET base_attack = {0}, base_defense = {1}, discernment_investment = {2} WHERE player_id = {3}",
             baseAttack, baseDefense, discernment, player.Id);
 
         return player.Id;
     }
-
-    // ── Test 1: snapshot ranks players by raw ATK on StatAttack/Live read ─────
 
     [Fact]
     public async Task Snapshot_StatAttack_OrdersPlayersByBaseAttack()
@@ -144,8 +139,6 @@ public class LeaderboardStatSnapshotIntegrationTests : IAsyncLifetime
         relevant[2].Value.Should().Be(20L);
     }
 
-    // ── Test 2: snapshot ranks by DEF and Discernment correctly ──────────────
-
     [Fact]
     public async Task Snapshot_StatDefenseAndDiscernment_OrderCorrectly()
     {
@@ -173,8 +166,6 @@ public class LeaderboardStatSnapshotIntegrationTests : IAsyncLifetime
         discRelevant[1].PlayerId.Should().Be(highDef);
     }
 
-    // ── Test 3: banned / soft-deleted / level<20 / Admin excluded ─────────────
-
     [Fact]
     public async Task Snapshot_IneligiblePlayers_ExcludedFromStatPage()
     {
@@ -201,8 +192,6 @@ public class LeaderboardStatSnapshotIntegrationTests : IAsyncLifetime
         ids.Should().NotContain(adminRole, "Admin players excluded");
     }
 
-    // ── Test 4: Moderator IS included ────────────────────────────────────────
-
     [Fact]
     public async Task Snapshot_Moderator_IsIncludedInStatPage()
     {
@@ -222,8 +211,6 @@ public class LeaderboardStatSnapshotIntegrationTests : IAsyncLifetime
             "Moderators appear as regular players on the leaderboard");
     }
 
-    // ── Test 5: idempotent — two snapshots → exactly one row per player per board
-
     [Fact]
     public async Task Snapshot_RunTwice_ExactlyOneRowPerPlayerPerBoard()
     {
@@ -232,11 +219,9 @@ public class LeaderboardStatSnapshotIntegrationTests : IAsyncLifetime
         var repo    = await OpenRepoAsync();
         var service = BuildService(repo);
 
-        // Run snapshot twice.
         await service.SnapshotStatBoardAsync();
         await service.SnapshotStatBoardAsync();
 
-        // Verify exactly one row per board for this player in the live period.
         await using var db = NewDbContext();
 
         var atkRows = await db.LeaderboardEntries
@@ -264,8 +249,6 @@ public class LeaderboardStatSnapshotIntegrationTests : IAsyncLifetime
         discRows.Should().HaveCount(1);
     }
 
-    // ── Test 6: value update — re-snapshot after stat change → Live row updated ─
-
     [Fact]
     public async Task Snapshot_AfterStatChange_UpdatesLiveRowValue()
     {
@@ -274,7 +257,6 @@ public class LeaderboardStatSnapshotIntegrationTests : IAsyncLifetime
         var repo    = await OpenRepoAsync();
         var service = BuildService(repo);
 
-        // First snapshot.
         await service.SnapshotStatBoardAsync();
 
         await using (var db = NewDbContext())
@@ -294,7 +276,6 @@ public class LeaderboardStatSnapshotIntegrationTests : IAsyncLifetime
                 "UPDATE player_stats SET base_attack = 55 WHERE player_id = {0}", playerId);
         }
 
-        // Second snapshot.
         await service.SnapshotStatBoardAsync();
 
         await using (var db3 = NewDbContext())
@@ -308,8 +289,6 @@ public class LeaderboardStatSnapshotIntegrationTests : IAsyncLifetime
         }
     }
 
-    // ── Test 7: last_progress_at preserved when value unchanged across two snapshots ─
-
     [Fact]
     public async Task Snapshot_ValueUnchanged_LastProgressAtNotBumped()
     {
@@ -318,7 +297,6 @@ public class LeaderboardStatSnapshotIntegrationTests : IAsyncLifetime
         var repo    = await OpenRepoAsync();
         var service = BuildService(repo);
 
-        // First snapshot.
         await service.SnapshotStatBoardAsync();
 
         DateTimeOffset firstLastProgressAt;
@@ -351,8 +329,6 @@ public class LeaderboardStatSnapshotIntegrationTests : IAsyncLifetime
         }
     }
 
-    // ── Test 8: last_progress_at bumped when value DOES change ────────────────
-
     [Fact]
     public async Task Snapshot_ValueChanged_LastProgressAtBumped()
     {
@@ -374,7 +350,6 @@ public class LeaderboardStatSnapshotIntegrationTests : IAsyncLifetime
             firstLastProgressAt = row.LastProgressAt;
         }
 
-        // Change the stat value.
         await using (var db2 = NewDbContext())
         {
             await db2.Database.ExecuteSqlRawAsync(

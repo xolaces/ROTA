@@ -45,10 +45,6 @@ public class EmailNotificationServiceTests
         },
     };
 
-    // -----------------------------------------------------------------------
-    // QueueAsync — persist first, audit, enqueue (never blocks on send)
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task Queue_PersistsRow_WritesAudit_AndEnqueues()
     {
@@ -115,10 +111,6 @@ public class EmailNotificationServiceTests
         captured!.Priority.Should().Be(EmailPriority.Normal);
     }
 
-    // -----------------------------------------------------------------------
-    // ProcessSendAsync — best-effort send updates send_status
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task ProcessSend_MarksSent_OnSuccess()
     {
@@ -177,9 +169,7 @@ public class EmailNotificationServiceTests
         emails.Verify(r => r.UpdateAsync(It.IsAny<OutboundEmail>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    // -----------------------------------------------------------------------
     // T71 — retry semantics: the bool return drives the background re-enqueue
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task ProcessSend_ReturnsSettled_OnSuccess_AndRetryable_OnFailure()

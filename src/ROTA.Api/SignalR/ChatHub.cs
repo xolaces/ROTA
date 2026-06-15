@@ -128,8 +128,6 @@ public sealed class ChatHub : Hub
         await Clients.Group(GuildGroup(guildId)).SendAsync("GuildMessage", msg);
     }
 
-    // ---- helpers ----
-
     private ChatMessageDto BuildMessage(string scope, string? raidId, string body) => new()
     {
         Id = Guid.NewGuid(),

@@ -11,10 +11,6 @@ namespace ROTA.UnitTests.Services;
 
 public class ClassServiceTests
 {
-    // -----------------------------------------------------------------------
-    // HELPERS
-    // -----------------------------------------------------------------------
-
     private static IOptions<ClassConfig> BuildConfig()
     {
         var cfg = new ClassConfig
@@ -82,20 +78,12 @@ public class ClassServiceTests
         return p;
     }
 
-    // -----------------------------------------------------------------------
-    // Default class
-    // -----------------------------------------------------------------------
-
     [Fact]
     public void NewPlayer_DefaultClass_IsConscript()
     {
         var player = Player.Create("test", "test@rota.test", "hash");
         player.Class.Should().Be(PlayerClass.Conscript);
     }
-
-    // -----------------------------------------------------------------------
-    // GetAvailableChoices — path tier gates (L1-1000)
-    // -----------------------------------------------------------------------
 
     [Fact]
     public void GetAvailableChoices_BelowLevel5_ReturnsEmpty()
@@ -184,10 +172,6 @@ public class ClassServiceTests
         svc.GetAvailableChoices(500, PlayerClass.Ironguard).Should().BeEmpty();
     }
 
-    // -----------------------------------------------------------------------
-    // AssignClassAsync — valid and invalid paths
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task AssignClassAsync_ValidChoice_Succeeds()
     {
@@ -254,10 +238,6 @@ public class ClassServiceTests
         info.ChoicePreviews.Should().BeEmpty();
     }
 
-    // -----------------------------------------------------------------------
-    // ComputeAutoAdvance — path-based (L500, L1000)
-    // -----------------------------------------------------------------------
-
     [Fact]
     public void ComputeAutoAdvance_Ironguard_AtLevel500_ReturnsLegendaryIronguard()
     {
@@ -281,10 +261,6 @@ public class ClassServiceTests
         svc.ComputeAutoAdvance(499, PlayerClass.Ironguard)
             .Should().Be(PlayerClass.Ironguard);
     }
-
-    // -----------------------------------------------------------------------
-    // ComputeAutoAdvance — convergence (L2000+)
-    // -----------------------------------------------------------------------
 
     [Theory]
     [InlineData(PlayerClass.AscendantIronguard)]
@@ -331,10 +307,6 @@ public class ClassServiceTests
         svc.ComputeAutoAdvance(25000, PlayerClass.ElderAncient).Should().Be(PlayerClass.Eternal);
     }
 
-    // -----------------------------------------------------------------------
-    // IsConvergedClass
-    // -----------------------------------------------------------------------
-
     [Theory]
     [InlineData(PlayerClass.Luminary, true)]
     [InlineData(PlayerClass.Immortal, true)]
@@ -359,10 +331,6 @@ public class ClassServiceTests
         var svc = BuildService(out _);
         svc.GetAvailableChoices(2001, PlayerClass.Luminary).Should().BeEmpty();
     }
-
-    // -----------------------------------------------------------------------
-    // Regen rates
-    // -----------------------------------------------------------------------
 
     [Fact]
     public void GetRegenRates_Ironguard_Energy6_Stamina3()

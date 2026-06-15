@@ -47,7 +47,6 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
             .HasColumnName("gold")
             .HasDefaultValue(0L);
 
-        // Role system — stored as a single int using bitwise flags
         builder.Property(p => p.Roles)
             .HasColumnName("roles")
             .HasConversion<int>()
@@ -133,7 +132,6 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
         builder.HasIndex(p => p.Username).IsUnique().HasFilter("is_deleted = false");
         builder.HasIndex(p => p.Email).IsUnique().HasFilter("is_deleted = false");
 
-        // Relationships
         builder.HasOne(p => p.Stats)
             .WithOne(s => s.Player)
             .HasForeignKey<PlayerStats>(s => s.PlayerId);

@@ -153,10 +153,6 @@ public sealed class PlayerService : IPlayerService
         return new UpdateDisplayNameResult(DisplayNameUpdateStatus.Success, player.DisplayName, player.UpdatedAt);
     }
 
-    // -------------------------------------------------------------------
-    // HELPERS
-    // -------------------------------------------------------------------
-
     private static int ComputeSecondsToNextPoint(
         int liveValue,
         int maxValue,

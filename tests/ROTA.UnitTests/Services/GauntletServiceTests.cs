@@ -553,7 +553,6 @@ public class GauntletServiceTests
         // Debited the TOKEN currency (not Pitchfork) for exactly the price.
         b.Currency.Verify(c => c.SpendAsync(playerId, GauntletCurrency.Token, 120, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         b.Currency.Verify(c => c.SpendAsync(It.IsAny<Guid>(), GauntletCurrency.Pitchfork, It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
-        // Granted the unit exactly once.
         b.Legions.Verify(l => l.GrantUnitAsync(playerId, entry.PayloadId, It.IsAny<CancellationToken>()), Times.Once);
     }
 

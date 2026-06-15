@@ -13,10 +13,6 @@ namespace ROTA.UnitTests.Services;
 /// </summary>
 public class AdminServiceTests
 {
-    // -----------------------------------------------------------------------
-    // FIXTURES
-    // -----------------------------------------------------------------------
-
     private static (AdminService service,
                     Mock<IPlayerRepository> players,
                     Mock<IRefreshTokenRepository> tokens,
@@ -53,10 +49,6 @@ public class AdminServiceTests
         if (roles.HasFlag(PlayerRoles.Developer)) p.GrantRole(PlayerRoles.Developer);
         return p;
     }
-
-    // -----------------------------------------------------------------------
-    // GRANT ROLE — success
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task GrantRoleAsync_ValidAdmin_GrantsModeratorRole()
@@ -113,10 +105,6 @@ public class AdminServiceTests
             "actor DB lookup must be skipped for Guid.Empty (CLI)");
     }
 
-    // -----------------------------------------------------------------------
-    // GRANT ROLE — guards
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task GrantRoleAsync_NonAdminActor_ReturnsFail()
     {
@@ -159,10 +147,6 @@ public class AdminServiceTests
         result.Success.Should().BeFalse("cannot grant the base Player role");
     }
 
-    // -----------------------------------------------------------------------
-    // REVOKE ROLE — success
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task RevokeRoleAsync_Admin_RemovesModeratorAndRevokesTokens()
     {
@@ -186,10 +170,6 @@ public class AdminServiceTests
             It.Is<AuditLog>(l => l.Action == "RoleRevoked"),
             It.IsAny<CancellationToken>()), Times.Once);
     }
-
-    // -----------------------------------------------------------------------
-    // REVOKE ROLE — last-admin guard
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task RevokeRoleAsync_LastAdmin_ReturnsFail()
@@ -231,10 +211,6 @@ public class AdminServiceTests
             "demoting an admin must revoke their sessions");
     }
 
-    // -----------------------------------------------------------------------
-    // REVOKE ROLE — guards
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task RevokeRoleAsync_PlayerRole_ReturnsFail()
     {
@@ -262,9 +238,7 @@ public class AdminServiceTests
         result.FailureReason.Should().Contain("not an admin");
     }
 
-    // -----------------------------------------------------------------------
     // MODERATION — ban / mute / unmute (T40)
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task BanPlayerAsync_ValidModerator_Bans_RevokesSessions_Audits_AndEmails()

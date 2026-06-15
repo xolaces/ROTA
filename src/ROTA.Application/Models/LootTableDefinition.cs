@@ -12,10 +12,10 @@ public class LootTableDifficulty
     // Quest loot table fields
     public List<ItemDropChance>?   GuaranteedDrops { get; set; }
     public List<ItemDropChance>?   ChanceDrops     { get; set; }
-    public List<MagicDropChance>?  MagicDrops      { get; set; }  // quest magic drops
-    public List<UnitDropChance>?   UnitDrops       { get; set; }  // quest unit drops
-    public List<LegionDropChance>? LegionDrops     { get; set; }  // quest legion drops
-    public List<GearDropChance>?   GearDrops       { get; set; }  // quest gear drops
+    public List<MagicDropChance>?  MagicDrops      { get; set; }
+    public List<UnitDropChance>?   UnitDrops       { get; set; }
+    public List<LegionDropChance>? LegionDrops     { get; set; }
+    public List<GearDropChance>?   GearDrops       { get; set; }
 
     // Raid loot table fields
     public double MinContributionPercent { get; set; }

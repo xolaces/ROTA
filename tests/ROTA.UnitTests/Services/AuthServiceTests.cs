@@ -18,10 +18,6 @@ namespace ROTA.UnitTests.Services;
 /// </summary>
 public class AuthServiceTests
 {
-    // -----------------------------------------------------------------------
-    // FIXTURES
-    // -----------------------------------------------------------------------
-
     private static string GenerateTestRsaPrivateKey()
     {
         using var rsa = RSA.Create(2048);
@@ -91,10 +87,6 @@ public class AuthServiceTests
         return (service, players, tokens, lockout, auditLog);
     }
 
-    // -----------------------------------------------------------------------
-    // REGISTER — success
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task RegisterAsync_Success_ReturnsAuthResponse()
     {
@@ -121,14 +113,11 @@ public class AuthServiceTests
         result.RefreshToken.Should().NotBeNullOrEmpty();
     }
 
-    // -----------------------------------------------------------------------
-    // TOKEN SIGNING — repeated issuance must not dispose the signing key
+    // TOKEN SIGNING — repeated issuance must not dispose the signing key.
     // Regression: a prior `using var rsa = RSA.Create()` disposed the RSA after the first
     // token, and the cached signature provider then threw ObjectDisposedException on later
     // tokens (intermittent 500 on login/register/refresh). Two consecutive logins must both
     // succeed and produce tokens that verify against the matching public key.
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task LoginAsync_IssuesValidTokens_OnRepeatedCalls()
     {
@@ -173,10 +162,6 @@ public class AuthServiceTests
                .Should().NotThrow();
     }
 
-    // -----------------------------------------------------------------------
-    // REGISTER — duplicates
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task RegisterAsync_DuplicateEmail_ReturnsNull()
     {
@@ -208,10 +193,7 @@ public class AuthServiceTests
         result.Should().BeNull();
     }
 
-    // -----------------------------------------------------------------------
-    // REGISTER — beta gate: a failed registration must NOT burn the single-use key
-    // -----------------------------------------------------------------------
-
+    // REGISTER — beta gate: a failed registration must NOT burn the single-use key.
     [Fact]
     public async Task RegisterAsync_BetaGate_DuplicateUsername_DoesNotConsumeKey()
     {
@@ -250,10 +232,6 @@ public class AuthServiceTests
             "a single-use beta key must NOT be consumed when registration fails on a duplicate");
         players.Verify(r => r.CreateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>()), Times.Never);
     }
-
-    // -----------------------------------------------------------------------
-    // LOGIN — success
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task LoginAsync_ValidCredentials_ReturnsAuthResponse()
@@ -348,10 +326,6 @@ public class AuthServiceTests
         result!.AccessToken.Should().NotBeNullOrEmpty();
     }
 
-    // -----------------------------------------------------------------------
-    // LOGIN — security paths
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task LoginAsync_WrongPassword_ReturnsNull()
     {
@@ -429,10 +403,6 @@ public class AuthServiceTests
             "failed login must increment the lockout counter");
     }
 
-    // -----------------------------------------------------------------------
-    // REFRESH — success
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task RefreshAsync_ValidToken_ReturnsNewAuthResponse()
     {
@@ -489,10 +459,6 @@ public class AuthServiceTests
             "concurrent reuse of one refresh token is treated as theft");
     }
 
-    // -----------------------------------------------------------------------
-    // REFRESH — token lifecycle rejections
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task RefreshAsync_AlreadyRevokedToken_ReturnsNull()
     {
@@ -527,10 +493,6 @@ public class AuthServiceTests
         tokens.Verify(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never,
             "an expired (not replayed) token is an ordinary failure, not a breach");
     }
-
-    // -----------------------------------------------------------------------
-    // LOGOUT
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task LogoutAsync_UnknownToken_IsIdempotent_NoException()

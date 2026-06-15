@@ -42,10 +42,6 @@ public class GauntletShopIdempotencyTests : IAsyncLifetime
     private RedisContainer      _redis    = null!;
     private WebApplicationFactory<Program> _factory = null!;
 
-    // -----------------------------------------------------------------------
-    // Lifecycle
-    // -----------------------------------------------------------------------
-
     public async Task InitializeAsync()
     {
         _postgres = new PostgreSqlBuilder()
@@ -108,10 +104,6 @@ public class GauntletShopIdempotencyTests : IAsyncLifetime
         await _postgres.DisposeAsync();
         await _redis.DisposeAsync();
     }
-
-    // -----------------------------------------------------------------------
-    // (1) Buy-twice charges once
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task BuyShop_GemBundle_Twice_ChargesOnce_GrantsOnce()
@@ -183,10 +175,6 @@ public class GauntletShopIdempotencyTests : IAsyncLifetime
         }
     }
 
-    // -----------------------------------------------------------------------
-    // (2) Currency isolation
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task BuyShop_PitchforkPriced_WithOnlyTokenBalance_InsufficientTokens_NoDebit_NoGrant()
     {
@@ -235,10 +223,6 @@ public class GauntletShopIdempotencyTests : IAsyncLifetime
             gearOwned.Should().BeFalse("no payload may be granted on a failed buy");
         }
     }
-
-    // -----------------------------------------------------------------------
-    // Helpers / stubs
-    // -----------------------------------------------------------------------
 
     private static string FindApiContentRoot()
     {

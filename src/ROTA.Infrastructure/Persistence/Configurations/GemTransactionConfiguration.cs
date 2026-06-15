@@ -35,7 +35,6 @@ public class GemTransactionConfiguration : IEntityTypeConfiguration<GemTransacti
             .HasColumnName("created_at")
             .HasDefaultValueSql("NOW()");
 
-        // FK index
         builder.HasIndex(t => t.PlayerId)
             .HasDatabaseName("ix_gem_transactions_player_id");
 

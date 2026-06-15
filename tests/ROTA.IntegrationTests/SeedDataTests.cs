@@ -18,10 +18,6 @@ namespace ROTA.IntegrationTests;
 /// </summary>
 public class SeedDataTests
 {
-    // -----------------------------------------------------------------------
-    // FIXTURES
-    // -----------------------------------------------------------------------
-
     private static IServiceProvider BuildProvider(
         IConfiguration config,
         IPlayerRepository players,
@@ -45,17 +41,12 @@ public class SeedDataTests
         return new ConfigurationBuilder().AddInMemoryCollection(dict).Build();
     }
 
-    // -----------------------------------------------------------------------
-    // TESTS
-    // -----------------------------------------------------------------------
-
     [Fact]
     public async Task EnsureAdminAsync_FirstCall_CreatesAdminPlayer()
     {
         var playersMock = new Mock<IPlayerRepository>();
         var auditMock   = new Mock<IAuditLogRepository>();
 
-        // No existing admin.
         playersMock
             .Setup(r => r.UsernameExistsAsync("Xolaces", It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
@@ -112,7 +103,6 @@ public class SeedDataTests
             .Setup(r => r.UsernameExistsAsync("Xolaces", It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
-        // No Seed:AdminPassword in config.
         var sp = BuildProvider(BuildConfig(adminPassword: null), playersMock.Object, auditMock.Object);
 
         var act = async () => await SeedData.EnsureAdminAsync(sp);
@@ -146,9 +136,7 @@ public class SeedDataTests
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    // -----------------------------------------------------------------------
     // T43 — EnsureDevGuildAsync (Dev guild "The Dev Coffee Shop")
-    // -----------------------------------------------------------------------
 
     // In-memory fakes so the orchestration (flag grant + guild create + auto-join) is exercised end-to-end.
     private sealed class FakePlayers : IPlayerRepository

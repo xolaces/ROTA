@@ -96,8 +96,6 @@ public sealed class GauntletContentProvider : IGauntletContentProvider
         return result;
     }
 
-    // ── Accessors ────────────────────────────────────────────────────────────
-
     public GauntletPrizeTable GetPrizeTable() => _prizeTable;
 
     public GauntletPrizeBand? GetBandForRank(int rank)
@@ -168,8 +166,6 @@ public sealed class GauntletContentProvider : IGauntletContentProvider
             $"GauntletConfig.LeagueBounds does not cover level {level}.");
     }
 
-    // ── Loading ──────────────────────────────────────────────────────────────
-
     private static List<GauntletTrophyDefinition> LoadTrophies(string contentRootPath)
     {
         var path = Path.Combine(contentRootPath, "content", "gauntlet_trophies.json");
@@ -193,8 +189,6 @@ public sealed class GauntletContentProvider : IGauntletContentProvider
         return JsonSerializer.Deserialize<List<GauntletRaidDefinition>>(json, JsonOptions)
             ?? throw new InvalidOperationException("gauntlet_raids.json deserialized to null.");
     }
-
-    // ── Validation ───────────────────────────────────────────────────────────
 
     private static void ValidateTrophies(List<GauntletTrophyDefinition> trophies)
     {

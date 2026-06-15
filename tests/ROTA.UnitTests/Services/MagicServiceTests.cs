@@ -12,9 +12,7 @@ namespace ROTA.UnitTests.Services;
 
 public class MagicServiceTests
 {
-    // -----------------------------------------------------------------------
     // HELPERS
-    // -----------------------------------------------------------------------
 
     private record ServiceBundle(
         MagicService                    Service,
@@ -92,9 +90,7 @@ public class MagicServiceTests
     private static RaidDefinition MakeRaidDef(string tier = "Standard")
         => new() { Id = "raid_test", Name = "Test Raid", Tier = tier, BaseHp = 100_000 };
 
-    // -----------------------------------------------------------------------
     // GetOwnedMagicsAsync
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task GetOwnedMagicsAsync_ReturnsHydratedMagics()
@@ -147,9 +143,7 @@ public class MagicServiceTests
         result.Should().BeEmpty("orphaned rows with no matching definition are silently skipped");
     }
 
-    // -----------------------------------------------------------------------
     // ApplyMagicAsync — access / ownership / uniqueness guards
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task ApplyMagic_RaidNotFound_ReturnsFail()
@@ -324,9 +318,7 @@ public class MagicServiceTests
         result2.FailureCode.Should().Be(MagicApplyFailureCode.AlreadyAppliedByPlayer);
     }
 
-    // -----------------------------------------------------------------------
     // Slice 6 — GrantMagicAsync and BuyMagicAsync
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task GrantMagicAsync_CallsUpsert_IdempotentOnRepeat()
@@ -541,9 +533,7 @@ public class MagicServiceTests
         result.FailureCode.Should().Be(BuyMagicFailureCode.NotForSale);
     }
 
-    // -----------------------------------------------------------------------
     // RemoveMagicAsync
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task RemoveMagic_SummonerOnly_NonWorld_Success()

@@ -84,7 +84,6 @@ public class RaidParticipantConfiguration : IEntityTypeConfiguration<RaidPartici
             .HasColumnName("rewarded_at")
             .IsRequired(false);
 
-        // Cascade delete: removing a raid removes all its participants
         builder.HasOne(p => p.ActiveRaid)
             .WithMany()
             .HasForeignKey(p => p.ActiveRaidId)
@@ -96,7 +95,6 @@ public class RaidParticipantConfiguration : IEntityTypeConfiguration<RaidPartici
             .HasForeignKey(p => p.PlayerId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // One row per player per raid
         builder.HasIndex(p => new { p.ActiveRaidId, p.PlayerId })
             .IsUnique()
             .HasDatabaseName("ix_raid_participants_raid_player");

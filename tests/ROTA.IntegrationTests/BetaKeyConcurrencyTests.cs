@@ -24,10 +24,6 @@ public class BetaKeyConcurrencyTests : IAsyncLifetime
     private RedisContainer _redis = null!;
     private WebApplicationFactory<Program> _factory = null!;
 
-    // -----------------------------------------------------------------------
-    // Lifecycle
-    // -----------------------------------------------------------------------
-
     public async Task InitializeAsync()
     {
         _postgres = new PostgreSqlBuilder()
@@ -59,7 +55,6 @@ public class BetaKeyConcurrencyTests : IAsyncLifetime
                         ["Jwt:Issuer"]                          = "rota-test",
                         ["Jwt:Audience"]                        = "rota-test",
                         ["Admin:PlayerIds:0"]                   = Guid.Empty.ToString(),
-                        // Enable the beta gate for this test.
                         ["BetaGate:Enabled"]                    = "true",
                         // Neutralize the startup admin seeder so this fixture stays hermetic against a
                         // developer's Seed:AdminPassword user-secret (the seeder would otherwise query
@@ -80,10 +75,6 @@ public class BetaKeyConcurrencyTests : IAsyncLifetime
         await _postgres.DisposeAsync();
         await _redis.DisposeAsync();
     }
-
-    // -----------------------------------------------------------------------
-    // Concurrency test
-    // -----------------------------------------------------------------------
 
     [Fact]
     public async Task ConcurrentRegistrations_SameKey_ExactlyOnePlayerCreated()
@@ -150,10 +141,6 @@ public class BetaKeyConcurrencyTests : IAsyncLifetime
             key.RedeemedByPlayerId.Should().NotBeNull();
         }
     }
-
-    // -----------------------------------------------------------------------
-    // Helper
-    // -----------------------------------------------------------------------
 
     private static string FindApiContentRoot()
     {

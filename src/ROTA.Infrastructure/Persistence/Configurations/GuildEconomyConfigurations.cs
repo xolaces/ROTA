@@ -23,7 +23,7 @@ public class GuildCurrencyTransactionConfiguration : IEntityTypeConfiguration<Gu
             .HasColumnName("player_id")
             .IsRequired();
 
-        // Enum stored as int — always set by Create (Sigil=0). No default/sentinel.
+        // Always set by Create (Sigil=0). No default/sentinel.
         builder.Property(t => t.Currency)
             .HasColumnName("currency")
             .IsRequired();
@@ -48,8 +48,6 @@ public class GuildCurrencyTransactionConfiguration : IEntityTypeConfiguration<Gu
         builder.HasIndex(t => t.PlayerId)
             .HasDatabaseName("ix_guild_currency_transactions_player_id");
 
-        // Idempotency: unique on (player_id, currency, transaction_type, reference_id)
-        // WHERE reference_id IS NOT NULL.
         builder.HasIndex(t => new { t.PlayerId, t.Currency, t.TransactionType, t.ReferenceId })
             .IsUnique()
             .HasDatabaseName("ix_guild_currency_transactions_idempotency")
@@ -96,7 +94,6 @@ public class GuildSigilPoolTransactionConfiguration : IEntityTypeConfiguration<G
         builder.HasIndex(t => t.GuildId)
             .HasDatabaseName("ix_guild_sigil_pool_transactions_guild_id");
 
-        // Idempotency: unique on (guild_id, transaction_type, reference_id) WHERE reference_id IS NOT NULL.
         builder.HasIndex(t => new { t.GuildId, t.TransactionType, t.ReferenceId })
             .IsUnique()
             .HasDatabaseName("ix_guild_sigil_pool_transactions_idempotency")

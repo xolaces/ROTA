@@ -175,10 +175,10 @@ public sealed class GauntletAdminService : IGauntletAdminService
             return GauntletEventActionResult.Fail(
                 $"Cannot settle an event in state {ev.State}; must be Closed.");
 
-        // 1. Snapshot ranks (idempotent — re-running over an unchanged board yields identical ranks).
+        // Snapshot ranks (idempotent — re-running over an unchanged board yields identical ranks).
         await _scoring.RecomputeRanksAsync(eventId, ct);
 
-        // 2. Distribute the per-rank-band prizes. Ranks are per-league (Slice 3's ROW_NUMBER
+        // Distribute the per-rank-band prizes. Ranks are per-league (Slice 3's ROW_NUMBER
         //    PARTITION BY league), so iterating ALL entries naturally pays every league's rank-1..N
         //    its own band — the per-entry LastRank → band mapping handles league separation.
         var entries = await _entries.GetForEventAsync(eventId, ct);
@@ -262,7 +262,7 @@ public sealed class GauntletAdminService : IGauntletAdminService
             // PHASE-2 / FOLLOW-UP: grant band.MagicId as a PlayerEventMagic on the next active event.
         }
 
-        // 3. Honor-echo write-back. RevokeAllForEventAsync soft-deletes every active PlayerEventMagic
+        // Honor-echo write-back. RevokeAllForEventAsync soft-deletes every active PlayerEventMagic
         //    for the closing event and RETURNS the revoked rows, giving us the (playerId, magicId)
         //    pairs directly — no separate query. For each revoked holder, write the permanent
         //    PlayerMagicHonor if absent (HasHonorAsync pre-check; GrantAsync is itself idempotent).
@@ -279,7 +279,7 @@ public sealed class GauntletAdminService : IGauntletAdminService
             }
         }
 
-        // 4. Mark Settled ONLY after all grants commit.
+        // Mark Settled ONLY after all grants commit.
         ev.MarkSettled();
         await _events.UpdateAsync(ev, ct);
 

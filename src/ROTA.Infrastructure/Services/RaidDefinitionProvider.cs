@@ -4,7 +4,8 @@ using ROTA.Application.Models;
 
 namespace ROTA.Infrastructure.Services;
 
-//        of the process. Adding raids requires a redeploy.
+// Raid definitions are loaded once from JSON at construction and held for the life of the process.
+// Adding raids requires a redeploy.
 public sealed class RaidDefinitionProvider : IRaidDefinitionProvider
 {
     private readonly IReadOnlyDictionary<string, RaidDefinition> _raids;

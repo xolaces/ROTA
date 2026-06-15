@@ -16,7 +16,6 @@ public sealed class EquipmentController : ControllerBase
 
     private Guid PlayerId => Guid.Parse(User.FindFirst("sub")!.Value);
 
-    // GET /api/equipment
     [HttpGet]
     public async Task<IActionResult> GetEquipment(CancellationToken ct)
     {
@@ -24,7 +23,6 @@ public sealed class EquipmentController : ControllerBase
         return Ok(items);
     }
 
-    // GET /api/equipment/owned
     [HttpGet("owned")]
     public async Task<IActionResult> GetOwnedGear(CancellationToken ct)
     {
@@ -32,7 +30,6 @@ public sealed class EquipmentController : ControllerBase
         return Ok(gear);
     }
 
-    // PUT /api/equipment/{slot}
     [HttpPut("{slot}")]
     public async Task<IActionResult> Equip(string slot, [FromBody] EquipRequest request, CancellationToken ct)
     {
@@ -48,7 +45,6 @@ public sealed class EquipmentController : ControllerBase
         return Ok(result.Item);
     }
 
-    // DELETE /api/equipment/{slot}
     [HttpDelete("{slot}")]
     public async Task<IActionResult> Unequip(string slot, CancellationToken ct)
     {

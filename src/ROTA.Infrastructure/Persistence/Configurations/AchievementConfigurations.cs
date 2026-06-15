@@ -76,7 +76,6 @@ public class AchievementProgressEventConfiguration : IEntityTypeConfiguration<Ac
         builder.Property(e => e.ReferenceId).HasColumnName("reference_id").HasMaxLength(200).IsRequired();
         builder.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("NOW()");
 
-        // FK index on player_id.
         builder.HasIndex(e => e.PlayerId)
             .HasDatabaseName("ix_achievement_progress_events_player_id");
 

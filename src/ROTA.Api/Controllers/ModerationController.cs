@@ -30,7 +30,6 @@ public sealed class ModerationController : ControllerBase
         _muteValidator = muteValidator;
     }
 
-    /// <summary>Bans a player.</summary>
     [HttpPost("players/{idOrUsername}/ban")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -65,10 +64,6 @@ public sealed class ModerationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Unmute([FromRoute] string idOrUsername)
         => Respond(await _admin.UnmutePlayerAsync(GetActorId(), idOrUsername, Ip()), "Player unmuted.");
-
-    // -----------------------------------------------------------------------
-    // Helpers
-    // -----------------------------------------------------------------------
 
     private IActionResult Respond(AdminActionResult result, string okMessage)
     {

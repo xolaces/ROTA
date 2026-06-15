@@ -50,13 +50,8 @@ public sealed class BetaKeyService : IBetaKeyService
     public async Task<bool> ValidateAndRedeemAsync(string key, Guid newPlayerId, CancellationToken ct = default)
         => await _betaKeys.TryRedeemAsync(key, newPlayerId, ct);
 
-    // -----------------------------------------------------------------------
-    // Key generation
-    // -----------------------------------------------------------------------
-
     private static string GenerateKeyString()
     {
-        // Generate three groups of 4 Crockford base32 characters: ROTA-XXXX-XXXX-XXXX
         return $"ROTA-{GenerateSegment(4)}-{GenerateSegment(4)}-{GenerateSegment(4)}";
     }
 

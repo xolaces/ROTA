@@ -29,10 +29,6 @@ public class MagicSlotConcurrencyTests : IAsyncLifetime
     private RedisContainer      _redis    = null!;
     private WebApplicationFactory<Program> _factory = null!;
 
-    // -----------------------------------------------------------------------
-    // Lifecycle
-    // -----------------------------------------------------------------------
-
     public async Task InitializeAsync()
     {
         _postgres = new PostgreSqlBuilder()
@@ -81,10 +77,7 @@ public class MagicSlotConcurrencyTests : IAsyncLifetime
         await _redis.DisposeAsync();
     }
 
-    // -----------------------------------------------------------------------
-    // Slot-cap race test — the core advisory-lock verification
-    // -----------------------------------------------------------------------
-
+    // Slot-cap race test — the core advisory-lock verification.
     [Fact]
     public async Task ConcurrentApplyMagic_SlotCap_AdvisoryLockPreventsOverAllocation()
     {
@@ -165,10 +158,6 @@ public class MagicSlotConcurrencyTests : IAsyncLifetime
     // That race is covered by the unit test ApplyMagic_SamePlayer_OnlyFirstApplySucceeds
     // in MagicServiceTests.cs, which invokes the advisory-lock delegate and verifies that
     // FindByPlayerAsync inside the lock returns AlreadyAppliedByPlayer on the second call.
-
-    // -----------------------------------------------------------------------
-    // Helper
-    // -----------------------------------------------------------------------
 
     private static string FindApiContentRoot()
     {
