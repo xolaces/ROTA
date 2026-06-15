@@ -37,7 +37,8 @@ public class ItemServiceTests
             .Returns(Task.CompletedTask);
 
         return new ServiceBundle(
-            new ItemService(inventory.Object, itemDefs.Object, stats.Object, raids.Object, auditLog.Object),
+            new ItemService(inventory.Object, itemDefs.Object, stats.Object, raids.Object, auditLog.Object,
+                new ROTA.UnitTests.TestSupport.PassThroughPlayerMutationLock()),
             inventory, itemDefs, stats, raids, auditLog);
     }
 

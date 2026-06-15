@@ -25,6 +25,7 @@ public class LegionServiceTests
         Mock<ILegionDefinitionProvider>          LegionDefs,
         Mock<IPlayerCommanderGearRepository>     CommanderGear,
         Mock<IGearDefinitionProvider>            GearDefs,
+        Mock<IPlayerGearRepository>              GearRepo,
         Mock<IGemService>                        Gems);
 
     private static Bundle Build()
@@ -36,6 +37,7 @@ public class LegionServiceTests
         var legionDefs    = new Mock<ILegionDefinitionProvider>();
         var commanderGear = new Mock<IPlayerCommanderGearRepository>();
         var gearDefs      = new Mock<IGearDefinitionProvider>();
+        var gearRepo      = new Mock<IPlayerGearRepository>();
         var gems          = new Mock<IGemService>();
 
         // Default: empty slots
@@ -45,13 +47,17 @@ public class LegionServiceTests
         // Default: no commander gear row
         commanderGear.Setup(r => r.FindAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((PlayerCommanderGear?)null);
+        // Default: the player owns any gear they commander-equip (exploit audit 2026-06-14 finding C;
+        // the NotOwned test overrides this to null).
+        gearRepo.Setup(r => r.GetAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid pid, string gid, CancellationToken _) => PlayerGear.Create(pid, gid, 1));
 
         var legionCfg = Options.Create(new LegionConfig());
         var svc = new LegionService(units.Object, legions.Object, slots.Object,
                                     unitDefs.Object, legionDefs.Object,
                                     commanderGear.Object, gearDefs.Object,
-                                    gems.Object, legionCfg);
-        return new Bundle(svc, units, legions, slots, unitDefs, legionDefs, commanderGear, gearDefs, gems);
+                                    gearRepo.Object, gems.Object, legionCfg);
+        return new Bundle(svc, units, legions, slots, unitDefs, legionDefs, commanderGear, gearDefs, gearRepo, gems);
     }
 
     private static PlayerUnit MakeUnit(Guid playerId, string defId)
@@ -472,6 +478,24 @@ public class LegionServiceTests
 
         result.Success.Should().BeFalse();
         result.FailureCode.Should().Be(CommanderEquipFailureCode.GearDefinitionNotFound);
+    }
+
+    [Fact]
+    public async Task EquipCommander_NotOwned_ReturnsNotOwned()   // exploit audit 2026-06-14 (finding C)
+    {
+        var b        = Build();
+        var playerId = Guid.NewGuid();
+        b.GearDefs.Setup(d => d.GetById("gear_pano_steed"))
+            .Returns(new GearDefinition { Id = "gear_pano_steed", Name = "Pano's Steed", ProcChance = 0.1, ProcPercent = 4.0 });
+        // Player does NOT own the def → must be rejected before the commander row is written.
+        b.GearRepo.Setup(r => r.GetAsync(playerId, "gear_pano_steed", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerGear?)null);
+
+        var result = await b.Service.EquipCommanderAsync(playerId, "gear_pano_steed");
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(CommanderEquipFailureCode.NotOwned);
+        b.CommanderGear.Verify(r => r.CreateAsync(It.IsAny<PlayerCommanderGear>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]

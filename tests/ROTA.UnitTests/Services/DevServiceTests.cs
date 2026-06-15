@@ -39,13 +39,23 @@ public class DevServiceTests
             Players.Setup(r => r.FindByIdAsync(p.Id, It.IsAny<CancellationToken>())).ReturnsAsync(p);
             return p;
         }
+
+        // exploit audit 2026-06-14 (finding G): DevService now re-verifies the actor's LIVE Admin role,
+        // so an acting admin must be seeded with the role for grants to be authorized.
+        public Player SeedAdmin()
+        {
+            var a = Player.Create("devadmin", "devadmin@rota.test", "hash");
+            a.GrantRole(PlayerRoles.Admin);
+            Players.Setup(r => r.FindByIdAsync(a.Id, It.IsAny<CancellationToken>())).ReturnsAsync(a);
+            return a;
+        }
     }
 
     [Fact]
     public async Task GrantAsync_GoldGemsSpXp_AllApplied_Audited()
     {
         var h = new Harness();
-        var actor = Guid.NewGuid();
+        var actor = h.SeedAdmin().Id;
         var target = h.SeedPlayer();
 
         var result = await h.Service.GrantAsync(actor, new DevGrantRequest
@@ -65,9 +75,10 @@ public class DevServiceTests
     public async Task GrantAsync_XpCrossingLevel_FiresLevelUpHooks()
     {
         var h = new Harness();
+        var admin = h.SeedAdmin();
         var target = h.SeedPlayer();
 
-        var result = await h.Service.GrantAsync(target.Id, new DevGrantRequest { Xp = 2500 }, "127.0.0.1");
+        var result = await h.Service.GrantAsync(admin.Id, new DevGrantRequest { TargetPlayerId = target.Id, Xp = 2500 }, "127.0.0.1");
 
         result.Success.Should().BeTrue();
         result.NewLevel.Should().Be(3); // 1000 xp per level (stubbed) → L1→L3 with 500 carry
@@ -79,24 +90,28 @@ public class DevServiceTests
     public async Task GrantAsync_NegativeOrEmpty_Rejected()
     {
         var h = new Harness();
-        (await h.Service.GrantAsync(Guid.NewGuid(), new DevGrantRequest { Gold = -5 }, "ip"))
+        var admin = h.SeedAdmin().Id;
+        (await h.Service.GrantAsync(admin, new DevGrantRequest { Gold = -5 }, "ip"))
             .Success.Should().BeFalse();
-        (await h.Service.GrantAsync(Guid.NewGuid(), new DevGrantRequest(), "ip"))
+        (await h.Service.GrantAsync(admin, new DevGrantRequest(), "ip"))
             .Success.Should().BeFalse();
-        h.Players.Verify(r => r.FindByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        // Rejected at the amount guard (after the admin re-verify) — no grant side effects fired.
+        h.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+        h.Stats.Verify(s => s.AddUnassignedPointsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
     public async Task GrantItemAsync_NewItem_CreatesStack_ExistingItem_Increments()
     {
         var h = new Harness();
+        var admin = h.SeedAdmin();
         var target = h.SeedPlayer();
         h.ItemDefs.Setup(d => d.GetById("itm_test")).Returns(new ItemDefinition { Id = "itm_test", Name = "Test Item" });
 
         h.Inventory.Setup(i => i.GetAsync(target.Id, "itm_test", It.IsAny<CancellationToken>()))
                    .ReturnsAsync((PlayerInventoryItem?)null);
-        var first = await h.Service.GrantItemAsync(target.Id, new DevGrantItemRequest
-        { ItemDefinitionId = "itm_test", Quantity = 3 }, "ip");
+        var first = await h.Service.GrantItemAsync(admin.Id, new DevGrantItemRequest
+        { TargetPlayerId = target.Id, ItemDefinitionId = "itm_test", Quantity = 3 }, "ip");
         first.Success.Should().BeTrue();
         h.Inventory.Verify(i => i.CreateAsync(
             It.Is<PlayerInventoryItem>(x => x.Quantity == 3), It.IsAny<CancellationToken>()), Times.Once);
@@ -104,8 +119,8 @@ public class DevServiceTests
         var stack = PlayerInventoryItem.Create(target.Id, "itm_test", 3);
         h.Inventory.Setup(i => i.GetAsync(target.Id, "itm_test", It.IsAny<CancellationToken>()))
                    .ReturnsAsync(stack);
-        var second = await h.Service.GrantItemAsync(target.Id, new DevGrantItemRequest
-        { ItemDefinitionId = "itm_test", Quantity = 2 }, "ip");
+        var second = await h.Service.GrantItemAsync(admin.Id, new DevGrantItemRequest
+        { TargetPlayerId = target.Id, ItemDefinitionId = "itm_test", Quantity = 2 }, "ip");
         second.Success.Should().BeTrue();
         stack.Quantity.Should().Be(5);
     }
@@ -114,10 +129,11 @@ public class DevServiceTests
     public async Task GrantItemAsync_UnknownItem_Rejected()
     {
         var h = new Harness();
+        var admin = h.SeedAdmin().Id;
         h.ItemDefs.Setup(d => d.GetById("nope")).Returns((ItemDefinition?)null);
 
-        var result = await h.Service.GrantItemAsync(Guid.NewGuid(), new DevGrantItemRequest
-        { ItemDefinitionId = "nope" }, "ip");
+        var result = await h.Service.GrantItemAsync(admin, new DevGrantItemRequest
+        { ItemDefinitionId = "nope", Quantity = 1 }, "ip");
 
         result.Success.Should().BeFalse();
         h.Inventory.Verify(i => i.CreateAsync(It.IsAny<PlayerInventoryItem>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -127,12 +143,29 @@ public class DevServiceTests
     public async Task RefillAsync_RefillsAllFourPools()
     {
         var h = new Harness();
+        var admin = h.SeedAdmin();
         var target = h.SeedPlayer();
 
-        var result = await h.Service.RefillAsync(target.Id, new DevRefillRequest(), "ip");
+        var result = await h.Service.RefillAsync(admin.Id, new DevRefillRequest { TargetPlayerId = target.Id }, "ip");
 
         result.Success.Should().BeTrue();
         foreach (var type in new[] { ResourceType.Energy, ResourceType.Stamina, ResourceType.GuildStamina, ResourceType.Health })
             h.Energy.Verify(e => e.RefillToMaxAsync(target.Id, type, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task GrantAsync_NonAdminActor_Rejected()   // exploit audit 2026-06-14 (finding G)
+    {
+        var h = new Harness();
+        var target = h.SeedPlayer();   // a real player, but the ACTOR below is not an admin
+
+        // The actor GUID resolves to no admin (FindByIdAsync → null by default), so the live-role
+        // re-verify rejects — even though the [AdminOnly] route policy would pass a stale Admin claim.
+        var result = await h.Service.GrantAsync(Guid.NewGuid(), new DevGrantRequest
+        { TargetPlayerId = target.Id, Gold = 999 }, "ip");
+
+        result.Success.Should().BeFalse();
+        target.Gold.Should().Be(0, "a non-admin actor must not be able to grant resources");
+        h.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }

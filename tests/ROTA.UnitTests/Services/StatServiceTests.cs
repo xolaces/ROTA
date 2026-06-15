@@ -92,7 +92,8 @@ public class StatServiceTests
 
         return new ServiceBundle(
             new StatService(players.Object, energy.Object, gems.Object, auditLog.Object,
-                DefaultLevelingConfig(), DefaultCombatConfig(), classes.Object, equipment.Object, pinnacle.Object),
+                DefaultLevelingConfig(), DefaultCombatConfig(), classes.Object, equipment.Object, pinnacle.Object,
+                new ROTA.UnitTests.TestSupport.PassThroughPlayerMutationLock()),
             players, energy, gems, auditLog, classes, equipment, pinnacle);
     }
 

@@ -101,6 +101,7 @@ public class LegionDetailResponse
 public enum CommanderEquipFailureCode
 {
     GearDefinitionNotFound,
+    NotOwned,
 }
 
 public class CommanderEquipResult

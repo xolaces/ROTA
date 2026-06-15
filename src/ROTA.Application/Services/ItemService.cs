@@ -12,19 +12,22 @@ public sealed class ItemService : IItemService
     private readonly IStatService _stats;
     private readonly IRaidService _raids;
     private readonly IAuditLogRepository _auditLog;
+    private readonly IPlayerMutationLock _mutationLock;   // exploit audit 2026-06-14 (E)
 
     public ItemService(
         IPlayerInventoryRepository inventory,
         IItemDefinitionProvider itemDefs,
         IStatService stats,
         IRaidService raids,
-        IAuditLogRepository auditLog)
+        IAuditLogRepository auditLog,
+        IPlayerMutationLock mutationLock)
     {
         _inventory = inventory;
         _itemDefs  = itemDefs;
         _stats     = stats;
         _raids     = raids;
         _auditLog  = auditLog;
+        _mutationLock = mutationLock;
     }
 
     public async Task<IReadOnlyList<InventoryItemResponse>> GetInventoryAsync(
@@ -53,15 +56,23 @@ public sealed class ItemService : IItemService
         return result;
     }
 
-    public async Task<UseItemResponse> UseItemAsync(
+    // SECURITY (exploit audit 2026-06-14, finding E): serialize per-player so concurrent uses of a single
+    // item can't each run the side effect (StatBag SP / Sigil summon) while only one copy is consumed.
+    public Task<UseItemResponse> UseItemAsync(
         Guid playerId, string itemDefinitionId, int quantity, CancellationToken ct = default)
     {
         // Authoritative guard (defense-in-depth behind the validator): a non-positive quantity must
         // never reach ConsumeQuantity, which would otherwise ADD inventory (Quantity -= -1) and grant
-        // negative stat points — an item/SP duplication exploit.
+        // negative stat points. Cheap reject before taking the lock.
         if (quantity < 1)
-            return UseFail(UseItemFailureCode.InsufficientItems, "Quantity must be at least 1.");
+            return Task.FromResult(UseFail(UseItemFailureCode.InsufficientItems, "Quantity must be at least 1."));
 
+        return _mutationLock.RunAsync(playerId, () => UseItemCoreAsync(playerId, itemDefinitionId, quantity, ct), ct);
+    }
+
+    private async Task<UseItemResponse> UseItemCoreAsync(
+        Guid playerId, string itemDefinitionId, int quantity, CancellationToken ct = default)
+    {
         var def = _itemDefs.GetById(itemDefinitionId);
         if (def is null)
             return UseFail(UseItemFailureCode.ItemNotFound, "Item definition not found.");

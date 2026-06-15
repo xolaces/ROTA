@@ -36,6 +36,7 @@ public sealed class DevService : IDevService
     public async Task<DevActionResponse> GrantAsync(
         Guid actorId, DevGrantRequest request, string ipAddress, CancellationToken ct = default)
     {
+        if (!await ActorIsAdminAsync(actorId, ct)) return Fail("Not authorized — admin role required.");
         if (request.Gold < 0 || request.Gems < 0 || request.SkillPoints < 0 || request.Xp < 0)
             return Fail("Amounts must be non-negative.");
         if (request.Gold == 0 && request.Gems == 0 && request.SkillPoints == 0 && request.Xp == 0)
@@ -80,6 +81,7 @@ public sealed class DevService : IDevService
     public async Task<DevActionResponse> GrantItemAsync(
         Guid actorId, DevGrantItemRequest request, string ipAddress, CancellationToken ct = default)
     {
+        if (!await ActorIsAdminAsync(actorId, ct)) return Fail("Not authorized — admin role required.");
         if (request.Quantity is < 1 or > 1000) return Fail("Quantity must be 1-1000.");
         var def = _itemDefs.GetById(request.ItemDefinitionId);
         if (def is null) return Fail($"Unknown item '{request.ItemDefinitionId}'.");
@@ -106,6 +108,7 @@ public sealed class DevService : IDevService
     public async Task<DevActionResponse> RefillAsync(
         Guid actorId, DevRefillRequest request, string ipAddress, CancellationToken ct = default)
     {
+        if (!await ActorIsAdminAsync(actorId, ct)) return Fail("Not authorized — admin role required.");
         var targetId = request.TargetPlayerId ?? actorId;
         if (await _players.FindByIdAsync(targetId, ct) is null) return Fail("Target player not found.");
 
@@ -116,6 +119,16 @@ public sealed class DevService : IDevService
             actorId, "DevRefill", null, $"target={targetId} all pools → max", ipAddress), ct);
 
         return new DevActionResponse { Success = true, Summary = "All resource pools refilled." };
+    }
+
+    // SECURITY (exploit audit 2026-06-14, finding G): the [AdminOnly] policy trusts the JWT role claim,
+    // which is frozen for the access token's 15-min life — a just-demoted admin's residual token would
+    // still pass it on this high-impact grant surface. Re-verify the actor's LIVE role against the DB
+    // before any grant (mirrors AdminService.GrantRoleAsync/RevokeRoleAsync).
+    private async Task<bool> ActorIsAdminAsync(Guid actorId, CancellationToken ct)
+    {
+        var actor = await _players.FindByIdAsync(actorId, ct);
+        return actor is not null && !actor.IsDeleted && actor.HasRole(PlayerRoles.Admin);
     }
 
     private static DevActionResponse Fail(string reason)

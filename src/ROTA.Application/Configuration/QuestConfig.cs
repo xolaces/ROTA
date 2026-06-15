@@ -24,10 +24,21 @@ public class QuestConfig
     public double RareDropMaxBonus { get; set; } = 0.045;
     public double RareDropDiscernmentHalfway { get; set; } = 50_000;
 
-    // T44 — zone-indexed XP formula. ExperienceReward in quests.json is the per-node BASE that the
-    // zone ratio multiplies (alongside the difficulty reward multiplier). A battle node's ratio scales
-    // with its depth in the chapter (XpZoneRatioBase + ZoneIndex × XpZoneRatioPerZone); a boss node
-    // always uses XpBossRatio regardless of zone.
+    // Owner 2026-06-14 — XP earned scales with ENERGY SPENT, NOT player level (level only raises
+    // XpToNextLevel). Each point of energy rolls Uniform[min,max], summed (see ResourceReward.RollSummed).
+    // QUEST DESIGN (Dawn-faithful, owner 2026-06-15): quests are the STEADY, ACCESSIBLE leveling treadmill,
+    // so the rate is DETERMINISTIC — min == max == 1.5 XP/energy (Dawn's quest XP was "exact and stated",
+    // ~1.3-1.5/energy). No combat-power check; the big cheap energy pool + refills is the power-leveling
+    // vehicle. Raids are the PREMIUM path — ~2× this rate per stamina (CombatConfig.XpPerStaminaRoll*,
+    // 1-5 avg 3.0) plus loot, which offsets stamina's 2× LSI build cost. A 9-energy boss now grants ~14 XP
+    // (not the old 200 ≈ 4 levels at L1); it still out-earns a battle because it COSTS more energy.
+    public double XpPerEnergyRollMin { get; set; } = 1.5;
+    public double XpPerEnergyRollMax { get; set; } = 1.5;
+
+    // BETA — superseded by the resource-derived model above (XpPerEnergyRoll*). The old XP formula was
+    // base × zoneRatio × chapterXpMult × difficultyRewardMult, where these ratios applied. The live
+    // formula no longer reads them; kept so older config files / tests still bind, and the energy half
+    // of the co-scaling (EnergyZoneRampPerZone, ChapterScaling.EnergyCostMultiplier) is unchanged.
     public double XpZoneRatioBase { get; set; } = 1.2;
     public double XpZoneRatioPerZone { get; set; } = 0.05;
     public double XpBossRatio { get; set; } = 2.0;

@@ -37,7 +37,7 @@ public class QuestServiceTests
         Mock<IMasteryService> Mastery,
         Mock<IAchievementService> Achievements);
 
-    private static ServiceBundle BuildService(Random? random = null)
+    private static ServiceBundle BuildService(Random? random = null, QuestConfig? questConfig = null)
     {
         var definitions       = new Mock<IQuestDefinitionProvider>();
         // Default GetAll → empty list so the T45 zone-boss gate (which scans for in-zone siblings)
@@ -92,7 +92,7 @@ public class QuestServiceTests
         equipment.Setup(e => e.GrantGearAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        var questConfig = Options.Create(new QuestConfig());
+        var questConfigOptions = Options.Create(questConfig ?? new QuestConfig());
         var mastery = new Mock<IMasteryService>();
         // Neutral loot modifiers by default → quest rewards/drops unchanged unless a test overrides.
         mastery.Setup(m => m.GetLootModifiersAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -104,7 +104,8 @@ public class QuestServiceTests
             players.Object, energy.Object, gems.Object,
             stats.Object, lootTables.Object, itemDefs.Object, inventory.Object,
             auditLog.Object, magicService.Object, legionService.Object, equipment.Object,
-            mastery.Object, achievements.Object, questConfig, random);
+            mastery.Object, achievements.Object,
+            new ROTA.UnitTests.TestSupport.PassThroughPlayerMutationLock(), questConfigOptions, random);
 
         return new ServiceBundle(service, definitions, questProgress, difficultyProgress,
             players, energy, gems, stats, lootTables, itemDefs, inventory, auditLog, magicService,
@@ -146,6 +147,11 @@ public class QuestServiceTests
         if (xp > 0) p.AddExperience(xp, _ => 1000);
         return p;
     }
+
+    // Owner 2026-06-14 — XP = summed roll(min..max) per energy spent. Pinning min==max collapses the roll
+    // to a constant, so XP = energyCost × perEnergy exactly (deterministic, no Random dependence).
+    private static QuestConfig PinnedXp(double perEnergy)
+        => new() { XpPerEnergyRollMin = perEnergy, XpPerEnergyRollMax = perEnergy };
 
     private static void SetupPlayerAndEnergy(ServiceBundle b, Player player, bool energySuccess = true)
     {
@@ -312,8 +318,9 @@ public class QuestServiceTests
 
         result.Success.Should().BeTrue();
         result.GoldGranted.Should().Be(100);
-        // T44 — XP = base(50) × zoneRatio(1.2 @ ZoneIndex 0) × chapterScalar(1.0 @ Ch1) × rewardMult(1.0) = 60.
-        result.ExperienceGranted.Should().Be(60);
+        // Owner 2026-06-15 — quest XP is DETERMINISTIC 1.5/energy (Dawn-faithful steady leveling). q001
+        // costs 5 energy (Normal/Ch1/Z0) ⇒ round(5 × 1.5) = 8. Authored ExperienceReward(50) is ignored.
+        result.ExperienceGranted.Should().Be(8);
         result.CompletionCount.Should().Be(1);
         result.Difficulty.Should().Be("Normal");
         result.DifficultyColor.Should().Be("Green");
@@ -709,8 +716,8 @@ public class QuestServiceTests
     public async Task AttemptQuest_ExactLevelUp_AtThreshold_GrantsLevelUpPoints()
     {
         // Player has 950 XP toward level 2. Quest grants 50 XP. 950+50=1000 = exactly one level.
-        // Boss in Ch1 Z0 → XP multiplier = XpBossRatio(2.0) × chapterScalar(1.0) = 2.0, so base 25 → 50.
-        var b = BuildService(); // XpToNextLevel → 1000
+        // XP = energy(5) × roll, pinned to 10/energy (min==max) ⇒ exactly 50. Level-independent.
+        var b = BuildService(questConfig: PinnedXp(10)); // XpToNextLevel → 1000
         var player = MakePlayer(xp: 950); // AddExperience(950, _=>1000): Level=1, Experience=950
 
         var quest = new QuestDefinition
@@ -736,8 +743,8 @@ public class QuestServiceTests
     public async Task AttemptQuest_XpCarriesOver_AfterLevelUp()
     {
         // Player has 980 XP. Quest grants 50. Total 1030: level up consumes 1000, 30 carries over.
-        // Boss in Ch1 Z0 → ×2.0 multiplier, so base 25 → 50 XP.
-        var b = BuildService(); // XpToNextLevel → 1000
+        // XP = energy(5) × 10/energy (pinned) = 50.
+        var b = BuildService(questConfig: PinnedXp(10)); // XpToNextLevel → 1000
         var player = MakePlayer(xp: 980);
 
         var quest = new QuestDefinition
@@ -761,8 +768,8 @@ public class QuestServiceTests
     public async Task AttemptQuest_ChainLevelUp_ThreeLevels_FromOneGrant()
     {
         // XpToNextLevel returns 20 → each level costs 20 XP. Quest grants 60 XP → 3 level-ups.
-        // Boss in Ch1 Z0 → ×2.0 multiplier, so base 30 → 60 XP.
-        var b = BuildService();
+        // XP = energy(5) × 12/energy (pinned) = 60.
+        var b = BuildService(questConfig: PinnedXp(12));
         b.Stats.Setup(s => s.XpToNextLevel(It.IsAny<int>())).Returns(20); // override default 1000
 
         var player = MakePlayer(); // Level=1, Experience=0
@@ -790,14 +797,14 @@ public class QuestServiceTests
     public async Task AttemptQuest_GrantLevelUpPointsAsync_CalledOncePerLevelGained()
     {
         // XpToNextLevel → 1000. Quest gives 2500 XP → exactly 2 level-ups with 500 left over.
-        // Boss in Ch1 Z0 → ×2.0 multiplier, so base 1250 → 2500 XP.
-        var b = BuildService(); // XpToNextLevel → 1000
+        // XP = energy(10) × 250/energy (pinned) = 2500.
+        var b = BuildService(questConfig: PinnedXp(250)); // XpToNextLevel → 1000
         var player = MakePlayer(); // Level=1, XP=0
 
         var quest = new QuestDefinition
         {
             Id = "xp_quest", Name = "XP Quest", Chapter = 1, ZoneIndex = 0, NodeType = "Boss",
-            BaseEnergyCost = 5, GoldReward = 0, ExperienceReward = 1250, GemReward = 0,
+            BaseEnergyCost = 10, GoldReward = 0, ExperienceReward = 1250, GemReward = 0,
         };
         b.Definitions.Setup(d => d.GetById("xp_quest")).Returns(quest);
         SetupPlayerAndEnergy(b, player);
@@ -1290,13 +1297,10 @@ public class QuestServiceTests
     }
 
     // -----------------------------------------------------------------------
-    // T44/T55 — zone-indexed XP formula
-    // XP = base × zoneRatio × chapterXpMultiplier × rewardMult.
-    //   battle zoneRatio = XpZoneRatioBase(1.2) + ZoneIndex × XpZoneRatioPerZone(0.05)
-    //   boss   zoneRatio = XpBossRatio(2.0) regardless of zone
-    // T55: the per-chapter scalar is now ChapterScaling[ch].XpMultiplier (gentle — the base XP already
-    // carries chapter progression, and energy now co-scales). Defaults: Ch1=1.00, Ch2=1.03.
-    // rewardMult Normal=1.0, Nightmare=3.5.
+    // Owner 2026-06-14 — XP scales with ENERGY SPENT, not authored XP, not node type, not player level.
+    // XP = summed roll(min..max) per energy spent. Energy carries chapter/zone/difficulty scaling, so XP
+    // inherits all of it (a boss earns more only because it costs more energy). Pinning min==max collapses
+    // the roll to a constant (PinnedXp), giving exact assertions: XP = energyCost × perEnergy.
     // -----------------------------------------------------------------------
 
     private static QuestDefinition XpNode(
@@ -1309,21 +1313,20 @@ public class QuestServiceTests
         };
 
     [Theory]
-    // base 100, Ch1 (scalar 1.0):
-    [InlineData(1, 0, "Battle", QuestDifficulty.Normal,    120)]  // 100 × 1.2  × 1.0 × 1.0
-    [InlineData(1, 2, "Battle", QuestDifficulty.Normal,    130)]  // 100 × 1.30 × 1.0 × 1.0  (1.2 + 2×0.05)
-    [InlineData(1, 0, "Boss",   QuestDifficulty.Normal,    200)]  // 100 × 2.0  × 1.0 × 1.0
-    [InlineData(1, 2, "Boss",   QuestDifficulty.Normal,    200)]  // boss ratio ignores zone
-    // Ch2 (T55 XpMultiplier 1.03):
-    [InlineData(2, 0, "Battle", QuestDifficulty.Normal,    123)]  // (int)(100 × 1.2  × 1.03 × 1.0) = 123
-    [InlineData(2, 0, "Boss",   QuestDifficulty.Normal,    206)]  // (int)(100 × 2.0  × 1.03 × 1.0) = 206
-    // Nightmare rewardMult 3.5, Ch1:
-    [InlineData(1, 0, "Battle", QuestDifficulty.Nightmare, 420)]  // 100 × 1.2  × 1.0 × 3.5
-    [InlineData(1, 0, "Boss",   QuestDifficulty.Nightmare, 700)]  // 100 × 2.0  × 1.0 × 3.5
-    public async Task AttemptQuest_XpFormula_ScalesByZoneChapterAndDifficulty(
-        int chapter, int zoneIndex, string nodeType, QuestDifficulty difficulty, int expectedXp)
+    // baseEnergy 5, pinned 2 XP/energy ⇒ XP = energyCost × 2. energyCost = ceil(5 × diffMult ×
+    // chapterEnergyMult × (1 + zoneIndex×0.04)). Chapter/zone/difficulty raise XP only via energy; a Boss
+    // earns the same as a Battle when it costs the same energy (NodeType no longer affects XP).
+    [InlineData(1, 0, "Battle", QuestDifficulty.Normal,     5, 10)]  // 5 × 1.0 × 1.00 × 1.00
+    [InlineData(1, 0, "Boss",   QuestDifficulty.Normal,     5, 10)]  // boss == battle at equal energy
+    [InlineData(1, 2, "Battle", QuestDifficulty.Normal,     6, 12)]  // zone depth: 5 × 1.08 = 5.4 → ceil 6
+    [InlineData(2, 0, "Battle", QuestDifficulty.Normal,     6, 12)]  // chapter 2: 5 × 1.11 = 5.55 → ceil 6
+    [InlineData(1, 0, "Battle", QuestDifficulty.Nightmare, 15, 30)]  // difficulty ×3 energy ⇒ ×3 XP
+    [InlineData(1, 0, "Boss",   QuestDifficulty.Nightmare, 15, 30)]  // boss == battle at equal energy
+    public async Task AttemptQuest_XpScalesWithEnergySpent_NotNodeType(
+        int chapter, int zoneIndex, string nodeType, QuestDifficulty difficulty,
+        int expectedEnergy, int expectedXp)
     {
-        var b = BuildService();
+        var b = BuildService(questConfig: PinnedXp(2));
         var player = MakePlayer();
         b.Definitions.Setup(d => d.GetById("q_xp")).Returns(XpNode(chapter, zoneIndex, nodeType));
         SetupPlayerAndEnergy(b, player);
@@ -1347,6 +1350,50 @@ public class QuestServiceTests
         result.Success.Should().BeTrue();
         result.ExperienceGranted.Should().Be(expectedXp);
         result.XpGained.Should().Be(expectedXp);
+        b.Energy.Verify(e => e.SpendEnergyAsync(player.Id, ResourceType.Energy, expectedEnergy,
+            It.IsAny<CancellationToken>()), Times.Once, "XP tracks the energy actually spent");
+    }
+
+    [Fact]
+    public async Task AttemptQuest_XpIgnoresAuthoredExperienceReward()
+    {
+        // Two nodes, identical energy (5), wildly different authored ExperienceReward ⇒ identical XP.
+        var b = BuildService(questConfig: PinnedXp(3));
+        var player = MakePlayer();
+        b.Definitions.Setup(d => d.GetById("q_lo")).Returns(
+            new QuestDefinition { Id = "q_lo", Name = "Lo", Chapter = 1, ZoneIndex = 0, ZoneName = "Z",
+                NodeIndex = 0, NodeType = "Battle", BaseEnergyCost = 5, ExperienceReward = 1 });
+        b.Definitions.Setup(d => d.GetById("q_hi")).Returns(
+            new QuestDefinition { Id = "q_hi", Name = "Hi", Chapter = 1, ZoneIndex = 0, ZoneName = "Z",
+                NodeIndex = 0, NodeType = "Battle", BaseEnergyCost = 5, ExperienceReward = 999_999 });
+        SetupPlayerAndEnergy(b, player);
+
+        var lo = await b.Service.AttemptQuestAsync(player.Id, "q_lo", QuestDifficulty.Normal);
+        var hi = await b.Service.AttemptQuestAsync(player.Id, "q_hi", QuestDifficulty.Normal);
+
+        lo.ExperienceGranted.Should().Be(15);   // 5 energy × 3/energy
+        hi.ExperienceGranted.Should().Be(15);   // authored 999,999 is ignored
+    }
+
+    [Fact]
+    public async Task AttemptQuest_XpIsLevelIndependent()
+    {
+        // Level only raises XpToNextLevel, never the XP earned. A level-1 and a high-level player earn the
+        // same XP from the same node (same energy spent).
+        var b = BuildService(questConfig: PinnedXp(2));
+        b.Definitions.Setup(d => d.GetById("q_xp")).Returns(XpNode(1, 0, "Battle"));
+
+        var low  = MakePlayer();              // Level 1
+        var high = MakePlayer(xp: 100_000);   // 100 levels in (MakePlayer levels at 1000 XP each)
+        high.Level.Should().BeGreaterThan(50, "sanity: the high player is well past level 1");
+        SetupPlayerAndEnergy(b, low);
+        SetupPlayerAndEnergy(b, high);
+
+        var lowRes  = await b.Service.AttemptQuestAsync(low.Id,  "q_xp", QuestDifficulty.Normal);
+        var highRes = await b.Service.AttemptQuestAsync(high.Id, "q_xp", QuestDifficulty.Normal);
+
+        lowRes.ExperienceGranted.Should().Be(10);    // 5 energy × 2
+        highRes.ExperienceGranted.Should().Be(10);   // identical despite the level gap
     }
 
     // -----------------------------------------------------------------------

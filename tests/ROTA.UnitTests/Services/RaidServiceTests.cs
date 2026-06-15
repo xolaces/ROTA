@@ -898,8 +898,8 @@ public class RaidServiceTests
     [InlineData(20)]
     public async Task Hit_GrantsXpInExpectedRange_PerHitSize(int hitSize)
     {
-        // XP = round(staminaCost × roll), roll ∈ [1.0, 4.0], staminaCost = hitSize × 1
-        // So XP ∈ [staminaCost, staminaCost * 4]
+        // XP = summed roll(1..5) per stamina, staminaCost = hitSize × 1 (owner 2026-06-15, raids premium).
+        // So XP ∈ [staminaCost × 1, staminaCost × 5].
         var b = BuildService(new Random(42)); // seeded for determinism
         var player = MakePlayer();
         var raid = MakeRaid();
@@ -916,8 +916,8 @@ public class RaidServiceTests
         int staminaCost = hitSize; // StaminaCostPerHit=1
         result.Response!.XpGained.Should().BeGreaterOrEqualTo(staminaCost,
             "XP floor is staminaCost × 1.0 (roll minimum)");
-        result.Response.XpGained.Should().BeLessOrEqualTo(staminaCost * 4,
-            "XP ceiling is staminaCost × 4.0 (roll maximum)");
+        result.Response.XpGained.Should().BeLessOrEqualTo(staminaCost * 5,
+            "XP ceiling is staminaCost × 5.0 (roll maximum)");
         result.Response.XpGained.Should().BeGreaterOrEqualTo(1, "XP is always at least 1");
     }
 
@@ -2348,7 +2348,7 @@ public class RaidServiceTests
     public async Task Hit_XpProcMagic_MultipliesXpOnProc()
     {
         // XpProc procChance=1.0, procAmount=2.0 → xpGained × 2.
-        // staminaCost=1, xpRoll∈[1.0,4.0] → base xpGained∈[1,4] → after ×2 ∈ [2,8].
+        // staminaCost=1, xpRoll∈[1.0,5.0] → base xpGained∈[1,5] → after ×2 ∈ [2,10].
         // Asserting XpGained ≥ 2 is always true and verifies the multiplier applied.
         var b      = BuildService(new Random(0));
         var player = MakePlayer();
@@ -2378,9 +2378,9 @@ public class RaidServiceTests
         var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
 
         result.Success.Should().BeTrue();
-        // staminaCost=1, xpRoll∈[1.0,4.0] → base∈[1,4]; × 2.0 → [2,8].
-        result.Response!.XpGained.Should().BeInRange(2, 8,
-            "XpProc procAmount=2.0 doubles xpGained: min base 1 × 2 = 2, max base 4 × 2 = 8");
+        // staminaCost=1, xpRoll∈[1.0,5.0] → base∈[1,5]; × 2.0 → [2,10].
+        result.Response!.XpGained.Should().BeInRange(2, 10,
+            "XpProc procAmount=2.0 doubles xpGained: min base 1 × 2 = 2, max base 5 × 2 = 10");
     }
 
     [Fact]
@@ -3434,9 +3434,7 @@ public class RaidServiceTests
     // ── (C) Strike spend forks stamina ──────────────────────────────────────
 
     [Theory]
-    [InlineData(1)]
-    [InlineData(5)]
-    [InlineData(20)]
+    [InlineData(1)]   // exploit audit 2026-06-14 (finding B): non-unit sizes now rejected (separate test)
     public async Task Hit_GauntletRaid_SpendsFlatOneStrike_NotStamina(int hitSize)
     {
         var eventId = Guid.NewGuid();
@@ -3478,9 +3476,65 @@ public class RaidServiceTests
 
         await b.Service.HitRaidAsync(player.Id, raid.Id, 1, key);
 
-        var expectedRef = $"strikespend:{raid.Id}:{key}";
+        // exploit audit 2026-06-14 (finding A): strikeRef is keyed off the normalized scoped key
+        // ({playerId:N}:{raidId:N}:{clientKey}), consistent with the Redis dedupe slot — NOT the raw
+        // idempotencyKey. A genuine retry with the same key still maps to the same reference.
+        var expectedRef = $"strikespend:{player.Id:N}:{raid.Id:N}:{key}";
         b.Strikes.Verify(r => r.SpendAsync(player.Id, 1, expectedRef, It.IsAny<CancellationToken>()),
-            Times.Once, "strike referenceId reuses the per-hit idempotency key for tx-atomic idempotency");
+            Times.Once, "strike referenceId is the scoped per-hit key for tx-atomic idempotency");
+    }
+
+    [Theory]   // exploit audit 2026-06-14 (finding B): hitSize must be 1 on the Gauntlet fork
+    [InlineData(5)]
+    [InlineData(20)]
+    public async Task Hit_GauntletRaid_NonUnitHitSize_Rejected(int hitSize)
+    {
+        var eventId = Guid.NewGuid();
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeGauntletRaid(eventId);
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, hitSize, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(RaidHitFailureCode.InvalidHitSize,
+            "the Gauntlet fork is a flat single strike — a multi-hit size would multiply the XP/gold basis for one strike");
+        b.Strikes.Verify(r => r.SpendAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never, "a rejected hit-size must not spend a strike");
+        b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]   // exploit audit 2026-06-14 (finding A — CRITICAL): a blank key must NOT collapse to a constant ref
+    public async Task Hit_GauntletRaid_BlankKey_UsesScopedNonConstantStrikeRef()
+    {
+        var eventId = Guid.NewGuid();
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeGauntletRaid(eventId);
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+        string? captured = null;
+        b.Strikes.Setup(r => r.SpendAsync(player.Id, 1, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Callback((Guid _, int __, string r, CancellationToken ___) => captured = r)
+            .ReturnsAsync(StrikeSpendOutcome.Charged);
+
+        await b.Service.HitRaidAsync(player.Id, raid.Id, 1, "");   // BLANK idempotency key
+
+        captured.Should().NotBeNull();
+        // Pre-fix: a blank key produced the CONSTANT "strikespend:{raidId}:" ledger ref, so every later
+        // blank-key hit returned AlreadyCharged → free battalion damage. The fix scopes it (blank → fresh
+        // GUID), so the reference is per-hit unique and never the old constant.
+        captured.Should().NotBe($"strikespend:{raid.Id}:");
+        captured!.Should().StartWith($"strikespend:{player.Id:N}:{raid.Id:N}:");
     }
 
     [Fact]

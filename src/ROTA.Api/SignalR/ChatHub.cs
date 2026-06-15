@@ -58,6 +58,7 @@ public sealed class ChatHub : Hub
     public async Task JoinRaid(string raidId)
     {
         if (!Guid.TryParse(raidId, out var raidGuid)) return;
+        if (await IsCallerBannedAsync()) { await NotifyBlocked(); return; }
         if (!await IsRaidParticipantAsync(raidGuid)) { await NotifyNotInRaid(); return; }
         await Groups.AddToGroupAsync(Context.ConnectionId, RaidGroup(raidGuid));
     }
@@ -92,6 +93,7 @@ public sealed class ChatHub : Hub
     /// </summary>
     public async Task JoinGuildChannel()
     {
+        if (await IsCallerBannedAsync()) { await NotifyBlocked(); return; }
         var guildId = await CallerGuildIdAsync();
         if (guildId is null) { await NotifyNotInGuild(); return; }
         await Groups.AddToGroupAsync(Context.ConnectionId, GuildGroup(guildId.Value));
@@ -155,6 +157,15 @@ public sealed class ChatHub : Hub
         // outlives session revocation, so a live socket could otherwise keep chatting post-ban.
         var p = await _players.FindByIdAsync(SenderId());
         return p is not null && (p.IsBanned || p.IsMuted);
+    }
+
+    // SECURITY (exploit audit 2026-06-14, finding K): ban-gate the chat JOINs too — a banned player's
+    // 15-min access token outlives session revocation, so a live socket could otherwise re-join and READ
+    // raid/guild chat. Ban only (NOT mute): a muted player may still read, just not send.
+    private async Task<bool> IsCallerBannedAsync()
+    {
+        var p = await _players.FindByIdAsync(SenderId());
+        return p is not null && p.IsBanned;
     }
 
     private Task NotifyBlocked() => Clients.Caller.SendAsync("Muted", "You cannot send messages right now (muted or banned).");

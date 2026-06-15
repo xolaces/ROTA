@@ -30,6 +30,7 @@ public sealed class GauntletService : IGauntletService
     private readonly IRaidService _raidService;
     // T76 — magic display names for the prize preview / settlement summary
     private readonly IMagicDefinitionProvider _magics;
+    private readonly IPlayerMutationLock _mutationLock;   // exploit audit 2026-06-14 (H)
 
     public GauntletService(
         IGauntletEventRepository events,
@@ -46,7 +47,8 @@ public sealed class GauntletService : IGauntletService
         IEquipmentService equipment,
         IActiveRaidRepository raids,
         IRaidService raidService,
-        IMagicDefinitionProvider magics)
+        IMagicDefinitionProvider magics,
+        IPlayerMutationLock mutationLock)
     {
         _events      = events;
         _entries     = entries;
@@ -63,6 +65,7 @@ public sealed class GauntletService : IGauntletService
         _raids       = raids;
         _raidService = raidService;
         _magics      = magics;
+        _mutationLock = mutationLock;
     }
 
     public async Task<GauntletEventResponse?> GetCurrentEventAsync(CancellationToken ct = default)
@@ -318,7 +321,13 @@ public sealed class GauntletService : IGauntletService
         };
     }
 
-    public async Task<BuyShopResult> BuyFromShopAsync(
+    // SECURITY (exploit audit 2026-06-14, finding H): serialize a player's shop buys so two concurrent
+    // buys of DISTINCT entries can't both pass the non-atomic Token/Pitchfork balance check and overspend.
+    public Task<BuyShopResult> BuyFromShopAsync(
+        Guid playerId, string shopEntryId, CancellationToken ct = default)
+        => _mutationLock.RunAsync(playerId, () => BuyFromShopCoreAsync(playerId, shopEntryId, ct), ct);
+
+    private async Task<BuyShopResult> BuyFromShopCoreAsync(
         Guid playerId, string shopEntryId, CancellationToken ct = default)
     {
         // 1. Unknown id → NotFound-style failure (no charge, no grant).

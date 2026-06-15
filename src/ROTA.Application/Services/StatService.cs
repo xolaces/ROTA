@@ -20,6 +20,7 @@ public sealed class StatService : IStatService
     private readonly IClassService _classService;
     private readonly IEquipmentService _equipment;
     private readonly IPinnacleService _pinnacle;
+    private readonly IPlayerMutationLock _mutationLock;   // exploit audit 2026-06-14 (D)
 
     public StatService(
         IPlayerRepository players,
@@ -30,7 +31,8 @@ public sealed class StatService : IStatService
         IOptions<CombatConfig> combatConfig,
         IClassService classService,
         IEquipmentService equipment,
-        IPinnacleService pinnacle)
+        IPinnacleService pinnacle,
+        IPlayerMutationLock mutationLock)
     {
         _players        = players;
         _energy         = energy;
@@ -41,9 +43,16 @@ public sealed class StatService : IStatService
         _classService   = classService;
         _equipment      = equipment;
         _pinnacle       = pinnacle;
+        _mutationLock   = mutationLock;
     }
 
-    public async Task<AllocateStatResponse> AllocateStatPointAsync(
+    // SECURITY (exploit audit 2026-06-14, finding D): serialize per-player so concurrent allocations can't
+    // each pass the SkillPoints check and last-writer-wins extra stats (player_stats has no concurrency token).
+    public Task<AllocateStatResponse> AllocateStatPointAsync(
+        Guid playerId, StatType statType, int amount, CancellationToken ct = default)
+        => _mutationLock.RunAsync(playerId, () => AllocateStatPointCoreAsync(playerId, statType, amount, ct), ct);
+
+    private async Task<AllocateStatResponse> AllocateStatPointCoreAsync(
         Guid playerId, StatType statType, int amount, CancellationToken ct = default)
     {
         var player = await _players.FindByIdWithStatsAsync(playerId, ct);

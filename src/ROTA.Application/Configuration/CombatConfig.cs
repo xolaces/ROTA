@@ -9,10 +9,13 @@ public class CombatConfig
     public double MaxCritDamageBonus { get; set; } = 1.0;
     public double CritDamagePerDiscernment { get; set; } = 0.0002;
 
-    // On-hit raid XP = staminaCost × Uniform[XpPerStaminaRollMin, XpPerStaminaRollMax].
-    // Defaults preserve the shipped curve (avg ~2.5 XP per stamina ⇒ ~50 on a 20-stamina hit).
+    // On-hit raid XP = summed Uniform[XpPerStaminaRollMin, XpPerStaminaRollMax] per stamina spent
+    // (ResourceReward.RollSummed). Dawn-faithful (owner 2026-06-15): raids are the PREMIUM leveling path —
+    // 1-5 XP/stamina (avg 3.0), ~2× the quest energy rate (QuestConfig.XpPerEnergyRoll* = 1.5 fixed). The
+    // higher per-point XP offsets stamina's 2× LSI build cost, and raids also drop the gear/gold/loot — but
+    // they're gated by combat power. ⇒ avg ~60 on a 20-stamina hit (range 20-100).
     public double XpPerStaminaRollMin { get; set; } = 1.0;
-    public double XpPerStaminaRollMax { get; set; } = 4.0;
+    public double XpPerStaminaRollMax { get; set; } = 5.0;
 
     // On-hit raid GOLD = staminaCost × Uniform[GoldPerStaminaRollMin, GoldPerStaminaRollMax]
     // (mirrors the XP roll). Replaces the old flat RaidDefinition.GoldPerStamina multiplier.

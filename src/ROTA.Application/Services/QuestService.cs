@@ -66,6 +66,7 @@ public sealed class QuestService : IQuestService
     private readonly IEquipmentService _equipment;
     private readonly IMasteryService _mastery;
     private readonly IAchievementService _achievements;
+    private readonly IPlayerMutationLock _mutationLock;   // exploit audit 2026-06-14 (I)
     private readonly QuestConfig _questConfig;
     private readonly Random _random;
 
@@ -86,6 +87,7 @@ public sealed class QuestService : IQuestService
         IEquipmentService equipment,
         IMasteryService mastery,
         IAchievementService achievements,
+        IPlayerMutationLock mutationLock,
         IOptions<QuestConfig> questConfig,
         Random? random = null)
     {
@@ -105,31 +107,35 @@ public sealed class QuestService : IQuestService
         _equipment         = equipment;
         _mastery           = mastery;
         _achievements      = achievements;
+        _mutationLock      = mutationLock;
         _questConfig       = questConfig.Value;
         _random            = random ?? Random.Shared;
     }
 
-    // T55 — single source of truth for the co-scaled energy cost + XP reward of a quest at a given
-    // difficulty. Used on attempt AND to populate the availability DTO (at Normal as the display
-    // baseline). Energy: base × difficultyEnergyMult × chapterEnergyMult × (1 + zoneIndex × zoneRamp).
-    // XP (NOT Hoard-scaled): base × zoneRatio(boss|battle) × chapterXpMult × difficultyRewardMult.
-    private (int EnergyCost, int XpReward) ComputeScaledCostAndXp(QuestDefinition quest, QuestDifficulty difficulty)
+    // T55 — energy cost carries the per-chapter (capped) scaling + zone depth + difficulty:
+    //   base × difficultyEnergyMult × chapterEnergyMult × (1 + zoneIndex × zoneRamp).
+    // XP is NO LONGER computed here — owner 2026-06-14, XP scales with energy SPENT (see RollEnergyXp),
+    // so it inherits all of this scaling automatically (a boss costs more energy ⇒ earns more XP).
+    private int ComputeEnergyCost(QuestDefinition quest, QuestDifficulty difficulty)
     {
         var scaling = _questConfig.GetChapterScaling(quest.Chapter);
-
         double energyMult     = EnergyMultipliers[difficulty];
         double zoneEnergyRamp = 1.0 + quest.ZoneIndex * _questConfig.EnergyZoneRampPerZone;
-        int energyCost = (int)Math.Ceiling(
+        return (int)Math.Ceiling(
             quest.BaseEnergyCost * energyMult * scaling.EnergyCostMultiplier * zoneEnergyRamp);
-
-        double zoneRatio = quest.IsBoss
-            ? _questConfig.XpBossRatio
-            : _questConfig.XpZoneRatioBase + quest.ZoneIndex * _questConfig.XpZoneRatioPerZone;
-        int xpReward = (int)(
-            quest.ExperienceReward * zoneRatio * scaling.XpMultiplier * RewardMultipliers[difficulty]);
-
-        return (energyCost, xpReward);
     }
+
+    // Owner 2026-06-14 — XP earned = summed Uniform[min,max] roll per point of ENERGY SPENT, rolled at
+    // attempt. Level-independent (level only raises XpToNextLevel). Replaces the authored-XP × zone/boss/
+    // chapter ratio formula that let a 9-energy boss grant 200 XP (~4 levels at L1). The same model runs
+    // on the raid side over stamina (RaidService on-hit XP).
+    private int RollEnergyXp(int energyCost)
+        => (int)ResourceReward.RollSummed(
+            _random, energyCost, _questConfig.XpPerEnergyRollMin, _questConfig.XpPerEnergyRollMax);
+
+    // Mean XP for the availability-card preview; the real grant rolls per-attempt in RollEnergyXp.
+    private int XpPreview(int energyCost)
+        => (int)ResourceReward.Mean(energyCost, _questConfig.XpPerEnergyRollMin, _questConfig.XpPerEnergyRollMax);
 
     public async Task<IReadOnlyList<QuestAvailabilityResponse>> GetAvailableQuestsAsync(
         Guid playerId, CancellationToken ct = default)
@@ -192,10 +198,11 @@ public sealed class QuestService : IQuestService
                     .All(n => unlockedQuestIds.Contains(n.Id));
             }
 
-            // T55 — effective (chapter+zone-scaled) cost/reward at Normal as the card display baseline;
-            // the client multiplies by the selected difficulty. The server recomputes authoritatively on
-            // attempt, so these are display-only.
-            var (effEnergy, effXp) = ComputeScaledCostAndXp(quest, QuestDifficulty.Normal);
+            // T55 — effective (chapter+zone-scaled) cost at Normal as the card display baseline; the
+            // client multiplies by the selected difficulty. XP preview is the MEAN of the per-energy roll
+            // (the real grant rolls on attempt). The server recomputes authoritatively, so display-only.
+            var effEnergy = ComputeEnergyCost(quest, QuestDifficulty.Normal);
+            var effXp     = XpPreview(effEnergy);
 
             result.Add(new QuestAvailabilityResponse
             {
@@ -230,7 +237,14 @@ public sealed class QuestService : IQuestService
         return result;
     }
 
-    public async Task<QuestResultResponse> AttemptQuestAsync(
+    // SECURITY (exploit audit 2026-06-14, finding I): serialize a player's concurrent attempts so the
+    // depletion write can't lost-update (each attempt reading Progress=100), bypassing the
+    // deplete→clear→reset throttle. Inner reward writes (MutateWithRetryAsync) ride this ambient tx.
+    public Task<QuestResultResponse> AttemptQuestAsync(
+        Guid playerId, string questId, QuestDifficulty difficulty, CancellationToken ct = default)
+        => _mutationLock.RunAsync(playerId, () => AttemptQuestCoreAsync(playerId, questId, difficulty, ct), ct);
+
+    private async Task<QuestResultResponse> AttemptQuestCoreAsync(
         Guid playerId, string questId, QuestDifficulty difficulty, CancellationToken ct = default)
     {
         // 1. Verify quest exists
@@ -306,11 +320,10 @@ public sealed class QuestService : IQuestService
         try { lootMods = await _mastery.GetLootModifiersAsync(playerId, ct); }
         catch (Exception) when (!ct.IsCancellationRequested) { lootMods = new MasteryLootModifiers(1.0, 1.0, 1.0, 0.0); }
 
-        // 5. Compute scaled costs and rewards
+        // 5. Compute scaled energy cost + gold/gem rewards. Gold/gems keep the difficulty reward
+        //    multiplier; XP is resource-derived and rolled AFTER the spend (see step 6b).
         float rewardMult  = RewardMultipliers[difficulty];
-        // T55 — energy cost AND XP reward both carry the per-chapter (capped) scaling + zone depth, so
-        // they grow together and the XP-per-energy ratio stays intentional at every stage.
-        var (energyCost, xpReward) = ComputeScaledCostAndXp(quest, difficulty);
+        int energyCost    = ComputeEnergyCost(quest, difficulty);
         int goldReward    = (int)(quest.GoldReward * rewardMult * lootMods.HoardGoldMultiplier);
         int gemReward     = (int)Math.Round(quest.GemReward * rewardMult);
 
@@ -318,6 +331,9 @@ public sealed class QuestService : IQuestService
         var spent = await _energy.SpendEnergyAsync(playerId, ResourceType.Energy, energyCost, ct);
         if (!spent)
             return Fail(QuestFailureCode.InsufficientEnergy, "Insufficient energy.");
+
+        // 6b. XP earned scales with the energy just spent (owner 2026-06-14), level-independent.
+        int xpReward = RollEnergyXp(energyCost);
 
         // 7. Apply rewards (energy committed — errors from here propagate as 500).
         // T59 — gold/XP go through the xmin-retry chokepoint so a simultaneous raid hit can't

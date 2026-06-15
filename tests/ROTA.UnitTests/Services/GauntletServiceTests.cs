@@ -49,7 +49,8 @@ public class GauntletServiceTests
             return new(Events.Object, Entries.Object, Strikes.Object, Currency.Object,
                    Content.Object, Players.Object, Gems.Object, Audit.Object,
                    Options.Create(Config), Shop.Object, Legions.Object, Equipment.Object,
-                   Raids.Object, RaidService.Object, Magics.Object);
+                   Raids.Object, RaidService.Object, Magics.Object,
+                   new ROTA.UnitTests.TestSupport.PassThroughPlayerMutationLock());
         }
     }
 

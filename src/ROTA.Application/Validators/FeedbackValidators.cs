@@ -31,5 +31,16 @@ public sealed class FeedbackRequestValidator : AbstractValidator<FeedbackRequest
             .MaximumLength(4000);
 
         RuleFor(x => x.Screen).MaximumLength(80);
+
+        // SECURITY (exploit audit 2026-06-14, finding N): the game-state Snapshot was the one
+        // attacker-controlled field with no bound, so it could inflate the operator-email jsonb to the
+        // request-body limit. Cap entry count + per-entry key/value sizes (Subject/Description/Screen
+        // are already capped above).
+        RuleFor(x => x.Snapshot)
+            .Must(s => s is null || s.Count <= 25)
+            .WithMessage("Snapshot may contain at most 25 entries.");
+        RuleForEach(x => x.Snapshot)
+            .Must(kv => kv.Key.Length <= 64 && (kv.Value == null || kv.Value.Length <= 256))
+            .WithMessage("Snapshot entries are too large (key ≤ 64, value ≤ 256 chars).");
     }
 }

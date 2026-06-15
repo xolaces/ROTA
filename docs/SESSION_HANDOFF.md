@@ -24,17 +24,30 @@ the full-replace combat fork. **972 unit + 111 integration green; 0 build errors
   (adds `player_gauntlet_battalions` — migration `AddGauntletBattalion`). Docker postgres+redis must be up.
 
 ## What's next (owner-facing priorities)
-1. **Client: wire the battalion editor to the live endpoints.** The Unity battalion editor exists but is
-   PlayerPrefs-only — wire it to the NEW backend: `GET`/`PUT /api/gauntlet/battalion` (DTOs
-   `GauntletBattalionResponse` / `SetGauntletBattalionRequest`; 6 generals + 20 troops; server returns
-   computed power). Add to client `IRotaApi`/`HttpRotaApi`/`MockRotaApi`. This is the natural next slice.
-2. **Obsidian Gilt slice 2** — Quest/Raid/Gauntlet *detail* surfaces adopt the rounded template (the
-   shell + Profile + Gauntlet already do). Owner UI law in memory `owner-ui-standards`.
+> **Session 2026-06-13 (cont.):** items 1 + 2 below are **BUILT + adversarially-reviewed CLEAN,
+> client compiles 0/0, UNCOMMITTED in `C:\Dev\ROTA.Client6` (pending owner mock playtest + commit).**
+> Client-only (no backend change); the battalion live path still needs the `AddGauntletBattalion`
+> migration applied. Resume at item 3.
+
+1. ~~**Client: wire the battalion editor to the live endpoints.**~~ **DONE (uncommitted).** Mirrored
+   `GauntletBattalionResponse`/`SetGauntletBattalionRequest` into client `Dtos`; added
+   `GetGauntletBattalionAsync`/`SetGauntletBattalionAsync` to `IRotaApi`/`HttpRotaApi`/`MockRotaApi`
+   (mock is stateful, mirrors the live caps/ownership/band/dup gates + the `(ATK×4+DEF)` power);
+   `GauntletScreen` editor is now server-driven (per-tap PUT → authoritative response; **power is the
+   server value, no client recompute**; PlayerPrefs path removed; failed save reverts + shows the
+   error in-overlay).
+2. ~~**Obsidian Gilt slice 2** — Quest/Raid detail surfaces adopt the rounded template.~~ **DONE
+   (uncommitted).** New reusable `.is-selected` USS ring (replaces inline selection borders);
+   RaidScreen list cards `.panel`→`.card` + boss/difficulty selection via `.is-selected`; QuestScreen
+   navigator kicker + chip-ified attempt-rewards (replace-only contract kept); RaidCombatView **light
+   touch** (owner-chosen) — ranks/log rounded to `.card`, Hit→`.btn-cta`, **Share + raid-chat converted
+   to `OverlayPanel` pop-outs** (immersive arena/log preserved). QuestScreen was already on-template.
 3. **Deferred test** — a positive battalion-damage integration test through `HitRaidAsync` (needs the
    `RaidServiceTests` bundle to expose the battalion mock; the 8 service tests cover the power formula).
 4. **Known follow-ups** — live data for rail notification dots (lootable-raid + guild-unread counts);
    a daily-reward claim backend behind the 🎁 header button; the lore→items content phase (art/lore
-   slots are reserved across the new screens).
+   slots are reserved across the new screens); **Obsidian Gilt slice 3** could card-ify the remaining
+   surfaces (Raid `.menu-card` landing, the immersive combat header/arena) if the owner wants more.
 
 ## What's IN v0.3.1 (by area)
 - **Gauntlet battalion (System 24 D8) — backend `665f903`.** Entity `PlayerGauntletBattalion`

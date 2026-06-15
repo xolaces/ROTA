@@ -38,7 +38,11 @@ public sealed class QuestController : ControllerBase
     {
         var difficultyStr = request?.Difficulty ?? "Normal";
 
-        if (!Enum.TryParse<QuestDifficulty>(difficultyStr, ignoreCase: true, out var difficulty))
+        // SECURITY (exploit audit 2026-06-14, finding L): Enum.TryParse accepts numeric strings ("99")
+        // as undefined enum values; the !Enum.IsDefined guard turns that into a clean 400 instead of a
+        // KeyNotFoundException 500 in QuestService.DifficultyGates[difficulty] (mirrors GauntletController).
+        if (!Enum.TryParse<QuestDifficulty>(difficultyStr, ignoreCase: true, out var difficulty)
+            || !Enum.IsDefined(difficulty))
             return BadRequest(new { message = $"Invalid difficulty '{difficultyStr}'. Valid values: Normal, Hard, Legendary, Nightmare." });
 
         var result = await _quests.AttemptQuestAsync(GetPlayerId(), questId, difficulty);

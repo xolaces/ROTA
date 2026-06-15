@@ -22,6 +22,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IPlayerResourceRepository, PlayerResourceRepository>();
         services.AddScoped<IGemTransactionRepository, GemTransactionRepository>();
+        // Exploit audit 2026-06-14 (D/E/I/H) — per-player advisory lock for TOCTOU-prone mutations.
+        services.AddScoped<IPlayerMutationLock, PlayerMutationLock>();
         services.AddScoped<IQuestProgressRepository, QuestProgressRepository>();
         services.AddScoped<IQuestDifficultyProgressRepository, QuestDifficultyProgressRepository>();
         services.AddScoped<IActiveRaidRepository, ActiveRaidRepository>();

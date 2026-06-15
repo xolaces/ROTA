@@ -722,6 +722,12 @@ public sealed class RaidService : IRaidService
         // 4. Validate hit size BEFORE reserving the idempotency slot — a rejected request must not
         //    burn the client's key for 24h (the placeholder would answer every retry with
         //    "already in progress" until the TTL expired).
+        // SECURITY (exploit audit 2026-06-14, finding B): the Gauntlet fork is a FLAT single strike
+        // with hitSize-independent damage, so a multi-hit size would multiply the XP/gold reward basis
+        // (staminaCost) for one strike. Force hitSize to 1 on the Gauntlet path.
+        bool isGauntlet = raid.GauntletEventId is not null;
+        if (isGauntlet && hitSize != 1)
+            return HitFail(RaidHitFailureCode.InvalidHitSize, "Gauntlet strikes are always a single hit.");
         if (hitSize != 1 && hitSize != 5 && hitSize != 20)
             return HitFail(RaidHitFailureCode.InvalidHitSize, "Hit size must be 1, 5, or 20.");
 
@@ -753,17 +759,22 @@ public sealed class RaidService : IRaidService
         //    even though the actual deduction happens inside the advisory-lock transaction.
         int staminaCost = hitSize * definition.StaminaCostPerHit;
 
-        // 6a. Gauntlet fork (System 16 Slice 4) — Gauntlet raids spend STRIKES (cost scales with hit
-        //     size: Small=1 / Medium=5 / Large=20 from GauntletConfig) instead of Stamina. Non-Gauntlet
-        //     raids keep the exact stamina path above. The actual debit happens inside the advisory-lock
-        //     tx (so it commits atomically with the hit); this only resolves the per-hit cost.
-        bool isGauntlet = raid.GauntletEventId is not null;
+        // 6a. Gauntlet fork (System 16 Slice 4 / D6) — Gauntlet raids spend a FLAT 1 STRIKE per hit
+        //     (hitSize forced to 1 at step 4) instead of Stamina; non-Gauntlet raids keep the stamina
+        //     path. The debit happens inside the advisory-lock tx (atomic with the hit). isGauntlet is
+        //     resolved at step 4.
         // System 21 Slice 3b — guild raids spend GuildStamina (= hit size) instead of Stamina/Strikes.
         bool isGuildRaid = raid.GuildId is not null;
         // D6 (System 24) — Gauntlet strikes are a FLAT 1 ticket: hit sizes don't apply on the
         // Gauntlet fork, and strikeCost is only ever read on the Gauntlet (strike-spend) path.
         int strikeCost = 1;
-        string strikeRef = $"strikespend:{activeRaidId}:{idempotencyKey}";
+        // SECURITY (exploit audit 2026-06-14, finding A — CRITICAL): key the strike-spend reference off
+        // the SAME normalized scopedKey the Redis slot uses (empty→fresh GUID, oversized→SHA256), NOT the
+        // raw client key. Otherwise a blank/constant IdempotencyKey produced a CONSTANT strikeRef while
+        // the Redis layer (fresh GUID per blank key) let every hit proceed → SpendAsync returned
+        // AlreadyCharged → full battalion damage for ZERO strikes (free ladder climb). scopedKey already
+        // dedupes a genuine client retry at the Redis slot before SpendAsync is reached.
+        string strikeRef = $"strikespend:{scopedKey}";
 
         // 7. Apply hit atomically.
         //    AtomicApplyHitAsync begins a PostgreSQL transaction then acquires an advisory
@@ -1193,12 +1204,12 @@ public sealed class RaidService : IRaidService
             }
 
             // On-hit XP and gold — granted every hit, inside the advisory lock.
-            // XP: single uniform roll [min, max] × stamina spent — CombatConfig-driven, not per-stamina.
-            // Defaults [1.0, 4.0] preserve the shipped curve (avg ~2.5/stamina ⇒ ~50 on a 20-stamina hit).
-            double xpMin  = _combatConfig.XpPerStaminaRollMin;
-            double xpMax  = _combatConfig.XpPerStaminaRollMax;
-            double xpRoll = xpMin + _random.NextDouble() * (xpMax - xpMin);
-            xpGained  = Math.Max(1, (int)Math.Round(staminaCost * xpRoll));
+            // XP scales with STAMINA SPENT, not player level (level only raises XpToNextLevel). Owner
+            // 2026-06-14: SUMMED per-stamina roll — each point of stamina independently rolls Uniform
+            // [min, max] and the rolls are summed (batching-invariant, tight spread ⇒ ~50 on a 20-stamina
+            // hit). Defaults [1.0, 4.0]. Quests run the same model over energy (QuestService.RollEnergyXp).
+            xpGained = Math.Max(1, (int)ResourceReward.RollSummed(
+                _random, staminaCost, _combatConfig.XpPerStaminaRollMin, _combatConfig.XpPerStaminaRollMax));
             // Gold mirrors the XP roll — staminaCost × Uniform[min,max] (default 3-8/stamina).
             double goldMin  = _combatConfig.GoldPerStaminaRollMin;
             double goldMax  = _combatConfig.GoldPerStaminaRollMax;

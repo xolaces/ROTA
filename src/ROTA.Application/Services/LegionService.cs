@@ -17,6 +17,7 @@ public sealed class LegionService : ILegionService
     private readonly ILegionDefinitionProvider      _legionDefs;
     private readonly IPlayerCommanderGearRepository _commanderGear;
     private readonly IGearDefinitionProvider        _gearDefs;
+    private readonly IPlayerGearRepository          _gearRepo;   // exploit audit 2026-06-14 (C): commander ownership gate
     private readonly IGemService                    _gems;
     private readonly LegionConfig                   _legionConfig;
 
@@ -28,6 +29,7 @@ public sealed class LegionService : ILegionService
         ILegionDefinitionProvider      legionDefs,
         IPlayerCommanderGearRepository commanderGear,
         IGearDefinitionProvider        gearDefs,
+        IPlayerGearRepository          gearRepo,
         IGemService                    gems,
         IOptions<LegionConfig>         legionConfig)
     {
@@ -38,6 +40,7 @@ public sealed class LegionService : ILegionService
         _legionDefs    = legionDefs;
         _commanderGear = commanderGear;
         _gearDefs      = gearDefs;
+        _gearRepo      = gearRepo;
         _gems          = gems;
         _legionConfig  = legionConfig.Value;
     }
@@ -284,6 +287,17 @@ public sealed class LegionService : ILegionService
             {
                 FailureCode   = CommanderEquipFailureCode.GearDefinitionNotFound,
                 FailureReason = $"Gear definition '{gearDefinitionId}' not found.",
+            };
+
+        // SECURITY (exploit audit 2026-06-14, finding C): require ownership before equipping a commander
+        // — mirrors EquipmentService.EquipAsync. Without this, any player could equip an unowned Orange
+        // mount and gain a permanent, uncapped +procPercent×preProc combat proc for free.
+        var owned = await _gearRepo.GetAsync(playerId, gearDefinitionId, ct);
+        if (owned is null || owned.IsDeleted || owned.Quantity < 1)
+            return new CommanderEquipResult
+            {
+                FailureCode   = CommanderEquipFailureCode.NotOwned,
+                FailureReason = $"You do not own '{def.Name}'.",
             };
 
         var existing = await _commanderGear.FindAsync(playerId, ct);
