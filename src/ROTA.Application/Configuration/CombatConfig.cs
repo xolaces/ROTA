@@ -41,4 +41,11 @@ public class CombatConfig
     // softens but never zeroes the hit — damage stays noticeable at every stage.
     public double GauntletHealthDefenseReductionPerPoint { get; set; } = 0.001;
     public double GauntletHealthDefenseReductionMax { get; set; } = 0.8;
+
+    // System 22 Phase A follow-up — Hoard scales raid threshold/kill CHANCE drops (item/magic/unit/
+    // legion) exactly like ProcessQuestLootAsync scales quest chance drops. The boosted chance is
+    // clamped at MaxThresholdDropChance, and the clamp never *lowers* a base that is already higher
+    // (a base 1.0 "always" drop stays 1.0). Mirrors QuestConfig.MaxDropChance. Guaranteed (unconditional
+    // gear) drops never pass through this scaling.
+    public double MaxThresholdDropChance { get; set; } = 0.95;
 }

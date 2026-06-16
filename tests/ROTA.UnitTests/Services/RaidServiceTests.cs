@@ -2427,6 +2427,87 @@ public class RaidServiceTests
             Times.Once, "magic drop with chance=1.0 is granted on the Loot claim");
     }
 
+    // System 22 Phase A follow-up — Hoard scales raid threshold CHANCE drops for the killer.
+    // A base 0.4 chance with a fixed RNG of 0.5 MISSES at Hoard ×1.0 (0.5 < 0.4 = false) but FIRES at
+    // Hoard ×2.0 (scaled 0.8 → 0.5 < 0.8 = true). FixedRandom makes the whole hit deterministic.
+
+    [Theory]
+    [InlineData(1.0, false)] // neutral Hoard → base 0.4, RNG 0.5 → no drop
+    [InlineData(2.0, true)]  // Hoard ×2     → scaled 0.8,  RNG 0.5 → drop fires (deferred to Loot)
+    public async Task KillRewards_HoardScalesKillerThresholdChanceDrops(double hoardMultiplier, bool expectDrop)
+    {
+        var b      = BuildService(new FixedRandom(0.5));
+        var player = MakePlayer();
+        var raid   = MakeRaid(currentHp: 1); // killing blow
+
+        SetupHitScaffolding(b, player, raid);
+
+        // Killer's Hoard drop multiplier (index 0 of MasteryLootModifiers).
+        b.Mastery.Setup(m => m.GetModifiersAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MasteryModifiers(
+                new MasteryCombatModifiers(0.0, 0.0),
+                new MasteryLootModifiers(hoardMultiplier, 1.0, 1.0, 0.0)));
+
+        var lootTable = new LootTableDefinition
+        {
+            Id   = "lt_raid_ironcolossus",
+            Type = "Raid",
+            Difficulties = new Dictionary<string, LootTableDifficulty>
+            {
+                ["Normal"] = new LootTableDifficulty
+                {
+                    MinContributionPercent = 0.0,
+                    ThresholdRewards = new List<ThresholdReward>
+                    {
+                        new ThresholdReward
+                        {
+                            ContributionPercent = 0.0, // everyone qualifies
+                            MagicDrops = new List<MagicDropChance>
+                            {
+                                new MagicDropChance { MagicId = "magic_whetstone", Chance = 0.4 }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        b.LootTables.Setup(lt => lt.GetById("lt_raid_ironcolossus")).Returns(lootTable);
+
+        var participant = RaidParticipant.Create(raid.Id, player.Id);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(participant);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+        b.Participants.Setup(p => p.UpdateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipant> { participant });
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+        result.Success.Should().BeTrue();
+        result.Response!.IsDefeated.Should().BeTrue();
+
+        // The drop is deferred to Loot, so claim then assert the magic was (or wasn't) granted.
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
+        await b.Service.LootRaidAsync(player.Id, raid.Id);
+
+        b.MagicService.Verify(
+            m => m.GrantMagicAsync(player.Id, "magic_whetstone", It.IsAny<CancellationToken>()),
+            expectDrop ? Times.Once() : Times.Never(),
+            expectDrop
+                ? "Hoard ×2 lifts the 0.4 base chance to 0.8, so the RNG 0.5 roll fires the drop"
+                : "at neutral Hoard the 0.4 base chance is below the RNG 0.5 roll → no drop");
+    }
+
+    private sealed class FixedRandom : Random
+    {
+        private readonly double _value;
+        public FixedRandom(double value) => _value = value;
+        public override double NextDouble() => _value;
+    }
+
     // Slice 4 — Legion combat integration
 
     // Helpers for legion setup
