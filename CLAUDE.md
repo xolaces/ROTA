@@ -644,6 +644,35 @@ Migration **AddGauntletEventIdentity** applied. Detail: docs/SESSION_HANDOFF.md 
   items: client TokenStore plaintext tokens (encrypt before beta); magic-shop catalogue endpoint
   missing (Bazaar shows owned-only).
 
+## System 25 — Sigil boss-reward, Zone re-lock & Zone-rerun achievements (2026-06-16) — BACKEND COMPLETE
+Build: 0 errors. Tests: **982 unit + 111 integration = 1093 green**; adversarial review clean. Branch
+feat/sigil-rework-zone-reruns (commit edaf2c8, off main). NO EF migration. Spec:
+docs/specs/active/system-25-sigil-zone-reruns.md.
+- **Sigils = zone-boss final-clear reward** (canon, already boss-only on the backend): first clear per
+  difficulty = guaranteed 100%; every RERUN = flat **15%** from `QuestConfig.SigilRerunDropChance` (NOT
+  Discernment-scaled — the System 22 sigil-find lane is now inert for sigils; `SigilDropChance` JSON is
+  vestigial, the `Sigils` map's presence is the enable). QuestService sigil step simplified.
+- **Zone boss RE-LOCKS every reset:** the zone-boss gate + boss-greying switched from the permanent
+  `HasEverCleared` latch to current-cycle `IsCleared`, so the boss is un-attemptable until the zone is
+  fully re-run again. FORWARD prerequisite chain still uses `HasEverCleared` (a reset never re-locks the
+  next zone). No entity change.
+- **Zone-rerun achievements:** `AchievementMetric.ZoneReruns=6` + `AchievementCategory.ZoneMastery=5`;
+  `AchievementDefinition += int? Chapter/ZoneIndex` (required iff ZoneReruns, boot-validated). A 6-tier
+  rarity ladder (Grey..Orange, thresholds 10/25/50/100/250/**500**, AP 5/10/20/40/75/150) lives in
+  `AchievementConfig.ZoneRerunLadder` and is **templated** — `AchievementDefinitionProvider` synthesizes
+  one chain per distinct (chapter,zone) from `IQuestDefinitionProvider` at boot (deterministic ids
+  `ach_zonererun_c{ch}z{zone}_{rarity}`), so it scales to 24 chapters with zero hand-authored rows.
+  `RecordZoneRerunAsync` routes ONLY to the matching zone's ladder (not the metric-wide fan-out), counted
+  once per zone-boss clear, idempotent via the boss `CompletionCount`. AP-only reward.
+- **Content:** all 25 zone bosses wired (was 2). Generated **+23 boss-raids** (Standard tier, lootTableId
+  "" → gold/XP/gem tier rewards) + **+92 sigils** (rarity Normal=Green/Hard=Blue/Legendary=Purple/
+  Nightmare=Orange — the SHIPPED convention; CLAUDE.md Sigil-System section corrected). HP/reward curve is
+  formula-scaled by chapter+zone — TUNE later. q003/q005 unchanged (now 25%→15% like the rest).
+- KNOWN FOLLOW-UPS: client (ROTA.Client6) mock fidelity — sigils from quest bosses not raid kills, re-lock
+  mirror, stateful zone-rerun achievements (in progress); item loot tables for the 23 new boss-raids;
+  `EvaluateCompletions`/overview iterate all defs (150 now → ~1000 at 24 chapters) — scope before the
+  browse screen; tune the generated raid curve + the rerun ladder.
+
 ## PHASE-2 Deferred Items
 - DiscernmentInvestment effect: quest drop quality (raid crit shipped v0.2.3)
 - Explicit DB transaction scope for QUEST reward steps (energy committed but rewards not atomic; raids fixed v0.2.5)
