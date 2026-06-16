@@ -3,7 +3,7 @@
 # Based on Visual Studio template + ROTA-specific additions
 # =============================================================
 
-# ----- SECRETS — NEVER COMMIT -----
+# ----- SECRETS ï¿½ NEVER COMMIT -----
 .env
 *.pfx
 *.p12
@@ -11,6 +11,10 @@
 *.pem
 secrets.json
 appsettings.*.local.json
+
+# ----- DEPLOY / AGENT ARTIFACTS (never commit) -----
+migrate.sql
+.claude/
 
 # ----- BUILD ARTIFACTS -----
 [Bb]in/
@@ -98,12 +102,12 @@ project.nuget.cache
 
 # ----- DOTNET USER SECRETS -----
 # These live outside the repo in %APPDATA%\Microsoft\UserSecrets
-# Listing here as a reminder — they are never IN the repo
+# Listing here as a reminder ï¿½ they are never IN the repo
 # Location: %APPDATA%\Microsoft\UserSecrets\<guid>\secrets.json  (Windows)
 #           ~/.microsoft/usersecrets/<guid>/secrets.json           (Mac/Linux)
 
 # ----- DOCKER -----
-# .env is already listed above — do not add docker-compose.override.yml
+# .env is already listed above ï¿½ do not add docker-compose.override.yml
 # if it contains secrets
 docker-compose.override.yml
 
@@ -114,7 +118,7 @@ Desktop.ini
 $RECYCLE.BIN/
 *.lnk
 
-# ----- MIGRATION SNAPSHOTS (keep these — they are source-controlled) -----
+# ----- MIGRATION SNAPSHOTS (keep these ï¿½ they are source-controlled) -----
 # Do NOT add **/Migrations/ here
 # ----- DotD wiki research dump (raw saved HTML + Fandom asset/ad garbage, multi-MB) -----
 # Keep only the cleaned text under _clean/ if desired; never commit raw .htm or asset folders.
