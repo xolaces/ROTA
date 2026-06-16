@@ -734,11 +734,12 @@ Orange is the permanent ceiling. Never add above it.
 ### Sigil System (renamed from Essence/Scroll)
 - Sigils are dropped by quest bosses only
 - One Sigil type per boss per difficulty (4 per boss)
-- First defeat on a difficulty: guaranteed Sigil drop
-- Subsequent defeats: chance-based (defined in quest JSON)
+- First defeat per difficulty: guaranteed Sigil drop (100%)
+- Subsequent (rerun) defeats: flat QuestConfig.SigilRerunDropChance (15%, System 25) — NOT Discernment-scaled
+- A boss only drops sigils if it carries a Sigils map AND is its zone's final node
 - Using a Sigil summons that boss at that difficulty
-- Sigil rarity matches difficulty:
-    Normal=White, Hard=Green, Legendary=Blue, Nightmare=Purple
+- Sigil rarity matches difficulty (shipped convention):
+    Normal=Green, Hard=Blue, Legendary=Purple, Nightmare=Orange
 
 ### Loot Tables
 - Per-difficulty tiers within each loot table

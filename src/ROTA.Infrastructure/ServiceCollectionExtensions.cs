@@ -105,9 +105,13 @@ public static class ServiceCollectionExtensions
         // System 22 Phase A (Masteries) — the four Ancient definitions; throws at startup on bad content.
         services.AddSingleton<IMasteryDefinitionProvider>(
             _ => new MasteryDefinitionProvider(contentRootPath));
-        // TICKET 46 (Achievements) — the achievement roster; throws at startup on bad content.
-        services.AddSingleton<IAchievementDefinitionProvider>(
-            _ => new AchievementDefinitionProvider(contentRootPath));
+        // TICKET 46 (Achievements) — the achievement roster; throws at startup on bad content. System 25:
+        // also synthesizes the per-zone rerun ladders from the quest roster + the AchievementConfig ladder.
+        services.AddSingleton<IAchievementDefinitionProvider>(sp =>
+            new AchievementDefinitionProvider(
+                contentRootPath,
+                sp.GetRequiredService<IQuestDefinitionProvider>(),
+                sp.GetRequiredService<IOptions<AchievementConfig>>().Value));
         // T52 — subject catalog (bug/report subject lists + feedback category); throws at startup on bad content.
         services.AddSingleton<ISubjectCatalogProvider>(
             _ => new SubjectCatalogProvider(contentRootPath));

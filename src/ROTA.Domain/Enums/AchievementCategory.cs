@@ -12,4 +12,5 @@ public enum AchievementCategory
     EquipmentOwned = 2,
     DaysPlayed     = 3,
     Collector      = 4,
+    ZoneMastery    = 5,   // System 25 — per-zone rerun ladders
 }

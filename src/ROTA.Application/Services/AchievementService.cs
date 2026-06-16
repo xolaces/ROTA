@@ -73,6 +73,23 @@ public sealed class AchievementService : IAchievementService
             await _progress.SetCounterAsync(playerId, def.Id, absoluteValue, ct);
     }
 
+    public async Task RecordZoneRerunAsync(Guid playerId, int chapter, int zoneIndex,
+        string referenceId, CancellationToken ct = default)
+    {
+        // SCOPED (unlike RecordProgressAsync's metric fan-out): only this zone's ladder tiers. The
+        // per-(player, achievement, ref) event ledger makes each cycle count exactly once across tiers.
+        var defs = _defs.GetZoneRerunTiers(chapter, zoneIndex);
+        if (defs.Count == 0) return;
+
+        foreach (var def in defs)
+        {
+            var created = await _progressEvents.CreateAsync(
+                AchievementProgressEvent.Create(playerId, def.Id, referenceId), ct);
+            if (!created) continue;
+            await _progress.IncrementAsync(playerId, def.Id, 1, ct);
+        }
+    }
+
     public async Task RecountCollectorCountersAsync(Guid playerId, CancellationToken ct = default)
     {
         var collectorDefs = _defs.GetByMetric(AchievementMetric.CollectorItemCount)

@@ -933,16 +933,16 @@ public class QuestServiceTests
     }
 
     [Fact]
-    public async Task AttemptQuest_DiscernmentSigilFind_RaisesPostFirstClearChanceToGuaranteed()
+    public async Task AttemptQuest_RerunSigil_IsFlatRate_NotScaledByDiscernment()
     {
-        var b = BuildService();
+        // System 25 — the rerun sigil chance is a FLAT config rate, no longer scaled by Discernment.
+        // Pin the rate to 0 and apply a large sigil-find modifier: a rerun must STILL drop nothing.
+        var b = BuildService(questConfig: new QuestConfig { SigilRerunDropChance = 0.0 });
         var player = MakePlayer();
-        // Base 0.5 (RNG-dependent on its own) × 2.0 sigil-find → effective min(1.0, 1.0) = guaranteed drop.
         var boss = new QuestDefinition
         {
             Id = "q_boss", Name = "Boss Quest", Chapter = 1, BaseEnergyCost = 8,
             NodeType = "Boss", GoldReward = 200, ExperienceReward = 100,
-            SigilDropChance = 0.5f,
             Sigils = new Dictionary<string, string> { ["Normal"] = "sigil_ironcolossus_normal" },
         };
         b.Definitions.Setup(d => d.GetById("q_boss")).Returns(boss);
@@ -950,42 +950,42 @@ public class QuestServiceTests
 
         var priorDiff = PlayerQuestDifficultyProgress.Create(player.Id, "q_boss", QuestDifficulty.Normal);
         priorDiff.RecordCompletion();
-        priorDiff.MarkSigilDropped(); // first-clear sigil already taken → exercises the chance path
+        priorDiff.MarkSigilDropped(); // first-clear sigil already taken → exercises the rerun path
         b.DifficultyProgress.Setup(r => r.GetAsync(player.Id, "q_boss", QuestDifficulty.Normal, It.IsAny<CancellationToken>()))
             .ReturnsAsync(priorDiff);
         b.ItemDefs.Setup(d => d.GetById("sigil_ironcolossus_normal")).Returns(new ItemDefinition
         {
             Id = "sigil_ironcolossus_normal", Name = "Iron Sigil", Rarity = ItemRarity.Green, Type = ItemType.Sigil,
         });
-        // Discernment sigil-find ×2 → 0.5 base becomes a guaranteed (clamped 1.0) drop.
+        // A large Discernment sigil-find modifier must NOT resurrect the drop (decoupled in System 25).
         b.Mastery.Setup(m => m.GetLootModifiersAsync(player.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new MasteryLootModifiers(1.0, 1.0, 2.0, 0.0));
+            .ReturnsAsync(new MasteryLootModifiers(1.0, 1.0, 5.0, 0.0));
 
         var result = await b.Service.AttemptQuestAsync(player.Id, "q_boss", QuestDifficulty.Normal);
 
         result.Success.Should().BeTrue();
-        result.ItemsGranted.Should().ContainSingle(i => i.ItemId == "sigil_ironcolossus_normal",
-            "sigil-find ×2 raises the 0.5 base chance to a guaranteed drop");
+        result.ItemsGranted.Should().NotContain(i => i.ItemId == "sigil_ironcolossus_normal",
+            "rerun sigil chance is a flat config rate (0 here) — Discernment no longer raises it");
     }
 
     [Fact]
-    public async Task AttemptQuest_BossNode_DropsSignil_OnRepeatCompletion_WhenChanceIs100Pct()
+    public async Task AttemptQuest_BossNode_DropsSigil_OnRerun_AtFlatConfigRate()
     {
-        // SigilDropChance = 1.0 → always drops regardless of RNG seed
-        var b = BuildService();
+        // System 25 — rerun drop is governed by QuestConfig.SigilRerunDropChance, not the per-boss JSON
+        // value. Pin it to 1.0 → always drops regardless of RNG seed.
+        var b = BuildService(questConfig: new QuestConfig { SigilRerunDropChance = 1.0 });
         var player = MakePlayer();
         var boss = new QuestDefinition
         {
             Id = "q_boss", Name = "Boss Quest", Chapter = 1, BaseEnergyCost = 8,
             NodeType = "Boss", GoldReward = 200, ExperienceReward = 100,
-            SigilDropChance = 1.0f, // guaranteed drop
             Sigils = new Dictionary<string, string> { ["Normal"] = "sigil_ironcolossus_normal" },
         };
 
         b.Definitions.Setup(d => d.GetById("q_boss")).Returns(boss);
         SetupPlayerAndEnergy(b, player);
 
-        // First sigil already dropped → tests the repeat-completion chance path
+        // First sigil already dropped → exercises the rerun path
         var priorDiff = PlayerQuestDifficultyProgress.Create(player.Id, "q_boss", QuestDifficulty.Normal);
         priorDiff.RecordCompletion();
         priorDiff.MarkSigilDropped();
@@ -1003,7 +1003,7 @@ public class QuestServiceTests
 
         result.Success.Should().BeTrue();
         result.ItemsGranted.Should().ContainSingle(i => i.ItemId == "sigil_ironcolossus_normal",
-            "SigilDropChance=1.0 means the sigil always drops on repeat completions");
+            "SigilRerunDropChance=1.0 means the rerun sigil always drops");
     }
 
     [Fact]
@@ -1413,6 +1413,36 @@ public class QuestServiceTests
 
         result.Success.Should().BeTrue();
         b.Energy.Verify(e => e.SpendEnergyAsync(player.Id, ResourceType.Energy, It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_ZoneBoss_ReLocked_AfterReset_UntilSiblingsReClearedThisCycle()
+    {
+        // System 25 — after a zone reset the siblings keep HasEverCleared but lose IsCleared, so the boss
+        // RE-LOCKS until the zone is fully re-run this cycle. Proves the gate uses current-cycle IsCleared,
+        // NOT the permanent latch (the old behaviour let the boss through immediately after a reset).
+        var b = BuildService();
+        var player = MakePlayer();
+        var defs = ZoneWithBoss();
+        b.Definitions.Setup(d => d.GetById("zb")).Returns(defs[2]);
+        b.Definitions.Setup(d => d.GetAll()).Returns(defs);
+        SetupPlayerAndEnergy(b, player);
+
+        foreach (var id in new[] { "zn0", "zn1" })
+        {
+            var p = PlayerQuestProgress.Create(player.Id, id);
+            p.Deplete(100); // cleared once → HasEverCleared latched
+            p.Reset(100);   // a prior zone reset → IsCleared back to false, HasEverCleared preserved
+            p.IsCleared.Should().BeFalse();
+            p.HasEverCleared.Should().BeTrue();
+            b.QuestProgress.Setup(r => r.GetAsync(player.Id, id, It.IsAny<CancellationToken>())).ReturnsAsync(p);
+        }
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "zb", QuestDifficulty.Normal);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(QuestFailureCode.ZoneBossLocked);
+        b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     // T45 — cross-zone ordering (a zone's first node is prereq-locked on the previous zone's boss)

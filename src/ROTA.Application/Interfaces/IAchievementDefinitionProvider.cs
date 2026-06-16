@@ -20,4 +20,11 @@ public interface IAchievementDefinitionProvider
 
     /// <summary>All achievements that watch the given metric.</summary>
     IReadOnlyList<AchievementDefinition> GetByMetric(AchievementMetric metric);
+
+    /// <summary>
+    /// System 25 — the synthesized rerun ladder (one def per rarity tier) for a single quest zone, or an
+    /// empty list if that zone has none. Used by <c>RecordZoneRerunAsync</c> to route a rerun to exactly
+    /// the matching zone instead of the metric-wide fan-out.
+    /// </summary>
+    IReadOnlyList<AchievementDefinition> GetZoneRerunTiers(int chapter, int zoneIndex);
 }

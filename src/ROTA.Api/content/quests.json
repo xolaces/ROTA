@@ -124,7 +124,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c1z1b_normal",
+      "Hard": "sigil_c1z1b_hard",
+      "Legendary": "sigil_c1z1b_legendary",
+      "Nightmare": "sigil_c1z1b_nightmare"
+    },
     "goldReward": 350,
     "experienceReward": 90,
     "gemReward": 1,
@@ -196,7 +201,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c1z2b_normal",
+      "Hard": "sigil_c1z2b_hard",
+      "Legendary": "sigil_c1z2b_legendary",
+      "Nightmare": "sigil_c1z2b_nightmare"
+    },
     "goldReward": 350,
     "experienceReward": 90,
     "gemReward": 1,
@@ -363,7 +373,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c2z1b_normal",
+      "Hard": "sigil_c2z1b_hard",
+      "Legendary": "sigil_c2z1b_legendary",
+      "Nightmare": "sigil_c2z1b_nightmare"
+    },
     "goldReward": 650,
     "experienceReward": 120,
     "gemReward": 2,
@@ -453,7 +468,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c2z2b_normal",
+      "Hard": "sigil_c2z2b_hard",
+      "Legendary": "sigil_c2z2b_legendary",
+      "Nightmare": "sigil_c2z2b_nightmare"
+    },
     "goldReward": 650,
     "experienceReward": 120,
     "gemReward": 2,
@@ -543,7 +563,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c2z3b_normal",
+      "Hard": "sigil_c2z3b_hard",
+      "Legendary": "sigil_c2z3b_legendary",
+      "Nightmare": "sigil_c2z3b_nightmare"
+    },
     "goldReward": 650,
     "experienceReward": 120,
     "gemReward": 2,
@@ -633,7 +658,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c3z0b_normal",
+      "Hard": "sigil_c3z0b_hard",
+      "Legendary": "sigil_c3z0b_legendary",
+      "Nightmare": "sigil_c3z0b_nightmare"
+    },
     "goldReward": 1050,
     "experienceReward": 150,
     "gemReward": 3,
@@ -741,7 +771,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c3z1b_normal",
+      "Hard": "sigil_c3z1b_hard",
+      "Legendary": "sigil_c3z1b_legendary",
+      "Nightmare": "sigil_c3z1b_nightmare"
+    },
     "goldReward": 1050,
     "experienceReward": 150,
     "gemReward": 3,
@@ -831,7 +866,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c3z2b_normal",
+      "Hard": "sigil_c3z2b_hard",
+      "Legendary": "sigil_c3z2b_legendary",
+      "Nightmare": "sigil_c3z2b_nightmare"
+    },
     "goldReward": 1050,
     "experienceReward": 150,
     "gemReward": 3,
@@ -939,7 +979,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c3z3b_normal",
+      "Hard": "sigil_c3z3b_hard",
+      "Legendary": "sigil_c3z3b_legendary",
+      "Nightmare": "sigil_c3z3b_nightmare"
+    },
     "goldReward": 1050,
     "experienceReward": 150,
     "gemReward": 3,
@@ -1047,7 +1092,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c4z0b_normal",
+      "Hard": "sigil_c4z0b_hard",
+      "Legendary": "sigil_c4z0b_legendary",
+      "Nightmare": "sigil_c4z0b_nightmare"
+    },
     "goldReward": 1600,
     "experienceReward": 190,
     "gemReward": 4,
@@ -1155,7 +1205,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c4z1b_normal",
+      "Hard": "sigil_c4z1b_hard",
+      "Legendary": "sigil_c4z1b_legendary",
+      "Nightmare": "sigil_c4z1b_nightmare"
+    },
     "goldReward": 1600,
     "experienceReward": 190,
     "gemReward": 4,
@@ -1263,7 +1318,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c4z2b_normal",
+      "Hard": "sigil_c4z2b_hard",
+      "Legendary": "sigil_c4z2b_legendary",
+      "Nightmare": "sigil_c4z2b_nightmare"
+    },
     "goldReward": 1600,
     "experienceReward": 190,
     "gemReward": 4,
@@ -1371,7 +1431,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c4z3b_normal",
+      "Hard": "sigil_c4z3b_hard",
+      "Legendary": "sigil_c4z3b_legendary",
+      "Nightmare": "sigil_c4z3b_nightmare"
+    },
     "goldReward": 1600,
     "experienceReward": 190,
     "gemReward": 4,
@@ -1479,7 +1544,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c5z0b_normal",
+      "Hard": "sigil_c5z0b_hard",
+      "Legendary": "sigil_c5z0b_legendary",
+      "Nightmare": "sigil_c5z0b_nightmare"
+    },
     "goldReward": 2300,
     "experienceReward": 230,
     "gemReward": 5,
@@ -1587,7 +1657,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c5z1b_normal",
+      "Hard": "sigil_c5z1b_hard",
+      "Legendary": "sigil_c5z1b_legendary",
+      "Nightmare": "sigil_c5z1b_nightmare"
+    },
     "goldReward": 2300,
     "experienceReward": 230,
     "gemReward": 5,
@@ -1695,7 +1770,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c5z2b_normal",
+      "Hard": "sigil_c5z2b_hard",
+      "Legendary": "sigil_c5z2b_legendary",
+      "Nightmare": "sigil_c5z2b_nightmare"
+    },
     "goldReward": 2300,
     "experienceReward": 230,
     "gemReward": 5,
@@ -1803,7 +1883,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c5z3b_normal",
+      "Hard": "sigil_c5z3b_hard",
+      "Legendary": "sigil_c5z3b_legendary",
+      "Nightmare": "sigil_c5z3b_nightmare"
+    },
     "goldReward": 2300,
     "experienceReward": 230,
     "gemReward": 5,
@@ -1911,7 +1996,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c5z4b_normal",
+      "Hard": "sigil_c5z4b_hard",
+      "Legendary": "sigil_c5z4b_legendary",
+      "Nightmare": "sigil_c5z4b_nightmare"
+    },
     "goldReward": 2300,
     "experienceReward": 230,
     "gemReward": 5,
@@ -2019,7 +2109,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c6z0b_normal",
+      "Hard": "sigil_c6z0b_hard",
+      "Legendary": "sigil_c6z0b_legendary",
+      "Nightmare": "sigil_c6z0b_nightmare"
+    },
     "goldReward": 3200,
     "experienceReward": 280,
     "gemReward": 6,
@@ -2127,7 +2222,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c6z1b_normal",
+      "Hard": "sigil_c6z1b_hard",
+      "Legendary": "sigil_c6z1b_legendary",
+      "Nightmare": "sigil_c6z1b_nightmare"
+    },
     "goldReward": 3200,
     "experienceReward": 280,
     "gemReward": 6,
@@ -2235,7 +2335,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c6z2b_normal",
+      "Hard": "sigil_c6z2b_hard",
+      "Legendary": "sigil_c6z2b_legendary",
+      "Nightmare": "sigil_c6z2b_nightmare"
+    },
     "goldReward": 3200,
     "experienceReward": 280,
     "gemReward": 6,
@@ -2343,7 +2448,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c6z3b_normal",
+      "Hard": "sigil_c6z3b_hard",
+      "Legendary": "sigil_c6z3b_legendary",
+      "Nightmare": "sigil_c6z3b_nightmare"
+    },
     "goldReward": 3200,
     "experienceReward": 280,
     "gemReward": 6,
@@ -2451,7 +2561,12 @@
     "baseXpRatio": 1.5,
     "lootTableId": null,
     "sigilDropChance": 0.2,
-    "sigils": null,
+    "sigils": {
+      "Normal": "sigil_c6z4b_normal",
+      "Hard": "sigil_c6z4b_hard",
+      "Legendary": "sigil_c6z4b_legendary",
+      "Nightmare": "sigil_c6z4b_nightmare"
+    },
     "goldReward": 3200,
     "experienceReward": 280,
     "gemReward": 6,

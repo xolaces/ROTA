@@ -1,6 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
+using ROTA.Application.Configuration;
+using ROTA.Application.Interfaces;
 using ROTA.Application.Models;
 using ROTA.Domain.Enums;
 using ROTA.Infrastructure.Services;
@@ -203,6 +205,75 @@ public class AchievementDefinitionProviderTests : IDisposable
             Path.Combine(_tmpDir, "content", "achievements.json"),
             JsonSerializer.Serialize(list, options));
         return new AchievementDefinitionProvider(_tmpDir);
+    }
+
+    // ── System 25 — per-zone rerun ladder synthesis ────────────────────────────
+
+    private sealed class FakeQuests : IQuestDefinitionProvider
+    {
+        private readonly List<QuestDefinition> _q;
+        public FakeQuests(params QuestDefinition[] q) => _q = q.ToList();
+        public IReadOnlyList<QuestDefinition> GetAll() => _q;
+        public QuestDefinition? GetById(string id) => _q.FirstOrDefault(x => x.Id == id);
+    }
+
+    private static QuestDefinition Node(int ch, int zone, int idx, string zoneName) => new()
+    {
+        Id = $"c{ch}z{zone}n{idx}", Chapter = ch, ZoneIndex = zone, ZoneName = zoneName, NodeIndex = idx,
+    };
+
+    private void WriteValidRoster() => File.WriteAllText(
+        Path.Combine(_tmpDir, "content", "achievements.json"),
+        JsonSerializer.Serialize(BuildValid(), new JsonSerializerOptions { Converters = { new JsonStringEnumConverter() } }));
+
+    [Fact]
+    public void Provider_SynthesizesSixTierLadderPerZone_FromQuestTopologyAndConfig()
+    {
+        WriteValidRoster();
+        var quests = new FakeQuests(
+            Node(1, 0, 0, "Old Guard Ruins"), Node(1, 0, 1, "Old Guard Ruins"),
+            Node(1, 1, 0, "Ashen Causeway"));
+        var provider = new AchievementDefinitionProvider(_tmpDir, quests, new AchievementConfig());
+
+        var tiers = provider.GetZoneRerunTiers(1, 0);
+        tiers.Should().HaveCount(6);
+        tiers.Select(t => t.Threshold).Should().Equal(10, 25, 50, 100, 250, 500);
+        tiers[0].Id.Should().Be("ach_zonererun_c1z0_grey");
+        tiers[0].NextId.Should().Be("ach_zonererun_c1z0_white");
+        tiers[^1].Id.Should().Be("ach_zonererun_c1z0_orange");
+        tiers[^1].NextId.Should().BeNull();
+        tiers.Should().OnlyContain(t =>
+            t.Metric == AchievementMetric.ZoneReruns && t.Category == AchievementCategory.ZoneMastery);
+
+        // Two distinct zones → two ladders (12 synthesized defs total).
+        provider.GetZoneRerunTiers(1, 1).Should().HaveCount(6);
+        provider.GetAll().Count(a => a.Metric == AchievementMetric.ZoneReruns).Should().Be(12);
+    }
+
+    [Fact]
+    public void Provider_ZoneRerunLadder_WithNonIncreasingThresholds_ThrowsAtBoot()
+    {
+        WriteValidRoster();
+        var quests = new FakeQuests(Node(1, 0, 0, "Z"));
+        var badConfig = new AchievementConfig
+        {
+            ZoneRerunLadder = new()
+            {
+                new() { Rarity = ItemRarity.Grey,  Threshold = 50, Points = 5 },
+                new() { Rarity = ItemRarity.White, Threshold = 50, Points = 10 }, // not strictly increasing
+            },
+        };
+
+        var act = () => new AchievementDefinitionProvider(_tmpDir, quests, badConfig);
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void Provider_NoQuestProvider_SynthesizesNoZoneLadders()
+    {
+        var provider = new AchievementDefinitionProvider(FindApiContentRoot());
+        provider.GetAll().Should().NotContain(a => a.Metric == AchievementMetric.ZoneReruns);
+        provider.GetZoneRerunTiers(1, 0).Should().BeEmpty();
     }
 
     private static string FindApiContentRoot()

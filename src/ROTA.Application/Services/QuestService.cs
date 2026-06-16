@@ -163,6 +163,13 @@ public sealed class QuestService : IQuestService
             .Select(kv => kv.Key)
             .ToHashSet();
 
+        // System 25 — nodes cleared in the CURRENT cycle (reset flips these back off). The zone-boss is
+        // greyed until every non-boss sibling is in this set, mirroring the attempt-time re-lock gate.
+        var clearedThisCycleIds = progressByQuestId
+            .Where(kv => kv.Value.IsCleared)
+            .Select(kv => kv.Key)
+            .ToHashSet();
+
         var allDefs = _definitions.GetAll();
 
         foreach (var zone in allDefs.GroupBy(q => (q.Chapter, q.ZoneIndex)))
@@ -188,15 +195,15 @@ public sealed class QuestService : IQuestService
 
             progressByQuestId.TryGetValue(quest.Id, out var prog);
 
-            // T45 — a zone boss is attemptable only once every preceding NON-boss node in its zone
-            // has ever been cleared. The prerequisite chain already enforces in-zone ordering, so a
-            // visible-but-locked boss means a sibling node still needs clearing (the client greys it).
+            // System 25 — a zone boss is attemptable only once every non-boss node in its zone is cleared
+            // IN THE CURRENT CYCLE (matches the attempt-time re-lock gate). After a reset the siblings are
+            // no longer cleared-this-cycle, so the boss re-greys until the zone is fully re-run.
             bool isUnlocked = true;
             if (quest.IsBoss)
             {
                 isUnlocked = allDefs
                     .Where(n => !n.IsBoss && n.Chapter == quest.Chapter && n.ZoneIndex == quest.ZoneIndex)
-                    .All(n => unlockedQuestIds.Contains(n.Id));
+                    .All(n => clearedThisCycleIds.Contains(n.Id));
             }
 
             // T55 — effective (chapter+zone-scaled) cost at Normal as the card display baseline; the
@@ -260,10 +267,12 @@ public sealed class QuestService : IQuestService
                 return Fail(QuestFailureCode.PrerequisiteNotMet, "Prerequisite quest not yet cleared.");
         }
 
-        // 2a. T45 — ZONE-BOSS GATE: a per-zone boss is only summonable after every preceding NON-boss
-        //     node in its zone has been depleted (HasEverCleared). Runs before any side effect (no
-        //     energy spent on failure). The in-zone prerequisite chain normally guarantees this, but
-        //     the explicit gate hardens against content gaps and surfaces a clear failure code.
+        // 2a. ZONE-BOSS GATE (T45; System 25 re-lock): a per-zone boss is only summonable once every
+        //     non-boss node in its zone is cleared IN THE CURRENT CYCLE (IsCleared) — NOT the permanent
+        //     HasEverCleared latch. So clearing the boss (which resets the zone, flipping siblings back to
+        //     IsCleared=false) re-locks it until the zone is fully re-run again. Runs before any side
+        //     effect (no energy spent on failure). The FORWARD prerequisite chain still uses
+        //     HasEverCleared (below), so a reset never re-locks the next zone.
         if (quest.IsBoss)
         {
             foreach (var sibling in _definitions.GetAll())
@@ -271,7 +280,7 @@ public sealed class QuestService : IQuestService
                 if (sibling.IsBoss || sibling.Chapter != quest.Chapter || sibling.ZoneIndex != quest.ZoneIndex)
                     continue;
                 var sibProg = await _questProgress.GetAsync(playerId, sibling.Id, ct);
-                if (sibProg is null || !sibProg.HasEverCleared)
+                if (sibProg is null || !sibProg.IsCleared)
                     return Fail(QuestFailureCode.ZoneBossLocked,
                         "Clear every node in this zone before challenging its boss.");
             }
@@ -420,25 +429,23 @@ public sealed class QuestService : IQuestService
         if (isZoneFinalBoss && quest.Sigils is not null
             && quest.Sigils.TryGetValue(difficulty.ToString(), out var sigilItemId))
         {
-            bool dropSigil = false;
+            bool dropSigil;
 
             if (!diffProg.FirstSigilDropped)
             {
-                // Guaranteed first-per-difficulty drop — never scaled (locked: SigilFindAppliesToFirstClear=false).
+                // System 25 — the FIRST clear of this boss at this difficulty guarantees the sigil (100%).
                 dropSigil = true;
                 diffProg.MarkSigilDropped();
             }
-            else if (quest.SigilDropChance > 0)
+            else
             {
-                // System 22 Phase A — Discernment "sigil find" scales the post-first-clear chance (clamped ≤ 1.0).
-                double sigilChance = Math.Min(1.0, quest.SigilDropChance * lootMods.DiscernmentSigilFindMultiplier);
-                dropSigil = _random.NextDouble() < sigilChance;
+                // Every later (rerun) clear: a flat chance (owner 2026-06-16). NOT Discernment-scaled and
+                // NOT the per-boss SigilDropChance — the Sigils map's presence is the only enable.
+                dropSigil = _random.NextDouble() < _questConfig.SigilRerunDropChance;
             }
 
             if (dropSigil)
-            {
                 await GrantItemAsync(playerId, sigilItemId, 1, itemsGranted, ct);
-            }
         }
 
         // 14. Save difficulty progress (after sigil tracking)
@@ -475,6 +482,11 @@ public sealed class QuestService : IQuestService
                 if (quest.IsBoss)
                     await _achievements.RecordProgressAsync(playerId, AchievementMetric.QuestBossesCleared, 1, ct: ct);
             }
+            // System 25 — one zone-rerun per zone-boss clear (zoneReset fires on every boss clear, incl.
+            // the first → cycle #1). Exactly-once per cycle via the boss node's CompletionCount.
+            if (zoneReset)
+                await _achievements.RecordZoneRerunAsync(playerId, quest.Chapter, quest.ZoneIndex,
+                    $"zonererun:{quest.Chapter}:{quest.ZoneIndex}:{progress.CompletionCount}", ct);
             await _achievements.EvaluateCompletionsAsync(playerId, ct);
         }
         catch (Exception) when (!ct.IsCancellationRequested) { /* best-effort — never break the attempt */ }

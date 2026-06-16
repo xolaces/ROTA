@@ -116,6 +116,77 @@ public class AchievementServiceTests
         progress.Verify(p => p.IncrementAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<long>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
+    // ── RecordZoneRerunAsync (System 25) ───────────────────────────────────────
+
+    private static AchievementDefinition ZoneTier(string id, int ch, int zone, long threshold) => new()
+    {
+        Id = id, Category = AchievementCategory.ZoneMastery, Metric = AchievementMetric.ZoneReruns,
+        Chapter = ch, ZoneIndex = zone, Threshold = threshold, Points = 5,
+    };
+
+    private static AchievementService SvcWith(IAchievementDefinitionProvider defs,
+        Mock<IAchievementProgressRepository> progress, Mock<IAchievementProgressEventRepository> events)
+        => new(defs, progress.Object, events.Object,
+            new Mock<IAchievementAwardRepository>().Object, new Mock<IAuditLogRepository>().Object,
+            new Mock<IPlayerInventoryRepository>().Object, new Mock<IItemDefinitionProvider>().Object);
+
+    [Fact]
+    public async Task RecordZoneRerun_RoutesOnlyToMatchingZoneLadder_IncrementingEachTierOnce()
+    {
+        var defs = new Mock<IAchievementDefinitionProvider>();
+        defs.Setup(d => d.GetZoneRerunTiers(1, 0)).Returns(new List<AchievementDefinition>
+        {
+            ZoneTier("ach_zonererun_c1z0_grey", 1, 0, 10),
+            ZoneTier("ach_zonererun_c1z0_white", 1, 0, 25),
+        });
+        var progress = new Mock<IAchievementProgressRepository>();
+        var events = new Mock<IAchievementProgressEventRepository>();
+        events.Setup(e => e.CreateAsync(It.IsAny<AchievementProgressEvent>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        var svc = SvcWith(defs.Object, progress, events);
+        var pid = Guid.NewGuid();
+
+        await svc.RecordZoneRerunAsync(pid, 1, 0, "zonererun:1:0:5");
+
+        progress.Verify(p => p.IncrementAsync(pid, "ach_zonererun_c1z0_grey", 1, It.IsAny<CancellationToken>()), Times.Once);
+        progress.Verify(p => p.IncrementAsync(pid, "ach_zonererun_c1z0_white", 1, It.IsAny<CancellationToken>()), Times.Once);
+        defs.Verify(d => d.GetZoneRerunTiers(1, 0), Times.Once);
+    }
+
+    [Fact]
+    public async Task RecordZoneRerun_SameReferenceTwice_IncrementsOnlyOnce()
+    {
+        var defs = new Mock<IAchievementDefinitionProvider>();
+        defs.Setup(d => d.GetZoneRerunTiers(1, 0)).Returns(new List<AchievementDefinition>
+        {
+            ZoneTier("ach_zonererun_c1z0_grey", 1, 0, 10),
+        });
+        var progress = new Mock<IAchievementProgressRepository>();
+        var events = new Mock<IAchievementProgressEventRepository>();
+        // First call writes the event (true); the replay loses the unique race (false) → skip increment.
+        events.SetupSequence(e => e.CreateAsync(It.IsAny<AchievementProgressEvent>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true).ReturnsAsync(false);
+        var svc = SvcWith(defs.Object, progress, events);
+        var pid = Guid.NewGuid();
+
+        await svc.RecordZoneRerunAsync(pid, 1, 0, "zonererun:1:0:5");
+        await svc.RecordZoneRerunAsync(pid, 1, 0, "zonererun:1:0:5");
+
+        progress.Verify(p => p.IncrementAsync(pid, "ach_zonererun_c1z0_grey", 1, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RecordZoneRerun_NoLadderForZone_NoOp()
+    {
+        var defs = new Mock<IAchievementDefinitionProvider>();
+        defs.Setup(d => d.GetZoneRerunTiers(It.IsAny<int>(), It.IsAny<int>())).Returns(Array.Empty<AchievementDefinition>());
+        var progress = new Mock<IAchievementProgressRepository>();
+        var svc = SvcWith(defs.Object, progress, new Mock<IAchievementProgressEventRepository>());
+
+        await svc.RecordZoneRerunAsync(Guid.NewGuid(), 99, 9, "zonererun:99:9:1");
+
+        progress.Verify(p => p.IncrementAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<long>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
     // ── EvaluateCompletionsAsync ───────────────────────────────────────────────
 
     [Fact]

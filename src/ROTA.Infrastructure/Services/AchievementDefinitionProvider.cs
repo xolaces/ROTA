@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using ROTA.Application.Configuration;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Models;
 using ROTA.Domain.Enums;
@@ -10,13 +11,22 @@ namespace ROTA.Infrastructure.Services;
 /// Eager singleton (TICKET 46): loads <c>content/achievements.json</c> at construction and throws
 /// <see cref="InvalidOperationException"/> on any invalid content so a misconfigured roster fails at
 /// boot, not on first use. Mirrors <c>MasteryDefinitionProvider</c>.
+///
+/// System 25: when a quest provider + <see cref="AchievementConfig.ZoneRerunLadder"/> are supplied, the
+/// per-zone rerun ladders are SYNTHESIZED here — one 6-tier rarity chain per distinct (chapter, zone) in
+/// the quest roster — rather than hand-authored. Adding chapters/zones to quests.json grows the roster
+/// automatically; the synthesized rows are validated by the same rules as authored ones.
 /// </summary>
 public sealed class AchievementDefinitionProvider : IAchievementDefinitionProvider
 {
     private readonly IReadOnlyDictionary<string, AchievementDefinition> _byId;
     private readonly List<AchievementDefinition> _ordered;
+    private readonly IReadOnlyDictionary<(int Chapter, int ZoneIndex), List<AchievementDefinition>> _zoneReruns;
 
-    public AchievementDefinitionProvider(string contentRootPath)
+    public AchievementDefinitionProvider(
+        string contentRootPath,
+        IQuestDefinitionProvider? quests = null,
+        AchievementConfig? config = null)
     {
         var path = Path.Combine(contentRootPath, "content", "achievements.json");
         if (!File.Exists(path))
@@ -40,10 +50,18 @@ public sealed class AchievementDefinitionProvider : IAchievementDefinitionProvid
             throw new InvalidOperationException($"achievements.json is invalid: {ex.Message}", ex);
         }
 
+        // System 25 — append the per-zone rerun ladders (skipped when there's no quest provider/ladder,
+        // e.g. bare unit fixtures that construct the provider with just a path).
+        list.AddRange(SynthesizeZoneRerunLadders(quests, config));
+
         Validate(list);
 
         _ordered = list;
         _byId = list.ToDictionary(a => a.Id, a => a);
+        _zoneReruns = list
+            .Where(a => a.Metric == AchievementMetric.ZoneReruns && a.Chapter is not null && a.ZoneIndex is not null)
+            .GroupBy(a => (a.Chapter!.Value, a.ZoneIndex!.Value))
+            .ToDictionary(g => g.Key, g => g.OrderBy(a => a.Threshold).ToList());
     }
 
     public IReadOnlyList<AchievementDefinition> GetAll() => _ordered;
@@ -53,6 +71,54 @@ public sealed class AchievementDefinitionProvider : IAchievementDefinitionProvid
 
     public IReadOnlyList<AchievementDefinition> GetByMetric(AchievementMetric metric)
         => _ordered.Where(a => a.Metric == metric).ToList();
+
+    public IReadOnlyList<AchievementDefinition> GetZoneRerunTiers(int chapter, int zoneIndex)
+        => _zoneReruns.TryGetValue((chapter, zoneIndex), out var tiers)
+            ? tiers
+            : Array.Empty<AchievementDefinition>();
+
+    // Expand the rarity ladder across every distinct (chapter, zone) in the quest roster. Deterministic
+    // ids + a synthesized NextId chain per zone, so the result is stable across restarts and validated
+    // exactly like authored rows (strictly-increasing thresholds, same metric, no cycles).
+    private static IEnumerable<AchievementDefinition> SynthesizeZoneRerunLadders(
+        IQuestDefinitionProvider? quests, AchievementConfig? config)
+    {
+        var ladder = config?.ZoneRerunLadder;
+        if (quests is null || ladder is null || ladder.Count == 0)
+            yield break;
+
+        var tiers = ladder.OrderBy(t => t.Threshold).ToList();
+
+        var zones = quests.GetAll()
+            .GroupBy(q => (q.Chapter, q.ZoneIndex))
+            .Select(g => (g.Key.Chapter, g.Key.ZoneIndex, ZoneName: g.First().ZoneName))
+            .OrderBy(z => z.Chapter).ThenBy(z => z.ZoneIndex);
+
+        foreach (var zone in zones)
+        {
+            for (int i = 0; i < tiers.Count; i++)
+            {
+                var tier = tiers[i];
+                var rarity = tier.Rarity.ToString().ToLowerInvariant();
+                yield return new AchievementDefinition
+                {
+                    Id          = $"ach_zonererun_c{zone.Chapter}z{zone.ZoneIndex}_{rarity}",
+                    Category    = AchievementCategory.ZoneMastery,
+                    Metric      = AchievementMetric.ZoneReruns,
+                    Name        = $"{zone.ZoneName} — {tier.Rarity} Mastery",
+                    Description = $"Re-run {zone.ZoneName} {tier.Threshold} times.",
+                    Points      = tier.Points,
+                    Threshold   = tier.Threshold,
+                    NextId      = i < tiers.Count - 1
+                        ? $"ach_zonererun_c{zone.Chapter}z{zone.ZoneIndex}_{tiers[i + 1].Rarity.ToString().ToLowerInvariant()}"
+                        : null,
+                    Chapter     = zone.Chapter,
+                    ZoneIndex   = zone.ZoneIndex,
+                    IconKey     = $"rarity_{rarity}",
+                };
+            }
+        }
+    }
 
     private static void Validate(List<AchievementDefinition> list)
     {
@@ -85,6 +151,11 @@ public sealed class AchievementDefinitionProvider : IAchievementDefinitionProvid
             if (a.Category == AchievementCategory.Collector && string.IsNullOrWhiteSpace(a.CollectorKey))
                 throw new InvalidOperationException(
                     $"achievements.json: Collector achievement '{a.Id}' is missing collectorKey.");
+
+            // System 25 — ZoneReruns achievements MUST be scoped so RecordZoneRerunAsync can route them.
+            if (a.Metric == AchievementMetric.ZoneReruns && (a.Chapter is null || a.ZoneIndex is null))
+                throw new InvalidOperationException(
+                    $"achievements.json: ZoneReruns achievement '{a.Id}' must set chapter + zoneIndex.");
         }
 
         // NextId chains: resolve, same metric, strictly increasing threshold, no cycles.
