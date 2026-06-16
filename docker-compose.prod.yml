@@ -31,8 +31,14 @@ services:
       Jwt__PrivateKey: ${JWT_PRIVATE_KEY:?set in .env (PEM, RS256 private key)}
       Jwt__PublicKey: ${JWT_PUBLIC_KEY:?set in .env (PEM, RS256 public key)}
       Seed__AdminPassword: ${SEED_ADMIN_PASSWORD:?set in .env}
+      Seed__AdminUsername: ${SEED_ADMIN_USERNAME:-Owner}
+      Seed__AdminEmail: ${SEED_ADMIN_EMAIL:-admin@rota.local}
+      Developer__Usernames__0: ${DEV_USERNAME:-}
+      Email__Enabled: ${EMAIL_ENABLED:-false}
       Email__Username: ${EMAIL_USERNAME:-}
       Email__Password: ${EMAIL_PASSWORD:-}
+      Email__FromAddress: ${EMAIL_FROM:-operator@example.com}
+      Email__OperatorRecipient: ${EMAIL_OPERATOR:-operator@example.com}
       BetaGate__Enabled: ${BETA_GATE_ENABLED:-true}
     depends_on:
       postgres:

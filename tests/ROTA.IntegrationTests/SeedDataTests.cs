@@ -63,7 +63,7 @@ public class SeedDataTests
                 p.Username == "Owner" &&
                 p.HasRole(PlayerRoles.Admin) &&
                 p.HasRole(PlayerRoles.Player) &&
-                p.DisplayName == "DEV_Owner"),
+                p.DisplayName == "Owner"),   // display defaults to the configured username now
             It.IsAny<CancellationToken>()), Times.Once,
             "admin must be created with correct username, roles, and display name");
 

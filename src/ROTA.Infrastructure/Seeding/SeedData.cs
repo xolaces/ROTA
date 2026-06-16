@@ -34,27 +34,31 @@ public static class SeedData
         // Check this FIRST (before any DB query) so the seed is entirely passive
         // when not configured (e.g., in CI / integration test environments).
         var adminPassword = config["Seed:AdminPassword"];
+        // Username/email/display are config-driven (Seed:AdminUsername/AdminEmail/AdminDisplayName) so a
+        // deploy can name the bootstrap account whatever it likes. Seeding bypasses the reserved-name
+        // validators, so a staff handle like "DEV_Xolaces" is allowed here (only via direct seeding/CLI).
+        var adminUsername = config["Seed:AdminUsername"] ?? "Owner";
         if (string.IsNullOrWhiteSpace(adminPassword))
         {
             logger.LogWarning(
                 "Seed: Seed:AdminPassword is not configured. " +
-                "Admin account 'Owner' was NOT created. " +
-                "Set the value via user-secrets or environment variable to enable seeding.");
+                "Admin account '{Username}' was NOT created. " +
+                "Set the value via user-secrets or environment variable to enable seeding.", adminUsername);
             return;
         }
 
         // Idempotency guard: skip if the admin account already exists.
-        if (await players.UsernameExistsAsync("Owner"))
+        if (await players.UsernameExistsAsync(adminUsername))
         {
-            logger.LogInformation("Seed: admin account 'Owner' already exists — skipping.");
+            logger.LogInformation("Seed: admin account '{Username}' already exists — skipping.", adminUsername);
             return;
         }
 
         var adminEmail = config["Seed:AdminEmail"] ?? "admin@rota.local";
 
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(adminPassword, workFactor: 12);
-        var admin = Player.Create("Owner", adminEmail, passwordHash);
-        admin.UpdateDisplayName("DEV_Owner");
+        var admin = Player.Create(adminUsername, adminEmail, passwordHash);
+        admin.UpdateDisplayName(config["Seed:AdminDisplayName"] ?? adminUsername);
         admin.GrantRole(PlayerRoles.Admin);  // Roles = Player | Admin
 
         await players.CreateAsync(admin);
@@ -63,10 +67,10 @@ public static class SeedData
             admin.Id,
             "AdminSeeded",
             inputHash: null,
-            resultSummary: "Bootstrap admin account 'Owner' created at startup",
+            resultSummary: $"Bootstrap admin account '{adminUsername}' created at startup",
             ipAddress: null));
 
-        logger.LogInformation("Seed: admin account 'Owner' created (id={AdminId}).", admin.Id);
+        logger.LogInformation("Seed: admin account '{Username}' created (id={AdminId}).", adminUsername, admin.Id);
     }
 
     /// <summary>
