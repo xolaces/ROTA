@@ -308,6 +308,41 @@ public class GauntletLadderTests : IAsyncLifetime
         }
     }
 
+    // Audit follow-up — the KNOWN ladder double-spawn race. Two (or more) concurrent first GetLadder
+    // calls used to both see "no active stage" and both spawn stage 1 → two raids → double per-defeat
+    // rewards. The per-player IPlayerMutationLock advisory lock now serializes the decide-and-spawn:
+    // the winner spawns, the losers re-query committed truth and return the winner's stage. This test
+    // fires N concurrent calls from independent DI scopes (each its own DbContext/connection, so the
+    // pg_advisory_xact_lock genuinely contends) and asserts EXACTLY ONE stage-1 raid persisted.
+    [Fact]
+    public async Task GetLadder_ConcurrentFirstCalls_SpawnsExactlyOneStage()
+    {
+        var ev     = await SeedActiveEventAsync();
+        var player = await SeedPlayerAtLevelAsync(50);
+        await JoinAsync(ev.Id, player.Id, GauntletLeague.Whelpling);
+
+        const int concurrency = 8;
+        var calls = Enumerable.Range(0, concurrency).Select(async _ =>
+        {
+            using var scope = _factory.Services.CreateScope();
+            var gauntlet = scope.ServiceProvider.GetRequiredService<IGauntletService>();
+            return await gauntlet.GetLadderAsync(player.Id);
+        });
+
+        var results = await Task.WhenAll(calls);
+
+        // Every caller observed the SAME single stage 1 (the winner spawned, the losers returned it).
+        results.Should().OnlyContain(r => r.CurrentStage == 1 && r.ActiveRaid != null,
+            "every concurrent caller resolves the one stage-1 target");
+        results.Select(r => r.ActiveRaid!.ActiveRaidId).Distinct().Should().HaveCount(1,
+            "all concurrent callers see the same single ladder raid");
+
+        using var verifyScope = _factory.Services.CreateScope();
+        var db = verifyScope.ServiceProvider.GetRequiredService<RotaDbContext>();
+        (await db.ActiveRaids.CountAsync(r => r.SummonedByPlayerId == player.Id && r.GauntletEventId == ev.Id))
+            .Should().Be(1, "the per-player advisory lock prevents the double-spawn race");
+    }
+
     [Fact]
     public async Task GetLadder_NotJoined_ReturnsJoinedRequired_NoSpawn()
     {
