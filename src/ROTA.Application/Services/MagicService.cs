@@ -70,6 +70,43 @@ public sealed class MagicService : IMagicService
         return result;
     }
 
+    public async Task<MagicCatalogueResponse> GetCatalogueAsync(
+        Guid playerId, CancellationToken ct = default)
+    {
+        // Owned set: filter IsDeleted=false so a soft-removed magic is reported as NOT owned
+        // (mirrors the BuyMagicAsync ownership pre-check at MagicService.cs:226).
+        var owned = await _magicRepo.GetOwnedAsync(playerId, ct);
+        var ownedIds = owned
+            .Where(m => !m.IsDeleted)
+            .Select(m => m.MagicDefinitionId)
+            .ToHashSet(StringComparer.Ordinal);
+
+        var defs = _defs.GetAll();
+        var entries = new List<MagicCatalogueEntry>(defs.Count);
+        foreach (var def in defs)
+        {
+            entries.Add(new MagicCatalogueEntry
+            {
+                MagicDefinitionId = def.Id,
+                Name              = def.Name,
+                Description       = def.Description,
+                Rarity            = def.Rarity.ToString(),
+                Category          = def.Category.ToString(),
+                EffectType        = def.EffectType.ToString(),
+                ProcChance        = def.ProcChance,
+                ProcAmount        = def.ProcAmount,
+                Stacks            = def.Stacks,
+                IconPath          = def.IconPath,
+                Acquisition       = def.Acquisition,
+                GemPrice          = def.GemPrice,
+                ForSale           = def.GemPrice > 0,   // same rule as BuyMagicAsync NotForSale guard
+                IsOwned           = ownedIds.Contains(def.Id),
+            });
+        }
+
+        return new MagicCatalogueResponse { Entries = entries };
+    }
+
     public async Task<MagicApplyResult> ApplyMagicAsync(
         Guid playerId, Guid raidId, string magicDefinitionId, bool isAdmin,
         CancellationToken ct = default)

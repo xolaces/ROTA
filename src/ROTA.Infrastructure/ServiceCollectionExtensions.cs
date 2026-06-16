@@ -80,6 +80,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IEmailSendQueue, EmailSendQueue>();
         // Anti-spam limiter for player submissions (T37 reports, T38 bug/ticket)
         services.AddScoped<ISubmissionRateLimiter, SubmissionRateLimiter>();
+        // Short-window chat throttle for SignalR sends (exploit-audit finding J). Singleton: depends
+        // only on the singleton mux + IOptions<RateLimitConfig>.
+        services.AddSingleton<IChatRateLimiter, ChatRateLimiter>();
         // World-chat ring buffer (T36)
         services.AddScoped<IWorldChatStore, RedisWorldChatStore>();
         // Guild-chat ring buffer (System 21 Slice 2) — per-guild keyed

@@ -1320,8 +1320,13 @@ public sealed class RaidService : IRaidService
 
                 // GetAllForRaidAsync sees the participant saved above (same tx).
                 var allParticipants = await _participants.GetAllForRaidAsync(activeRaidId, ct);
+                // System 22 Phase A follow-up — Hoard scales the KILLER's chance-based threshold drops
+                // (item/magic/unit/legion). masteryMods is the killer's, already loaded once above inside
+                // this lock, so no extra per-hit read. The Gauntlet never drops threshold loot, but it
+                // also gets no Hoard scaling here (neutral 1.0) for safety.
+                double killerHoardDrop = isGauntlet ? 1.0 : masteryMods.Loot.HoardDropMultiplier;
                 rewards = await DistributeKillRewardsAsync(
-                    playerId, player, lockedRaid, definition, allParticipants, ct);
+                    playerId, player, lockedRaid, definition, allParticipants, killerHoardDrop, ct);
             }
 
             // Capture running totals after on-hit grant + any kill rewards (player mutated in both).
@@ -1470,8 +1475,23 @@ public sealed class RaidService : IRaidService
         ActiveRaid raid,
         RaidDefinition definition,
         IReadOnlyList<RaidParticipant> allParticipants,
+        double callerHoardDropMultiplier,
         CancellationToken ct)
     {
+        // System 22 Phase A follow-up — Hoard scales CHANCE-based threshold drops, mirroring
+        // ProcessQuestLootAsync.Scale: chance × Hoard, clamped at MaxThresholdDropChance, where the
+        // clamp never *lowers* an already-higher base (a base ≥ the cap, e.g. 1.0, is unchanged).
+        // MINIMAL SAFE SLICE (per the ticket): only the KILLER's drops are Hoard-scaled — their mastery
+        // multiplier is already in hand from the hit's single GetModifiersAsync read. Scaling every
+        // participant's drops would need a mastery read per participant INSIDE the advisory-lock tx
+        // (the exact per-participant kill-loop cost System 22 deferred), so non-killer participants keep
+        // their base chance (HoardDropMultiplier 1.0 → no-op).
+        double ScaleDropChance(double baseChance, double hoardMultiplier)
+        {
+            double boosted = baseChance * hoardMultiplier;
+            double cap = Math.Max(baseChance, _combatConfig.MaxThresholdDropChance);
+            return Math.Min(boosted, cap);
+        }
         var sorted = allParticipants.OrderByDescending(p => p.TotalDamageDealt).ToList();
         long totalDamage = sorted.Sum(p => p.TotalDamageDealt);
 
@@ -1566,6 +1586,10 @@ public sealed class RaidService : IRaidService
                         ? (double)p.TotalDamageDealt / totalDamage * 100.0
                         : 0;
 
+                    // System 22 Phase A follow-up — only the killer's chance drops are Hoard-scaled
+                    // (see ScaleDropChance). Every other participant keeps their base chance.
+                    double hoardForThisPlayer = p.PlayerId == callerPlayerId ? callerHoardDropMultiplier : 1.0;
+
                     // Cumulative: collect all threshold tiers the player qualifies for
                     foreach (var threshold in diffLoot.ThresholdRewards
                         .OrderBy(t => t.ContributionPercent)
@@ -1575,7 +1599,7 @@ public sealed class RaidService : IRaidService
 
                         foreach (var drop in threshold.ItemDrops)
                         {
-                            if (_random.NextDouble() < drop.Chance)
+                            if (_random.NextDouble() < ScaleDropChance(drop.Chance, hoardForThisPlayer))
                             {
                                 int qty = (int)Math.Max(1, Math.Round(drop.Quantity * (double)multiplier));
                                 // T57 — roll only; the item is GRANTED to inventory at Loot.
@@ -1586,18 +1610,19 @@ public sealed class RaidService : IRaidService
                         // T57 — magic/unit/legion/gear drops are DEFERRED: rolled now, stored as PendingDrop,
                         // granted (idempotently) at Loot.
                         foreach (var drop in threshold.MagicDrops)
-                            if (_random.NextDouble() < drop.Chance)
+                            if (_random.NextDouble() < ScaleDropChance(drop.Chance, hoardForThisPlayer))
                                 pendingDrops.Add(new PendingDrop { Kind = "Magic", Id = drop.MagicId, Quantity = 1 });
 
                         foreach (var drop in threshold.UnitDrops)
-                            if (_random.NextDouble() < drop.Chance)
+                            if (_random.NextDouble() < ScaleDropChance(drop.Chance, hoardForThisPlayer))
                                 pendingDrops.Add(new PendingDrop { Kind = "Unit", Id = drop.UnitId, Quantity = 1 });
 
                         foreach (var drop in threshold.LegionDrops)
-                            if (_random.NextDouble() < drop.Chance)
+                            if (_random.NextDouble() < ScaleDropChance(drop.Chance, hoardForThisPlayer))
                                 pendingDrops.Add(new PendingDrop { Kind = "Legion", Id = drop.LegionId, Quantity = 1 });
 
-                        // Gear drops are unconditional at a qualifying threshold (no chance roll).
+                        // Gear drops are unconditional at a qualifying threshold (no chance roll) — a
+                        // GUARANTEED drop, so it is intentionally NOT Hoard-scaled.
                         foreach (var drop in threshold.GearDrops)
                             pendingDrops.Add(new PendingDrop { Kind = "Gear", Id = drop.GearDefinitionId, Quantity = drop.Quantity });
                     }

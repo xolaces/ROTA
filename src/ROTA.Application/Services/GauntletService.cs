@@ -143,17 +143,18 @@ public sealed class GauntletService : IGauntletService
 
         // Audit fix — the KNOWN ladder double-spawn race: two concurrent GetLadder calls both saw "no
         // active stage" and both spawned stage N (two raids, double per-defeat rewards). The decide-
-        // and-spawn now runs under a per-PLAYER advisory lock (key = playerId; the generic wrapper
-        // derives the lock id from any Guid), so concurrent calls serialize and the loser re-queries
-        // committed truth and returns the winner's stage instead of spawning a twin.
+        // and-spawn now runs under the per-PLAYER advisory lock (IPlayerMutationLock — the purpose-built
+        // serializer for a single player's critical section, keyed on playerId and re-entrant), so
+        // concurrent calls serialize: the loser re-queries committed truth and returns the winner's
+        // stage instead of spawning a twin. The lock body commits atomically (spawn + audit) on return.
         var eventId  = active.Id;
         var eventEnd = active.EndsAt;
         ActiveRaid? ladderRaid = null;
         bool complete = false;
 
-        await _raids.AtomicWithAdvisoryLockAsync(playerId, async () =>
+        await _mutationLock.RunAsync(playerId, async () =>
         {
-            // Tracker was cleared by the wrapper — this read sees every committed spawn.
+            // Tracker was cleared by the lock — this read sees every committed spawn.
             var stages = await _raids.GetGauntletStagesForPlayerAsync(playerId, eventId, ct);
             var now = DateTimeOffset.UtcNow;
 

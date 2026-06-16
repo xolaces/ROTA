@@ -73,3 +73,29 @@ public class OwnedMagicResponse
     public string Acquisition       { get; set; } = string.Empty;
     public DateTimeOffset AcquiredAt { get; set; }
 }
+
+// One catalogue entry: the full magic definition (from content/magics.json) plus the
+// caller's owned-state and the gem price. The Bazaar renders the complete catalogue and
+// uses ForSale/IsOwned to decide which buy/owned affordance to show.
+public class MagicCatalogueEntry
+{
+    public string MagicDefinitionId { get; set; } = string.Empty;
+    public string Name              { get; set; } = string.Empty;
+    public string Description       { get; set; } = string.Empty;
+    public string Rarity            { get; set; } = string.Empty;
+    public string Category          { get; set; } = string.Empty;
+    public string EffectType        { get; set; } = string.Empty;
+    public double ProcChance        { get; set; }
+    public double ProcAmount        { get; set; }
+    public bool   Stacks            { get; set; }
+    public string IconPath          { get; set; } = string.Empty;
+    public string Acquisition       { get; set; } = string.Empty;
+    public int    GemPrice          { get; set; }
+    public bool   ForSale           { get; set; }  // GemPrice > 0 — purchasable in the gem shop
+    public bool   IsOwned           { get; set; }  // caller already owns this magic
+}
+
+public class MagicCatalogueResponse
+{
+    public IReadOnlyList<MagicCatalogueEntry> Entries { get; set; } = new List<MagicCatalogueEntry>();
+}

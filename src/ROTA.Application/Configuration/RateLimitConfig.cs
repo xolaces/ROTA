@@ -18,4 +18,14 @@ public class RateLimitConfig
 
     /// <summary>Sliding window length in seconds. Default 60.</summary>
     public int WindowSeconds { get; set; } = 60;
+
+    /// <summary>
+    /// Max chat sends (world/raid/guild combined) per player per <see cref="ChatWindowSeconds"/>
+    /// (exploit-audit finding J). SignalR hub frames are not seen by <c>RateLimitMiddleware</c>
+    /// (HTTP-only), so the hub enforces this short-window throttle itself. Default 10.
+    /// </summary>
+    public int ChatMessagesPerWindow { get; set; } = 10;
+
+    /// <summary>Chat throttle window length in seconds (exploit-audit finding J). Default 10.</summary>
+    public int ChatWindowSeconds { get; set; } = 10;
 }
