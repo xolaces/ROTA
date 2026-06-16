@@ -27,14 +27,16 @@ public sealed class ChatHub : Hub
     private readonly IGuildChatStore _guild;
     private readonly IPlayerRepository _players;
     private readonly IRaidParticipantRepository _raidParticipants;
+    private readonly IChatRateLimiter _rateLimiter;
 
     public ChatHub(IWorldChatStore world, IGuildChatStore guild, IPlayerRepository players,
-                   IRaidParticipantRepository raidParticipants)
+                   IRaidParticipantRepository raidParticipants, IChatRateLimiter rateLimiter)
     {
         _world = world;
         _guild = guild;
         _players = players;
         _raidParticipants = raidParticipants;
+        _rateLimiter = rateLimiter;
     }
 
     /// <summary>Broadcasts a world-chat message to all clients and stores it in the ring buffer.</summary>
@@ -42,6 +44,7 @@ public sealed class ChatHub : Hub
     {
         body = Sanitize(body);
         if (body.Length == 0) return;
+        if (await IsRateLimitedAsync()) { await NotifyRateLimited(); return; }
         if (await CannotChatAsync()) { await NotifyBlocked(); return; }
 
         var msg = BuildMessage("World", null, body);
@@ -77,6 +80,7 @@ public sealed class ChatHub : Hub
     {
         body = Sanitize(body);
         if (body.Length == 0 || !Guid.TryParse(raidId, out var raidGuid)) return;
+        if (await IsRateLimitedAsync()) { await NotifyRateLimited(); return; }
         if (await CannotChatAsync()) { await NotifyBlocked(); return; }
         if (!await IsRaidParticipantAsync(raidGuid)) { await NotifyNotInRaid(); return; }
 
@@ -116,6 +120,7 @@ public sealed class ChatHub : Hub
     {
         body = Sanitize(body);
         if (body.Length == 0) return;
+        if (await IsRateLimitedAsync()) { await NotifyRateLimited(); return; }
 
         // Resolve the caller once: drives both the mute-gate and the member-gate from the same row.
         var player = await _players.FindByIdAsync(SenderId());
@@ -167,6 +172,18 @@ public sealed class ChatHub : Hub
     }
 
     private Task NotifyBlocked() => Clients.Caller.SendAsync("Muted", "You cannot send messages right now (muted or banned).");
+
+    // SECURITY (exploit audit 2026-06-14, finding J): the HTTP RateLimitMiddleware never sees post-
+    // handshake hub frames, so without this a single socket could loop SendWorldMessage to flood every
+    // client and pin Postgres (a FindByIdAsync per message) + Redis. Throttled FIRST — before the per-
+    // message DB lookup in CannotChatAsync — so a flood is cheap to reject. Fails open on a Redis outage.
+    private async Task<bool> IsRateLimitedAsync()
+    {
+        var allowed = await _rateLimiter.TryConsumeAsync(SenderId());
+        return !allowed;
+    }
+
+    private Task NotifyRateLimited() => Clients.Caller.SendAsync("RateLimited", "You're sending messages too quickly. Please slow down.");
 
     /// <summary>Resolves the caller's current guild id from the verified identity; null if not in a guild.</summary>
     private async Task<Guid?> CallerGuildIdAsync()

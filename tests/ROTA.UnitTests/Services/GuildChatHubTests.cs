@@ -60,6 +60,7 @@ public class GuildChatHubTests
         public ChatHub Hub = null!;
         public RedisGuildChatStore Store = null!;
         public Mock<IPlayerRepository> Players = new();
+        public Mock<IChatRateLimiter> RateLimiter = new();
         public Mock<IClientProxy> GroupProxy = new();
         public Mock<ISingleClientProxy> CallerProxy = new();
         public Mock<IGroupManager> Groups = new();
@@ -95,7 +96,12 @@ public class GuildChatHubTests
             ctx.Setup(c => c.User).Returns(new ClaimsPrincipal(identity));
             ctx.Setup(c => c.ConnectionId).Returns("conn-1");
 
-            Hub = new ChatHub(Mock.Of<IWorldChatStore>(), Store, Players.Object, Mock.Of<IRaidParticipantRepository>())
+            // Permissive limiter by default — the rate-limit gate has its own dedicated test below.
+            RateLimiter.Setup(r => r.TryConsumeAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            Hub = new ChatHub(Mock.Of<IWorldChatStore>(), Store, Players.Object,
+                              Mock.Of<IRaidParticipantRepository>(), RateLimiter.Object)
             {
                 Clients = clients.Object,
                 Groups = Groups.Object,
@@ -174,6 +180,26 @@ public class GuildChatHubTests
 
         h.GroupProxy.Verify(p => p.SendCoreAsync(It.IsAny<string>(), It.IsAny<object?[]>(), It.IsAny<CancellationToken>()), Times.Never);
         (await h.Store.GetRecentAsync(guildId, 100)).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SendGuildMessage_RateLimited_Rejected_NoAppend_NoDbLookup()
+    {
+        var guildId = Guid.NewGuid();
+        var member = MakePlayer("gabe");
+        member.JoinGuild(guildId, ROTA.Domain.Enums.GuildRank.Member);
+        var h = new Harness(member);
+        // Flip the limiter to "over cap" for this caller (exploit-audit finding J).
+        h.RateLimiter.Setup(r => r.TryConsumeAsync(member.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        await h.Hub.SendGuildMessage("flooding the guild");
+
+        h.LastCallerEvent.Should().Be("RateLimited");
+        h.GroupProxy.Verify(p => p.SendCoreAsync(It.IsAny<string>(), It.IsAny<object?[]>(), It.IsAny<CancellationToken>()), Times.Never);
+        (await h.Store.GetRecentAsync(guildId, 100)).Should().BeEmpty();
+        // Throttled BEFORE the per-message DB lookup — a flood must be cheap to reject.
+        h.Players.Verify(p => p.FindByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]

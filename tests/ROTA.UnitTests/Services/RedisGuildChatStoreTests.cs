@@ -123,6 +123,28 @@ public class RedisGuildChatStoreTests
     }
 
     [Fact]
+    public async Task Append_TrimsWithSameBounds_AsWorldStore()
+    {
+        // Exploit-audit finding M: the guild store must LTRIM to the same 100-cap bounds the world store
+        // uses (0 .. MaxMessages-1) on EVERY append, so a removed/idle guild buffer can't grow unbounded.
+        var calls = new List<(long start, long stop)>();
+        var db = new Mock<IDatabase>();
+        db.Setup(d => d.ListLeftPushAsync(It.IsAny<RedisKey>(), It.IsAny<RedisValue>(), It.IsAny<When>(), It.IsAny<CommandFlags>()))
+            .ReturnsAsync(1L);
+        db.Setup(d => d.ListTrimAsync(It.IsAny<RedisKey>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CommandFlags>()))
+            .Returns((RedisKey _, long start, long stop, CommandFlags __) => { calls.Add((start, stop)); return Task.CompletedTask; });
+        var mux = new Mock<IConnectionMultiplexer>();
+        mux.Setup(m => m.GetDatabase(It.IsAny<int>(), It.IsAny<object>())).Returns(db.Object);
+
+        var store = new RedisGuildChatStore(mux.Object);
+        await store.AppendAsync(Guid.NewGuid(), Msg("one"));
+        await store.AppendAsync(Guid.NewGuid(), Msg("two"));
+
+        calls.Should().HaveCount(2, "every append trims");
+        calls.Should().OnlyContain(c => c.start == 0 && c.stop == 99, "the cap is 100 messages, mirroring RedisWorldChatStore");
+    }
+
+    [Fact]
     public async Task Buffers_AreIsolatedPerGuild()
     {
         var (mux, _) = FakeRedis();
