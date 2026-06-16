@@ -6,6 +6,12 @@ public interface IMagicService
 {
     Task<IReadOnlyList<OwnedMagicResponse>> GetOwnedMagicsAsync(Guid playerId, CancellationToken ct = default);
 
+    /// <summary>
+    /// Full magic catalogue (every definition in content/magics.json) tagged with the caller's
+    /// owned-state and gem price. The Bazaar uses this to show purchasable magics, not just owned ones.
+    /// </summary>
+    Task<MagicCatalogueResponse> GetCatalogueAsync(Guid playerId, CancellationToken ct = default);
+
     Task<MagicApplyResult> ApplyMagicAsync(
         Guid playerId, Guid raidId, string magicDefinitionId, bool isAdmin,
         CancellationToken ct = default);

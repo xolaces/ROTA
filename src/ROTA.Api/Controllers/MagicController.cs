@@ -22,6 +22,14 @@ public sealed class MagicController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("api/magics/catalogue")]
+    [ProducesResponseType(typeof(MagicCatalogueResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetCatalogue()
+    {
+        var result = await _magics.GetCatalogueAsync(GetPlayerId());
+        return Ok(result);
+    }
+
     [HttpPost("api/raids/{raidId:guid}/magics")]
     [ProducesResponseType(typeof(MagicApplyResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MagicApplyResult), StatusCodes.Status400BadRequest)]

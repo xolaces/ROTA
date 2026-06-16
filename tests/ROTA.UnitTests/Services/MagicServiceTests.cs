@@ -143,6 +143,57 @@ public class MagicServiceTests
         result.Should().BeEmpty("orphaned rows with no matching definition are silently skipped");
     }
 
+    // GetCatalogueAsync
+
+    [Fact]
+    public async Task GetCatalogueAsync_ReturnsAllDefinitions_WithOwnedAndPriceFlags()
+    {
+        var svc      = BuildService();
+        var playerId = Guid.NewGuid();
+
+        var forSaleDef = MakeDef("magic_smite", "Smite");
+        forSaleDef.GemPrice = 25;
+        var dropOnlyDef = MakeDef("magic_impending_doom", "Impending Doom");
+        dropOnlyDef.GemPrice = 0;  // not in gem shop (rank/drop-only)
+
+        svc.Defs.Setup(d => d.GetAll())
+            .Returns(new List<MagicDefinition> { forSaleDef, dropOnlyDef });
+        // Player owns only magic_smite.
+        svc.MagicRepo.Setup(r => r.GetOwnedAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerMagic> { MakeOwned(playerId, "magic_smite") });
+
+        var result = await svc.Service.GetCatalogueAsync(playerId);
+
+        result.Entries.Should().HaveCount(2, "the catalogue surfaces every definition, owned or not");
+
+        var smite = result.Entries.Single(e => e.MagicDefinitionId == "magic_smite");
+        smite.IsOwned.Should().BeTrue();
+        smite.ForSale.Should().BeTrue();
+        smite.GemPrice.Should().Be(25);
+
+        var doom = result.Entries.Single(e => e.MagicDefinitionId == "magic_impending_doom");
+        doom.IsOwned.Should().BeFalse("player does not own this magic");
+        doom.ForSale.Should().BeFalse("gem price 0 means it is not in the gem shop");
+        doom.GemPrice.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetCatalogueAsync_NoMagicsOwned_AllEntriesNotOwned()
+    {
+        var svc      = BuildService();
+        var playerId = Guid.NewGuid();
+
+        svc.Defs.Setup(d => d.GetAll())
+            .Returns(new List<MagicDefinition> { MakeDef("magic_smite"), MakeDef("magic_poison") });
+        svc.MagicRepo.Setup(r => r.GetOwnedAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerMagic>());
+
+        var result = await svc.Service.GetCatalogueAsync(playerId);
+
+        result.Entries.Should().HaveCount(2);
+        result.Entries.Should().OnlyContain(e => !e.IsOwned);
+    }
+
     // ApplyMagicAsync — access / ownership / uniqueness guards
 
     [Fact]
