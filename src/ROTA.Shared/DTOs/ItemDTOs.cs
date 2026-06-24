@@ -14,6 +14,9 @@ public class InventoryItemResponse
     // screen can group sigils by boss + difficulty without parsing ids. Null for non-sigils.
     public string? SummonRaidId { get; set; }
     public string? SummonDifficulty { get; set; }
+    // Raid tier of the sigil's summon target (Standard | World | Event | Guild), so the client boss
+    // card shows the right label instead of a hardcoded "World raid". Null for non-sigil items.
+    public string? Tier { get; set; }
 }
 
 public class UseItemResponse

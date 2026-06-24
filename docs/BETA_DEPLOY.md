@@ -223,9 +223,11 @@ docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d --bu
 - The API seeds the admin (`SEED_ADMIN_PASSWORD`) and the dev guild on first boot, automatically.
 - Generate beta keys (the CLI runs as a one-off container):
   ```bash
-  docker compose -f docker-compose.prod.yml run --rm api dotnet ROTA.Api.dll gen-beta-key 25
+  docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml run --rm api gen-beta-key 25
   ```
-  Each prints as `ROTA-XXXX-XXXX-XXXX` — hand these to testers.
+  Each prints as `ROTA-XXXX-XXXX-XXXX` — hand these to testers. (The image ENTRYPOINT is already
+  `dotnet ROTA.Api.dll`, so pass ONLY the CLI verb + args — do NOT repeat `dotnet ROTA.Api.dll`, or the
+  args get appended to the entrypoint and the API boots a web server instead of running the command.)
 - Logs: `docker compose -f docker-compose.prod.yml logs -f api`
 
 ---

@@ -75,7 +75,7 @@ public class MasteryRespecTests
         result.GemSpent.Should().Be(0);
         result.NewPledge.Should().Be("Wrath");
         player.ActivePledgeAncient.Should().Be(MasteryAncient.Wrath);
-        h.Gems.Verify(g => g.SpendGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(),
+        h.Gems.Verify(g => g.SpendGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(),
             It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         h.Players.Verify(p => p.UpdateAsync(player, It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -97,7 +97,7 @@ public class MasteryRespecTests
         result.Success.Should().BeTrue();
         result.Kind.Should().Be("FreeMonthly");
         result.GemSpent.Should().Be(0);
-        h.Gems.Verify(g => g.SpendGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(),
+        h.Gems.Verify(g => g.SpendGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(),
             It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -142,7 +142,7 @@ public class MasteryRespecTests
 
         result.Success.Should().BeFalse();
         result.FailureCode.Should().Be(MasteryRespecFailureCode.WeeklyCapReached);
-        h.Gems.Verify(g => g.SpendGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(),
+        h.Gems.Verify(g => g.SpendGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(),
             It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -155,7 +155,7 @@ public class MasteryRespecTests
                 It.Is<string>(s => s.StartsWith("respec:unlock:") || s.StartsWith("respec:free:")),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
-        h.Gems.Setup(g => g.SpendGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), GemTransactionType.MasteryRespec,
+        h.Gems.Setup(g => g.SpendGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), GemTransactionType.MasteryRespec,
                 It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GemSpendOutcome.AlreadyProcessed); // gem ledger says this week is charged
 
@@ -175,7 +175,7 @@ public class MasteryRespecTests
                 It.Is<string>(s => s.StartsWith("respec:unlock:") || s.StartsWith("respec:free:")),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
-        h.Gems.Setup(g => g.SpendGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), GemTransactionType.MasteryRespec,
+        h.Gems.Setup(g => g.SpendGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), GemTransactionType.MasteryRespec,
                 It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GemSpendOutcome.InsufficientBalance);
 

@@ -12,7 +12,7 @@ public interface IStatService
         Guid playerId, int newLevel, CancellationToken ct = default);
 
     Task AddUnassignedPointsAsync(
-        Guid playerId, int amount, CancellationToken ct = default);
+        Guid playerId, long amount, CancellationToken ct = default);
 
     Task<PlayerStatsResponse?> GetStatsAsync(
         Guid playerId, CancellationToken ct = default);

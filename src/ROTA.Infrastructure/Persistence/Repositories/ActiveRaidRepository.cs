@@ -32,6 +32,9 @@ public sealed class ActiveRaidRepository : IActiveRaidRepository
         => await _db.ActiveRaids
             .Include(r => r.SummonedByPlayer)
             .Where(r => !r.IsDefeated && !r.IsDeleted && r.ExpiresAt > DateTimeOffset.UtcNow)
+            // Deterministic order so the public list doesn't reshuffle every load (low-HP-first =
+            // closest-to-death surfaces first). Client sort controls reorder client-side.
+            .OrderBy(r => r.CurrentHp)
             .ToListAsync(ct);
 
     // T57 — Lootable raids the caller can still claim (participant row with RewardedAt == null).

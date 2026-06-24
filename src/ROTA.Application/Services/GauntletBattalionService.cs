@@ -43,7 +43,7 @@ public sealed class GauntletBattalionService : IGauntletBattalionService
     }
 
     public async Task<long> ComputePowerAsync(
-        Guid playerId, int playerEffectiveAttack, int playerEffectiveDefense, CancellationToken ct = default)
+        Guid playerId, long playerEffectiveAttack, long playerEffectiveDefense, CancellationToken ct = default)
     {
         var owned     = await OwnedByIdAsync(playerId, ct);
         var battalion = await _battalions.GetForPlayerAsync(playerId, ct);
@@ -88,12 +88,12 @@ public sealed class GauntletBattalionService : IGauntletBattalionService
 
     // ── helpers ───────────────────────────────────────────────────────────────
 
-    private async Task<(int effAtk, int effDef)> GetEffectiveStatsAsync(Guid playerId, CancellationToken ct)
+    private async Task<(long effAtk, long effDef)> GetEffectiveStatsAsync(Guid playerId, CancellationToken ct)
     {
-        var player  = await _players.FindByIdWithStatsAsync(playerId, ct);
-        int baseAtk = player?.Stats?.BaseAttack  ?? 0;
-        int baseDef = player?.Stats?.BaseDefense ?? 0;
-        var combat  = await _equipment.GetEffectiveCombatDataAsync(playerId, baseAtk, baseDef, ct);
+        var player   = await _players.FindByIdWithStatsAsync(playerId, ct);
+        long baseAtk = player?.Stats?.BaseAttack  ?? 0;
+        long baseDef = player?.Stats?.BaseDefense ?? 0;
+        var combat   = await _equipment.GetEffectiveCombatDataAsync(playerId, baseAtk, baseDef, ct);
         return (combat.EffectiveAttack, combat.EffectiveDefense);
     }
 
@@ -123,7 +123,7 @@ public sealed class GauntletBattalionService : IGauntletBattalionService
     }
 
     private GauntletBattalionResponse BuildResponse(
-        PlayerGauntletBattalion? battalion, IReadOnlyDictionary<string, OwnedUnitResponse> owned, int effAtk, int effDef)
+        PlayerGauntletBattalion? battalion, IReadOnlyDictionary<string, OwnedUnitResponse> owned, long effAtk, long effDef)
     {
         var (atkSum, defSum, generals, troops) = Resolve(battalion, owned);
         return new GauntletBattalionResponse

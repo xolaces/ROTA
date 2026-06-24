@@ -16,7 +16,8 @@ public class QuestAvailabilityResponse
     // zone-depth scaling applied to the base energy cost and base XP. The client shows these (×selected
     // difficulty) so the player sees the real cost/reward; the server recomputes on attempt.
     public int EffectiveEnergyCost { get; set; }
-    public int EffectiveXpReward { get; set; }
+    // long — mirrors the long XP roll (int32-overflow-audit); energy cost stays int (bounded).
+    public long EffectiveXpReward { get; set; }
     public int GoldReward { get; set; }
     public int ExperienceReward { get; set; }
     public int GemReward { get; set; }
@@ -54,9 +55,11 @@ public class QuestResultResponse
     public bool Success { get; set; }
     public QuestFailureCode FailureCode { get; set; }
     public string? FailureReason { get; set; }
-    public int GoldGranted { get; set; }
-    public int ExperienceGranted { get; set; }
-    public int GemsGranted { get; set; }
+    // int32-overflow-audit Unit 2 — reward amounts widened to long/bigint (gold/XP/gems can lap int32
+    // late-game). NewLevel stays int (Player.Level is int).
+    public long GoldGranted { get; set; }
+    public long ExperienceGranted { get; set; }
+    public long GemsGranted { get; set; }
     public int NewLevel { get; set; }
     public long NewExperience { get; set; }
     public long NewGold { get; set; }
@@ -65,8 +68,9 @@ public class QuestResultResponse
     public string DifficultyColor { get; set; } = string.Empty;
     public List<ItemGrantDTO> ItemsGranted { get; set; } = new();
 
-    // XP progression detail
-    public int XpGained { get; set; }
+    // XP progression detail. XpGained widened to long (int32-overflow-audit Unit 2 follow-up) to match
+    // ExperienceGranted and the long XP roll — they share xpReward.
+    public long XpGained { get; set; }
     public long CurrentLevelXp { get; set; }
     public int XpToNextLevel { get; set; }
     public int LevelsGained { get; set; }

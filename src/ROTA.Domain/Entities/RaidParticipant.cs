@@ -37,9 +37,11 @@ public class RaidParticipant
     // BETA: items stored as a JSON blob (application-serialized List<ItemGrantDTO>).
     public string ContributionTier { get; private set; } = string.Empty;
     public long GoldEarned { get; private set; }
-    public int XpEarned { get; private set; }
-    public int GemsEarned { get; private set; }
-    public int StatPointsEarned { get; private set; }
+    // int32-overflow-audit Unit 2 (owner-locked, no caps): earned reward amounts widened to bigint
+    // alongside the gem ledger + reward DTOs, so late-game tier×difficulty payouts never lap int32.
+    public long XpEarned { get; private set; }
+    public long GemsEarned { get; private set; }
+    public long StatPointsEarned { get; private set; }
     public string ItemsEarnedJson { get; private set; } = string.Empty;
     // T57 — deferred magic/unit/legion/gear drops (JSON list of PendingDrop), granted at Loot.
     public string PendingDropsJson { get; private set; } = string.Empty;
@@ -61,9 +63,9 @@ public class RaidParticipant
     public void RecordPendingRewards(
         string tier,
         long gold,
-        int xp,
-        int gems,
-        int statPoints,
+        long xp,
+        long gems,
+        long statPoints,
         string itemsJson,
         string pendingDropsJson = "")
     {
@@ -90,9 +92,9 @@ public class RaidParticipant
     public void RecordRewards(
         string tier,
         long gold,
-        int xp,
-        int gems,
-        int statPoints,
+        long xp,
+        long gems,
+        long statPoints,
         string itemsJson,
         DateTimeOffset rewardedAt)
     {

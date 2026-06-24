@@ -22,11 +22,11 @@ public sealed class GemService : IGemService
         _auditLog = auditLog;
     }
 
-    public Task<int> GetBalanceAsync(Guid playerId, CancellationToken ct = default)
+    public Task<long> GetBalanceAsync(Guid playerId, CancellationToken ct = default)
         => _transactions.GetBalanceAsync(playerId, ct);
 
     public async Task<bool> GrantGemsAsync(
-        Guid playerId, int amount, GemTransactionType type, string? referenceId,
+        Guid playerId, long amount, GemTransactionType type, string? referenceId,
         CancellationToken ct = default)
     {
         if (referenceId is not null
@@ -46,7 +46,7 @@ public sealed class GemService : IGemService
     }
 
     public async Task<GemSpendOutcome> SpendGemsAsync(
-        Guid playerId, int amount, GemTransactionType type, string? referenceId,
+        Guid playerId, long amount, GemTransactionType type, string? referenceId,
         CancellationToken ct = default)
     {
         // Atomic in the repository: idempotency (AlreadyProcessed = the original charge committed;

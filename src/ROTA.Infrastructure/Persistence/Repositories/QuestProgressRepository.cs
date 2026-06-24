@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ROTA.Application.Interfaces;
 using ROTA.Domain.Entities;
+using ROTA.Domain.Enums;
 using ROTA.Infrastructure.Persistence;
 
 namespace ROTA.Infrastructure.Persistence.Repositories;
@@ -21,9 +22,9 @@ public sealed class QuestProgressRepository : IQuestProgressRepository
             .ToListAsync(ct);
 
     public async Task<PlayerQuestProgress?> GetAsync(
-        Guid playerId, string questId, CancellationToken ct = default)
+        Guid playerId, string questId, QuestDifficulty difficulty, CancellationToken ct = default)
         => await _db.PlayerQuestProgress
-            .Where(p => p.PlayerId == playerId && p.QuestId == questId)
+            .Where(p => p.PlayerId == playerId && p.QuestId == questId && p.Difficulty == difficulty)
             .FirstOrDefaultAsync(ct);
 
     public async Task CreateAsync(PlayerQuestProgress progress, CancellationToken ct = default)

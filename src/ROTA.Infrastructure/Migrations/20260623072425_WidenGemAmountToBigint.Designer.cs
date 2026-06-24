@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ROTA.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using ROTA.Infrastructure.Persistence;
 namespace ROTA.Infrastructure.Migrations
 {
     [DbContext(typeof(RotaDbContext))]
-    partial class RotaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260623072425_WidenGemAmountToBigint")]
+    partial class WidenGemAmountToBigint
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2499,16 +2502,16 @@ namespace ROTA.Infrastructure.Migrations
                         .HasColumnName("id")
                         .HasDefaultValueSql("gen_random_uuid()");
 
-                    b.Property<long>("BaseAttack")
+                    b.Property<int>("BaseAttack")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(10L)
+                        .HasColumnType("integer")
+                        .HasDefaultValue(10)
                         .HasColumnName("base_attack");
 
-                    b.Property<long>("BaseDefense")
+                    b.Property<int>("BaseDefense")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(10L)
+                        .HasColumnType("integer")
+                        .HasDefaultValue(10)
                         .HasColumnName("base_defense");
 
                     b.Property<int>("BaseMaxHealth")
@@ -2523,32 +2526,32 @@ namespace ROTA.Infrastructure.Migrations
                         .HasDefaultValue(100)
                         .HasColumnName("current_health");
 
-                    b.Property<long>("DiscernmentInvestment")
+                    b.Property<int>("DiscernmentInvestment")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(0L)
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
                         .HasColumnName("discernment_investment");
 
-                    b.Property<long>("EnergyInvestment")
+                    b.Property<int>("EnergyInvestment")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(0L)
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
                         .HasColumnName("energy_investment");
 
                     b.Property<Guid>("PlayerId")
                         .HasColumnType("uuid")
                         .HasColumnName("player_id");
 
-                    b.Property<long>("SkillPoints")
+                    b.Property<int>("SkillPoints")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(0L)
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
                         .HasColumnName("skill_points");
 
-                    b.Property<long>("StaminaInvestment")
+                    b.Property<int>("StaminaInvestment")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(0L)
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
                         .HasColumnName("stamina_investment");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -2758,10 +2761,10 @@ namespace ROTA.Infrastructure.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("NOW()");
 
-                    b.Property<long>("GemsEarned")
+                    b.Property<int>("GemsEarned")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(0L)
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
                         .HasColumnName("gems_earned");
 
                     b.Property<long>("GoldEarned")
@@ -2804,10 +2807,10 @@ namespace ROTA.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("rewarded_at");
 
-                    b.Property<long>("StatPointsEarned")
+                    b.Property<int>("StatPointsEarned")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(0L)
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
                         .HasColumnName("stat_points_earned");
 
                     b.Property<long>("TotalDamageDealt")
@@ -2822,10 +2825,10 @@ namespace ROTA.Infrastructure.Migrations
                         .HasColumnName("updated_at")
                         .HasDefaultValueSql("NOW()");
 
-                    b.Property<long>("XpEarned")
+                    b.Property<int>("XpEarned")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(0L)
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
                         .HasColumnName("xp_earned");
 
                     b.HasKey("Id");

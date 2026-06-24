@@ -562,14 +562,14 @@ public class LeaderboardWriteHookTests
             .Returns(Task.CompletedTask);
         stats.Setup(s => s.GrantLevelUpPointsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        stats.Setup(s => s.AddUnassignedPointsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+        stats.Setup(s => s.AddUnassignedPointsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         stats.Setup(s => s.XpToNextLevel(It.IsAny<int>())).Returns(1000);
         stats.Setup(s => s.GetCritProfile(It.IsAny<int>()))
             .Returns(new CritProfile(Chance: 0.0, Multiplier: 1.5));
         equipment.Setup(e => e.GetEffectiveCombatDataAsync(
-                It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Guid _, int atk, int def, CancellationToken _) =>
+                It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid _, long atk, long def, CancellationToken _) =>
                 new EffectiveCombatData(atk, def, null, 0.0));
         raidMagics.Setup(r => r.GetForRaidAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<RaidMagic>());
@@ -617,7 +617,8 @@ public class LeaderboardWriteHookTests
             trophyRepo.Object, gauntletContent.Object, playerEventMagics.Object,
             playerMagicHonors.Object, strikes.Object, gauntletScoring.Object, gauntletCfg,
             gauntletCurrency.Object, guildMemberships.Object, guildEconomy.Object, mastery.Object,
-            achievements.Object, friendships.Object, battalion.Object, random);
+            achievements.Object, friendships.Object, battalion.Object,
+            Options.Create(new QuestConfig()), random);
 
         return new RaidBundle(service, raids, participants, players, resources, energy,
             auditLog, definitions, hitCache, equipment, stats, leaderboards);

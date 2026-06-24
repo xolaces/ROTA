@@ -96,8 +96,8 @@ public class DevServiceTests
         (await h.Service.GrantAsync(admin, new DevGrantRequest(), "ip"))
             .Success.Should().BeFalse();
         // Rejected at the amount guard (after the admin re-verify) — no grant side effects fired.
-        h.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
-        h.Stats.Verify(s => s.AddUnassignedPointsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+        h.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+        h.Stats.Verify(s => s.AddUnassignedPointsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -166,6 +166,6 @@ public class DevServiceTests
 
         result.Success.Should().BeFalse();
         target.Gold.Should().Be(0, "a non-admin actor must not be able to grant resources");
-        h.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+        h.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }

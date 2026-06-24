@@ -15,6 +15,7 @@ public sealed class PlayerService : IPlayerService
     private readonly IMasteryService _mastery;
     private readonly IAchievementService _achievements;
     private readonly IGemService _gems;
+    private readonly IStatService _stats;
 
     public PlayerService(
         IPlayerRepository players,
@@ -24,7 +25,8 @@ public sealed class PlayerService : IPlayerService
         IPlayerMasteryRepository masteryRepo,
         IMasteryService mastery,
         IAchievementService achievements,
-        IGemService gems)
+        IGemService gems,
+        IStatService stats)
     {
         _players      = players;
         _energy       = energy;
@@ -34,6 +36,7 @@ public sealed class PlayerService : IPlayerService
         _mastery      = mastery;
         _achievements = achievements;
         _gems         = gems;
+        _stats        = stats;
     }
 
     public async Task<PlayerProfileResponse?> GetProfileAsync(Guid playerId, CancellationToken ct = default)
@@ -59,8 +62,8 @@ public sealed class PlayerService : IPlayerService
         }
 
         // Compute effective stats for profile display.
-        int effAtk = player.Stats?.BaseAttack ?? 0;
-        int effDef = player.Stats?.BaseDefense ?? 0;
+        long effAtk = player.Stats?.BaseAttack ?? 0;
+        long effDef = player.Stats?.BaseDefense ?? 0;
         if (player.Stats is not null)
         {
             var combat = await _equipment.GetEffectiveCombatDataAsync(
@@ -89,7 +92,7 @@ public sealed class PlayerService : IPlayerService
         }
 
         // Gem balance — SUMMED from the gem_transactions ledger (never stored), for header display.
-        int gemBalance = await _gems.GetBalanceAsync(playerId, ct);
+        long gemBalance = await _gems.GetBalanceAsync(playerId, ct);
 
         return new PlayerProfileResponse
         {
@@ -100,6 +103,7 @@ public sealed class PlayerService : IPlayerService
             Level            = player.Level,
             Class            = player.Class.ToString(),
             Experience       = player.Experience,
+            XpToNextLevel    = _stats.XpToNextLevel(player.Level),
             Gold             = player.Gold,
             Gems             = gemBalance,
             GuildId          = player.GuildId,

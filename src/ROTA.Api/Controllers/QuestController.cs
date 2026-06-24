@@ -21,9 +21,16 @@ public sealed class QuestController : ControllerBase
 
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<QuestAvailabilityResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAvailable()
+    public async Task<IActionResult> GetAvailable([FromQuery] string? difficulty = null)
     {
-        var result = await _quests.GetAvailableQuestsAsync(GetPlayerId());
+        // Per-difficulty depletion track (triage node-depletion-per-difficulty): the client may request
+        // the view for a specific tier. No param → Normal (back-compat with the shipped client).
+        var diff = QuestDifficulty.Normal;
+        if (!string.IsNullOrWhiteSpace(difficulty)
+            && (!Enum.TryParse(difficulty, ignoreCase: true, out diff) || !Enum.IsDefined(diff)))
+            return BadRequest(new { message = $"Invalid difficulty '{difficulty}'. Valid values: Normal, Hard, Legendary, Nightmare." });
+
+        var result = await _quests.GetAvailableQuestsAsync(GetPlayerId(), diff);
         return Ok(result);
     }
 

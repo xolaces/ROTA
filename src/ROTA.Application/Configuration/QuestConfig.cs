@@ -15,6 +15,35 @@ public class QuestConfig
     // drops sigils iff it carries a Sigils map). A boss must be the zone's final node to drop at all.
     public double SigilRerunDropChance { get; set; } = 0.15;
 
+    // Quest-boss gems (triage quest-boss-gem-on-every-hit, owner-locked 2026-06-22). Gems are a BOSS
+    // COMPLETION reward only: a flat BossGemRewardAmount (the "2 gems" standard) granted on the *clearing*
+    // attempt of a boss node, on a per-difficulty chance roll. The old path dripped quests.json `gemReward`
+    // on EVERY successful attempt (~40 grants per clear → economy-breaking inflation); that JSON field is
+    // now vestigial for bosses. AMOUNT stays flat (owner 2026-06-23 — NOT scaled); what scales is the
+    // CHANCE, ramping through zones/chapters up to the per-difficulty goal in BossGemDropChance.
+    public int BossGemRewardAmount { get; set; } = 2;
+    // Per-difficulty GOAL drop chance — the ceiling reached at GemChanceFullChapter (Ch6).
+    public Dictionary<string, double> BossGemDropChance { get; set; } = new()
+    {
+        ["Normal"]    = 0.030,
+        ["Hard"]      = 0.058,
+        ["Legendary"] = 0.083,
+        ["Nightmare"] = 0.115,
+    };
+    // The chance steps up per chapter to the full goal at this chapter (owner 2026-06-23): rarer early,
+    // hitting the goal % at Ch6. chance = goal × min(1, chapter / GemChanceFullChapter). Chapters past
+    // this stay at the goal. Shared by quest bosses AND raid bosses (unified gem model).
+    public int GemChanceFullChapter { get; set; } = 6;
+
+    // Resolve the chapter-scaled boss-gem drop chance for a difficulty. 0 if the difficulty is unknown.
+    public double ResolveBossGemChance(int chapter, string difficulty)
+    {
+        if (!BossGemDropChance.TryGetValue(difficulty, out var goal)) return 0.0;
+        int full  = Math.Max(1, GemChanceFullChapter);
+        double sc = Math.Min(1.0, (double)Math.Max(1, chapter) / full);
+        return goal * sc;
+    }
+
     // Discernment-scaled chance drops (System 20 Slice 2). Each point of DiscernmentInvestment
     // raises a chance-drop's effective rate by DiscernmentDropMultiplier (relative to its base),
     // clamped at MaxDropChance. Guaranteed drops are unaffected. Example: base 0.05, Discernment 30,

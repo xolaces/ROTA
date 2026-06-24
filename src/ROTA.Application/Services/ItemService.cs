@@ -9,6 +9,7 @@ public sealed class ItemService : IItemService
 {
     private readonly IPlayerInventoryRepository _inventory;
     private readonly IItemDefinitionProvider _itemDefs;
+    private readonly IRaidDefinitionProvider _raidDefs;   // resolves a sigil's summon-target raid tier
     private readonly IStatService _stats;
     private readonly IRaidService _raids;
     private readonly IAuditLogRepository _auditLog;
@@ -17,6 +18,7 @@ public sealed class ItemService : IItemService
     public ItemService(
         IPlayerInventoryRepository inventory,
         IItemDefinitionProvider itemDefs,
+        IRaidDefinitionProvider raidDefs,
         IStatService stats,
         IRaidService raids,
         IAuditLogRepository auditLog,
@@ -24,6 +26,7 @@ public sealed class ItemService : IItemService
     {
         _inventory = inventory;
         _itemDefs  = itemDefs;
+        _raidDefs  = raidDefs;
         _stats     = stats;
         _raids     = raids;
         _auditLog  = auditLog;
@@ -51,6 +54,12 @@ public sealed class ItemService : IItemService
                 AcquiredAt       = inv.AcquiredAt,
                 SummonRaidId     = def.SummonRaidId,
                 SummonDifficulty = def.SummonDifficulty,
+                // Resolve the summon-target raid's tier so the client doesn't hardcode "World raid"
+                // for every sigil (a Standard zone-boss sigil now reports "Standard"). Null for
+                // non-sigil items or an unresolvable target.
+                Tier             = def.SummonRaidId is null
+                                       ? null
+                                       : _raidDefs.GetById(def.SummonRaidId)?.Tier,
             });
         }
         return result;

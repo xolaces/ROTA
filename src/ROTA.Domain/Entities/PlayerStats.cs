@@ -26,17 +26,20 @@ public class PlayerStats
     public Guid PlayerId { get; private set; }
     public Player Player { get; private set; } = null!;
 
-    public int BaseAttack { get; private set; }
-    public int BaseDefense { get; private set; }
+    // int32-overflow-audit Unit 2 (owner-locked, no caps): uncapped stat/investment growth over a
+    // no-reset capped-scaling lifetime can lap int32 (e.g. ~250k SP by L25000, uncapped ATK growth).
+    // bigint columns. BaseMaxHealth/CurrentHealth stay int (bounded by the health pool, not economy).
+    public long BaseAttack { get; private set; }
+    public long BaseDefense { get; private set; }
     public int BaseMaxHealth { get; private set; }
     public int CurrentHealth { get; private set; }
 
     // Investable resource pools (from SkillPoints)
-    public int EnergyInvestment { get; private set; }
-    public int StaminaInvestment { get; private set; }
+    public long EnergyInvestment { get; private set; }
+    public long StaminaInvestment { get; private set; }
     // P2: effects deferred
-    public int DiscernmentInvestment { get; private set; }
-    public int SkillPoints { get; private set; }
+    public long DiscernmentInvestment { get; private set; }
+    public long SkillPoints { get; private set; }
 
     public DateTimeOffset UpdatedAt { get; private set; }
 
@@ -47,14 +50,14 @@ public class PlayerStats
     public const int BaseMaxEnergy  = 25;
     public const int BaseMaxStamina = 5;
 
-    public int ComputeMaxEnergy() => BaseMaxEnergy + EnergyInvestment;
-    public int ComputeMaxStamina() => BaseMaxStamina + StaminaInvestment;
+    public long ComputeMaxEnergy() => BaseMaxEnergy + EnergyInvestment;
+    public long ComputeMaxStamina() => BaseMaxStamina + StaminaInvestment;
 
-    // LSI = (EnergyInvestment + StaminaInvestment x 2) / Level -- cap is 9.0 (server-enforced)
+    // LSI = (EnergyInvestment + StaminaInvestment x 2) / Level -- cap server-enforced in StatService.LsiCap (currently 7.45)
     public double ComputeLSI(int level) =>
         level > 0 ? (EnergyInvestment + StaminaInvestment * 2.0) / level : 0;
 
-    public void AddSkillPoints(int amount)
+    public void AddSkillPoints(long amount)
     {
         SkillPoints += amount;
         UpdatedAt = DateTimeOffset.UtcNow;

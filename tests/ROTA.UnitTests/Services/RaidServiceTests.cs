@@ -56,7 +56,7 @@ public class RaidServiceTests
         Mock<IAchievementService> Achievements,
         Mock<IFriendshipRepository> Friendships);
 
-    private static ServiceBundle BuildService(Random? random = null, MagicConfig? magicConfig = null, LegionConfig? legionConfig = null, CombatConfig? combatConfig = null, GauntletConfig? gauntletConfig = null)
+    private static ServiceBundle BuildService(Random? random = null, MagicConfig? magicConfig = null, LegionConfig? legionConfig = null, CombatConfig? combatConfig = null, GauntletConfig? gauntletConfig = null, QuestConfig? questConfig = null)
     {
         var raids          = new Mock<IActiveRaidRepository>();
         var participants   = new Mock<IRaidParticipantRepository>();
@@ -122,7 +122,7 @@ public class RaidServiceTests
             .ReturnsAsync(true);
         stats.Setup(s => s.GrantLevelUpPointsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        stats.Setup(s => s.AddUnassignedPointsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+        stats.Setup(s => s.AddUnassignedPointsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         // Default: 1000 XP per level — keeps existing kill-reward tests from triggering extra level-ups
         stats.Setup(s => s.XpToNextLevel(It.IsAny<int>())).Returns(1000);
@@ -131,8 +131,8 @@ public class RaidServiceTests
             .Returns(new CritProfile(Chance: 0.0, Multiplier: 1.5));
         // Default: pass-through — no gear bonus, no proc, no conditional bonus
         equipment.Setup(e => e.GetEffectiveCombatDataAsync(
-                It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Guid _, int atk, int def, CancellationToken _) =>
+                It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid _, long atk, long def, CancellationToken _) =>
                 new EffectiveCombatData(atk, def, null, 0.0));
         // Default: no applied magics — existing tests see zero magic proc bonus
         raidMagics.Setup(r => r.GetForRaidAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -216,6 +216,7 @@ public class RaidServiceTests
         var legionCfg = Options.Create(legionConfig ?? new LegionConfig());
         var combatCfg = Options.Create(combatConfig ?? new CombatConfig());
         var gauntletCfg = Options.Create(gauntletConfig ?? new GauntletConfig());
+        var questCfg  = Options.Create(questConfig ?? new QuestConfig());
         var mastery = new Mock<IMasteryService>();
         // Neutral mastery modifiers by default → a mastery-less hit is byte-for-byte unchanged.
         mastery.Setup(m => m.GetModifiersAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -235,7 +236,7 @@ public class RaidServiceTests
             trophyRepo.Object, gauntletContent.Object, playerEventMagics.Object,
             playerMagicHonors.Object, strikes.Object, gauntletScoring.Object, gauntletCfg,
             gauntletCurrency.Object, guildMemberships.Object, guildEconomy.Object, mastery.Object,
-            achievements.Object, friendships.Object, battalion.Object, random);
+            achievements.Object, friendships.Object, battalion.Object, questCfg, random);
 
         return new ServiceBundle(service, raids, participants, players, resources, energy, gems,
             stats, inventory, itemDefs, lootTables, auditLog, definitions, hitCache, equipment,
@@ -504,7 +505,7 @@ public class RaidServiceTests
         b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<RaidParticipant> { attackerPart, bystanderPart });
         b.Players.Setup(p => p.FindByIdAsync(bystander.Id, It.IsAny<CancellationToken>())).ReturnsAsync(bystander);
-        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
         var result = await b.Service.HitRaidAsync(attacker.Id, raid.Id, 1, Guid.NewGuid().ToString());
@@ -514,7 +515,7 @@ public class RaidServiceTests
         result.Response.Rewards!.ContributionTier.Should().Be("Legendary");
         result.Response.Rewards.TierMultiplier.Should().Be(1.50m);
         result.Response.Rewards.GoldGranted.Should().Be(750);
-        result.Response.Rewards.ExperienceGranted.Should().Be(450);
+        result.Response.Rewards.ExperienceGranted.Should().Be(0);   // triage: no on-kill XP bonus (per-hit XP only)
     }
 
     // TICKET 46 — a kill records the RaidCompletions achievement counter for the killer, idempotent
@@ -534,7 +535,7 @@ public class RaidServiceTests
             .Returns(Task.CompletedTask);
         b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<RaidParticipant> { attackerPart });
-        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
         var result = await b.Service.HitRaidAsync(attacker.Id, raid.Id, 1, Guid.NewGuid().ToString());
@@ -613,12 +614,12 @@ public class RaidServiceTests
             .Returns(Task.CompletedTask);
         b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<RaidParticipant> { p1part, p2part, p3part, p4part });
-        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
         await b.Service.HitRaidAsync(p1.Id, raid.Id, 1, Guid.NewGuid().ToString());
 
-        b.Gems.Verify(g => g.GrantGemsAsync(p4.Id, It.IsAny<int>(), GemTransactionType.RaidReward, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never,
+        b.Gems.Verify(g => g.GrantGemsAsync(p4.Id, It.IsAny<long>(), GemTransactionType.RaidReward, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never,
             "p4 has <0.1% contribution so falls to Participant tier which receives no gems");
     }
 
@@ -676,7 +677,7 @@ public class RaidServiceTests
             .Returns(Task.CompletedTask);
         b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<RaidParticipant> { attackerPart });
-        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
         var result = await b.Service.HitRaidAsync(attacker.Id, raid.Id, 1, Guid.NewGuid().ToString());
@@ -711,7 +712,7 @@ public class RaidServiceTests
             .Returns(Task.CompletedTask);
         b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<RaidParticipant> { attackerPart });
-        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
         await b.Service.HitRaidAsync(attacker.Id, raid.Id, 1, Guid.NewGuid().ToString());
@@ -1652,13 +1653,20 @@ public class RaidServiceTests
             .ReturnsAsync(raid);
         b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(part);
+        // After the claim latches, LootRaidAsync checks whether anyone is still unclaimed to flip the
+        // raid Lootable→Looted. A second still-unclaimed participant keeps the raid Lootable, so this
+        // claimant's idempotent re-press below still resolves the raid (no auto-dismiss).
+        var otherPart = RaidParticipant.Create(raid.Id, Guid.NewGuid());
+        otherPart.RecordPendingRewards("Participant", gold: 1, xp: 1, gems: 0, statPoints: 0, itemsJson: string.Empty);
+        b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipant> { part, otherPart });
         b.Participants.Setup(p => p.UpdateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         b.Players.Setup(p => p.FindByIdAsync(player.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(player);
         b.Players.Setup(p => p.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
         b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
 
@@ -1676,8 +1684,40 @@ public class RaidServiceTests
         // Idempotent re-press: still succeeds (returns the summary) but re-grants nothing.
         var again = await b.Service.LootRaidAsync(player.Id, raid.Id);
         again.Success.Should().BeTrue();
-        b.Gems.Verify(g => g.GrantGemsAsync(player.Id, It.IsAny<int>(), GemTransactionType.RaidReward, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once,
+        b.Gems.Verify(g => g.GrantGemsAsync(player.Id, It.IsAny<long>(), GemTransactionType.RaidReward, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once,
             "a second Loot press must not re-grant");
+    }
+
+    [Fact]
+    public async Task LootRaid_LastUnclaimedParticipant_FlipsRaidToLooted()
+    {
+        // raid-loot-no-all-claimed-expiry — once the LAST participant claims (no RewardedAt == null
+        // rows remain), the raid is dismissed Lootable→Looted so it stops lingering in lootable indexes.
+        var b = BuildService();
+        var player = MakePlayer();
+        var raid = MakeVisRaid(Guid.NewGuid(), RaidVisibility.Public);
+        raid.MarkDefeated();   // Active → Lootable
+
+        var part = RaidParticipant.Create(raid.Id, player.Id);
+        part.RecordPendingRewards("Legendary", gold: 500, xp: 200, gems: 10, statPoints: 3, itemsJson: string.Empty);
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(part);
+        // The sole participant's claim latches RewardedAt on the in-memory row, so the all-claimed
+        // check sees zero unclaimed rows and the raid is dismissed.
+        b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipant> { part });
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.LootRaidAsync(player.Id, raid.Id);
+
+        result.Success.Should().BeTrue();
+        raid.LifecycleState.Should().Be(RaidLifecycleState.Looted, "the last unclaimed participant has now claimed");
+        b.Raids.Verify(r => r.UpdateAsync(It.Is<ActiveRaid>(x => x.Id == raid.Id), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -1705,10 +1745,10 @@ public class RaidServiceTests
         var result = await b.Service.LootRaidAsync(player.Id, raid.Id);
 
         result.Success.Should().BeTrue("the loser still gets the reward summary back");
-        b.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(),
+        b.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(),
             It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never,
             "the latch loser must not re-grant gems");
-        b.Stats.Verify(s => s.AddUnassignedPointsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+        b.Stats.Verify(s => s.AddUnassignedPointsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<CancellationToken>()),
             Times.Never, "the latch loser must not re-grant stat points");
     }
 
@@ -1881,7 +1921,7 @@ public class RaidServiceTests
             .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
         b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<RaidParticipant> { participant });
-        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(),
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(),
                 It.IsAny<GemTransactionType>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
@@ -2002,7 +2042,7 @@ public class RaidServiceTests
             .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
 
         b.Equipment.Setup(e => e.GetEffectiveCombatDataAsync(
-                player.Id, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                player.Id, It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new EffectiveCombatData(10, 10, new GearProcData(0.05, 2.0), 0.0));
 
         var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
@@ -2032,7 +2072,7 @@ public class RaidServiceTests
 
         // No crit (default), no proc, FlatDamagePercent = 0.5
         b.Equipment.Setup(e => e.GetEffectiveCombatDataAsync(
-                player.Id, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                player.Id, It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new EffectiveCombatData(10, 10, null, 0.5));
 
         var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
@@ -2059,7 +2099,7 @@ public class RaidServiceTests
             .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
 
         b.Equipment.Setup(e => e.GetEffectiveCombatDataAsync(
-                player.Id, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                player.Id, It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new EffectiveCombatData(10, 10, new GearProcData(0.05, 2.0), 0.0));
 
         var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
@@ -2409,7 +2449,7 @@ public class RaidServiceTests
             .Returns(Task.CompletedTask);
         b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<RaidParticipant> { participant });
-        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
         var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
@@ -2482,7 +2522,7 @@ public class RaidServiceTests
             .Returns(Task.CompletedTask);
         b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<RaidParticipant> { participant });
-        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
         var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
@@ -2956,7 +2996,7 @@ public class RaidServiceTests
             .Returns(Task.CompletedTask);
         b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<RaidParticipant> { participant });
-        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
         var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
@@ -3722,7 +3762,7 @@ public class RaidServiceTests
             .Returns(Task.CompletedTask);
         b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<RaidParticipant> { part });
-        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
     }
 

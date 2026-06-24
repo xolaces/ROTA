@@ -27,8 +27,8 @@ public class PlayerServiceTests
 
         // Default: pass-through — no gear bonus
         equipment.Setup(e => e.GetEffectiveCombatDataAsync(
-                It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Guid _, int atk, int def, CancellationToken _) =>
+                It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid _, long atk, long def, CancellationToken _) =>
                 new EffectiveCombatData(atk, def, null, 0.0));
 
         // Masteries (System 22) — default: no mastery rows; rating compute stubbed.
@@ -42,10 +42,13 @@ public class PlayerServiceTests
         var gems = new Mock<IGemService>();
         gems.Setup(g => g.GetBalanceAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(0);
+        // Stat service — header "x/xxxx TNL" denominator; default threshold for tests.
+        var stats = new Mock<IStatService>();
+        stats.Setup(s => s.XpToNextLevel(It.IsAny<int>())).Returns(1000);
 
         var service = new PlayerService(
             players.Object, energy.Object, auditLog.Object, equipment.Object,
-            masteryRepo.Object, mastery.Object, achievements.Object, gems.Object);
+            masteryRepo.Object, mastery.Object, achievements.Object, gems.Object, stats.Object);
         return (service, players, energy, auditLog);
     }
 

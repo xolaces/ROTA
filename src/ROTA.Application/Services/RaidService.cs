@@ -85,6 +85,9 @@ public sealed class RaidService : IRaidService
     // System 17 Slice 4 — leaderboard write hooks
     private readonly ILeaderboardService _leaderboards;
     private readonly CombatConfig _combatConfig;
+    // Shared boss-gem reward rules (flat amount + chapter-scaled drop chance) — unified across quest
+    // bosses and raid bosses (owner 2026-06-23). Lives in QuestConfig; raids read it for parity.
+    private readonly QuestConfig _questConfig;
     // System 16 Slice 4 — Gauntlet combat amplifiers (trophies, off-cap auras, strikes, scoring).
     private readonly IPlayerGauntletTrophyRepository _trophyRepo;
     private readonly IGauntletContentProvider        _gauntletContent;
@@ -150,6 +153,7 @@ public sealed class RaidService : IRaidService
         IAchievementService achievements,
         IFriendshipRepository friendships,
         IGauntletBattalionService battalion,
+        IOptions<QuestConfig> questConfig,
         Random? random = null)
     {
         _raids           = raids;
@@ -180,6 +184,7 @@ public sealed class RaidService : IRaidService
         _legionService   = legionService;
         _leaderboards    = leaderboards;
         _combatConfig    = combatConfig.Value;
+        _questConfig     = questConfig.Value;
         _trophyRepo        = trophyRepo;
         _gauntletContent   = gauntletContent;
         _playerEventMagics = playerEventMagics;
@@ -377,7 +382,7 @@ public sealed class RaidService : IRaidService
         Guid playerId, CancellationToken ct = default)
     {
         const int Limit = 50;
-        var rows = await _participants.GetCompletedForPlayerAsync(playerId, Limit, ct);
+        var rows = await _participants.GetCompletedForPlayerAsync(playerId, Limit, since: null, ct);
         var result = new List<CompletedRaidResponse>(rows.Count);
 
         foreach (var p in rows)
@@ -558,8 +563,9 @@ public sealed class RaidService : IRaidService
     // killing hit, Loot is a pure dismiss": rewards (gold/gems/stat-points/items) are now COMPUTED on the
     // killing hit but GRANTED here, when each participant presses Loot. XP/level-ups stay immediate at
     // kill. Each participant claims exactly once (RewardedAt latches); a re-press is idempotent (the
-    // summary is returned, nothing re-granted). The raid stays Lootable (it is no longer flipped to
-    // Looted per claim) so other participants can still return and claim until it expires.
+    // summary is returned, nothing re-granted). The raid stays Lootable while ANY participant still has
+    // an unclaimed reward; once the LAST participant claims, it flips Lootable→Looted (Loot()) so it
+    // drops out of every "lootable" index instead of lingering forever.
     public async Task<LootRaidResult> LootRaidAsync(
         Guid callerId, Guid activeRaidId, CancellationToken ct = default)
     {
@@ -600,7 +606,7 @@ public sealed class RaidService : IRaidService
         // nothing duplicated). A re-press after a committed claim skips here via RewardsClaimed.
         if (!participant.RewardsClaimed)
         {
-            await _raids.AtomicWithAdvisoryLockAsync(participant.Id, async () =>
+            var claimed = await _raids.AtomicWithAdvisoryLockAsync(participant.Id, async () =>
             {
                 if (!await _participants.TryClaimRewardsAsync(participant.Id, DateTimeOffset.UtcNow, ct))
                     return false; // a concurrent claim won the latch — grant nothing, summary still returned
@@ -644,6 +650,21 @@ public sealed class RaidService : IRaidService
 
             // In-memory only, for the response below — the durable latch was the conditional UPDATE.
             participant.MarkRewardsClaimed(DateTimeOffset.UtcNow);
+
+            // Fully-claimed expiry: once no participant has an unclaimed reward, dismiss the raid
+            // (Lootable→Looted) so it no longer lingers in the lootable indexes forever. Loot() is
+            // guarded Lootable-only and does NOT soft-delete (FK/history intact). Only the caller that
+            // actually WON the latch checks this — the just-committed claim is then visible to the query.
+            if (claimed)
+            {
+                var allParticipants = await _participants.GetAllForRaidAsync(activeRaidId, ct);
+                var stillUnclaimed  = allParticipants.Any(p => p.RewardedAt == null);
+                if (!stillUnclaimed && raid.LifecycleState == RaidLifecycleState.Lootable)
+                {
+                    raid.Loot();
+                    await _raids.UpdateAsync(raid, ct);
+                }
+            }
         }
 
         var rewards  = BuildClaimedRewards(participant);
@@ -809,7 +830,7 @@ public sealed class RaidService : IRaidService
         long commanderProcBonus     = 0;   // damage bonus from commander gear proc
         RaidParticipant? participantFinal = null;
         RaidRewards? rewards = null;
-        int xpGained         = 0;
+        long xpGained        = 0;   // int32-overflow-audit Unit 2 — widened (RaidHitResponse.XpGained is long)
         long goldGained      = 0;
         // Running player totals after the hit (captured inside the lock; used to build the response).
         long newPlayerExperience = 0;
@@ -1114,7 +1135,9 @@ public sealed class RaidService : IRaidService
             }
 
             // Apply discernment crit — adjusted by magic CritChanceFlat, capped at 1.0.
-            var crit = _stats.GetCritProfile(player.Stats.DiscernmentInvestment);
+            // int32-overflow-audit Unit 2 — DiscernmentInvestment is long; crit math is bounded (clamped
+            // chance/multiplier), so the (int) narrowing for GetCritProfile is safe.
+            var crit = _stats.GetCritProfile((int)player.Stats.DiscernmentInvestment);
             double adjustedCritChance = Math.Min(1.0, crit.Chance + magicCritBonus);
             isCrit = _random.NextDouble() < adjustedCritChance;
             if (isCrit)
@@ -1207,7 +1230,7 @@ public sealed class RaidService : IRaidService
             // 2026-06-14: SUMMED per-stamina roll — each point of stamina independently rolls Uniform
             // [min, max] and the rolls are summed (batching-invariant, tight spread ⇒ ~50 on a 20-stamina
             // hit). Defaults [1.0, 4.0]. Quests run the same model over energy (QuestService.RollEnergyXp).
-            xpGained = Math.Max(1, (int)ResourceReward.RollSummed(
+            xpGained = Math.Max(1L, ResourceReward.RollSummed(
                 _random, staminaCost, _combatConfig.XpPerStaminaRollMin, _combatConfig.XpPerStaminaRollMax));
             // Gold mirrors the XP roll — staminaCost × Uniform[min,max] (default 3-8/stamina).
             double goldMin  = _combatConfig.GoldPerStaminaRollMin;
@@ -1240,7 +1263,7 @@ public sealed class RaidService : IRaidService
                     if (!mDef.Stacks && xpProcFired) continue;
                     if (_random.NextDouble() < mDef.ProcChance)
                     {
-                        xpGained    = Math.Max(1, (int)Math.Round(xpGained * mDef.ProcAmount));
+                        xpGained    = Math.Max(1L, (long)Math.Round(xpGained * mDef.ProcAmount));
                         xpProcFired = true;
                     }
                 }
@@ -1378,9 +1401,18 @@ public sealed class RaidService : IRaidService
             $"HP: {finalHp}/{raid.MaxHp}. Kill: {finalDefeated}",
             null), ct);
 
-        var newStaminaValue = await _energy.GetCurrentEnergyAsync(playerId, ResourceType.Stamina, ct);
-        var staminaResource = await _resources.GetAsync(playerId, ResourceType.Stamina, ct);
+        // Guild raids spend GuildStamina (not Stamina), so the hit response's stamina fields must
+        // report the pool that actually decremented — otherwise the "Guild Stamina" label shows the
+        // untouched regular Stamina and the bar appears frozen until a profile re-fetch.
+        var staminaResourceType = isGuildRaid ? ResourceType.GuildStamina : ResourceType.Stamina;
+        var newStaminaValue = await _energy.GetCurrentEnergyAsync(playerId, staminaResourceType, ct);
+        var staminaResource = await _resources.GetAsync(playerId, staminaResourceType, ct);
         int newStaminaMax   = staminaResource?.MaxValue ?? 0;
+        // T56 — Health is drained per hit; surface the live value/max so the client can patch the
+        // health bar without a profile re-fetch (otherwise it freezes after the first hit).
+        var newHealthValue  = await _energy.GetCurrentEnergyAsync(playerId, ResourceType.Health, ct);
+        var healthResource  = await _resources.GetAsync(playerId, ResourceType.Health, ct);
+        int newHealthMax    = healthResource?.MaxValue ?? 0;
         string callerTier   = rewards?.ContributionTier ?? "Participant";
         // System 16 Slice 4 — post-spend Strike balance (0 for non-Gauntlet raids; they spend Stamina).
         long newStrikeBalance = isGauntlet ? await _strikes.GetBalanceAsync(playerId, ct) : 0;
@@ -1397,6 +1429,8 @@ public sealed class RaidService : IRaidService
             YourHitCount    = participantFinal.HitCount,
             NewStaminaValue = newStaminaValue,
             NewStaminaMax   = newStaminaMax,
+            NewHealthValue  = newHealthValue,
+            NewHealthMax    = newHealthMax,
             Rewards         = rewards,
             ExpiresAt       = raid.ExpiresAt,
             Difficulty      = raid.Difficulty.ToString(),
@@ -1526,6 +1560,11 @@ public sealed class RaidService : IRaidService
         var callerItems = new List<ItemGrantDTO>();
         IReadOnlyList<int> callerLevelUps = Array.Empty<int>();
 
+        // Unified boss-gem chance scales by the raid's chapter, parsed from its zone-boss id
+        // ("raid_c3z1b" → 3). Non-chapter raids (World/Event/Guild) → the full-goal chapter (max chance).
+        var chMatch = System.Text.RegularExpressions.Regex.Match(definition.Id ?? "", @"c(\d+)z\d+");
+        int raidChapter = chMatch.Success ? int.Parse(chMatch.Groups[1].Value) : _questConfig.GemChanceFullChapter;
+
         foreach (var p in allParticipants)
         {
             var (tier, multiplier) = tierAssignments.GetValueOrDefault(p.PlayerId, ("Participant", 0.25m));
@@ -1536,10 +1575,12 @@ public sealed class RaidService : IRaidService
                 : await _players.FindByIdAsync(p.PlayerId, ct);
             if (participantPlayer is null) continue;
 
-            // Gold and XP scaled by difficulty (same multiplier as HP) then by tier
+            // Gold scaled by difficulty (same multiplier as HP) then by tier.
             double diffMult = HpMultipliers[raid.Difficulty];
             long gold = (long)Math.Round(definition.BaseGoldReward * diffMult * (double)multiplier);
-            int xp    = (int)Math.Round(definition.BaseExperienceReward * diffMult * (double)multiplier);
+            // triage boss-raid-kill-xp-inflated: NO on-kill XP bonus. The killing hit already earns its
+            // normal per-hit (stamina-spent) XP in HitRaidAsync; the kill itself grants ZERO extra XP.
+            int xp = 0;
 
             // T57 — XP + GOLD are IMMEDIATE on-hit rewards (the killing hit grants both, alongside the
             // per-hit on-hit gold/XP). EVERYTHING ELSE — gems, stat-points, items, and the magic/unit/
@@ -1557,17 +1598,17 @@ public sealed class RaidService : IRaidService
             foreach (var newLevel in levelUps)
                 await _stats.GrantLevelUpPointsAsync(p.PlayerId, newLevel, ct);
 
-            // Gems — Rare+ only. T57: COMPUTED now, GRANTED at Loot (the idempotent ref is reused there).
+            // Gems — UNIFIED boss-gem model (owner 2026-06-23): a flat BossGemRewardAmount on a
+            // per-chapter-scaled CHANCE (by the raid's chapter + difficulty), identical to quest bosses.
+            // Replaces the old BaseGemReward × contribution-tier grant (that JSON field is now vestigial).
+            // Rare+ contributors only. T57: COMPUTED now, GRANTED at Loot (idempotent ref reused there).
             int participantGemsGranted = 0;
-            if (displayTier is not "Participant")
+            if (displayTier is not "Participant"
+                && _random.NextDouble() < _questConfig.ResolveBossGemChance(raidChapter, raid.Difficulty.ToString()))
             {
-                int gemAmount = (int)Math.Round(definition.BaseGemReward * (double)multiplier);
-                if (gemAmount > 0)
-                {
-                    participantGemsGranted = gemAmount;
-                    if (p.PlayerId == callerPlayerId)
-                        callerGemsGranted = gemAmount;
-                }
+                participantGemsGranted = _questConfig.BossGemRewardAmount;
+                if (p.PlayerId == callerPlayerId)
+                    callerGemsGranted = participantGemsGranted;
             }
 
             // Loot table — stat points, items, and collection drops (cumulative thresholds). T57: ALL of
@@ -1669,7 +1710,8 @@ public sealed class RaidService : IRaidService
         return new RaidRewards
         {
             GoldGranted              = (long)Math.Round(definition.BaseGoldReward * HpMultipliers[raid.Difficulty] * (double)callerMultiplier),
-            ExperienceGranted        = (int)Math.Round(definition.BaseExperienceReward * HpMultipliers[raid.Difficulty] * (double)callerMultiplier),
+            ExperienceGranted        = 0,   // triage boss-raid-kill-xp-inflated: no on-kill XP bonus — per-hit (stamina-spent) XP only
+
             GemsGranted              = callerGemsGranted,
             NewPlayerGold            = caller.Gold,
             NewPlayerExperience      = caller.Experience,
@@ -1749,7 +1791,9 @@ public sealed class RaidService : IRaidService
             ExperienceGranted           = 0,   // on-hit reward, not claimed at Loot
             GemsGranted                 = p.GemsEarned,
             ContributionTier            = p.ContributionTier,
-            UnassignedStatPointsGranted = p.StatPointsEarned,
+            // RaidRewards.UnassignedStatPointsGranted stays int (not in Unit-2 scope); a per-claim SP
+            // award is bounded well within int32, so the narrowing is safe.
+            UnassignedStatPointsGranted = (int)p.StatPointsEarned,
             ItemsGranted                = items,
         };
     }

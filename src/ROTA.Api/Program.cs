@@ -21,6 +21,20 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+// Response compression (Brotli + Gzip, optimal level). EnableForHttps so payloads compress on
+// the TLS path the clients actually use. Caddy already gzips at the edge for the proxied path,
+// so this mainly benefits direct/WebGL clients that hit Kestrel without going through Caddy.
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProvider>();
+    options.Providers.Add<Microsoft.AspNetCore.ResponseCompression.GzipCompressionProvider>();
+});
+builder.Services.Configure<Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProviderOptions>(
+    o => o.Level = System.IO.Compression.CompressionLevel.Optimal);
+builder.Services.Configure<Microsoft.AspNetCore.ResponseCompression.GzipCompressionProviderOptions>(
+    o => o.Level = System.IO.Compression.CompressionLevel.Optimal);
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -318,6 +332,10 @@ app.UseCors("RotaPolicy");
 
 // [5] Routing
 app.UseRouting();
+
+// [5b] Response compression — after routing, before endpoints, so controller/SignalR
+// responses are compressed for clients that send an Accept-Encoding header.
+app.UseResponseCompression();
 
 // [6] Authentication
 app.UseAuthentication();

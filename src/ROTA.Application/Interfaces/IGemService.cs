@@ -4,9 +4,9 @@ namespace ROTA.Application.Interfaces;
 
 public interface IGemService
 {
-    Task<int> GetBalanceAsync(Guid playerId, CancellationToken ct = default);
+    Task<long> GetBalanceAsync(Guid playerId, CancellationToken ct = default);
 
-    Task<bool> GrantGemsAsync(Guid playerId, int amount, GemTransactionType type, string? referenceId, CancellationToken ct = default);
+    Task<bool> GrantGemsAsync(Guid playerId, long amount, GemTransactionType type, string? referenceId, CancellationToken ct = default);
 
     /// <summary>
     /// Attempts to deduct <paramref name="amount"/> gems from the player's ledger.
@@ -17,7 +17,7 @@ public interface IGemService
     /// exists — the original charge committed (idempotent replay, treat as success);
     /// <see cref="GemSpendOutcome.InsufficientBalance"/> if the balance was too low.
     /// </returns>
-    Task<GemSpendOutcome> SpendGemsAsync(Guid playerId, int amount, GemTransactionType type, string? referenceId, CancellationToken ct = default);
+    Task<GemSpendOutcome> SpendGemsAsync(Guid playerId, long amount, GemTransactionType type, string? referenceId, CancellationToken ct = default);
 
     Task<bool> DailyRefillAsync(Guid playerId, CancellationToken ct = default);
 }

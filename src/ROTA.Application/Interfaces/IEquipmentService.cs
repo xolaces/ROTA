@@ -10,7 +10,7 @@ public interface IEquipmentService
     Task<IReadOnlyList<OwnedGearResponse>>    GetOwnedGearAsync(Guid playerId, CancellationToken ct = default);
 
     // Called by RaidService on every hit. baseAtk/baseDef are from PlayerStats.
-    Task<EffectiveCombatData> GetEffectiveCombatDataAsync(Guid playerId, int baseAtk, int baseDef, CancellationToken ct = default);
+    Task<EffectiveCombatData> GetEffectiveCombatDataAsync(Guid playerId, long baseAtk, long baseDef, CancellationToken ct = default);
 
     /// <summary>
     /// Idempotent gear grant — upsert: adds to existing stack or creates a new row.
@@ -21,8 +21,8 @@ public interface IEquipmentService
 
 // Lives in this file alongside the interface.
 public sealed record EffectiveCombatData(
-    int           EffectiveAttack,
-    int           EffectiveDefense,
+    long          EffectiveAttack,
+    long          EffectiveDefense,
     GearProcData? MountProc,           // null when no mount is equipped
     double        FlatDamagePercent);  // accumulated from conditional bonuses; 0.0 when none
 

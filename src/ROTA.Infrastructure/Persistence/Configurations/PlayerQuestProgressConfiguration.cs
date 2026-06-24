@@ -24,6 +24,12 @@ public class PlayerQuestProgressConfiguration : IEntityTypeConfiguration<PlayerQ
             .HasMaxLength(50)
             .IsRequired();
 
+        // Per-difficulty depletion track (triage node-depletion-per-difficulty). Stored as int.
+        builder.Property(p => p.Difficulty)
+            .HasColumnName("difficulty")
+            .HasConversion<int>()
+            .IsRequired();
+
         builder.Property(p => p.CompletionCount)
             .HasColumnName("completion_count")
             .HasDefaultValue(0);
@@ -51,10 +57,11 @@ public class PlayerQuestProgressConfiguration : IEntityTypeConfiguration<PlayerQ
             .HasColumnName("updated_at")
             .HasDefaultValueSql("NOW()");
 
-        // One row per player per quest
-        builder.HasIndex(p => new { p.PlayerId, p.QuestId })
+        // One row per player per quest PER DIFFICULTY (triage node-depletion-per-difficulty: each
+        // difficulty has its own independent depletion/clear/unlock track).
+        builder.HasIndex(p => new { p.PlayerId, p.QuestId, p.Difficulty })
             .IsUnique()
-            .HasDatabaseName("ix_player_quest_progress_player_quest");
+            .HasDatabaseName("ix_player_quest_progress_player_quest_difficulty");
 
         // FK index
         builder.HasIndex(p => p.PlayerId)

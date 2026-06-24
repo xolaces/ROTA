@@ -21,5 +21,5 @@ public interface IGauntletBattalionService
     /// EFFECTIVE attack/defense (gear-included) so the hit path avoids a second equipment read.
     /// </summary>
     Task<long> ComputePowerAsync(
-        Guid playerId, int playerEffectiveAttack, int playerEffectiveDefense, CancellationToken ct = default);
+        Guid playerId, long playerEffectiveAttack, long playerEffectiveDefense, CancellationToken ct = default);
 }

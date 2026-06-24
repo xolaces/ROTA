@@ -8,7 +8,12 @@ public interface IRaidParticipantRepository
 {
     Task<RaidParticipant?> FindByRaidAndPlayerAsync(Guid activeRaidId, Guid playerId, CancellationToken ct = default);
     Task<IReadOnlyList<RaidParticipant>> GetAllForRaidAsync(Guid activeRaidId, CancellationToken ct = default);
-    Task<IReadOnlyList<RaidParticipant>> GetCompletedForPlayerAsync(Guid playerId, int limit, CancellationToken ct = default);
+    /// <summary>
+    /// Player's looted/rewarded raid history, newest first, capped at <paramref name="limit"/>.
+    /// <paramref name="since"/> (default ~30 days ago) filters out stale history so the Completed tab
+    /// shows recent activity only; pass <see cref="DateTimeOffset.MinValue"/> for all-time.
+    /// </summary>
+    Task<IReadOnlyList<RaidParticipant>> GetCompletedForPlayerAsync(Guid playerId, int limit, DateTimeOffset? since = null, CancellationToken ct = default);
     Task<RaidParticipant> CreateAsync(RaidParticipant participant, CancellationToken ct = default);
     Task UpdateAsync(RaidParticipant participant, CancellationToken ct = default);
 

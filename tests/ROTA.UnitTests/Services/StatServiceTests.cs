@@ -82,8 +82,8 @@ public class StatServiceTests
             .Returns((int _, PlayerClass current) => current);
         // Default: pass-through — no gear bonus
         equipment.Setup(e => e.GetEffectiveCombatDataAsync(
-                It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Guid _, int atk, int def, CancellationToken _) =>
+                It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid _, long atk, long def, CancellationToken _) =>
                 new EffectiveCombatData(atk, def, null, 0.0));
 
         return new ServiceBundle(
@@ -257,7 +257,7 @@ public class StatServiceTests
         var b = BuildService();
         var player = MakePlayerWithStats(level: level, skillPoints: 0);
         SetupPlayer(b, player);
-        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
         await b.Service.GrantLevelUpPointsAsync(player.Id, level);
@@ -274,7 +274,7 @@ public class StatServiceTests
         }
         else
         {
-            b.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never,
+            b.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never,
                 $"level {level} is not divisible by 5 so no gems should be granted");
         }
     }
@@ -292,7 +292,7 @@ public class StatServiceTests
         var b = BuildService();
         var player = MakePlayerWithStats(level: level, skillPoints: 0);
         SetupPlayer(b, player);
-        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
         await b.Service.GrantLevelUpPointsAsync(player.Id, level);
@@ -311,12 +311,12 @@ public class StatServiceTests
         var b = BuildService();
         var player = MakePlayerWithStats(level: 2000, skillPoints: 0);
         SetupPlayer(b, player);
-        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
         await b.Service.GrantLevelUpPointsAsync(player.Id, 2000);
 
-        b.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(),
+        b.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(),
             GemTransactionType.PinnacleReward, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -326,12 +326,12 @@ public class StatServiceTests
         var b = BuildService();
         var player = MakePlayerWithStats(level: 12, skillPoints: 0);
         SetupPlayer(b, player);
-        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
         await b.Service.GrantLevelUpPointsAsync(player.Id, 12);
 
-        b.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(),
+        b.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(),
             GemTransactionType.PinnacleReward, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 

@@ -7,8 +7,10 @@ public class DevGrantRequest
     /// <summary>Target player; null/empty = the calling admin.</summary>
     public Guid? TargetPlayerId { get; set; }
     public long Gold { get; set; }
-    public int Gems { get; set; }
-    public int SkillPoints { get; set; }
+    // long for symmetry with Gold/Xp (int32-overflow-audit): admin grants feed long sinks
+    // (GrantGemsAsync / AddUnassignedPointsAsync), so no int32 ceiling on a dev grant.
+    public long Gems { get; set; }
+    public long SkillPoints { get; set; }
     public long Xp { get; set; }
 }
 

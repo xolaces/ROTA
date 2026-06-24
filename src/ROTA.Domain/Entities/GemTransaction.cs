@@ -9,7 +9,7 @@ public class GemTransaction
 
     public static GemTransaction Create(
         Guid playerId,
-        int amount,
+        long amount,
         GemTransactionType transactionType,
         string? referenceId)
         => new GemTransaction
@@ -25,7 +25,9 @@ public class GemTransaction
     public Guid Id { get; private set; }
     public Guid PlayerId { get; private set; }
 
-    public int Amount { get; private set; }
+    // int32-overflow-audit (owner-locked 2026-06-22): the ledger balance = SQL SUM(amount), so even
+    // safe individual rows can overflow int32 over a no-reset capped-scaling lifetime. bigint column.
+    public long Amount { get; private set; }
 
     public GemTransactionType TransactionType { get; private set; }
 

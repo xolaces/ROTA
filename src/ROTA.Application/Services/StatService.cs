@@ -9,7 +9,7 @@ namespace ROTA.Application.Services;
 
 public sealed class StatService : IStatService
 {
-    private const double LsiCap = 8.0;
+    private const double LsiCap = 7.45;   // tuned down 2026-06-23 (was 9.0 canonical / 8.0 original) — owner pacing call "for now"
 
     private readonly IPlayerRepository _players;
     private readonly IEnergyService _energy;
@@ -67,14 +67,14 @@ public sealed class StatService : IStatService
         // LSI cap check — only for Energy and Stamina investment
         if (statType is StatType.Energy or StatType.Stamina)
         {
-            int projectedEnergy  = stats.EnergyInvestment  + (statType == StatType.Energy  ? amount : 0);
-            int projectedStamina = stats.StaminaInvestment + (statType == StatType.Stamina ? amount : 0);
+            long projectedEnergy  = stats.EnergyInvestment  + (statType == StatType.Energy  ? amount : 0);
+            long projectedStamina = stats.StaminaInvestment + (statType == StatType.Stamina ? amount : 0);
             double newLsi = player.Level > 0
                 ? (projectedEnergy + projectedStamina * 2.0) / player.Level
                 : 0;
 
             if (newLsi > LsiCap)
-                return Fail($"Allocation would exceed LSI cap of {LsiCap:F1}. Current LSI: {stats.ComputeLSI(player.Level):F2}");
+                return Fail($"Allocation would exceed LSI cap of {LsiCap:F2}. Current LSI: {stats.ComputeLSI(player.Level):F2}");
         }
 
         switch (statType)
@@ -94,15 +94,18 @@ public sealed class StatService : IStatService
         // T30 — raising the cap by N also credits +N to the *current* pool (the gained delta, capped
         // at the new max by RefillEnergyAsync) so the spend has an immediate effect. This is NOT a
         // full refill — contrast GrantLevelUpPointsAsync, which calls RefillToMaxAsync.
+        // int32-overflow-audit Unit 2: ComputeMax* are now long (uncapped investment), but the resource
+        // pool max (PlayerResource) is deliberately int and out of Unit-2 scope; the LSI cap bounds the
+        // investable energy/stamina well within int32, so the (int) narrowing here is safe.
         if (statType == StatType.Energy)
         {
-            await _energy.UpdateMaxAsync(playerId, ResourceType.Energy, stats.ComputeMaxEnergy(), ct);
+            await _energy.UpdateMaxAsync(playerId, ResourceType.Energy, (int)stats.ComputeMaxEnergy(), ct);
             await _energy.RefillEnergyAsync(playerId, ResourceType.Energy, amount, ct);
         }
 
         if (statType == StatType.Stamina)
         {
-            await _energy.UpdateMaxAsync(playerId, ResourceType.Stamina, stats.ComputeMaxStamina(), ct);
+            await _energy.UpdateMaxAsync(playerId, ResourceType.Stamina, (int)stats.ComputeMaxStamina(), ct);
             await _energy.RefillEnergyAsync(playerId, ResourceType.Stamina, amount, ct);
         }
 
@@ -119,6 +122,12 @@ public sealed class StatService : IStatService
             $"Allocated {amount} points to {statType}. SkillPoints remaining: {stats.SkillPoints}",
             null), ct);
 
+        // atk-def-chip-stale-on-alloc — return the gear-inclusive effective ATK/DEF so the client can patch
+        // its stat chips inline; without this the chips only refresh on a post-allocate profile round-trip,
+        // which goes stale if that fetch fails.
+        var combat = await _equipment.GetEffectiveCombatDataAsync(
+            playerId, stats.BaseAttack, stats.BaseDefense, ct);
+
         return new AllocateStatResponse
         {
             Success                  = true,
@@ -132,6 +141,8 @@ public sealed class StatService : IStatService
             NewMaxStamina            = stats.ComputeMaxStamina(),
             NewMaxGuildStamina       = player.Level,
             CurrentLsi               = (decimal)stats.ComputeLSI(player.Level),
+            EffectiveAttack          = combat.EffectiveAttack,
+            EffectiveDefense         = combat.EffectiveDefense,
         };
     }
 
@@ -198,7 +209,7 @@ public sealed class StatService : IStatService
             null), ct);
     }
 
-    public async Task AddUnassignedPointsAsync(Guid playerId, int amount, CancellationToken ct = default)
+    public async Task AddUnassignedPointsAsync(Guid playerId, long amount, CancellationToken ct = default)
     {
         var player = await _players.FindByIdWithStatsAsync(playerId, ct);
         if (player?.Stats is null) return;

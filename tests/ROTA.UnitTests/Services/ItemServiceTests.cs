@@ -17,6 +17,7 @@ public class ItemServiceTests
         ItemService Service,
         Mock<IPlayerInventoryRepository> Inventory,
         Mock<IItemDefinitionProvider> ItemDefs,
+        Mock<IRaidDefinitionProvider> RaidDefs,
         Mock<IStatService> Stats,
         Mock<IRaidService> Raids,
         Mock<IAuditLogRepository> AuditLog);
@@ -25,6 +26,7 @@ public class ItemServiceTests
     {
         var inventory = new Mock<IPlayerInventoryRepository>();
         var itemDefs  = new Mock<IItemDefinitionProvider>();
+        var raidDefs  = new Mock<IRaidDefinitionProvider>();
         var stats     = new Mock<IStatService>();
         var raids     = new Mock<IRaidService>();
         var auditLog  = new Mock<IAuditLogRepository>();
@@ -35,9 +37,9 @@ public class ItemServiceTests
             .Returns(Task.CompletedTask);
 
         return new ServiceBundle(
-            new ItemService(inventory.Object, itemDefs.Object, stats.Object, raids.Object, auditLog.Object,
-                new ROTA.UnitTests.TestSupport.PassThroughPlayerMutationLock()),
-            inventory, itemDefs, stats, raids, auditLog);
+            new ItemService(inventory.Object, itemDefs.Object, raidDefs.Object, stats.Object, raids.Object,
+                auditLog.Object, new ROTA.UnitTests.TestSupport.PassThroughPlayerMutationLock()),
+            inventory, itemDefs, raidDefs, stats, raids, auditLog);
     }
 
     private static ItemDefinition StatBagDef(int sp = 5) => new()
@@ -199,7 +201,7 @@ public class ItemServiceTests
 
         result.Success.Should().BeFalse();
         result.FailureCode.Should().Be(UseItemFailureCode.InsufficientItems);
-        b.Stats.Verify(s => s.AddUnassignedPointsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+        b.Stats.Verify(s => s.AddUnassignedPointsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     // UseItemAsync — negative / zero quantity guard (audit fix: item+SP dup)
@@ -222,7 +224,7 @@ public class ItemServiceTests
         result.Success.Should().BeFalse();
         result.FailureCode.Should().Be(UseItemFailureCode.InsufficientItems);
         // The exploit was: negative quantity ADDS items (Quantity -= -1) and grants negative SP.
-        b.Stats.Verify(s => s.AddUnassignedPointsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+        b.Stats.Verify(s => s.AddUnassignedPointsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<CancellationToken>()), Times.Never);
         b.Inventory.Verify(r => r.UpdateAsync(It.IsAny<PlayerInventoryItem>(), It.IsAny<CancellationToken>()), Times.Never);
         inv.Quantity.Should().Be(5, "inventory must be untouched on a rejected use");
     }

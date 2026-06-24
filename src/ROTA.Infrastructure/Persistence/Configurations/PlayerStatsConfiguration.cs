@@ -21,11 +21,11 @@ public class PlayerStatsConfiguration : IEntityTypeConfiguration<PlayerStats>
 
         builder.Property(s => s.BaseAttack)
             .HasColumnName("base_attack")
-            .HasDefaultValue(10);
+            .HasDefaultValue(10L);
 
         builder.Property(s => s.BaseDefense)
             .HasColumnName("base_defense")
-            .HasDefaultValue(10);
+            .HasDefaultValue(10L);
 
         builder.Property(s => s.BaseMaxHealth)
             .HasColumnName("base_max_health")
@@ -38,19 +38,19 @@ public class PlayerStatsConfiguration : IEntityTypeConfiguration<PlayerStats>
         // Investable stat fields
         builder.Property(s => s.EnergyInvestment)
             .HasColumnName("energy_investment")
-            .HasDefaultValue(0);
+            .HasDefaultValue(0L);
 
         builder.Property(s => s.StaminaInvestment)
             .HasColumnName("stamina_investment")
-            .HasDefaultValue(0);
+            .HasDefaultValue(0L);
 
         builder.Property(s => s.DiscernmentInvestment)
             .HasColumnName("discernment_investment")
-            .HasDefaultValue(0);
+            .HasDefaultValue(0L);
 
         builder.Property(s => s.SkillPoints)
             .HasColumnName("skill_points")
-            .HasDefaultValue(0);
+            .HasDefaultValue(0L);
 
         builder.Property(s => s.UpdatedAt)
             .HasColumnName("updated_at")

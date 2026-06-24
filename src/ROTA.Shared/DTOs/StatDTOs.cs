@@ -12,34 +12,42 @@ public class AllocateStatResponse
     public string? FailureReason { get; set; }
 
     // Fields populated only on success
+    // int32-overflow-audit Unit 2 — stat/investment/max amounts widened to long (uncapped growth).
     public string StatType { get; set; } = string.Empty;
-    public int AmountAllocated { get; set; }
-    public int NewSkillPointsRemaining { get; set; }
-    public int NewEnergyInvestment { get; set; }
-    public int NewStaminaInvestment { get; set; }
-    public int NewDiscernmentInvestment { get; set; }
-    public int NewMaxEnergy { get; set; }
-    public int NewMaxStamina { get; set; }
-    public int NewMaxGuildStamina { get; set; }
+    public long AmountAllocated { get; set; }
+    public long NewSkillPointsRemaining { get; set; }
+    public long NewEnergyInvestment { get; set; }
+    public long NewStaminaInvestment { get; set; }
+    public long NewDiscernmentInvestment { get; set; }
+    public long NewMaxEnergy { get; set; }
+    public long NewMaxStamina { get; set; }
+    public long NewMaxGuildStamina { get; set; }
     public decimal CurrentLsi { get; set; }
+
+    // atk-def-chip-stale-on-alloc — gear-inclusive effective ATK/DEF returned on a successful allocate so
+    // the client can patch its stat chips inline (no dependency on a follow-up profile round-trip).
+    public long EffectiveAttack { get; set; }
+    public long EffectiveDefense { get; set; }
 }
 
 public class PlayerStatsResponse
 {
-    public int SkillPoints { get; set; }
-    public int EnergyInvestment { get; set; }
-    public int StaminaInvestment { get; set; }
-    public int DiscernmentInvestment { get; set; }
+    // int32-overflow-audit Unit 2 — stat/investment/effective fields widened to long (uncapped growth);
+    // MaxEnergy/MaxStamina follow PlayerStats.ComputeMax* (now long). MaxGuildStamina = Player.Level (int).
+    public long SkillPoints { get; set; }
+    public long EnergyInvestment { get; set; }
+    public long StaminaInvestment { get; set; }
+    public long DiscernmentInvestment { get; set; }
     public decimal CurrentLsi { get; set; }
-    public int MaxEnergy { get; set; }
-    public int MaxStamina { get; set; }
+    public long MaxEnergy { get; set; }
+    public long MaxStamina { get; set; }
     public int MaxGuildStamina { get; set; }
-    public int BaseAttack { get; set; }
-    public int BaseDefense { get; set; }
-    public int BaseMaxHealth { get; set; }
-    public int CurrentHealth { get; set; }
-    public int EffectiveAttack  { get; set; }
-    public int EffectiveDefense { get; set; }
+    public long BaseAttack { get; set; }
+    public long BaseDefense { get; set; }
+    public long BaseMaxHealth { get; set; }
+    public long CurrentHealth { get; set; }
+    public long EffectiveAttack  { get; set; }
+    public long EffectiveDefense { get; set; }
 }
 
 /// <summary>Crit chance and multiplier computed from a player's Discernment investment.</summary>

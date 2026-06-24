@@ -1,3 +1,5 @@
+using ROTA.Domain.Enums;
+
 namespace ROTA.Domain.Entities;
 
 public class PlayerQuestProgress
@@ -5,12 +7,14 @@ public class PlayerQuestProgress
     // Required by EF Core
     private PlayerQuestProgress() { }
 
-    public static PlayerQuestProgress Create(Guid playerId, string questId, double startProgress = 100.0)
+    public static PlayerQuestProgress Create(
+        Guid playerId, string questId, QuestDifficulty difficulty, double startProgress = 100.0)
         => new PlayerQuestProgress
         {
             Id = Guid.NewGuid(),
             PlayerId = playerId,
             QuestId = questId,
+            Difficulty = difficulty,
             CompletionCount = 0,
             Progress = startProgress,
             IsCleared = false,
@@ -22,6 +26,12 @@ public class PlayerQuestProgress
     public Guid Id { get; private set; }
     public Guid PlayerId { get; private set; }
     public string QuestId { get; private set; } = string.Empty;
+    // Per-difficulty depletion track (triage node-depletion-per-difficulty, owner 2026-06-23). Each
+    // (player, quest, difficulty) has its OWN independent Progress / IsCleared / HasEverCleared /
+    // CompletionCount, so a cheap-difficulty grind can no longer deplete an expensive-difficulty node
+    // (the shared-row sigil exploit). Owner-confirmed "per-difficulty ladder": HasEverCleared (the
+    // forward map-unlock latch) is also per-difficulty — each tier is progressed in order on its own.
+    public QuestDifficulty Difficulty { get; private set; }
     public int CompletionCount { get; private set; }
     // Node depletion (System 20). Starts at the configured node value and counts down each attempt;
     // when it reaches 0 the node is Cleared (locked). A chapter-boss completion resets it (T26).

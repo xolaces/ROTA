@@ -55,15 +55,15 @@ public class RaidParticipantConfiguration : IEntityTypeConfiguration<RaidPartici
 
         builder.Property(p => p.XpEarned)
             .HasColumnName("xp_earned")
-            .HasDefaultValue(0);
+            .HasDefaultValue(0L);
 
         builder.Property(p => p.GemsEarned)
             .HasColumnName("gems_earned")
-            .HasDefaultValue(0);
+            .HasDefaultValue(0L);
 
         builder.Property(p => p.StatPointsEarned)
             .HasColumnName("stat_points_earned")
-            .HasDefaultValue(0);
+            .HasDefaultValue(0L);
 
         // Plain text column — application serializes/deserializes List<ItemGrantDTO> itself.
         // No EF value converter.

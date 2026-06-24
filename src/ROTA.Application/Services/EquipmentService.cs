@@ -163,7 +163,7 @@ public sealed class EquipmentService : IEquipmentService
     }
 
     public async Task<EffectiveCombatData> GetEffectiveCombatDataAsync(
-        Guid playerId, int baseAtk, int baseDef, CancellationToken ct = default)
+        Guid playerId, long baseAtk, long baseDef, CancellationToken ct = default)
     {
         var rows = await _repo.GetEquippedAsync(playerId, ct);
 

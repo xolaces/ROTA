@@ -117,12 +117,6 @@ public class QuestServiceTests
                 BaseEnergyCost = 5, GoldReward = 150, ExperienceReward = 75, GemReward = 0, PrerequisiteQuestId = "q001" },
     };
 
-    private static QuestDefinition QuestWithGems(int gemReward = 2) => new()
-    {
-        Id = "q_gem", Name = "Gem Quest", Chapter = 1, ZoneIndex = 0, ZoneName = "Z0", NodeIndex = 0,
-        BaseEnergyCost = 5, GoldReward = 100, ExperienceReward = 50, GemReward = gemReward,
-    };
-
     private static QuestDefinition BossQuest() => new()
     {
         Id = "q_boss", Name = "Boss Quest", Chapter = 1, ZoneIndex = 0, ZoneName = "Z0", NodeIndex = 1,
@@ -157,7 +151,7 @@ public class QuestServiceTests
             .Returns(Task.CompletedTask);
         b.Energy.Setup(e => e.SpendEnergyAsync(player.Id, ResourceType.Energy, It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(energySuccess);
-        b.QuestProgress.Setup(r => r.GetAsync(player.Id, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, It.IsAny<string>(), It.IsAny<QuestDifficulty>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((PlayerQuestProgress?)null);
         b.QuestProgress.Setup(r => r.CreateAsync(It.IsAny<PlayerQuestProgress>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -192,7 +186,7 @@ public class QuestServiceTests
         var playerId = Guid.NewGuid();
 
         // Completing q001 once is NOT enough now — the node must be fully depleted (Cleared).
-        var partial = PlayerQuestProgress.Create(playerId, "q001");
+        var partial = PlayerQuestProgress.Create(playerId, "q001", QuestDifficulty.Normal);
         partial.RecordCompletion();
         partial.Deplete(5);   // 95 remaining → not cleared
 
@@ -409,9 +403,9 @@ public class QuestServiceTests
         SetupPlayerAndEnergy(b, player);
 
         // Existing node with only 5 progress left — one more battle attempt clears it.
-        var nearlyDone = PlayerQuestProgress.Create(player.Id, "q001");
+        var nearlyDone = PlayerQuestProgress.Create(player.Id, "q001", QuestDifficulty.Normal);
         nearlyDone.Deplete(95); // 5 remaining, not yet cleared
-        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q001", It.IsAny<CancellationToken>()))
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q001", It.IsAny<QuestDifficulty>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(nearlyDone);
 
         var result = await b.Service.AttemptQuestAsync(player.Id, "q001", QuestDifficulty.Normal);
@@ -439,10 +433,10 @@ public class QuestServiceTests
         b.Definitions.Setup(d => d.GetById("q001")).Returns(TwoQuestChain()[0]);
         SetupPlayerAndEnergy(b, player);
 
-        var cleared = PlayerQuestProgress.Create(player.Id, "q001");
+        var cleared = PlayerQuestProgress.Create(player.Id, "q001", QuestDifficulty.Normal);
         cleared.Deplete(100); // already at 0 / cleared
         cleared.IsCleared.Should().BeTrue();
-        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q001", It.IsAny<CancellationToken>()))
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q001", It.IsAny<QuestDifficulty>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(cleared);
 
         var result = await b.Service.AttemptQuestAsync(player.Id, "q001", QuestDifficulty.Normal);
@@ -474,21 +468,21 @@ public class QuestServiceTests
         SetupPlayerAndEnergy(b, player);
 
         // Z0 sibling battle — previously cleared; should be RESTORED by the zone reset.
-        var battle = PlayerQuestProgress.Create(player.Id, "q001");
+        var battle = PlayerQuestProgress.Create(player.Id, "q001", QuestDifficulty.Normal);
         battle.Deplete(100); // cleared (HasEverCleared latched)
-        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q001", It.IsAny<CancellationToken>()))
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q001", It.IsAny<QuestDifficulty>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(battle);
 
         // The Z0 boss with 2.5 progress left — one boss attempt (depletes 2.5) clears it.
-        var boss = PlayerQuestProgress.Create(player.Id, "q_boss");
+        var boss = PlayerQuestProgress.Create(player.Id, "q_boss", QuestDifficulty.Normal);
         boss.Deplete(97.5);
-        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q_boss", It.IsAny<CancellationToken>()))
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q_boss", It.IsAny<QuestDifficulty>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(boss);
 
         // A node in a DIFFERENT zone (Z1) — previously cleared; must be LEFT UNTOUCHED by the reset.
-        var otherZoneNode = PlayerQuestProgress.Create(player.Id, "z1_node");
+        var otherZoneNode = PlayerQuestProgress.Create(player.Id, "z1_node", QuestDifficulty.Normal);
         otherZoneNode.Deplete(100); // cleared
-        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "z1_node", It.IsAny<CancellationToken>()))
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "z1_node", It.IsAny<QuestDifficulty>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(otherZoneNode);
 
         var result = await b.Service.AttemptQuestAsync(player.Id, "q_boss", QuestDifficulty.Normal);
@@ -518,9 +512,9 @@ public class QuestServiceTests
         SetupPlayerAndEnergy(b, player);
 
         // Prereq q001 exists but only partially depleted → q002 still blocked.
-        var prereq = PlayerQuestProgress.Create(player.Id, "q001");
+        var prereq = PlayerQuestProgress.Create(player.Id, "q001", QuestDifficulty.Normal);
         prereq.Deplete(50); // 50 remaining, not cleared
-        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q001", It.IsAny<CancellationToken>()))
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q001", It.IsAny<QuestDifficulty>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(prereq);
 
         var result = await b.Service.AttemptQuestAsync(player.Id, "q002", QuestDifficulty.Normal);
@@ -617,9 +611,9 @@ public class QuestServiceTests
         SetupPlayerAndEnergy(b, player);
 
         // The zone-boss attempt gate needs every NON-boss sibling ever-cleared.
-        var afterProg = PlayerQuestProgress.Create(player.Id, "q_after");
+        var afterProg = PlayerQuestProgress.Create(player.Id, "q_after", QuestDifficulty.Normal);
         afterProg.Deplete(100);
-        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q_after", It.IsAny<CancellationToken>()))
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q_after", It.IsAny<QuestDifficulty>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(afterProg);
 
         var result = await b.Service.AttemptQuestAsync(player.Id, "q_boss", QuestDifficulty.Normal);
@@ -646,7 +640,7 @@ public class QuestServiceTests
         result.FailureCode.Should().Be(QuestFailureCode.InsufficientEnergy);
         b.Players.Verify(p => p.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>()), Times.Never);
         b.QuestProgress.Verify(r => r.CreateAsync(It.IsAny<PlayerQuestProgress>(), It.IsAny<CancellationToken>()), Times.Never);
-        b.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+        b.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     // AttemptQuestAsync — prerequisite not met
@@ -658,8 +652,8 @@ public class QuestServiceTests
         var playerId = Guid.NewGuid();
 
         b.Definitions.Setup(d => d.GetById("q002")).Returns(TwoQuestChain()[1]);
-        var prereq = PlayerQuestProgress.Create(playerId, "q001"); // CompletionCount=0
-        b.QuestProgress.Setup(r => r.GetAsync(playerId, "q001", It.IsAny<CancellationToken>()))
+        var prereq = PlayerQuestProgress.Create(playerId, "q001", QuestDifficulty.Normal); // CompletionCount=0
+        b.QuestProgress.Setup(r => r.GetAsync(playerId, "q001", It.IsAny<QuestDifficulty>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(prereq);
 
         var result = await b.Service.AttemptQuestAsync(playerId, "q002", QuestDifficulty.Normal);
@@ -1081,26 +1075,157 @@ public class QuestServiceTests
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    // AttemptQuestAsync — gem idempotency key includes difficulty
+    // AttemptQuestAsync — quest-boss gems (triage quest-boss-gem-on-every-hit): a BOSS-CLEAR reward
+    // only, flat amount on a per-difficulty roll, idempotent stable key. NOT a per-hit drip.
 
     [Fact]
-    public async Task AttemptQuest_UsesCorrectGemIdempotencyKey_IncludesDifficulty()
+    public async Task AttemptQuest_BossClear_GrantsFlatGems_OnChanceRoll_WithStableKey()
     {
-        var b = BuildService();
+        // FixedRandom(0.0) forces the roll to pass; progress pinned one tick from 0 so this attempt
+        // clears the node (boss deplete 2.5 ≥ 2.0 → Progress 0 → cleared).
+        var b = BuildService(new FixedRandom(0.0));
         var player = MakePlayer();
-        var quest = QuestWithGems(gemReward: 2);
-
-        b.Definitions.Setup(d => d.GetById("q_gem")).Returns(quest);
+        var boss = new QuestDefinition
+        {
+            Id = "q_boss", Name = "Boss Quest", Chapter = 1, ZoneIndex = 0, ZoneName = "Z0", NodeIndex = 0,
+            BaseEnergyCost = 8, NodeType = "Boss", GoldReward = 200, ExperienceReward = 100, GemReward = 1,
+        };
+        b.Definitions.Setup(d => d.GetById("q_boss")).Returns(boss);
         SetupPlayerAndEnergy(b, player);
-        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+        var nearClear = PlayerQuestProgress.Create(player.Id, "q_boss", QuestDifficulty.Normal, 2.0);
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q_boss", It.IsAny<QuestDifficulty>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(nearClear);
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
-        await b.Service.AttemptQuestAsync(player.Id, "q_gem", QuestDifficulty.Normal);
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q_boss", QuestDifficulty.Normal);
 
-        var expectedRef = $"quest:q_gem:{player.Id}:1:Normal";
+        result.Success.Should().BeTrue();
+        // Flat amount = 2 ("2 gems" standard); key includes difficulty + the per-difficulty count (1).
+        var expectedRef = $"questbossgem:q_boss:{player.Id}:Normal:1";
         b.Gems.Verify(g => g.GrantGemsAsync(
             player.Id, 2, GemTransactionType.QuestReward, expectedRef,
             It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_BossHit_GrantsNoGems_WhenNodeNotCleared()
+    {
+        // The exploit fix: a boss hit that does NOT clear the node grants zero gems (the old code
+        // dripped gems on every successful attempt). FixedRandom(0.0) would pass the roll, so this
+        // asserts the completion GATE, not the roll. Fresh node (100) depletes 2.5 → 97.5, not cleared.
+        var b = BuildService(new FixedRandom(0.0));
+        var player = MakePlayer();
+        var boss = new QuestDefinition
+        {
+            Id = "q_boss", Name = "Boss Quest", Chapter = 1, ZoneIndex = 0, ZoneName = "Z0", NodeIndex = 0,
+            BaseEnergyCost = 8, NodeType = "Boss", GoldReward = 200, ExperienceReward = 100, GemReward = 1,
+        };
+        b.Definitions.Setup(d => d.GetById("q_boss")).Returns(boss);
+        SetupPlayerAndEnergy(b, player);
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q_boss", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue();
+        result.GemsGranted.Should().Be(0, "boss gems are a completion reward, never per-hit");
+        b.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_NonBossNode_NeverGrantsGems_EvenOnClear()
+    {
+        // Only boss nodes award gems now; a battle node never does, even when it clears.
+        var b = BuildService(new FixedRandom(0.0));
+        var player = MakePlayer();
+        var battle = new QuestDefinition
+        {
+            Id = "q_battle", Name = "Battle", Chapter = 1, ZoneIndex = 0, ZoneName = "Z0", NodeIndex = 0,
+            BaseEnergyCost = 5, GoldReward = 100, ExperienceReward = 50, GemReward = 2,
+        };
+        b.Definitions.Setup(d => d.GetById("q_battle")).Returns(battle);
+        SetupPlayerAndEnergy(b, player);
+        var nearClear = PlayerQuestProgress.Create(player.Id, "q_battle", QuestDifficulty.Normal, 2.0); // battle deplete 5 → clears
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q_battle", It.IsAny<QuestDifficulty>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(nearClear);
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q_battle", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue();
+        b.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_BossClear_GrantsNoGems_WhenRollFails()
+    {
+        // The clearing attempt still rolls per-difficulty: a roll at/above the Normal 3% rate drops nothing.
+        var b = BuildService(new FixedRandom(0.99));
+        var player = MakePlayer();
+        var boss = new QuestDefinition
+        {
+            Id = "q_boss", Name = "Boss Quest", Chapter = 1, ZoneIndex = 0, ZoneName = "Z0", NodeIndex = 0,
+            BaseEnergyCost = 8, NodeType = "Boss", GoldReward = 200, ExperienceReward = 100, GemReward = 1,
+        };
+        b.Definitions.Setup(d => d.GetById("q_boss")).Returns(boss);
+        SetupPlayerAndEnergy(b, player);
+        var nearClear = PlayerQuestProgress.Create(player.Id, "q_boss", QuestDifficulty.Normal, 2.0);
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q_boss", It.IsAny<QuestDifficulty>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(nearClear);
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q_boss", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue();
+        result.GemsGranted.Should().Be(0, "0.99 ≥ the Ch1 Normal chance (0.5%) → no gem drop");
+        b.Gems.Verify(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    // QuestConfig — boss-gem drop CHANCE ramps per chapter to the per-difficulty goal (owner 2026-06-23)
+
+    [Theory]
+    [InlineData(1, "Normal", 0.005)]      // 0.03 × 1/6 — rarest, Ch1
+    [InlineData(3, "Normal", 0.015)]      // 0.03 × 3/6
+    [InlineData(6, "Normal", 0.030)]      // full goal at Ch6
+    [InlineData(6, "Nightmare", 0.115)]   // full goal, hardest difficulty
+    [InlineData(10, "Normal", 0.030)]     // clamped — chapters past 6 stay at the goal
+    public void ResolveBossGemChance_RampsPerChapterToTheGoal(int chapter, string difficulty, double expected)
+        => new QuestConfig().ResolveBossGemChance(chapter, difficulty)
+            .Should().BeApproximately(expected, 0.0001);
+
+    [Fact]
+    public void ResolveBossGemChance_UnknownDifficulty_IsZero()
+        => new QuestConfig().ResolveBossGemChance(6, "Bogus").Should().Be(0.0);
+
+    // AttemptQuestAsync — depletion is PER-DIFFICULTY (triage node-depletion-per-difficulty exploit fix)
+
+    [Fact]
+    public async Task AttemptQuest_DepletionIsPerDifficulty_IgnoresOtherDifficultyProgressRow()
+    {
+        // The exploit: a near-cleared row at ANOTHER difficulty must NOT bleed into this attempt. The
+        // service reads/writes only the ATTEMPTED difficulty's row, so a Normal attempt starts fresh
+        // even though a Nightmare row is one tick from clearing.
+        var b = BuildService();
+        var player = MakePlayer();
+        b.Definitions.Setup(d => d.GetById("q001")).Returns(TwoQuestChain()[0]); // battle, no prereq
+        SetupPlayerAndEnergy(b, player);
+
+        var nightmareNearClear = PlayerQuestProgress.Create(player.Id, "q001", QuestDifficulty.Nightmare, 1.0);
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q001", QuestDifficulty.Nightmare, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(nightmareNearClear);
+        // No Normal row yet → the attempt creates a fresh Normal row (overrides the null default).
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q001", QuestDifficulty.Normal, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerQuestProgress?)null);
+
+        PlayerQuestProgress? created = null;
+        b.QuestProgress.Setup(r => r.CreateAsync(It.IsAny<PlayerQuestProgress>(), It.IsAny<CancellationToken>()))
+            .Callback<PlayerQuestProgress, CancellationToken>((p, _) => created = p)
+            .Returns(Task.CompletedTask);
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q001", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue();
+        result.NodeCleared.Should().BeFalse("a fresh Normal node depletes 5 → 95; the Nightmare row is untouched");
+        created.Should().NotBeNull();
+        created!.Difficulty.Should().Be(QuestDifficulty.Normal, "the created row is keyed to the attempted difficulty");
+        created.Progress.Should().BeApproximately(95.0, 0.001);
     }
 
     // G2: QuestService gear drop wiring
@@ -1376,12 +1501,12 @@ public class QuestServiceTests
 
         // The boss's own prereq (zn1) is cleared so the prerequisite check passes — but zn0 was never
         // cleared, so the ZONE gate must still reject (proves the gate is a distinct, stronger check).
-        var zn1 = PlayerQuestProgress.Create(player.Id, "zn1");
+        var zn1 = PlayerQuestProgress.Create(player.Id, "zn1", QuestDifficulty.Normal);
         zn1.Deplete(100); // cleared → HasEverCleared
-        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "zn1", It.IsAny<CancellationToken>()))
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "zn1", It.IsAny<QuestDifficulty>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(zn1);
         // zn0 never attempted → null → not cleared.
-        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "zn0", It.IsAny<CancellationToken>()))
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "zn0", It.IsAny<QuestDifficulty>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((PlayerQuestProgress?)null);
 
         var result = await b.Service.AttemptQuestAsync(player.Id, "zb", QuestDifficulty.Normal);
@@ -1403,9 +1528,9 @@ public class QuestServiceTests
 
         foreach (var id in new[] { "zn0", "zn1" })
         {
-            var p = PlayerQuestProgress.Create(player.Id, id);
+            var p = PlayerQuestProgress.Create(player.Id, id, QuestDifficulty.Normal);
             p.Deplete(100); // cleared → HasEverCleared
-            b.QuestProgress.Setup(r => r.GetAsync(player.Id, id, It.IsAny<CancellationToken>()))
+            b.QuestProgress.Setup(r => r.GetAsync(player.Id, id, It.IsAny<QuestDifficulty>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(p);
         }
 
@@ -1430,12 +1555,12 @@ public class QuestServiceTests
 
         foreach (var id in new[] { "zn0", "zn1" })
         {
-            var p = PlayerQuestProgress.Create(player.Id, id);
+            var p = PlayerQuestProgress.Create(player.Id, id, QuestDifficulty.Normal);
             p.Deplete(100); // cleared once → HasEverCleared latched
             p.Reset(100);   // a prior zone reset → IsCleared back to false, HasEverCleared preserved
             p.IsCleared.Should().BeFalse();
             p.HasEverCleared.Should().BeTrue();
-            b.QuestProgress.Setup(r => r.GetAsync(player.Id, id, It.IsAny<CancellationToken>())).ReturnsAsync(p);
+            b.QuestProgress.Setup(r => r.GetAsync(player.Id, id, It.IsAny<QuestDifficulty>(), It.IsAny<CancellationToken>())).ReturnsAsync(p);
         }
 
         var result = await b.Service.AttemptQuestAsync(player.Id, "zb", QuestDifficulty.Normal);
@@ -1463,9 +1588,9 @@ public class QuestServiceTests
         SetupPlayerAndEnergy(b, player);
 
         // Z0 boss exists but was never cleared → Z1 first node stays locked.
-        var zbProgress = PlayerQuestProgress.Create(player.Id, "zb");
+        var zbProgress = PlayerQuestProgress.Create(player.Id, "zb", QuestDifficulty.Normal);
         zbProgress.Deplete(2.5); // attempted once, far from cleared
-        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "zb", It.IsAny<CancellationToken>()))
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "zb", It.IsAny<QuestDifficulty>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(zbProgress);
 
         var locked = await b.Service.AttemptQuestAsync(player.Id, "z1n0", QuestDifficulty.Normal);
@@ -1492,7 +1617,7 @@ public class QuestServiceTests
         b.Definitions.Setup(d => d.GetAll()).Returns(defs);
 
         // zn0 cleared (unlocks zn1 + the boss is visible), zn1 NOT yet cleared → boss stays greyed.
-        var zn0 = PlayerQuestProgress.Create(playerId, "zn0");
+        var zn0 = PlayerQuestProgress.Create(playerId, "zn0", QuestDifficulty.Normal);
         zn0.Deplete(100); // cleared
         b.QuestProgress.Setup(r => r.GetAllForPlayerAsync(playerId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<PlayerQuestProgress> { zn0 });
@@ -1528,7 +1653,7 @@ public class QuestServiceTests
         b.Definitions.Setup(d => d.GetAll()).Returns(new List<QuestDefinition> { zn0, zn1, zb });
 
         // Only zn0 cleared → boss prereq satisfied (surfaced) but zn1 pending → boss greyed.
-        var zn0Prog = PlayerQuestProgress.Create(playerId, "zn0");
+        var zn0Prog = PlayerQuestProgress.Create(playerId, "zn0", QuestDifficulty.Normal);
         zn0Prog.Deplete(100);
         b.QuestProgress.Setup(r => r.GetAllForPlayerAsync(playerId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<PlayerQuestProgress> { zn0Prog });

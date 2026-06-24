@@ -5,7 +5,7 @@ namespace ROTA.Application.Interfaces;
 
 public interface IGemTransactionRepository
 {
-    Task<int> GetBalanceAsync(Guid playerId, CancellationToken ct = default);
+    Task<long> GetBalanceAsync(Guid playerId, CancellationToken ct = default);
 
     Task<bool> ReferenceExistsAsync(Guid playerId, GemTransactionType type, string referenceId, CancellationToken ct = default);
 
@@ -17,7 +17,7 @@ public interface IGemTransactionRepository
     /// the SUM-ledger balance negative (the old check-then-insert in GemService raced).
     /// Participates in an ambient transaction when one is open.
     /// </summary>
-    Task<GemSpendOutcome> TrySpendAsync(Guid playerId, int amount, GemTransactionType type, string? referenceId, CancellationToken ct = default);
+    Task<GemSpendOutcome> TrySpendAsync(Guid playerId, long amount, GemTransactionType type, string? referenceId, CancellationToken ct = default);
 
     /// <summary>
     /// Insert that treats a duplicate (player, type, reference) unique-index violation as "already

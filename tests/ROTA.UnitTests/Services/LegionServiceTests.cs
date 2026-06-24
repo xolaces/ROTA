@@ -567,7 +567,7 @@ public class LegionServiceTests
         b.UnitDefs.Setup(d => d.GetById("gen_ironward")).Returns(def);
         b.Units.Setup(r => r.FindAsync(playerId, "gen_ironward", It.IsAny<CancellationToken>()))
             .ReturnsAsync((PlayerUnit?)null);
-        b.Gems.Setup(g => g.SpendGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(),
+        b.Gems.Setup(g => g.SpendGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(),
                 It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GemSpendOutcome.InsufficientBalance);
 
@@ -597,7 +597,7 @@ public class LegionServiceTests
 
         result.Success.Should().BeFalse();
         result.FailureCode.Should().Be(BuyFailureCode.AlreadyOwned);
-        b.Gems.Verify(g => g.SpendGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(),
+        b.Gems.Verify(g => g.SpendGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(),
             It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never,
             "gems must not be charged when AlreadyOwned");
     }
@@ -655,7 +655,7 @@ public class LegionServiceTests
 
         result.Success.Should().BeFalse();
         result.FailureCode.Should().Be(BuyFailureCode.AlreadyOwned);
-        b.Gems.Verify(g => g.SpendGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(),
+        b.Gems.Verify(g => g.SpendGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(),
             It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 

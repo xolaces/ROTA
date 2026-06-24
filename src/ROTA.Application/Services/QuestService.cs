@@ -130,18 +130,22 @@ public sealed class QuestService : IQuestService
     // attempt. Level-independent (level only raises XpToNextLevel). Replaces the authored-XP × zone/boss/
     // chapter ratio formula that let a 9-energy boss grant 200 XP (~4 levels at L1). The same model runs
     // on the raid side over stamina (RaidService on-hit XP).
-    private int RollEnergyXp(int energyCost)
-        => (int)ResourceReward.RollSummed(
+    private long RollEnergyXp(int energyCost)
+        => ResourceReward.RollSummed(
             _random, energyCost, _questConfig.XpPerEnergyRollMin, _questConfig.XpPerEnergyRollMax);
 
     // Mean XP for the availability-card preview; the real grant rolls per-attempt in RollEnergyXp.
-    private int XpPreview(int energyCost)
-        => (int)ResourceReward.Mean(energyCost, _questConfig.XpPerEnergyRollMin, _questConfig.XpPerEnergyRollMax);
+    private long XpPreview(int energyCost)
+        => (long)ResourceReward.Mean(energyCost, _questConfig.XpPerEnergyRollMin, _questConfig.XpPerEnergyRollMax);
 
     public async Task<IReadOnlyList<QuestAvailabilityResponse>> GetAvailableQuestsAsync(
-        Guid playerId, CancellationToken ct = default)
+        Guid playerId, QuestDifficulty difficulty = QuestDifficulty.Normal, CancellationToken ct = default)
     {
-        var allProgress = await _questProgress.GetAllForPlayerAsync(playerId, ct);
+        // Per-difficulty depletion track (triage node-depletion-per-difficulty): the availability view
+        // reflects the SELECTED difficulty's progress/clear/unlock chain. The difficulty-unlock state
+        // (HighestUnlockedDifficulty below) stays driven by PlayerQuestDifficultyProgress, unchanged.
+        var allProgress = (await _questProgress.GetAllForPlayerAsync(playerId, ct))
+            .Where(p => p.Difficulty == difficulty);
         var progressByQuestId = allProgress.ToDictionary(p => p.QuestId);
 
         // T74 — per-quest difficulty completions, so the client can render locked tiers as
@@ -262,9 +266,9 @@ public sealed class QuestService : IQuestService
         // Verify node prerequisite has ever been cleared (permanent latch) — difficulty-agnostic.
         if (quest.PrerequisiteQuestId is not null)
         {
-            var prereq = await _questProgress.GetAsync(playerId, quest.PrerequisiteQuestId, ct);
+            var prereq = await _questProgress.GetAsync(playerId, quest.PrerequisiteQuestId, difficulty, ct);
             if (prereq is null || !prereq.HasEverCleared)
-                return Fail(QuestFailureCode.PrerequisiteNotMet, "Prerequisite quest not yet cleared.");
+                return Fail(QuestFailureCode.PrerequisiteNotMet, "Prerequisite quest not yet cleared at this difficulty.");
         }
 
         // 2a. ZONE-BOSS GATE (T45; System 25 re-lock): a per-zone boss is only summonable once every
@@ -279,19 +283,20 @@ public sealed class QuestService : IQuestService
             {
                 if (sibling.IsBoss || sibling.Chapter != quest.Chapter || sibling.ZoneIndex != quest.ZoneIndex)
                     continue;
-                var sibProg = await _questProgress.GetAsync(playerId, sibling.Id, ct);
+                var sibProg = await _questProgress.GetAsync(playerId, sibling.Id, difficulty, ct);
                 if (sibProg is null || !sibProg.IsCleared)
                     return Fail(QuestFailureCode.ZoneBossLocked,
                         "Clear every node in this zone before challenging its boss.");
             }
         }
 
-        // 2b. T26 — a cleared (locked) node can't be attempted until the chapter boss resets it.
-        //     Fetched here (before any side effects) and reused for depletion at step 8.
-        var progress = await _questProgress.GetAsync(playerId, questId, ct);
+        // 2b. T26 — a cleared (locked) node can't be attempted until the zone boss resets it. Per
+        //     difficulty (triage node-depletion-per-difficulty): a clear at one difficulty never locks
+        //     another. Fetched here (before any side effects) and reused for depletion at step 8.
+        var progress = await _questProgress.GetAsync(playerId, questId, difficulty, ct);
         if (progress is not null && progress.IsCleared)
             return Fail(QuestFailureCode.NodeCleared,
-                "This node is cleared — defeat the chapter boss to reset it.");
+                "This node is cleared at this difficulty — defeat the zone boss to reset it.");
 
         // 3. Verify difficulty gate — ZONE-scoped (owner 2026-06-12, supersedes the per-node gate):
         //    tier T is attemptable only once EVERY node in this node's zone (battles AND boss) has
@@ -332,8 +337,9 @@ public sealed class QuestService : IQuestService
         //    multiplier; XP is resource-derived and rolled AFTER the spend (see step 6b).
         float rewardMult  = RewardMultipliers[difficulty];
         int energyCost    = ComputeEnergyCost(quest, difficulty);
-        int goldReward    = (int)(quest.GoldReward * rewardMult * lootMods.HoardGoldMultiplier);
-        int gemReward     = (int)Math.Round(quest.GemReward * rewardMult);
+        // int32-overflow-audit Unit 2 — widen the gold computation to long so the now-long GoldGranted
+        // DTO field realizes its headroom (gold scales with difficulty/Hoard over a no-reset lifetime).
+        long goldReward   = (long)(quest.GoldReward * rewardMult * lootMods.HoardGoldMultiplier);
 
         // 6. Spend energy — if insufficient, return immediately with no side effects
         var spent = await _energy.SpendEnergyAsync(playerId, ResourceType.Energy, energyCost, ct);
@@ -341,7 +347,7 @@ public sealed class QuestService : IQuestService
             return Fail(QuestFailureCode.InsufficientEnergy, "Insufficient energy.");
 
         // 6b. XP earned scales with the energy just spent (owner 2026-06-14), level-independent.
-        int xpReward = RollEnergyXp(energyCost);
+        long xpReward = RollEnergyXp(energyCost);
 
         // 7. Apply rewards (energy committed — errors from here propagate as 500).
         // T59 — gold/XP go through the xmin-retry chokepoint so a simultaneous raid hit can't
@@ -360,7 +366,7 @@ public sealed class QuestService : IQuestService
         //    `progress` was fetched at step 2b (guaranteed not-cleared here).
         bool isNewProgress = progress is null;
         if (isNewProgress)
-            progress = PlayerQuestProgress.Create(playerId, questId, _questConfig.NodeStartProgress);
+            progress = PlayerQuestProgress.Create(playerId, questId, difficulty, _questConfig.NodeStartProgress);
         bool wasCleared = progress!.IsCleared;
         progress.RecordCompletion();
         double depletion = quest.IsBoss
@@ -380,7 +386,7 @@ public sealed class QuestService : IQuestService
         bool zoneReset = false;
         if (quest.IsBoss && nodeJustCleared)
         {
-            await ResetZoneAsync(playerId, quest.Chapter, quest.ZoneIndex, progress, ct);
+            await ResetZoneAsync(playerId, quest.Chapter, quest.ZoneIndex, difficulty, progress, ct);
             zoneReset = true;
         }
 
@@ -390,13 +396,26 @@ public sealed class QuestService : IQuestService
             diffProg = PlayerQuestDifficultyProgress.Create(playerId, questId, difficulty);
         diffProg!.RecordCompletion();
 
+        // Quest-boss gems (triage quest-boss-gem-on-every-hit, owner 2026-06-22): gems are a BOSS
+        // COMPLETION reward, NOT a per-hit drip. The old grant fired on every successful attempt keyed
+        // on the ever-incrementing CompletionCount (~40 grants per clear). Now: only on the just-cleared
+        // transition of a boss node, a flat BossGemRewardAmount on a per-difficulty chance roll.
+        // The referenceId is keyed by diffProg.CompletionCount (incremented just above, never reset by a
+        // zone reset) so it's unique per clear-cycle and dedupes a retry of THIS grant call. Like every
+        // quest attempt, a full re-attempt is a fresh clear (new CompletionCount) — not request-idempotent
+        // by design. quest.GemReward is now vestigial for bosses (chance + amount come from QuestConfig).
         int gemsGranted = 0;
-        if (gemReward > 0)
+        // Chapter-scaled chance (owner 2026-06-23): rarer early, ramping to the per-difficulty goal at Ch6.
+        double gemChance = quest.IsBoss && nodeJustCleared
+            ? _questConfig.ResolveBossGemChance(quest.Chapter, difficulty.ToString())
+            : 0.0;
+        if (gemChance > 0 && _random.NextDouble() < gemChance)
         {
-            var referenceId = $"quest:{questId}:{playerId}:{progress.CompletionCount}:{difficulty}";
+            int gemAward = _questConfig.BossGemRewardAmount;
+            var referenceId = $"questbossgem:{questId}:{playerId}:{difficulty}:{diffProg.CompletionCount}";
             var granted = await _gems.GrantGemsAsync(
-                playerId, gemReward, GemTransactionType.QuestReward, referenceId, ct);
-            if (granted) gemsGranted = gemReward;
+                playerId, gemAward, GemTransactionType.QuestReward, referenceId, ct);
+            if (granted) gemsGranted = gemAward;
         }
 
         // 12. Process loot table. Discernment raises chance-drop rates (System 20 Slice 2) — fetch
@@ -410,7 +429,7 @@ public sealed class QuestService : IQuestService
                 && lootTable.Difficulties.TryGetValue(difficulty.ToString(), out var diffLoot))
             {
                 var stats = await _stats.GetStatsAsync(playerId, ct);
-                int discernment = stats?.DiscernmentInvestment ?? 0;
+                long discernment = stats?.DiscernmentInvestment ?? 0;
                 await ProcessQuestLootAsync(playerId, diffLoot, discernment,
                     lootMods.HoardDropMultiplier, lootMods.DiscernmentQualityChance, itemsGranted, ct);
             }
@@ -526,16 +545,19 @@ public sealed class QuestService : IQuestService
     // instance is passed in to avoid a redundant re-fetch/retrack. Other zones in the chapter are
     // left untouched.
     private async Task ResetZoneAsync(
-        Guid playerId, int chapter, int zoneIndex, PlayerQuestProgress bossProgress, CancellationToken ct)
+        Guid playerId, int chapter, int zoneIndex, QuestDifficulty difficulty,
+        PlayerQuestProgress bossProgress, CancellationToken ct)
     {
+        // Reset only THIS difficulty's rows — a Nightmare boss clear never resets the Normal track
+        // (triage node-depletion-per-difficulty).
         foreach (var node in _definitions.GetAll())
         {
             if (node.Chapter != chapter || node.ZoneIndex != zoneIndex) continue;
 
             var p = node.Id == bossProgress.QuestId
                 ? bossProgress
-                : await _questProgress.GetAsync(playerId, node.Id, ct);
-            if (p is null) continue; // node never attempted → already fresh
+                : await _questProgress.GetAsync(playerId, node.Id, difficulty, ct);
+            if (p is null) continue; // node never attempted at this difficulty → already fresh
 
             p.Reset(_questConfig.NodeStartProgress);
             await _questProgress.UpdateAsync(p, ct);
@@ -545,7 +567,7 @@ public sealed class QuestService : IQuestService
     private async Task ProcessQuestLootAsync(
         Guid playerId,
         Application.Models.LootTableDifficulty loot,
-        int discernmentInvestment,
+        long discernmentInvestment,
         double hoardDropMultiplier,
         double discernmentQualityChance,
         List<ItemGrantDTO> itemsGranted,

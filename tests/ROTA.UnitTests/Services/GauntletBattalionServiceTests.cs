@@ -29,8 +29,8 @@ public class GauntletBattalionServiceTests
         players.Setup(p => p.FindByIdWithStatsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                .ReturnsAsync((Player?)null);
         equip.Setup(e => e.GetEffectiveCombatDataAsync(
-                It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-             .ReturnsAsync((Guid _, int a, int d, CancellationToken _) => new EffectiveCombatData(a, d, null, 0.0));
+                It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
+             .ReturnsAsync((Guid _, long a, long d, CancellationToken _) => new EffectiveCombatData(a, d, null, 0.0));
 
         return (new GauntletBattalionService(repo.Object, legion.Object, players.Object, equip.Object), repo, legion);
     }

@@ -427,7 +427,7 @@ public class GauntletServiceTests
     {
         var b = new Bundle();
         var playerId = Guid.NewGuid();
-        b.Gems.Setup(g => g.SpendGemsAsync(playerId, It.IsAny<int>(), GemTransactionType.GauntletStrikePurchase,
+        b.Gems.Setup(g => g.SpendGemsAsync(playerId, It.IsAny<long>(), GemTransactionType.GauntletStrikePurchase,
                 It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GemSpendOutcome.InsufficientBalance);
 
@@ -445,7 +445,7 @@ public class GauntletServiceTests
         // attempt. The retry must NOT write a second strike row.
         var b = new Bundle();
         var playerId = Guid.NewGuid();
-        b.Gems.Setup(g => g.SpendGemsAsync(playerId, It.IsAny<int>(), GemTransactionType.GauntletStrikePurchase,
+        b.Gems.Setup(g => g.SpendGemsAsync(playerId, It.IsAny<long>(), GemTransactionType.GauntletStrikePurchase,
                 It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GemSpendOutcome.AlreadyProcessed);
         b.Strikes.Setup(s => s.ReferenceExistsAsync(playerId, StrikeTransactionType.GemPurchase,
@@ -467,7 +467,7 @@ public class GauntletServiceTests
         // gets AlreadyProcessed from gems AND no existing strike reference → it MUST credit strikes.
         var b = new Bundle();
         var playerId = Guid.NewGuid();
-        b.Gems.Setup(g => g.SpendGemsAsync(playerId, It.IsAny<int>(), GemTransactionType.GauntletStrikePurchase,
+        b.Gems.Setup(g => g.SpendGemsAsync(playerId, It.IsAny<long>(), GemTransactionType.GauntletStrikePurchase,
                 It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(GemSpendOutcome.AlreadyProcessed);
         b.Strikes.Setup(s => s.ReferenceExistsAsync(playerId, StrikeTransactionType.GemPurchase,
@@ -490,7 +490,7 @@ public class GauntletServiceTests
         var b = new Bundle();
         var result = await b.Build().BuyStrikesAsync(Guid.NewGuid(), strikes, "key");
         result.Success.Should().BeFalse();
-        b.Gems.Verify(g => g.SpendGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(),
+        b.Gems.Verify(g => g.SpendGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(),
             It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -500,7 +500,7 @@ public class GauntletServiceTests
         var b = new Bundle();
         var result = await b.Build().BuyStrikesAsync(Guid.NewGuid(), 5, "  ");
         result.Success.Should().BeFalse();
-        b.Gems.Verify(g => g.SpendGemsAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<GemTransactionType>(),
+        b.Gems.Verify(g => g.SpendGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(),
             It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 

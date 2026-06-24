@@ -23,7 +23,7 @@ public sealed class GemTransactionRepository : IGemTransactionRepository
         _db = db;
     }
 
-    public async Task<int> GetBalanceAsync(Guid playerId, CancellationToken ct = default)
+    public async Task<long> GetBalanceAsync(Guid playerId, CancellationToken ct = default)
         => await _db.GemTransactions
             .Where(t => t.PlayerId == playerId)
             .SumAsync(t => t.Amount, ct);
@@ -67,7 +67,7 @@ public sealed class GemTransactionRepository : IGemTransactionRepository
     // every previously committed spend. Participates in an ambient transaction when one is open
     // (the lock then rides that transaction); otherwise it owns its own.
     public async Task<GemSpendOutcome> TrySpendAsync(
-        Guid playerId, int amount, GemTransactionType type, string? referenceId,
+        Guid playerId, long amount, GemTransactionType type, string? referenceId,
         CancellationToken ct = default)
     {
         bool ownTx = _db.Database.CurrentTransaction is null;
@@ -116,10 +116,10 @@ public sealed class GemTransactionRepository : IGemTransactionRepository
                 """;
             await using var insertCmd = new NpgsqlCommand(insertSql, conn, ntx);
             insertCmd.Parameters.AddWithValue("p",    NpgsqlDbType.Uuid,    playerId);
-            insertCmd.Parameters.AddWithValue("neg",  NpgsqlDbType.Integer, -amount);
+            insertCmd.Parameters.AddWithValue("neg",  NpgsqlDbType.Bigint,  -amount);
             insertCmd.Parameters.AddWithValue("t",    NpgsqlDbType.Integer, (int)type);
             insertCmd.Parameters.AddWithValue("r",    NpgsqlDbType.Text,    (object?)referenceId ?? DBNull.Value);
-            insertCmd.Parameters.AddWithValue("cost", NpgsqlDbType.Integer, amount);
+            insertCmd.Parameters.AddWithValue("cost", NpgsqlDbType.Bigint,  amount);
 
             var rows = await insertCmd.ExecuteNonQueryAsync(ct);
             if (ownTx) await tx.CommitAsync(ct);

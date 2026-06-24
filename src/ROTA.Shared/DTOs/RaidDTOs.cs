@@ -42,6 +42,11 @@ public class RaidHitResponse
     // ParticipantCount is on ActiveRaidResponse (list screen) — not exposed per-hit.
     public int NewStaminaValue { get; set; }
     public int NewStaminaMax { get; set; }
+    // T56 — live Health after the per-hit drain, so the client can patch the health bar without a
+    // profile re-fetch (otherwise it freezes after the first hit). On guild raids the stamina fields
+    // above carry GuildStamina, not regular Stamina.
+    public int NewHealthValue { get; set; }
+    public int NewHealthMax { get; set; }
     public RaidRewards? Rewards { get; set; }
     public DateTimeOffset ExpiresAt { get; set; }
     public string Difficulty { get; set; } = string.Empty;
@@ -49,7 +54,8 @@ public class RaidHitResponse
     public List<ItemGrantDTO>? OnHitDrops { get; set; }
     public string YourCurrentTier { get; set; } = string.Empty;
     // On-hit progression — granted every hit regardless of kill outcome
-    public int XpGained { get; set; }
+    // int32-overflow-audit Unit 2 — XpGained widened to long (GoldGained already long).
+    public long XpGained { get; set; }
     public long GoldGained { get; set; }
     // Running totals after this hit (so the client can update the header/state without a re-fetch).
     public long NewPlayerExperience { get; set; }
@@ -100,8 +106,9 @@ public class MagicProcDTO
 public class RaidRewards
 {
     public long GoldGranted { get; set; }
-    public int ExperienceGranted { get; set; }
-    public int GemsGranted { get; set; }
+    // int32-overflow-audit Unit 2 — XP/gems widened to long (GoldGranted already long).
+    public long ExperienceGranted { get; set; }
+    public long GemsGranted { get; set; }
     public long NewPlayerGold { get; set; }
     public long NewPlayerExperience { get; set; }
     public int? NewPlayerLevel { get; set; }
@@ -152,9 +159,10 @@ public class CompletedRaidResponse
     public long YourTotalDamage { get; set; }
     public string ContributionTier { get; set; } = string.Empty;
     public long GoldEarned { get; set; }
-    public int XpEarned { get; set; }
-    public int GemsEarned { get; set; }
-    public int StatPointsEarned { get; set; }
+    // int32-overflow-audit Unit 2 — earned reward amounts widened to long (mirror RaidParticipant).
+    public long XpEarned { get; set; }
+    public long GemsEarned { get; set; }
+    public long StatPointsEarned { get; set; }
     public List<ItemGrantDTO> ItemsEarned { get; set; } = new();
 }
 
