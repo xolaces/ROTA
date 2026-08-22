@@ -2,384 +2,6 @@
 Last updated: 2026-06-08 (TICKET 46 — Achievement Points)
 Update when adding public methods or entities.
 
-> **Reconciled 2026-08-22 against `main` @ 3737f42.** This file had drifted: it was last
-> meaningfully updated ~2026-06-13, but code shipped through 2026-06-23. Every signature, route,
-> DTO field and enum value below was re-verified against source on that date. Sections were added
-> for the previously-undocumented 2026-06-15..06-23 work (System 25, the magic catalogue endpoint,
-> chat-hub rate limiting, the per-player mutation lock, Hoard-scaled raid threshold drops,
-> System 24 / T76 Gauntlet event experience, the closed-beta triage batch, and the deploy/env/CORS
-> surface). In-place corrections are marked **[corrected 2026-08-22]**; anything that could not be
-> confirmed from source carries `<!-- UNVERIFIED -->`.
->
-> **Known coverage gap (pre-existing, not new drift):** this file has never had a section for the
-> Social (`api/social`), Legal (`api/legal`), Feedback (`api/feedback`), Moderation
-> (`api/moderation`), Ops/email (`api/admin/emails`), Dev (`api/dev`), Guild-raid
-> (`api/guilds/raids`), Guild-sigil (`api/guilds/sigils`) or Pinnacle surfaces, nor for
-> `IPinnacleService` / `IGuildEconomyService` / `ILegalService` / `IDevService` / `ISocialService` /
-> `IEmailNotificationService` / `ILootTableProvider` / `IRaidHitCache`. Their controllers and routes
-> are inventoried under **Controllers → Controllers not yet detailed** so the route list is at least
-> complete.
-
----
-
-## Closed-beta triage batch (2026-06-22 → 06-23) — ADDED 2026-08-22
-
-Spec: `docs/specs/active/playtest-triage-closed-beta.md` (30 tickets, root-caused 2026-06-22).
-The API-shape consequences are folded into the reference sections below; this is the index.
-
-### int32-overflow-audit — 64-bit widening (migrations `WidenGemAmountToBigint`, `WidenStatAndRewardFieldsToBigint`)
-The gem ledger balance is `SUM(amount)` over a never-reset lifetime, and stat/reward fields grow
-unbounded, so both were widened. **This is a wire-shape change — clients binding `int` will
-truncate or fail to deserialise large values.**
-- `GemTransaction.Amount` `int`→`long`; `IGemService.GetBalanceAsync` → `Task<long>`;
-  `GrantGemsAsync`/`SpendGemsAsync` `amount` param `int`→`long`.
-- `PlayerStats.{BaseAttack, BaseDefense, SkillPoints, EnergyInvestment, StaminaInvestment,
-  DiscernmentInvestment}` `int`→`long`; `ComputeMaxEnergy()`/`ComputeMaxStamina()` return `long`;
-  `AddSkillPoints(long)`.
-- `RaidParticipant.{GemsEarned, StatPointsEarned, XpEarned}` `int`→`long`.
-- `EffectiveCombatData.{EffectiveAttack, EffectiveDefense}` `int`→`long`;
-  `IEquipmentService.GetEffectiveCombatDataAsync(playerId, long baseAtk, long baseDef, ct)`.
-- `IStatService.AddUnassignedPointsAsync(playerId, long amount, ct)`.
-- DTOs widened: `PlayerProfileResponse.{Gems, Experience, Gold, XpToNextLevel, EffectiveAttack,
-  EffectiveDefense}`; `PlayerStatsResponse.*` (all stat/investment/effective fields, `MaxEnergy`,
-  `MaxStamina`, `BaseMaxHealth`, `CurrentHealth`); `AllocateStatResponse.*`;
-  `QuestResultResponse.{GoldGranted, ExperienceGranted, GemsGranted, NewExperience, NewGold,
-  XpGained, CurrentLevelXp}`; `QuestAvailabilityResponse.EffectiveXpReward`;
-  `RaidHitResponse.XpGained`; `RaidRewards.{ExperienceGranted, GemsGranted}`;
-  `CompletedRaidResponse.{XpEarned, GemsEarned, StatPointsEarned}`;
-  `DevGrantRequest.{Gems, SkillPoints}`.
-- Left `int` deliberately (bounded per-claim): `RaidRewards.*PointsGranted`, resource-pool
-  `ComputeMax*` on the DTO, `IStatService.GetCritProfile(int discernment)`, `Player.Level`.
-
-### Quest exploit — per-difficulty node progress (migration `AddQuestProgressDifficulty`)
-`PlayerQuestProgress` was keyed `(player_id, quest_id)` only, so depleting a boss node on Normal
-carried into Nightmare and the guaranteed first-clear Nightmare sigil dropped at ~1/20th cost.
-Now keyed `(player_id, quest_id, difficulty)` — **every** piece of state (Progress, IsCleared,
-HasEverCleared, CompletionCount) is per-difficulty.
-- `PlayerQuestProgress.Difficulty` added; unique index widened.
-- `IQuestProgressRepository.GetAsync` is difficulty-scoped (4-arg).
-- `IQuestService.GetAvailableQuestsAsync(playerId, QuestDifficulty difficulty = Normal, ct)` —
-  **signature change**; the endpoint gained `GET /api/quests?difficulty=` (omitted → Normal).
-  Display-only; the exploit is closed authoritatively at attempt time.
-
-### Gem economy — unified chance-scaled boss gems
-Boss gems were granted on **every hit** (~40/clear). Now a boss-clear-only reward, flat
-`QuestConfig.BossGemRewardAmount` (=2) on a per-chapter-scaled chance
-`ResolveBossGemChance(chapter, difficulty) = BossGemDropChance[diff] × min(1, chapter / GemChanceFullChapter)`
-(`GemChanceFullChapter` = 6; goal at Ch6 = Normal .030 / Hard .058 / Legendary .083 / Nightmare .115).
-- `QuestService`: gated `quest.IsBoss && nodeJustCleared`; referenceId
-  `questbossgem:{quest}:{player}:{difficulty}:{diffProg.CompletionCount}`.
-- `RaidService.DistributeKillRewardsAsync`: the old `BaseGemReward × contribution-tier` grant was
-  replaced by the **same** chance roll per Rare+ participant (chapter parsed from the `c{ch}z{z}b`
-  raid id; non-chapter raids treated as full-goal chapter). `IOptions<QuestConfig>` injected.
-- `RaidDefinition.BaseGemReward` / `raids.json baseGemReward` are now **VESTIGIAL** on this path.
-
-### Raid + stat fixes (API-visible)
-- `RaidHitResponse.NewHealthValue` / `NewHealthMax` added (T56 health bar froze after hit 1). On a
-  **guild** raid the `NewStaminaValue`/`NewStaminaMax` fields carry **GuildStamina**, not Stamina.
-- `AllocateStatResponse.EffectiveAttack` / `EffectiveDefense` (`long`) are now populated on success.
-- `InventoryItemResponse.Tier` added (`Standard | World | Event | Guild`, null for non-sigils) —
-  resolved from `IRaidDefinitionProvider` instead of the client's hardcoded "World raid".
-- `IRaidParticipantRepository.GetCompletedForPlayerAsync(playerId, limit, DateTimeOffset? since = null, ct)`
-  — defaults to a **30-day** recency window on `RewardedAt`; pass `DateTimeOffset.MinValue` for
-  all-time. `GET /api/raids/completed` is therefore no longer all-time history.
-- `ActiveRaidRepository.GetAllActiveAsync` now `OrderBy(r => r.CurrentHp)` (deterministic list).
-- `StatService.LsiCap` = **7.45** (const; was 8.0, briefly 9.0). Cap message formats `:F2`.
-- `LevelingConfig.XpExponent` default in code is still `0.7`, but **appsettings.json sets `0.8`** —
-  the effective curve is `max(milestoneFloor, round(30 × level^0.8))`.
-- `Program.cs` adds `AddResponseCompression` (Brotli + Gzip, `EnableForHttps`), `UseResponseCompression()`
-  after CORS.
-
----
-
-## Deploy / environment wiring (2026-06-17 → 06-23) — ADDED 2026-08-22
-
-### CORS (`Program.cs`)
-Origins come from configuration section `Cors:AllowedOrigins` (`string[]`, empty default). One
-policy, `"RotaPolicy"`, applied via `app.UseCors("RotaPolicy")` as pipeline step [4] (before auth).
-Development with a non-empty list → `WithOrigins(...) + AllowAnyHeader + AllowAnyMethod +
-AllowCredentials`; otherwise → `WithOrigins(...) + AllowAnyHeader + WithMethods("GET","POST","PUT","DELETE")
-+ AllowCredentials`. **Both branches use `WithOrigins` — an empty list means no browser origin is
-allowed.** `appsettings.Production.json` ships `[ "https://play.riseoftheancients.com" ]`;
-override per-host with `Cors__AllowedOrigins__0=…`.
-
-### Seed-admin / dev-allowlist / email env wiring (`.env.prod.example` → `docker-compose.prod.yml`)
-| `.env` key | Bound configuration key | Default |
-|---|---|---|
-| `SEED_ADMIN_PASSWORD` | `Seed__AdminPassword` | **required** (compose `:?` guard; `SeedData.EnsureAdminAsync` throws if absent — never a hardcoded fallback) |
-| `SEED_ADMIN_USERNAME` | `Seed__AdminUsername` | `Owner` |
-| `SEED_ADMIN_EMAIL` | `Seed__AdminEmail` | `admin@rota.local` |
-| `DEV_USERNAME` | `Developer__Usernames__0` | empty (dev-guild seeding is a no-op when the allowlist resolves to nothing) |
-| `EMAIL_ENABLED` | `Email__Enabled` | `false` (rows still persist + show in the ops dashboard; sending is skipped) |
-| `EMAIL_USERNAME` / `EMAIL_PASSWORD` | `Email__Username` / `Email__Password` | empty (Gmail SMTP + App Password) |
-| `EMAIL_FROM` | `Email__FromAddress` | `operator@example.com` |
-| `EMAIL_OPERATOR` | `Email__OperatorRecipient` | `operator@example.com` |
-| `BETA_GATE_ENABLED` | beta registration gate | `true` |
-
-`SeedData.EnsureAdminAsync` also reads `Seed:AdminDisplayName` (falls back to the username).
-Break-glass admins are still `Admin:PlayerIds:{n}` (config/user-secrets), read in `Program.cs`.
-
----
-
-## Chat-hub rate limiting (exploit audit 2026-06-14, finding J) — ADDED 2026-08-22
-
-The HTTP `RateLimitMiddleware` never sees post-handshake SignalR frames, so the hub throttles
-itself. **One shared counter across world/raid/guild** — a flood can't spread across scopes to
-dodge the cap.
-
-### IChatRateLimiter (`src/ROTA.Application/Interfaces/IChatRateLimiter.cs`)
-| Method | Description |
-|--------|-------------|
-| `Task<bool> TryConsumeAsync(Guid playerId, CancellationToken ct = default)` | Consumes one unit; `false` when the per-window cap is exceeded (hub drops the send). |
-
-Impl `ChatRateLimiter` (`src/ROTA.Infrastructure/Services/ChatRateLimiter.cs`): Redis
-`INCR` on `ratelimit:chat:player:{playerId}` + conditional `EXPIRE` on the first hit; allowed while
-`count <= limit`. **FAILS OPEN** on `RedisException`/`RedisTimeoutException` (a cache blip must not
-silence chat) — same discipline as `RateLimitMiddleware`.
-
-### Config — `RateLimitConfig` additions
-`ChatMessagesPerWindow` (default **10**), `ChatWindowSeconds` (default **10**). Existing dials:
-`AuthRequestsPerWindow` 10, `PlayerRequestsPerWindow` 180, `WindowSeconds` 60.
-
-### ChatHub wiring (`src/ROTA.Api/SignalR/ChatHub.cs`)
-Ctor is now `(IWorldChatStore, IGuildChatStore, IPlayerRepository, IRaidParticipantRepository,
-IChatRateLimiter)`. `SendWorldMessage` / `SendRaidMessage` / `SendGuildMessage` each call
-`IsRateLimitedAsync()` **after** the mute/ban gate and before any store write; on trip the hub
-sends `"RateLimited"` to the caller and returns (the message is dropped, not queued).
-
-**Client-visible hub events:** `WorldMessage`, `RaidMessage`, `GuildMessage`, `Muted`,
-`RateLimited`, `GuildChatUnavailable`, `RaidChatUnavailable`.
-
----
-
-## Per-player mutation lock + Gauntlet ladder lazy-spawn race (exploit audit 2026-06-14, findings D/E/H/I) — ADDED 2026-08-22
-
-### IPlayerMutationLock (`src/ROTA.Application/Interfaces/IPlayerMutationLock.cs`)
-| Method | Description |
-|--------|-------------|
-| `Task<T> RunAsync<T>(Guid playerId, Func<Task<T>> action, CancellationToken ct = default)` | Runs `action` holding this player's Postgres advisory lock for a transaction; commits on success. **Re-entrant** — with an ambient transaction already open (e.g. nested inside a raid hit's advisory-lock tx) it runs on that transaction rather than opening a second one. |
-
-Impl `PlayerMutationLock` (`src/ROTA.Infrastructure/Persistence/Repositories/PlayerMutationLock.cs`).
-Closes read-then-write (TOCTOU) races on per-player rows that carry no concurrency token —
-stat allocation, item use, quest-progress depletion, gauntlet-shop spend.
-
-### Gauntlet ladder lazy-spawn lock (`GauntletService.GetLadderAsync`)
-The known double-spawn race: two concurrent `GET /api/gauntlet/ladder` calls both saw "no active
-stage" and both spawned stage N (two raids → double per-defeat rewards). The **decide-and-spawn**
-block now runs inside `_mutationLock.RunAsync(playerId, …)`, so concurrent calls serialize and the
-loser re-queries committed truth and returns the winner's stage. Spawn + `GauntletLadderSpawn`
-audit commit atomically with the lock. The pre-lock reads (active event, `NotStarted` gate, joined
-`GauntletEntry`) stay outside the lock.
-
----
-
-## System 24 / T76 — Gauntlet Event Experience — ADDED 2026-08-22
-
-Spec: `docs/specs/active/system-24-gauntlet-event-experience.md` (owner-locked 2026-06-10/11/12).
-Builds on System 16. Migration `AddGauntletEventIdentity` (applied, per the state snapshot).
-
-### Enums
-- **`GauntletEventKind`** (`src/ROTA.Domain/Enums/GauntletEventKind.cs`) — `Neck = 0` (standard run:
-  neck-slot rank gear + rank magics), `Ring = 1` (rare run, ~every 3rd: ring-slot gear, **no** magics).
-- **`GauntletLeague` gained a fourth league** — `Whelpling = 0` (L1–999), `Wyrm = 1` (L1000–2499),
-  `Dragon = 2` (L2500–4999), **`Ancient = 3`** (L5000+). **[corrected 2026-08-22 — the System 16
-  Slice 1 section's "Whelpling L1–1999 / Wyrm L2000–9999 / Dragon L10000+" is dead.]**
-
-### Entities
-- `GauntletEvent` additive: `Kind (GauntletEventKind, default Neck)`, `RunNumber (int, default 1)`,
-  `LoreBlurb (string?)`, `BannerKey (string?)`.
-- `GauntletEntry` additive: `HighestStage (int)` — the **primary ranking metric** (damage +
-  earliest-to-reach are tiebreaks).
-- **`PlayerGauntletBattalion`** (new) — `{ Id, PlayerId, GeneralsJson (string, "[]"), TroopsJson
-  (string, "[]"), CreatedAt, UpdatedAt, IsDeleted }` + `Create(playerId)`, `SetLoadout(generalsJson,
-  troopsJson)`. Repo `IGauntletBattalionRepository`.
-
-### IGauntletBattalionService (`src/ROTA.Application/Interfaces/IGauntletBattalionService.cs`)
-| Method | Description |
-|--------|-------------|
-| `GetBattalionAsync(playerId, ct)` | → `GauntletBattalionResponse` — resolved units + computed power; empty when nothing assigned. |
-| `SetBattalionAsync(playerId, IReadOnlyList<string> generals, IReadOnlyList<string> troops, ct)` | → `SetBattalionResult`. Validates ownership, UnitType band, and no-duplicates. |
-| `ComputePowerAsync(playerId, long playerEffectiveAttack, long playerEffectiveDefense, ct)` | → `long`. Caller passes the already-computed **effective** (gear-inclusive) ATK/DEF so the hit path avoids a second equipment read. |
-
-Impl `GauntletBattalionService`. Power formula (owner-locked 2026-06-12):
-`(playerATK + Σ battalionATK) × 4 + (playerDEF + Σ battalionDEF) × 1`. Slots: **6 generals + 20 troops**.
-
-### IGauntletService (T76 adds)
-| Method | Description |
-|--------|-------------|
-| `GetPrizeTableAsync(GauntletEventKind? kind = null, ct)` | → `GauntletPrizeTableResponse`, hydrated with trophy/magic display names. Kind resolution: argument → active event's kind → `Neck`. |
-| `GetMyLastSettlementAsync(playerId, ct)` | → `GauntletPlayerSettlementResponse?` — the caller's result in the most recently **Settled** event of any kind; null when none settled or the caller had no entry. |
-
-### Endpoints (GauntletController, `api/gauntlet` [Authorize])
-| Endpoint | Service Method | Responses |
-|----------|---------------|-----------|
-| `GET /api/gauntlet/battalion` | `GetBattalionAsync` | 200 |
-| `PUT /api/gauntlet/battalion` | `SetBattalionAsync` | 200, 400 (`SetGauntletBattalionRequest { Generals[], Troops[] }`) |
-| `GET /api/gauntlet/prizes?kind=` | `GetPrizeTableAsync` | 200, 400 on unknown kind |
-
-### DTO changes (client-facing — `GauntletDTOs.cs`)
-- `GauntletEventResponse` **+** `Kind`, `RunNumber`, `LoreBlurb`, `BannerKey`, `SecondsRemaining`,
-  `SecondsUntilStart` (non-zero = visible but not yet playable → the "Coming Soon" CTA).
-- `GauntletEntryResponse` **+** `HighestStage`.
-- `GauntletOverviewResponse` **+** `LastSettlement (GauntletPlayerSettlementResponse?)`.
-- `GauntletLadderResponse` **+** `NotStarted (bool)` — an event exists but `StartsAt` is still in the
-  future: nothing spawns and nothing is climbable. **[corrected 2026-08-22 — the Slice 7 section's
-  "exactly one of NoActiveEvent/JoinedRequired/Complete/ActiveRaid" is now a four-flag set.]**
-- `GauntletLeaderboardResponse` **+** `YourHighestStage (int?)`;
-  `GauntletLeaderboardEntryDto` **+** `HighestStage (int)`.
-- `OpenGauntletEventRequest` **+** `Kind` (default `"Neck"`), `LoreBlurb`, `BannerKey`.
-- New: `GauntletPrizeTableResponse`, `GauntletPrizeBandResponse`, `GauntletPlayerSettlementResponse`,
-  `GauntletBattalionResponse`, `SetGauntletBattalionRequest`, `BattalionUpdateStatus`,
-  `SetBattalionResult`.
-
-### GauntletConfig (T54/T76 adds)
-`LeagueBounds` now keys the four T76 bands. Formula-driven ladder extension:
-`MaxLadderStage` (0 = OFF, i.e. exactly the JSON stages; appsettings sets **250**),
-`StageHpBase` 5000, `StageHpGrowth` 1.0493, `StageBaseGoldReward` 200,
-`StageBaseExperienceReward` 150, `StageRewardGrowth` 1.04. Late-ramp:
-`LateRampStartStage` (0 = OFF; appsettings 200), `LateRampFinalGrowth` 2.0 — past the ramp start
-the per-stage growth interpolates linearly to `LateRampFinalGrowth` at `MaxLadderStage`.
-`GauntletStageCurve` (static) is the shared pure curve used by the content provider and the tests.
-
-### Combat fork — FULL REPLACE (D6/D8) **[corrects System 16 Slice 4 below]**
-In `RaidService.HitRaidAsync`, `isGauntlet = raid.GauntletEventId is not null`:
-- **`hitSize` must be 1** on a Gauntlet raid (rejected otherwise) and `strikeCost` is a flat **1**.
-  `GauntletConfig.StrikeRatePerSize` is now **vestigial on the Gauntlet fork** — Slice 4's
-  "cost by hit size" description is dead.
-- **Battalion power replaces the whole character/legion base:**
-  `charBase = max(1, battalionPower × rngMultiplier)` via
-  `IGauntletBattalionService.ComputePowerAsync`. The Gauntlet skips the active legion entirely,
-  skips mount proc, skips commander gear, and applies `flatDamageFraction = 0` and
-  `WrathLegionPercent = 0`.
-- **Hoard drop scaling is neutral (1.0)** on the Gauntlet.
-- Per-hit **Health** cost (`ComputeHealthCost(isGauntlet, raid, effectiveDefense)`) — Gauntlet mob
-  damage is Defense-scaled; regular raids take a flat cost per difficulty.
-- New `RaidService` ctor dep: `IGauntletBattalionService`.
-
----
-
-## System 25 — Sigil-as-boss-reward, Zone Re-lock & Zone-Rerun Achievements (2026-06-16) — ADDED 2026-08-22
-
-Spec: `docs/specs/active/system-25-sigil-zone-reruns.md`. No new migration for the achievement
-side (content/config + the existing achievement tables); `PlayerQuestDifficultyProgress` gained one
-column.
-
-### Sigils are a zone-boss final-clear reward only
-`QuestService.AttemptQuestAsync`, sigil step:
-- The node must be the **zone's final boss** (`quest.IsBoss` **and** no later `NodeIndex` in the same
-  `(Chapter, ZoneIndex)`), and `quest.Sigils` must contain the attempted difficulty. The presence of
-  the `Sigils` map is the **only** enable — `QuestDefinition.SigilDropChance` is now **vestigial**.
-- **First clear per difficulty = 100%**, latched by `PlayerQuestDifficultyProgress.FirstSigilDropped`
-  / `MarkSigilDropped()`.
-- **Any rerun = flat `QuestConfig.SigilRerunDropChance` (default 0.15)**. Not Discernment-scaled:
-  the System 22 `DiscernmentSigilFindMultiplier` lane is **inert for sigils** and currently serves
-  nothing else. **[corrects System 22 Slice 6 below.]**
-
-### Zone re-lock (boss gate now uses the current cycle, not the permanent latch)
-- The zone-boss gate requires every non-boss sibling in the zone to be `IsCleared` **in the current
-  cycle** (was `HasEverCleared`). Clearing the boss resets the zone (siblings → `IsCleared=false`),
-  so the boss re-locks until the zone is fully re-run — **every** reset, not just the first.
-  Failure code is still `QuestFailureCode.ZoneBossLocked` (→409), still evaluated **before** the
-  energy spend.
-- `GetAvailableQuestsAsync` builds a `clearedThisCycleIds` set (from `IsCleared`) alongside
-  `unlockedQuestIds` (from `HasEverCleared`); a boss's `IsUnlocked` is computed from the cycle set.
-- The **forward** prerequisite chain still keys on `HasEverCleared`, so a reset never re-locks the
-  *next* zone.
-
-### Zone-rerun achievements
-- **`AchievementCategory.ZoneMastery = 5`**; **`AchievementMetric.ZoneReruns = 6`**.
-  `ZoneReruns` is the one metric that is **not** fanned out to every def on the metric — it is routed
-  to exactly one zone's ladder.
-- `AchievementDefinition` **+** `int? Chapter`, `int? ZoneIndex` — REQUIRED iff `Metric == ZoneReruns`,
-  null otherwise (startup-validated).
-- `AchievementConfig` **+** `ZoneRerunLadder (List<ZoneRerunTier>)`, where
-  `ZoneRerunTier { ItemRarity Rarity; long Threshold; int Points }`. Owner-locked curve:
-  Grey 10/5, White 25/10, Green 50/20, Blue 100/40, Purple 250/75, **Orange 500/150**.
-  Thresholds must be strictly increasing (boot-validated).
-- `AchievementDefinitionProvider` ctor is now
-  `(string contentRootPath, IQuestDefinitionProvider? quests = null, AchievementConfig? config = null)`
-  — optional so existing 1-arg test construction still compiles. At boot it expands the ladder across
-  every distinct `(chapter, zone)` in the quest roster, deterministic ids
-  `ach_zonererun_c{ch}z{zone}_{rarity}`, synthesizing the 6-tier `NextId` chain.
-- `IAchievementDefinitionProvider` **+** `IReadOnlyList<AchievementDefinition> GetZoneRerunTiers(int chapter, int zoneIndex)`.
-- `IAchievementService` **+**
-  `Task RecordZoneRerunAsync(Guid playerId, int chapter, int zoneIndex, string referenceId, CancellationToken ct = default)`.
-- Hook (`QuestService`, step 14c, best-effort): on `zoneReset`, call
-  `RecordZoneRerunAsync(playerId, quest.Chapter, quest.ZoneIndex, $"zonererun:{chapter}:{zone}:{progress.CompletionCount}")`
-  **before** the existing `EvaluateCompletionsAsync`. `zoneReset` fires on **every** zone-boss clear
-  including the first (→ cycle #1); the boss node's `CompletionCount` makes it exactly-once per cycle.
-- Reward is **Achievement Points only** — it rides the existing append-only award ledger; no new
-  grant path.
-
-### Content
-`QuestConfig.SigilRerunDropChance = 0.15`. Coverage generation for all 25 zone bosses
-(23 new boss raids in `raids.json`, 92 sigil items in `items.json`, 23 boss `sigils` maps in
-`quests.json`; new raids are tier `Standard` with `lootTableId: ""`). Rarity↔difficulty convention
-in shipped `items.json` is **Normal→Green, Hard→Blue, Legendary→Purple, Nightmare→Orange**.
-<!-- UNVERIFIED: the exact generated raid/item/sigil counts and their HP/reward curve were taken
-     from the System 25 spec's implementation map, not re-counted from content JSON. -->
-
----
-
-## Magic catalogue read endpoint + purchase ownership guard (2026-06-1x) — ADDED 2026-08-22
-
-The Bazaar could only show **owned** magics, so a new player saw an empty tab. A read-only
-catalogue endpoint was added.
-
-### IMagicService (add)
-| Method | Description |
-|--------|-------------|
-| `Task<MagicCatalogueResponse> GetCatalogueAsync(Guid playerId, CancellationToken ct = default)` | Every definition in `content/magics.json`, tagged with the caller's owned-state and gem price. |
-
-`MagicService.GetCatalogueAsync` filters the owned set on `!IsDeleted` (a soft-removed magic reports
-as NOT owned, mirroring the `BuyMagicAsync` pre-check) and sets `ForSale = def.GemPrice > 0`
-(the same rule as the `NotForSale` guard).
-
-### DTOs (`src/ROTA.Shared/DTOs/MagicDTOs.cs`)
-- `MagicCatalogueResponse { IReadOnlyList<MagicCatalogueEntry> Entries }`
-- `MagicCatalogueEntry { string MagicDefinitionId, Name, Description, Rarity, Category, EffectType;
-  double ProcChance, ProcAmount; bool Stacks; string IconPath, Acquisition; int GemPrice;
-  bool ForSale; bool IsOwned }`
-
-### Endpoint
-`GET /api/magics/catalogue` [Authorize] → `MagicCatalogueResponse` (`MagicController`). 200 only.
-**Note:** the triage ticket called for `GET /api/magics/shop`; the shipped route is
-`/api/magics/catalogue`.
-
-### `BuyMagicAsync` no longer double-charges **[corrects the IMagicService table below]**
-`BuyMagicAsync` now does an ownership pre-check (`FindAsync` + `!IsDeleted`) and returns
-**`BuyMagicFailureCode.AlreadyOwned` → HTTP 409 with NO charge and NO grant**. The old documented
-behaviour ("duplicate purchase is allowed — charges again, grant is no-op") is dead. `BuyMagicResult`
-carries `GemPrice` on both success and failure. The XML doc comment on `IMagicService.BuyMagicAsync`
-in source still describes the old behaviour and is itself stale.
-
-Endpoint: `POST /api/magics/buy` [Authorize], body `BuyMagicRequest { MagicDefinitionId }` →
-`BuyMagicResult`. Maps `MagicNotFound`→404, `AlreadyOwned`→409, `NotForSale`/`InsufficientBalance`→422.
-
----
-
-## System 22 follow-up — Hoard-scaled raid threshold drops — ADDED 2026-08-22
-
-Resolves the "raid threshold-drop (kill-loot) Hoard scaling" deferral recorded in System 22 Slice 6.
-
-In `RaidService`, `DistributeKillRewardsAsync` gained a `double callerHoardDropMultiplier` parameter.
-The kill path passes `killerHoardDrop = isGauntlet ? 1.0 : masteryMods.Loot.HoardDropMultiplier`
-(the multiplier is already in hand from the hit's single `GetModifiersAsync` read — **no extra
-per-hit read**). Inside the per-participant loot loop:
-
-```
-hoardForThisPlayer = (p.PlayerId == callerPlayerId) ? callerHoardDropMultiplier : 1.0
-ScaleDropChance(base, hoard) = min(base × hoard, max(base, CombatConfig.MaxThresholdDropChance))
-```
-
-- **Minimal safe slice:** only the **killer's** chance drops are scaled. Scaling every participant
-  would need a mastery read per participant inside the advisory-lock transaction — still deferred.
-- The clamp never *lowers* an already-higher base (a base ≥ the cap, e.g. 1.0, is unchanged).
-- **Gear drops at a qualifying threshold are unconditional (guaranteed) and are intentionally NOT
-  Hoard-scaled.** Item / magic / unit / legion chance drops are.
-- `CombatConfig.MaxThresholdDropChance` = 0.95.
-- The Gauntlet never drops threshold loot and also gets no Hoard scaling here.
-
 ---
 
 ## TICKET 46 — Achievement Points (2026-06-08)
@@ -389,20 +11,17 @@ counters tracked at the existing combat/loot chokepoints + a new days-played log
 append-only `achievement_awards` ledger (gem-ledger idempotency — one award row per achievement via unique index).
 Migration **AddAchievementSystem** (NOT applied). Backend only — client mirror deferred.
 
-### Enums (`src/ROTA.Domain/Enums/`) **[corrected 2026-08-22 — System 25 appended values]**
-- `AchievementCategory { RaidCompletion=0, QuestClear=1, EquipmentOwned=2, DaysPlayed=3, Collector=4, ZoneMastery=5 }`
-- `AchievementMetric { RaidCompletions=0, QuestNodesCleared=1, QuestBossesCleared=2, EquipmentPiecesOwned=3, DaysPlayed=4, CollectorItemCount=5, ZoneReruns=6 }`
+### Enums (`src/ROTA.Domain/Enums/`)
+- `AchievementCategory { RaidCompletion=0, QuestClear=1, EquipmentOwned=2, DaysPlayed=3, Collector=4 }`
+- `AchievementMetric { RaidCompletions=0, QuestNodesCleared=1, QuestBossesCleared=2, EquipmentPiecesOwned=3, DaysPlayed=4, CollectorItemCount=5 }`
 
-### Content (`src/ROTA.Api/content/achievements.json`) + provider **[corrected 2026-08-22]**
+### Content (`src/ROTA.Api/content/achievements.json`) + provider
 `AchievementDefinition { Id, Category, Metric, Name, Description, int Points(>0), long Threshold(>0), bool Repeatable=false,
-string? NextId, string? CollectorKey, int? Chapter, int? ZoneIndex, string? IconKey }` (`src/ROTA.Application/Models/`).
-`Chapter`/`ZoneIndex` are REQUIRED iff `Metric == ZoneReruns` and null otherwise (System 25).
+string? NextId, string? CollectorKey, string? IconKey }` (`src/ROTA.Application/Models/`).
 `IAchievementDefinitionProvider` (eager singleton; registered in `ServiceCollectionExtensions`, eager-resolved in
-`Program.cs`). Impl `AchievementDefinitionProvider` (`src/ROTA.Infrastructure/Services/`), ctor
-`(string contentRootPath, IQuestDefinitionProvider? quests = null, AchievementConfig? config = null)` — throws at startup on:
+`Program.cs`). Impl `AchievementDefinitionProvider` (`src/ROTA.Infrastructure/Services/`) throws at startup on:
 duplicate id, unknown category/metric, points≤0, threshold≤0, dangling/cyclic `NextId`, non-increasing threshold along a
-chain, metric mismatch in a chain, missing `CollectorKey` on a Collector achievement, missing Chapter/ZoneIndex on a
-ZoneReruns achievement. Methods `GetAll()` / `GetById(id)` / `GetByMetric(metric)` / `GetZoneRerunTiers(chapter, zoneIndex)`.
+chain, metric mismatch in a chain, missing `CollectorKey` on a Collector achievement. `GetAll()/GetById(id)/GetByMetric(metric)`.
 
 ### Entities / persistence
 - `AchievementProgress { Id, PlayerId, AchievementId(string), long ProgressValue, bool IsCompleted, DateTimeOffset? CompletedAt,
@@ -417,25 +36,14 @@ ZoneReruns achievement. Methods `GetAll()` / `GetById(id)` / `GetByMetric(metric
   ambient-tx aware), `SetCounterAsync` (raw ON CONFLICT upsert-SET absolute), `UpsertAsync`.
 - `IAchievementAwardRepository`: `GetTotalPointsAsync` (= SUM points), `ReferenceExistsAsync`, `GetForPlayerAsync`,
   `CreateAsync` (returns false on unique-violation — idempotent create, clones the mastery respec repo).
-- **[added 2026-08-22]** `IAchievementProgressEventRepository` (entity `AchievementProgressEvent`) —
-  `ExistsAsync(playerId, achievementId, referenceId, ct)` + `CreateAsync(progressEvent, ct)` (false on
-  unique-violation). This is the **dedicated** append-only idempotency ledger for *referenced progress
-  increments*, scoped per `(player, achievement, source ref)` so the same reference is independent
-  across tiers on a metric. The award ledger idempotency covers *awards*, not increments.
 
 ### IAchievementService (`src/ROTA.Application/Services/AchievementService.cs`)
-- `RecordProgressAsync(playerId, AchievementMetric, long amount=1, referenceId?, ct)` — increments every achievement on the
-  metric; when a `referenceId` is supplied the progress event is recorded FIRST against
-  `IAchievementProgressEventRepository` and the increment is skipped on either replay case (already-exists or lost race).
-  `SetCounterAsync(playerId, metric, absoluteValue, ct)` — absolute set
+- `RecordProgressAsync(playerId, AchievementMetric, amount=1, referenceId?, ct)` — increments every achievement on the metric;
+  idempotent per (achievement, referenceId) when supplied. `SetCounterAsync(playerId, metric, absoluteValue, ct)` — absolute set
   for all achievements on a metric (EquipmentPiecesOwned). `RecountCollectorCountersAsync(playerId, ct)` — per-key distinct-owned
-  recount (matches item Type name or Tags). `RecordZoneRerunAsync(playerId, chapter, zoneIndex, referenceId, ct)` — **System 25**;
-  routes ONE rerun to only that zone's ladder (not the metric-wide fan-out). `EvaluateCompletionsAsync(playerId, ct)` — awards
-  each met-but-unawarded achievement exactly once (ledger + unique index), latches IsCompleted, audits "AchievementUnlocked".
-  `GetForPlayerAsync` → overview; `GetTotalPointsAsync` → ledger SUM.
-  Ctor **[corrected 2026-08-22]**: `(IAchievementDefinitionProvider, IAchievementProgressRepository,
-  IAchievementProgressEventRepository, IAchievementAwardRepository, IAuditLogRepository, IPlayerInventoryRepository,
-  IItemDefinitionProvider)`.
+  recount (matches item Type name or Tags). `EvaluateCompletionsAsync(playerId, ct)` — awards each met-but-unawarded achievement
+  exactly once (ledger + unique index), latches IsCompleted, audits "AchievementUnlocked". `GetForPlayerAsync` → overview;
+  `GetTotalPointsAsync` → ledger SUM.
 
 ### Tracking hooks (best-effort — never block gameplay)
 - `RaidService.HitRaidAsync` (isKill block, inside the advisory-lock tx): `RecordProgressAsync(RaidCompletions, 1, "ach:raidkill:{raidId}:{playerId}")`.
@@ -451,13 +59,8 @@ ZoneReruns achievement. Methods `GetAll()` / `GetById(id)` / `GetByMetric(metric
   bool IsCompleted; DateTimeOffset? CompletedAt; string? IconKey }` (`src/ROTA.Shared/DTOs/AchievementDTOs.cs`).
 - `PlayerProfileResponse.TotalAchievementPoints (int)` — SUMMED from the award ledger.
 
-### Config **[corrected 2026-08-22 — no longer empty]**
-- `AchievementConfig` (bound from "AchievementConfig" in Program.cs) now holds
-  `List<ZoneRerunTier> ZoneRerunLadder` — the System 25 six-rung rarity ladder applied to every quest
-  zone. `ZoneRerunTier { ItemRarity Rarity; long Threshold; int Points }`. Defaults:
-  Grey 10/5, White 25/10, Green 50/20, Blue 100/40, Purple 250/75, Orange 500/150.
-
-### Zone-rerun hook — see the **System 25** section at the top of this file for the full record.
+### Config
+- `AchievementConfig` (empty scalar holder, reserved; bound from "AchievementConfig" in Program.cs).
 
 ---
 
@@ -549,16 +152,10 @@ Spec: docs/specs/active/system-22-masteries-core.md. No migration.
 ### Loot hooks
 - **Quest (`QuestService.AttemptQuestAsync`):** `GetLootModifiersAsync` fetched best-effort (try/catch → neutral).
   Hoard `goldReward × HoardGoldMultiplier`; Hoard drop-rate folded into `ProcessQuestLootAsync`'s `Scale` closure
-  (× `hoardDropMultiplier`, inside the 0.95 cap); ~~Discernment post-first-clear sigil chance
-  `× DiscernmentSigilFindMultiplier`~~ — **[corrected 2026-08-22: REMOVED by System 25.** The sigil step is now
-  100% on first clear per difficulty / flat `QuestConfig.SigilRerunDropChance` (0.15) on rerun.
-  `DiscernmentSigilFindMultiplier` is still computed but is **inert for sigils** and currently drives nothing else;
-  `MasteryConfig.SigilFindAppliesToFirstClear` is likewise inert. Excise-or-keep is an open follow-up.**]**
+  (× `hoardDropMultiplier`, inside the 0.95 cap); Discernment post-first-clear sigil chance
+  `× DiscernmentSigilFindMultiplier` (clamp ≤ 1.0; guaranteed first drop never scaled).
 - **Raid (`RaidService.HitRaidAsync`):** on-hit gold `× masteryMods.Loot.HoardGoldMultiplier` (one combined read).
-- ~~**Deferred:** raid threshold-drop (kill-loot) Hoard scaling~~ — **[corrected 2026-08-22: RESOLVED.** The
-  killer's chance-based threshold drops are now Hoard-scaled in `DistributeKillRewardsAsync`; see the
-  **System 22 follow-up — Hoard-scaled raid threshold drops** section at the top. Non-killer participants
-  still keep their base chance.**]**
+- **Deferred:** raid threshold-drop (kill-loot) Hoard scaling (per-participant reads on the kill path) — follow-up.
 
 **Slice 6 scope:** Hoard (drop/gold) + Discernment sigil-find. Discernment drop-quality (rarity-upgrade) is Slice 7.
 +3 unit tests.
@@ -746,8 +343,7 @@ Impl `MasteryDefinitionProvider` (`src/ROTA.Infrastructure/Services/`).
 ### Enums (`src/ROTA.Domain/Enums/`)
 | Enum | Values |
 |------|--------|
-| `GauntletLeague` | **[corrected 2026-08-22 — T76 rebracketing]** `Whelpling=0` (L1–999), `Wyrm=1` (L1000–2499), `Dragon=2` (L2500–4999), `Ancient=3` (L5000+, open-ended) |
-| `GauntletEventKind` | **[added 2026-08-22 — T76]** `Neck=0` (standard: neck rank gear + rank magics), `Ring=1` (rare: ring rank gear, no magics) |
+| `GauntletLeague` | `Whelpling` (L1–1999), `Wyrm` (L2000–9999), `Dragon` (L10000+) |
 | `GauntletEventState` | `Scheduled, Active, Closed, Settled` |
 | `GauntletRewardKind` | `Tokens, Pitchfork, Trophy, Magic` |
 | `GauntletTrophyTier` | `Aureate` (+25%), `Argent` (+10%), `Bronzed` (+5%) |
@@ -756,14 +352,9 @@ Impl `MasteryDefinitionProvider` (`src/ROTA.Infrastructure/Services/`).
 | `StrikeTransactionType` | `RaidDefeat, GemPurchase, HitSpend, SpecialRaidDrop` |
 
 ### Config — `GauntletConfig` (`src/ROTA.Application/Configuration/GauntletConfig.cs`)
-`IOptions<GauntletConfig>`, bound from appsettings `"GauntletConfig"`. **[corrected 2026-08-22]**
-LeagueBounds now covers the four T76 bands (Whelpling 1–999 / Wyrm 1000–2499 / Dragon 2500–4999 /
-Ancient 5000–`NoMaxLevel`), MinEntryLevel 20, PrizeRankCount 500, LeaderboardPageSize 200,
-ScoreSnapshotSeconds 60, StrikesPerDefeat 10, StrikeGemPrice 1.
-`StrikeRatePerSize {Small 1, Medium 5, Large 20}` still exists but is **vestigial on the Gauntlet fork** —
-a Gauntlet hit is a single strike costing exactly 1 (D6). T54/T76 curve dials (`MaxLadderStage`,
-`StageHpBase`, `StageHpGrowth`, `StageBaseGoldReward`, `StageBaseExperienceReward`, `StageRewardGrowth`,
-`LateRampStartStage`, `LateRampFinalGrowth`) are documented in the **System 24 / T76** section above.
+`IOptions<GauntletConfig>`, bound from appsettings `"GauntletConfig"`. LeagueBounds (Whelpling 1–1999 /
+Wyrm 2000–9999 / Dragon 10000–`NoMaxLevel`), MinEntryLevel 20, PrizeRankCount 500, LeaderboardPageSize 200,
+ScoreSnapshotSeconds 60, StrikeRatePerSize {Small 1, Medium 5, Large 20}, StrikesPerDefeat 10.
 `NoMaxLevel = int.MaxValue` is the open-ended-top-league sentinel.
 
 ### Content models (`src/ROTA.Application/Models/`)
@@ -822,23 +413,12 @@ or procChance ∉ (0,1] / procAmount ≤ 0 / offCap ≠ true; naming guard vs `m
 - `GauntletRankSnapshotService` (hosted, singleton; DI scope per tick): every `GauntletConfig.ScoreSnapshotSeconds` resolves the active event and calls `RecomputeRanksAsync`; no-op when none active; try/catch never crashes the host.
 
 ### Endpoints
-- `GauntletController` [Authorize]: `GET /api/gauntlet` (overview: event + entry + strike/token/pitchfork balances **+ `LastSettlement` (T76)**), `GET /api/gauntlet/ladder` (Slice 7: the auto-advancing ladder target — always 200; flags NoActiveEvent/JoinedRequired/**NotStarted**/Complete or the current ActiveRaid), `GET /api/gauntlet/leaderboard?league=` (Slice 3: snapshot-ranked board + `YourRank`/`YourScore`/**`YourHighestStage`**; 400 invalid/missing league; empty board when no active event), `POST /api/gauntlet/join`, `POST /api/gauntlet/strikes/buy`, `GET /api/gauntlet/shop` (Slice 6: catalogue + balances), `POST /api/gauntlet/shop/{entryId}/buy` (Slice 6: Success/AlreadyCharged → 200, AlreadyOwned → 409, InsufficientTokens → 422, unknown entry → 404), **`GET /api/gauntlet/battalion` + `PUT /api/gauntlet/battalion` + `GET /api/gauntlet/prizes?kind=` (T76 — [added 2026-08-22])**.
+- `GauntletController` [Authorize]: `GET /api/gauntlet` (overview: event + entry + strike/token/pitchfork balances), `GET /api/gauntlet/ladder` (Slice 7: the auto-advancing ladder target — always 200; flags NoActiveEvent/JoinedRequired/Complete or the current ActiveRaid), `GET /api/gauntlet/leaderboard?league=` (Slice 3: snapshot-ranked board + `YourRank`/`YourScore`; 400 invalid/missing league; empty board when no active event), `POST /api/gauntlet/join`, `POST /api/gauntlet/strikes/buy`, `GET /api/gauntlet/shop` (Slice 6: catalogue + balances), `POST /api/gauntlet/shop/{entryId}/buy` (Slice 6: Success/AlreadyCharged → 200, AlreadyOwned → 409, InsufficientTokens → 422, unknown entry → 404).
 - `GauntletAdminController` [AdminOnly + DB actor re-verify]: `POST /api/admin/gauntlet/events` (open; 409 on ≤1-active), `POST .../events/{id}/close`, `POST .../events/{id}/settle`.
 - CLI (`AdminCli`): `gauntlet-open`, `gauntlet-close`, `gauntlet-settle`.
 
 ### DTOs (`src/ROTA.Shared/DTOs/GauntletDTOs.cs`)
-GauntletEventResponse, GauntletEntryResponse, GauntletOverviewResponse, StrikeBalanceResponse, GauntletCurrencyBalanceResponse, BuyStrikesRequest, OpenGauntletEventRequest, JoinGauntletResult, BuyStrikesResult, GauntletEventActionResult, GauntletSettlementSummaryResponse, GauntletLadderResponse, GauntletLeaderboardResponse, GauntletLeaderboardEntryDto, GauntletShopEntryResponse + GauntletShopResponse + BuyShopResult (Slice 6). Validators: BuyStrikesRequestValidator, OpenGauntletEventRequestValidator.
-
-**[corrected 2026-08-22 — T76 field additions; the old shapes above were incomplete]**
-- `GauntletLadderResponse { ActiveRaid?, CurrentStage, StageCount, Complete, JoinedRequired, NoActiveEvent, **NotStarted** }`
-- `GauntletLeaderboardResponse { League, Entries, YourRank, YourScore, **YourHighestStage**, TotalRanked }`
-- `GauntletLeaderboardEntryDto { Rank, PlayerId, DisplayName, **HighestStage**, Score }`
-- `GauntletEventResponse { Id, Name, State, StartsAt, EndsAt, SettledAt?, **Kind, RunNumber, LoreBlurb?, BannerKey?, SecondsRemaining, SecondsUntilStart** }`
-- `GauntletEntryResponse { Id, GauntletEventId, PlayerId, League, Score, **HighestStage**, TieBreakAt, LastRank? }`
-- `GauntletOverviewResponse { CurrentEvent?, MyEntry?, StrikeBalance, TokenBalance, PitchforkBalance, **LastSettlement?** }`
-- New: `GauntletPrizeTableResponse`, `GauntletPrizeBandResponse`, `GauntletPlayerSettlementResponse`
-  (`GauntletBattalionDTOs.cs`: `GauntletBattalionResponse`, `SetGauntletBattalionRequest`,
-  `BattalionUpdateStatus`, `SetBattalionResult`).
+GauntletEventResponse, GauntletEntryResponse, GauntletOverviewResponse, StrikeBalanceResponse, GauntletCurrencyBalanceResponse, BuyStrikesRequest, OpenGauntletEventRequest, JoinGauntletResult, BuyStrikesResult, GauntletEventActionResult, GauntletLadderResponse (Slice 7: ActiveRaid?/CurrentStage/StageCount/Complete/JoinedRequired/NoActiveEvent), GauntletLeaderboardResponse (Slice 3: League/Entries/YourRank/YourScore/TotalRanked), GauntletLeaderboardEntryDto (Rank/PlayerId/DisplayName/Score), GauntletShopEntryResponse + GauntletShopResponse + BuyShopResult (Slice 6). Validators: BuyStrikesRequestValidator, OpenGauntletEventRequestValidator.
 
 **Slice 2 scope:** persistence + lifecycle + join + strike economy. No combat changes (scoring + strike spend wired in Slice 4). +38 unit, +10 integration tests.
 
@@ -850,13 +430,9 @@ non-Gauntlet hit is byte-for-byte identical to before). New scoped ctor deps:
 `IPlayerMagicHonorRepository`, `IStrikeRepository`, `IGauntletScoringService`, `IOptions<GauntletConfig>`.
 - **(A) Trophy multiplier** — inside the active-legion block: `rawLegionPower *= 1 + Max(ownedTrophy.LegionPowerBonusFraction)` (highest-only, NOT additive) **before** `PowerScaling`. Applies to EVERY raid. No trophies → ×1.0; legion-less players skip the query.
 - **(B) Off-cap auras** — Gauntlet raids only (`GauntletEventId != null`): for each `MagicDefinition.OffCap`, current owner (`PlayerEventMagic` for the event) ×1.25 / former owner (`PlayerMagicHonor`) ×1.10 / neither → no aura; roll `min(1, procChance×mult)`, add `procAmount×mult×preProc` to `damageFinal` **before crit**. NEVER folded into the `MaxAggregateProcBonus` cap.
-- **(C) Strike fork** — Gauntlet hits spend **Strikes** instead of Stamina, inside the advisory-lock tx; insufficient → 422 `InsufficientStrikes`. `StrikeRepository.SpendAsync` reimplemented **tx-safe** (raw Npgsql, ambient-tx aware, EXISTS + balance-guarded INSERT, no `ChangeTracker.Clear`). **[corrected 2026-08-22 — System 24 D6: the cost is a flat 1 strike per hit and `hitSize` MUST be 1 on a Gauntlet raid; `GauntletConfig.StrikeRatePerSize` no longer applies here.]**
+- **(C) Strike fork** — Gauntlet hits spend **Strikes** (cost by hit size via `GauntletConfig.StrikeRatePerSize`; refId `strikespend:{activeRaidId}:{idempotencyKey}`) instead of Stamina, inside the advisory-lock tx; insufficient → 422 `InsufficientStrikes`. `StrikeRepository.SpendAsync` reimplemented **tx-safe** (raw Npgsql, ambient-tx aware, EXISTS + balance-guarded INSERT, no `ChangeTracker.Clear`).
 - **(D) Score update** — after the leaderboard hook: `IGauntletScoringService.UpdateScoreAsync(playerId, GauntletEventId, damageFinal, now)` (rides the ambient tx; no-op if unjoined). Non-Gauntlet hits never call it.
 - DTOs: `RaidHitResponse.OffCapAuraBonus` + `NewStrikeBalance` (0 on non-Gauntlet); `RaidHitFailureCode.InsufficientStrikes = 8` → 422.
-- **[corrected 2026-08-22]** Slice 4's "no parallel combat path" claim no longer holds for the Gauntlet.
-  System 24 (D8) made the Gauntlet a **full-replace** damage path: battalion power is the base, and the
-  legion / mount proc / commander gear / FlatDamagePercent / Wrath stages are all skipped. Non-Gauntlet
-  hits are still byte-for-byte unchanged. See the **System 24 / T76** section above.
 
 **Known follow-up (NOT in S1–S6) — RESOLVED in Slice 7:** the Gauntlet **ladder summon/climb** endpoint +
 gauntlet-stage definition resolution. Slice 4 was exercised via seeded ActiveRaids with `GauntletEventId`
@@ -943,13 +519,6 @@ on the next call after a defeat, so the player never manually summons. Stage num
 ActiveRaids. The `ActiveRaidResponse` projection reuses `RaidService.GetRaidByIdAsync` (the spawned stage is
 a join-by-id case: active + Personal + summoner = caller). New `GauntletService` ctor deps:
 `IActiveRaidRepository`, `IRaidService`. Endpoint: `GET /api/gauntlet/ladder` [Authorize].
-
-**[corrected 2026-08-22]** Two changes since this was written:
-(a) a **T76 `NotStarted` gate** runs before the join check — when `event.StartsAt` is still in the
-future nothing spawns and nothing is climbable (mirrors the join gate so the two can never
-disagree); and (b) the decide-and-spawn block now runs inside
-`IPlayerMutationLock.RunAsync(playerId, …)`, closing the double-spawn race where two concurrent
-calls each spawned stage N. New ctor deps: `IPlayerMutationLock`, `IAuditLogRepository`.
 
 **(3) Regular-list exclusion** — `RaidService.GetActiveRaidsAsync` now excludes raids with
 `GauntletEventId != null` (gauntlet stages are Personal + caller-owned, so the own-raids branch would
@@ -1303,8 +872,6 @@ Implementation: `LeaderboardService` (`src/ROTA.Application/Services/Leaderboard
 | `Task<AuthResponse?> LoginAsync(LoginRequest, string ipAddress)` | Authenticate a player |
 | `Task<AuthResponse?> RefreshAsync(RefreshRequest, string ipAddress)` | Rotate refresh token |
 | `Task LogoutAsync(RefreshRequest)` | Revoke refresh token |
-| `Task RequestPasswordResetAsync(PasswordResetRequest, string ipAddress)` | **[added 2026-08-22]** Issue a password-reset code (entity `PasswordResetToken`, repo `IPasswordResetTokenRepository`); delivered via the outbound-email queue |
-| `Task<bool> ResetPasswordAsync(ResetPasswordRequest, string ipAddress)` | **[added 2026-08-22]** Consume the code and set the new hash (`Player.SetPasswordHash`) |
 
 ---
 
@@ -1316,8 +883,6 @@ Implementation: `LeaderboardService` (`src/ROTA.Application/Services/Leaderboard
 | `Task<int> GetCurrentEnergyAsync(Guid playerId, ResourceType, CancellationToken)` | Live value from checkpoint |
 | `Task<bool> SpendEnergyAsync(Guid playerId, ResourceType, int amount, CancellationToken)` | Deduct with row lock (participates in ambient tx when inside advisory-lock callback) |
 | `Task RefillEnergyAsync(Guid playerId, ResourceType, int amount, CancellationToken)` | Add up to max |
-| `Task<int> DrainAsync(Guid playerId, ResourceType, int amount, CancellationToken)` | **[added 2026-08-22 — T56]** Deducts up to `amount`, clamping at 0 (never fails). Backs raid/Gauntlet Health damage. Returns the amount actually drained |
-| `Task RefillToMaxAsync(Guid playerId, ResourceType, CancellationToken)` | **[added 2026-08-22]** Full refill to current `MaxValue` + regen-checkpoint reset. Used on level-up (all pools restored) |
 | `Task UpdateMaxAsync(Guid playerId, ResourceType, int newMax, CancellationToken)` | Update pool max value |
 | `double GetRegenMinutesPerPoint(PlayerClass, ResourceType)` | Class-based regen rate (minutes/point) from ClassConfig; pure, no DB. Backs the profile DTO's `RegenMinutesPerPoint`. |
 
@@ -1326,13 +891,11 @@ Implementation: `LeaderboardService` (`src/ROTA.Application/Services/Leaderboard
 ### IGemService
 `src/ROTA.Application/Interfaces/IGemService.cs`
 
-**[corrected 2026-08-22 — all gem amounts are `long` since `WidenGemAmountToBigint`.]**
-
 | Method | Description |
 |--------|-------------|
-| `Task<long> GetBalanceAsync(Guid playerId, CancellationToken)` | Balance from ledger sum (`SUM(amount)`) |
-| `Task<bool> GrantGemsAsync(Guid, long amount, GemTransactionType, string? referenceId, CancellationToken)` | Credit gems idempotently |
-| `Task<GemSpendOutcome> SpendGemsAsync(Guid, long amount, GemTransactionType, string? referenceId, CancellationToken)` | Debit gems; tri-state: `Charged` / `AlreadyProcessed` (refId already in ledger → idempotent replay, caller re-runs grant) / `InsufficientBalance`. Closes the lost-purchase hole across all shops. |
+| `Task<int> GetBalanceAsync(Guid playerId, CancellationToken)` | Balance from ledger sum |
+| `Task<bool> GrantGemsAsync(Guid, int, GemTransactionType, string? referenceId, CancellationToken)` | Credit gems idempotently |
+| `Task<GemSpendOutcome> SpendGemsAsync(Guid, int, GemTransactionType, string? referenceId, CancellationToken)` | Debit gems; tri-state: `Charged` / `AlreadyProcessed` (refId already in ledger → idempotent replay, caller re-runs grant) / `InsufficientBalance`. Closes the lost-purchase hole across all 3 shops. |
 | `Task<bool> DailyRefillAsync(Guid playerId, CancellationToken)` | Once-per-day 5 gems |
 
 ---
@@ -1353,12 +916,12 @@ Implementation: `LeaderboardService` (`src/ROTA.Application/Services/Leaderboard
 
 | Method | Description |
 |--------|-------------|
-| `Task<AllocateStatResponse> AllocateStatPointAsync(Guid, StatType, int amount, CancellationToken)` | Invest SkillPoints in stat. **[corrected 2026-08-22]** Response now also carries `EffectiveAttack`/`EffectiveDefense` (`long`, gear-inclusive) on success. LSI cap is **7.45** (`StatService.LsiCap`), not 9.0. Validator cap raised from 100 to 100M |
+| `Task<AllocateStatResponse> AllocateStatPointAsync(Guid, StatType, int, CancellationToken)` | Invest SkillPoints in stat |
 | `Task GrantLevelUpPointsAsync(Guid playerId, int newLevel, CancellationToken)` | +10 SP +5 gems at L%5 |
-| `Task AddUnassignedPointsAsync(Guid playerId, long amount, CancellationToken)` | **[corrected 2026-08-22 — `amount` widened to `long`]** Grant SP, no LSI check |
-| `Task<PlayerStatsResponse?> GetStatsAsync(Guid playerId, CancellationToken)` | Full stat sheet (all stat fields now `long`) |
+| `Task AddUnassignedPointsAsync(Guid playerId, int amount, CancellationToken)` | Grant SP no LSI check |
+| `Task<PlayerStatsResponse?> GetStatsAsync(Guid playerId, CancellationToken)` | Full stat sheet |
 | `int XpToNextLevel(int level)` | XP needed for next level |
-| `CritProfile GetCritProfile(int discernment)` | Crit chance + multiplier for given discernment (stays `int` — bounded input) |
+| `CritProfile GetCritProfile(int discernmentInvestment)` | Crit chance + multiplier for given discernment |
 
 ---
 
@@ -1367,7 +930,7 @@ Implementation: `LeaderboardService` (`src/ROTA.Application/Services/Leaderboard
 
 | Method | Description |
 |--------|-------------|
-| `Task<IReadOnlyList<QuestAvailabilityResponse>> GetAvailableQuestsAsync(Guid playerId, QuestDifficulty difficulty = QuestDifficulty.Normal, CancellationToken ct = default)` | **[corrected 2026-08-22 — SIGNATURE CHANGE]** Filtered quest list for ONE difficulty's progress. Node depletion/clear/unlock state is per-difficulty since migration `AddQuestProgressDifficulty`, so this view is difficulty-scoped; omitting the argument yields Normal (back-compat) |
+| `Task<IReadOnlyList<QuestAvailabilityResponse>> GetAvailableQuestsAsync(Guid, CancellationToken)` | Filtered quest list |
 | `Task<QuestResultResponse> AttemptQuestAsync(Guid, string questId, QuestDifficulty, CancellationToken)` | Attempt quest |
 
 ---
