@@ -36,9 +36,15 @@ public interface IRaidService
     Task<ShareRaidResult> ShareRaidAsync(
         Guid callerId, Guid activeRaidId, RaidVisibility visibility = RaidVisibility.Public, CancellationToken ct = default);
 
-    // Summoner-only dismiss of a defeated raid (Ticket 50). Rewards were already granted on the killing
-    // hit — this only removes the raid from all indexes (Lootable → Looted; IsDeleted untouched). Fails
-    // NotFound (missing/already-looted), NotSummoner, or NotLootable (still Active / not yet defeated).
+    // Per-participant reward CLAIM on a defeated raid (T57 — this superseded Ticket 50's summoner-only
+    // dismiss, and the old description survived here long enough to mislead the function reference).
+    // ANY participant may call it; the claim is latched by a conditional UPDATE inside a per-participant
+    // advisory-lock transaction, so it is race- and crash-safe and a re-press grants nothing further.
+    // Grants the DEFERRED rewards only — gems, stat points, inventory items and collection drops; gold
+    // and XP were already granted on the hit. Once no participant has an unclaimed reward the raid is
+    // dismissed (Lootable → Looted; IsDeleted untouched).
+    // Fails NotFound (missing / already-looted / caller not a participant) or NotLootable (still Active).
+    // NOTE: LootRaidFailureCode.NotSummoner is now dead — still mapped to 403, never returned.
     Task<LootRaidResult> LootRaidAsync(Guid callerId, Guid activeRaidId, CancellationToken ct = default);
 
     Task<IReadOnlyList<RaidParticipantRankDto>> GetParticipantsAsync(Guid activeRaidId, int top, CancellationToken ct = default);
