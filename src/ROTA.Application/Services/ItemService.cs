@@ -14,6 +14,8 @@ public sealed class ItemService : IItemService
     private readonly IRaidService _raids;
     private readonly IAuditLogRepository _auditLog;
     private readonly IPlayerMutationLock _mutationLock;   // exploit audit 2026-06-14 (E)
+    private readonly IEnergyService _energy;              // D-008 consumables — resource restore
+    private readonly IPlayerResourceRepository _resources; // reads pool live/max for the response
 
     public ItemService(
         IPlayerInventoryRepository inventory,
@@ -22,7 +24,9 @@ public sealed class ItemService : IItemService
         IStatService stats,
         IRaidService raids,
         IAuditLogRepository auditLog,
-        IPlayerMutationLock mutationLock)
+        IPlayerMutationLock mutationLock,
+        IEnergyService energy,
+        IPlayerResourceRepository resources)
     {
         _inventory = inventory;
         _itemDefs  = itemDefs;
@@ -31,6 +35,8 @@ public sealed class ItemService : IItemService
         _raids     = raids;
         _auditLog  = auditLog;
         _mutationLock = mutationLock;
+        _energy    = energy;
+        _resources = resources;
     }
 
     public async Task<IReadOnlyList<InventoryItemResponse>> GetInventoryAsync(
@@ -92,9 +98,55 @@ public sealed class ItemService : IItemService
 
         int statPointsGranted = 0;
         SummonRaidResponse? raidSummoned = null;
+        string? resourceRestored = null;
+        int restoredAmount = 0, resourceNewValue = 0, resourceMaxValue = 0;
 
         switch (def.Type)
         {
+            // D-008 / northstar §1 — the consumable escape valve. Runs inside the per-player mutation
+            // lock (like StatBag/Sigil), so a concurrent double-use can't restore twice off one item.
+            case ItemType.Consumable when def.RestoreResourceType is not null:
+            {
+                if (!Enum.TryParse<ResourceType>(def.RestoreResourceType, out var restoreType))
+                    return UseFail(UseItemFailureCode.ItemNotUsable,
+                        "Consumable has invalid resource configuration.");
+
+                var pool = await _resources.GetAsync(playerId, restoreType, ct);
+                if (pool is null)
+                    return UseFail(UseItemFailureCode.ItemNotUsable,
+                        $"You have no {restoreType} pool to restore.");
+
+                // Live value, not the stored checkpoint — regen since the last write counts toward "full".
+                var before = await _energy.GetCurrentEnergyAsync(playerId, restoreType, ct);
+                if (before >= pool.MaxValue)
+                    return UseFail(UseItemFailureCode.ResourceAlreadyFull,
+                        $"Your {restoreType} is already full.");
+
+                if (def.RestoreToMax)
+                {
+                    // A full refill consumes exactly one — anything beyond the first is pure waste, and
+                    // silently eating the extras would read as theft.
+                    if (quantity != 1)
+                        return UseFail(UseItemFailureCode.ItemNotUsable,
+                            "A full-refill consumable can only be used one at a time.");
+                    await _energy.RefillToMaxAsync(playerId, restoreType, ct);
+                }
+                else
+                {
+                    if (def.RestoreAmount <= 0)
+                        return UseFail(UseItemFailureCode.ItemNotUsable,
+                            "Consumable restores nothing.");
+                    // Overfill is clamped by RefillEnergyAsync; the response reports what actually landed.
+                    await _energy.RefillEnergyAsync(playerId, restoreType, def.RestoreAmount * quantity, ct);
+                }
+
+                resourceNewValue = await _energy.GetCurrentEnergyAsync(playerId, restoreType, ct);
+                resourceMaxValue = pool.MaxValue;
+                restoredAmount   = resourceNewValue - before;
+                resourceRestored = restoreType.ToString();
+                break;
+            }
+
             case ItemType.StatBag:
                 int totalPoints = def.StatPointsOnUse * quantity;
                 await _stats.AddUnassignedPointsAsync(playerId, totalPoints, ct);
@@ -130,7 +182,8 @@ public sealed class ItemService : IItemService
 
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, "ItemUsed", null,
-            $"Used {quantity}x {def.Name} ({itemDefinitionId}). StatPoints: {statPointsGranted}",
+            $"Used {quantity}x {def.Name} ({itemDefinitionId}). StatPoints: {statPointsGranted}"
+                + (resourceRestored is null ? "" : $". Restored: {restoredAmount} {resourceRestored}"),
             null), ct);
 
         return new UseItemResponse
@@ -141,6 +194,10 @@ public sealed class ItemService : IItemService
             RemainingQuantity = inv.Quantity,
             StatPointsGranted = statPointsGranted,
             RaidSummoned     = raidSummoned,
+            ResourceRestored = resourceRestored,
+            ResourceAmountRestored = restoredAmount,
+            ResourceNewValue = resourceNewValue,
+            ResourceMaxValue = resourceMaxValue,
         };
     }
 

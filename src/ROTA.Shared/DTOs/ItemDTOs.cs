@@ -29,6 +29,13 @@ public class UseItemResponse
     public int RemainingQuantity { get; set; }
     public int StatPointsGranted { get; set; }
     public SummonRaidResponse? RaidSummoned { get; set; }
+
+    // Consumables (D-008): what the potion actually restored, so the client can update the HUD bar
+    // from the response instead of re-fetching the profile. Null/0 for non-consumables.
+    public string? ResourceRestored { get; set; }
+    public int ResourceAmountRestored { get; set; }
+    public int ResourceNewValue { get; set; }
+    public int ResourceMaxValue { get; set; }
 }
 
 public class ItemGrantDTO
@@ -53,4 +60,7 @@ public enum UseItemFailureCode
     InsufficientItems = 2,
     ItemNotUsable     = 3,
     RaidSummonFailed  = 4,
+    // Consumables (D-008): the target pool is already full — reject rather than silently burn the
+    // item for zero benefit. A wasted potion reads as a bug to the player.
+    ResourceAlreadyFull = 5,
 }
