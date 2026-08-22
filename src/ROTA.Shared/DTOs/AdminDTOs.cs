@@ -26,6 +26,13 @@ public class BanPlayerRequest
     public string Reason { get; set; } = string.Empty;
 }
 
+/// <summary>Request to lift a ban (governance audit 2026-08-22).</summary>
+public class UnbanPlayerRequest
+{
+    /// <summary>Reason the ban is being lifted (recorded + emailed for the dispute trail).</summary>
+    public string Reason { get; set; } = string.Empty;
+}
+
 /// <summary>Request to mute a player's chat for a fixed duration (T40).</summary>
 public class MutePlayerRequest
 {

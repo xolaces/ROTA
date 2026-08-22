@@ -180,6 +180,17 @@ public class Player
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
+    /// <summary>
+    /// Lifts a ban (governance audit 2026-08-22). Bans are permanent until temporary bans exist, so
+    /// without this a mistaken ban was unrecoverable except by direct SQL against the players table.
+    /// </summary>
+    public void Unban()
+    {
+        IsBanned = false;
+        BanReason = null;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
     /// <summary>Mutes the player's chat until <paramref name="expiresAt"/> (UTC). Bumps UpdatedAt (T40).</summary>
     public void Mute(DateTimeOffset expiresAt)
     {
