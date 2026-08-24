@@ -132,6 +132,13 @@ public class GuildJoinRequestDto
     public Guid Id { get; init; }
     public Guid GuildId { get; init; }
     public Guid PlayerId { get; init; }
+
+    // Without these the officer review queue had only a PlayerId to render, so both clients showed a
+    // raw GUID where the applicant's name belongs.
+    public string Username { get; init; } = string.Empty;
+    public string DisplayName { get; init; } = string.Empty;
+    public int Level { get; init; }
+
     public string Kind { get; init; } = string.Empty;
     public string Status { get; init; } = string.Empty;
     public DateTimeOffset CreatedAt { get; init; }

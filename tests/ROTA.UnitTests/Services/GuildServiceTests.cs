@@ -64,6 +64,18 @@ public class GuildServiceTests
             => Task.FromResult(Rows.FirstOrDefault(r => r.Id == id && !r.IsDeleted));
         public Task<IReadOnlyList<GuildJoinRequest>> GetPendingForGuildAsync(Guid guildId, CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<GuildJoinRequest>>(Rows.Where(r => r.GuildId == guildId && r.Status == GuildJoinRequestStatus.Pending && !r.IsDeleted).ToList());
+        // Joined variant — mirrors the SQL join against players; harness wires PlayerSource.
+        public List<Player> PlayerSource = new();
+        public Task<IReadOnlyList<GuildJoinRequestEntry>> GetPendingForGuildWithPlayersAsync(Guid guildId, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<GuildJoinRequestEntry>>(
+                Rows.Where(r => r.GuildId == guildId && r.Status == GuildJoinRequestStatus.Pending && !r.IsDeleted)
+                    .Join(PlayerSource, r => r.PlayerId, pl => pl.Id, (r, pl) => new GuildJoinRequestEntry
+                    {
+                        Id = r.Id, GuildId = r.GuildId, PlayerId = r.PlayerId,
+                        Username = pl.Username, DisplayName = pl.DisplayName, Level = pl.Level,
+                        Kind = r.Kind, Status = r.Status, CreatedAt = r.CreatedAt,
+                    })
+                    .OrderBy(r => r.CreatedAt).ToList());
         public Task<IReadOnlyList<GuildJoinRequest>> GetPendingForPlayerAsync(Guid playerId, CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<GuildJoinRequest>>(Rows.Where(r => r.PlayerId == playerId && r.Status == GuildJoinRequestStatus.Pending && !r.IsDeleted).ToList());
         public Task<GuildJoinRequest?> FindPendingAsync(Guid guildId, Guid playerId, GuildJoinRequestKind kind, CancellationToken ct = default)
@@ -108,6 +120,7 @@ public class GuildServiceTests
 
         public Harness(GuildConfig? config = null)
         {
+            Requests.PlayerSource = Players.Players;   // the fake join reads the same player list
             Service = new GuildService(Guilds, Memberships, Requests, Players, Audit.Object,
                 Options.Create(config ?? new GuildConfig()));
         }
@@ -713,6 +726,28 @@ public class GuildServiceTests
         r.Success.Should().BeFalse();
         r.FailureCode.Should().Be(GuildFailureCode.DevGuildRestricted);
         outsider.GuildId.Should().BeNull();
+    }
+
+    // Beta bug: applicants rendered as their raw GUID ("eeeeeeee-…") because the DTO carried only a
+    // PlayerId. The officer review queue must ship the applicant's name and level.
+    [Fact]
+    public async Task GetGuild_PendingApplications_CarryApplicantNameAndLevel()
+    {
+        var h = new Harness();
+        var leader = h.AddPlayer("leader");
+        var gid = await h.Found(leader, policy: GuildJoinPolicy.Application);
+        var applicant = h.AddPlayer("hopeful", level: 42);
+
+        var apply = await h.Service.ApplyAsync(applicant.Id, gid);
+        apply.Success.Should().BeTrue();
+
+        var detail = await h.Service.GetGuildAsync(gid, leader.Id);
+        detail!.PendingRequests.Should().HaveCount(1);
+        var row = detail.PendingRequests[0];
+        row.PlayerId.Should().Be(applicant.Id);
+        row.Username.Should().Be("hopeful", "officers must see WHO applied, not a GUID");
+        row.DisplayName.Should().Be("hopeful");
+        row.Level.Should().Be(42);
     }
 
     [Fact]

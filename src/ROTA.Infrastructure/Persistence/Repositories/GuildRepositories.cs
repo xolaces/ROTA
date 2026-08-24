@@ -166,6 +166,29 @@ public sealed class GuildJoinRequestRepository : IGuildJoinRequestRepository
             .OrderBy(r => r.CreatedAt)
             .ToListAsync(ct);
 
+    // Officer review queue with WHO is applying — mirrors GetRosterAsync's join projection. Without
+    // the join the DTO carried only a PlayerId and both clients rendered a raw GUID as the applicant.
+    public async Task<IReadOnlyList<GuildJoinRequestEntry>> GetPendingForGuildWithPlayersAsync(Guid guildId, CancellationToken ct = default)
+        => await _db.GuildJoinRequests.AsNoTracking()
+            .Where(r => r.GuildId == guildId && r.Status == GuildJoinRequestStatus.Pending && !r.IsDeleted)
+            .Join(_db.Players.AsNoTracking(),
+                r => r.PlayerId,
+                p => p.Id,
+                (r, p) => new GuildJoinRequestEntry
+                {
+                    Id = r.Id,
+                    GuildId = r.GuildId,
+                    PlayerId = r.PlayerId,
+                    Username = p.Username,
+                    DisplayName = p.DisplayName,
+                    Level = p.Level,
+                    Kind = r.Kind,
+                    Status = r.Status,
+                    CreatedAt = r.CreatedAt,
+                })
+            .OrderBy(r => r.CreatedAt)
+            .ToListAsync(ct);
+
     public async Task<IReadOnlyList<GuildJoinRequest>> GetPendingForPlayerAsync(Guid playerId, CancellationToken ct = default)
         => await _db.GuildJoinRequests.AsNoTracking()
             .Where(r => r.PlayerId == playerId && r.Status == GuildJoinRequestStatus.Pending && !r.IsDeleted)
