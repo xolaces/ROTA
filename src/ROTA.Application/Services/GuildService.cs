@@ -565,12 +565,17 @@ public sealed class GuildService : IGuildService
         IReadOnlyList<GuildJoinRequestDto> pending = Array.Empty<GuildJoinRequestDto>();
         if (callerRank is not null && callerRank.Value >= GuildRank.Officer)
         {
-            var reqs = await _requests.GetPendingForGuildAsync(guildId, ct);
+            // Joined to the applicant so officers see a NAME — the entity-only read carried just a
+            // PlayerId and the clients rendered the raw GUID in the applicant list (beta bug).
+            var reqs = await _requests.GetPendingForGuildWithPlayersAsync(guildId, ct);
             pending = reqs.Select(r => new GuildJoinRequestDto
             {
                 Id = r.Id,
                 GuildId = r.GuildId,
                 PlayerId = r.PlayerId,
+                Username = r.Username,
+                DisplayName = string.IsNullOrWhiteSpace(r.DisplayName) ? r.Username : r.DisplayName,
+                Level = r.Level,
                 Kind = r.Kind.ToString(),
                 Status = r.Status.ToString(),
                 CreatedAt = r.CreatedAt,
