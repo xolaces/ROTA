@@ -112,6 +112,33 @@ public class CraftingRecipeProviderTests : IDisposable
             "ingredients": [ { "kind": "Item", "id": "ghost", "quantity": 1 } ] } ]
         """).Should().Throw<InvalidOperationException>().WithMessage("*Item 'ghost', which does not exist*");
 
+    // Own-once ingredients: a player holds one or none, so a recipe asking for two could never be
+    // satisfied and would sit in the catalogue permanently uncraftable.
+    [Fact]
+    public void OwnOnceUnitIngredient_WithQuantityAboveOne_Throws()
+        => Act("""
+        [ { "id": "r", "outputKind": "Gear", "outputId": "gear_out", "outputQuantity": 1,
+            "ingredients": [ { "kind": "Unit", "id": "unit_in", "quantity": 2 } ] } ]
+        """).Should().Throw<InvalidOperationException>().WithMessage("*own-once*");
+
+    [Fact]
+    public void OwnOnceLegionIngredient_WithQuantityAboveOne_Throws()
+        => Act("""
+        [ { "id": "r", "outputKind": "Gear", "outputId": "gear_out", "outputQuantity": 1,
+            "ingredients": [ { "kind": "Legion", "id": "legion_in", "quantity": 3 } ] } ]
+        """).Should().Throw<InvalidOperationException>().WithMessage("*own-once*");
+
+    // Gear stacks, so a recipe may name several copies of it.
+    [Fact]
+    public void GearIngredient_WithQuantityAboveOne_Loads()
+    {
+        WriteJson("""
+        [ { "id": "r", "outputKind": "Unit", "outputId": "unit_out", "outputQuantity": 1,
+            "ingredients": [ { "kind": "Gear", "id": "gear_in", "quantity": 4 } ] } ]
+        """);
+        Build(_tmpDir).GetById("r")!.Ingredients[0].Quantity.Should().Be(4);
+    }
+
     [Fact]
     public void UnknownOutput_Throws()
         => Act("""

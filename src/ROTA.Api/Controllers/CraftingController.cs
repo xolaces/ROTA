@@ -25,6 +25,20 @@ public sealed class CraftingController : ControllerBase
     public async Task<IActionResult> GetRecipes()
         => Ok(await _crafting.GetCatalogueAsync(GetPlayerId()));
 
+    /// <summary>
+    /// Crafts one recipe. Player-caused refusals (missing ingredients, an equipped ingredient, not
+    /// enough gold) come back as 400 with a machine-readable FailureCode rather than an exception, so
+    /// the client can point at what to fix.
+    /// </summary>
+    [HttpPost("recipes/{recipeId}/craft")]
+    [ProducesResponseType(typeof(CraftResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CraftResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Craft(string recipeId)
+    {
+        var result = await _crafting.CraftAsync(GetPlayerId(), recipeId);
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
+
     private Guid GetPlayerId()
         => Guid.Parse(User.FindFirst(JwtRegisteredClaimNames.Sub)!.Value);
 }

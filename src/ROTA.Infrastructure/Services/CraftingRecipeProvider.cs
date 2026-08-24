@@ -87,6 +87,12 @@ public sealed class CraftingRecipeProvider : ICraftingRecipeProvider
                 if (ing.Quantity <= 0)
                     throw new InvalidOperationException(
                         $"recipes.json: '{r.Id}' ingredient '{ing.Id}' must have a positive quantity.");
+                // Units and legions are own-once: a player holds one or none. A recipe asking for two
+                // could never be satisfied, so it would sit in the catalogue permanently uncraftable.
+                if (ing.Kind is CraftIngredientKind.Unit or CraftIngredientKind.Legion && ing.Quantity != 1)
+                    throw new InvalidOperationException(
+                        $"recipes.json: '{r.Id}' needs {ing.Quantity}x {ing.Kind} '{ing.Id}', but " +
+                        $"{ing.Kind}s are own-once — quantity must be 1.");
                 if (!IngredientExists(ing.Kind, ing.Id))
                     throw new InvalidOperationException(
                         $"recipes.json: '{r.Id}' needs {ing.Kind} '{ing.Id}', which does not exist.");

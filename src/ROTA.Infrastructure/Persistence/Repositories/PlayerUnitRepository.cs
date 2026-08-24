@@ -43,4 +43,10 @@ public sealed class PlayerUnitRepository : IPlayerUnitRepository
 
         return existing;
     }
+
+    public async Task UpdateAsync(PlayerUnit unit, CancellationToken ct = default)
+    {
+        _db.PlayerUnits.Update(unit);
+        await _db.SaveChangesAsync(ct);
+    }
 }

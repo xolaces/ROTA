@@ -3,8 +3,7 @@ using ROTA.Shared.DTOs;
 namespace ROTA.Application.Interfaces;
 
 /// <summary>
-/// System 26 — crafting (D-018). Slice 1 is the read-only catalogue; the consuming transaction
-/// (CraftAsync) lands in slice 2.
+/// System 26 — crafting (D-018). The read-only catalogue plus the consuming transaction.
 /// </summary>
 public interface ICraftingService
 {
@@ -13,4 +12,11 @@ public interface ICraftingService
     /// Advisory: the craft call re-checks everything authoritatively.
     /// </summary>
     Task<CraftCatalogueResponse> GetCatalogueAsync(Guid playerId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Performs one craft: verify, charge gold, consume every ingredient and grant the output, all in a
+    /// single transaction under the player's mutation lock. Never throws for a player-caused refusal —
+    /// those come back as a <see cref="CraftFailureCode"/> so the client can explain them.
+    /// </summary>
+    Task<CraftResponse> CraftAsync(Guid playerId, string recipeId, CancellationToken ct = default);
 }
