@@ -14,6 +14,9 @@ public sealed class ItemService : IItemService
     private readonly IRaidService _raids;
     private readonly IAuditLogRepository _auditLog;
     private readonly IPlayerMutationLock _mutationLock;   // exploit audit 2026-06-14 (E)
+    private readonly IEnergyService _energy;              // D-008 consumables — resource restore
+    private readonly IPlayerResourceRepository _resources; // reads pool live/max for the response
+    private readonly IPlayerRepository _players;           // D-013 gold shop — conditional debit
 
     public ItemService(
         IPlayerInventoryRepository inventory,
@@ -22,7 +25,10 @@ public sealed class ItemService : IItemService
         IStatService stats,
         IRaidService raids,
         IAuditLogRepository auditLog,
-        IPlayerMutationLock mutationLock)
+        IPlayerMutationLock mutationLock,
+        IEnergyService energy,
+        IPlayerResourceRepository resources,
+        IPlayerRepository players)
     {
         _inventory = inventory;
         _itemDefs  = itemDefs;
@@ -31,6 +37,9 @@ public sealed class ItemService : IItemService
         _raids     = raids;
         _auditLog  = auditLog;
         _mutationLock = mutationLock;
+        _energy    = energy;
+        _resources = resources;
+        _players   = players;
     }
 
     public async Task<IReadOnlyList<InventoryItemResponse>> GetInventoryAsync(
@@ -92,9 +101,55 @@ public sealed class ItemService : IItemService
 
         int statPointsGranted = 0;
         SummonRaidResponse? raidSummoned = null;
+        string? resourceRestored = null;
+        int restoredAmount = 0, resourceNewValue = 0, resourceMaxValue = 0;
 
         switch (def.Type)
         {
+            // D-008 / northstar §1 — the consumable escape valve. Runs inside the per-player mutation
+            // lock (like StatBag/Sigil), so a concurrent double-use can't restore twice off one item.
+            case ItemType.Consumable when def.RestoreResourceType is not null:
+            {
+                if (!Enum.TryParse<ResourceType>(def.RestoreResourceType, out var restoreType))
+                    return UseFail(UseItemFailureCode.ItemNotUsable,
+                        "Consumable has invalid resource configuration.");
+
+                var pool = await _resources.GetAsync(playerId, restoreType, ct);
+                if (pool is null)
+                    return UseFail(UseItemFailureCode.ItemNotUsable,
+                        $"You have no {restoreType} pool to restore.");
+
+                // Live value, not the stored checkpoint — regen since the last write counts toward "full".
+                var before = await _energy.GetCurrentEnergyAsync(playerId, restoreType, ct);
+                if (before >= pool.MaxValue)
+                    return UseFail(UseItemFailureCode.ResourceAlreadyFull,
+                        $"Your {restoreType} is already full.");
+
+                if (def.RestoreToMax)
+                {
+                    // A full refill consumes exactly one — anything beyond the first is pure waste, and
+                    // silently eating the extras would read as theft.
+                    if (quantity != 1)
+                        return UseFail(UseItemFailureCode.ItemNotUsable,
+                            "A full-refill consumable can only be used one at a time.");
+                    await _energy.RefillToMaxAsync(playerId, restoreType, ct);
+                }
+                else
+                {
+                    if (def.RestoreAmount <= 0)
+                        return UseFail(UseItemFailureCode.ItemNotUsable,
+                            "Consumable restores nothing.");
+                    // Overfill is clamped by RefillEnergyAsync; the response reports what actually landed.
+                    await _energy.RefillEnergyAsync(playerId, restoreType, def.RestoreAmount * quantity, ct);
+                }
+
+                resourceNewValue = await _energy.GetCurrentEnergyAsync(playerId, restoreType, ct);
+                resourceMaxValue = pool.MaxValue;
+                restoredAmount   = resourceNewValue - before;
+                resourceRestored = restoreType.ToString();
+                break;
+            }
+
             case ItemType.StatBag:
                 int totalPoints = def.StatPointsOnUse * quantity;
                 await _stats.AddUnassignedPointsAsync(playerId, totalPoints, ct);
@@ -130,7 +185,8 @@ public sealed class ItemService : IItemService
 
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, "ItemUsed", null,
-            $"Used {quantity}x {def.Name} ({itemDefinitionId}). StatPoints: {statPointsGranted}",
+            $"Used {quantity}x {def.Name} ({itemDefinitionId}). StatPoints: {statPointsGranted}"
+                + (resourceRestored is null ? "" : $". Restored: {restoredAmount} {resourceRestored}"),
             null), ct);
 
         return new UseItemResponse
@@ -141,9 +197,125 @@ public sealed class ItemService : IItemService
             RemainingQuantity = inv.Quantity,
             StatPointsGranted = statPointsGranted,
             RaidSummoned     = raidSummoned,
+            ResourceRestored = resourceRestored,
+            ResourceAmountRestored = restoredAmount,
+            ResourceNewValue = resourceNewValue,
+            ResourceMaxValue = resourceMaxValue,
         };
     }
 
     private static UseItemResponse UseFail(UseItemFailureCode code, string reason)
+        => new() { FailureCode = code, FailureReason = reason };
+
+    // ── Consumable shop (D-008 / D-013) ────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Upper bound on one purchase. Keeps GoldPrice * quantity far inside long and stops a
+    /// fat-fingered quantity draining a balance in a single call — not a gameplay cap.
+    /// </summary>
+    private const int MaxPurchaseQuantity = 1000;
+
+    public async Task<ShopCatalogueResponse> GetShopAsync(Guid playerId, CancellationToken ct = default)
+    {
+        var player = await _players.FindByIdAsync(playerId, ct);
+        var gold = player?.Gold ?? 0;
+
+        // One inventory read for the whole catalogue rather than a lookup per row.
+        var owned = (await _inventory.GetAllForPlayerAsync(playerId, ct))
+            .ToDictionary(i => i.ItemDefinitionId, i => i.Quantity, StringComparer.Ordinal);
+
+        var rows = _itemDefs.GetAll()
+            .Where(d => d.Type == ItemType.Consumable && d.GoldPrice > 0)
+            .OrderBy(d => d.RestoreResourceType, StringComparer.Ordinal)
+            .ThenBy(d => d.GoldPrice)
+            .Select(d => new ShopItemResponse
+            {
+                ItemDefinitionId    = d.Id,
+                Name                = d.Name,
+                Description         = d.Description,
+                Rarity              = d.Rarity.ToString(),
+                ArtKey              = d.ArtKey,
+                GoldPrice           = d.GoldPrice,
+                RestoreResourceType = d.RestoreResourceType ?? string.Empty,
+                RestoreAmount       = d.RestoreAmount,
+                RestoreToMax        = d.RestoreToMax,
+                QuantityOwned       = owned.TryGetValue(d.Id, out var q) ? q : 0,
+                CanAfford           = gold >= d.GoldPrice,
+            })
+            .ToList();
+
+        return new ShopCatalogueResponse { Items = rows, PlayerGold = gold };
+    }
+
+    public Task<BuyItemResponse> BuyItemAsync(
+        Guid playerId, string itemDefinitionId, int quantity, CancellationToken ct = default)
+    {
+        // Cheap rejects before taking the lock. A non-positive quantity would otherwise produce a
+        // negative cost — i.e. sell gold TO the player.
+        if (quantity < 1)
+            return Task.FromResult(BuyFail(BuyItemFailureCode.InvalidQuantity, "Quantity must be at least 1."));
+        if (quantity > MaxPurchaseQuantity)
+            return Task.FromResult(BuyFail(BuyItemFailureCode.InvalidQuantity,
+                $"Quantity may not exceed {MaxPurchaseQuantity} per purchase."));
+
+        return _mutationLock.RunAsync(playerId, () => BuyItemCoreAsync(playerId, itemDefinitionId, quantity, ct), ct);
+    }
+
+    private async Task<BuyItemResponse> BuyItemCoreAsync(
+        Guid playerId, string itemDefinitionId, int quantity, CancellationToken ct = default)
+    {
+        var def = _itemDefs.GetById(itemDefinitionId);
+        if (def is null)
+            return BuyFail(BuyItemFailureCode.ItemNotFound, "Item definition not found.");
+        // Only gold-priced consumables sell here. Equipment/sigils/materials have their own paths, and
+        // a 0 price means drop-only (the full-refill elixir) — never purchasable.
+        if (def.Type != ItemType.Consumable || def.GoldPrice <= 0)
+            return BuyFail(BuyItemFailureCode.NotForSale, "This item is not sold for gold.");
+
+        long totalCost = def.GoldPrice * quantity;   // bounded by MaxPurchaseQuantity — cannot overflow long
+
+        // Gold is a COLUMN, not a ledger. Unlike gems and gauntlet currency there is no referenceId to
+        // make a replay idempotent, so the tri-state spend-then-idempotent-grant pattern the other shops
+        // use does not transfer. Instead the debit is a CONDITIONAL UPDATE that re-checks the balance in
+        // the same statement (mirroring the gem ledger's SUM guard), so a read-then-write race can never
+        // drive gold negative — no separate affordability read to go stale. It runs inside the mutation
+        // lock's transaction along with the grant below, so both commit or neither does.
+        var newGold = await _players.TrySpendGoldAsync(playerId, totalCost, ct);
+        if (newGold is null)
+            return BuyFail(BuyItemFailureCode.InsufficientGold,
+                $"Insufficient gold. Required: {totalCost}.");
+
+        var existing = await _inventory.GetAsync(playerId, itemDefinitionId, ct);
+        int newQuantity;
+        if (existing is not null)
+        {
+            existing.AddQuantity(quantity);
+            await _inventory.UpdateAsync(existing, ct);
+            newQuantity = existing.Quantity;
+        }
+        else
+        {
+            var created = PlayerInventoryItem.Create(playerId, itemDefinitionId, quantity);
+            await _inventory.CreateAsync(created, ct);
+            newQuantity = quantity;
+        }
+
+        await _auditLog.AppendAsync(AuditLog.Create(
+            playerId, "ItemPurchased", null,
+            $"Bought {quantity}x {def.Name} ({itemDefinitionId}) for {totalCost} gold. " +
+            $"Gold now {newGold.Value}.", null), ct);
+
+        return new BuyItemResponse
+        {
+            Success           = true,
+            ItemDefinitionId  = itemDefinitionId,
+            QuantityPurchased = quantity,
+            GoldSpent         = totalCost,
+            NewPlayerGold     = newGold.Value,
+            NewQuantityOwned  = newQuantity,
+        };
+    }
+
+    private static BuyItemResponse BuyFail(BuyItemFailureCode code, string reason)
         => new() { FailureCode = code, FailureReason = reason };
 }

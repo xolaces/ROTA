@@ -19,18 +19,26 @@ public sealed class ModerationController : ControllerBase
     private readonly IAdminService _admin;
     private readonly IValidator<BanPlayerRequest> _banValidator;
     private readonly IValidator<MutePlayerRequest> _muteValidator;
+    private readonly IValidator<UnbanPlayerRequest> _unbanValidator;
 
     public ModerationController(
         IAdminService admin,
         IValidator<BanPlayerRequest> banValidator,
-        IValidator<MutePlayerRequest> muteValidator)
+        IValidator<MutePlayerRequest> muteValidator,
+        IValidator<UnbanPlayerRequest> unbanValidator)
     {
         _admin = admin;
         _banValidator = banValidator;
         _muteValidator = muteValidator;
+        _unbanValidator = unbanValidator;
     }
 
+    /// <summary>
+    /// Bans a player. Admin-only: bans are permanent until temporary bans exist, and northstar §6
+    /// reserves permanent bans to Admins. Moderators mute instead. Governance audit 2026-08-22.
+    /// </summary>
     [HttpPost("players/{idOrUsername}/ban")]
+    [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -40,6 +48,23 @@ public sealed class ModerationController : ControllerBase
         var v = await _banValidator.ValidateAsync(request);
         if (!v.IsValid) return InvalidRequest(v);
         return Respond(await _admin.BanPlayerAsync(GetActorId(), idOrUsername, request.Reason, Ip()), "Player banned.");
+    }
+
+    /// <summary>
+    /// Lifts a ban. Admin-only (enforced in the service) — this is the only in-product way to
+    /// reverse a ban, which is otherwise permanent. Governance audit 2026-08-22.
+    /// </summary>
+    [HttpPost("players/{idOrUsername}/unban")]
+    [Authorize(Policy = "AdminOnly")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Unban([FromRoute] string idOrUsername, [FromBody] UnbanPlayerRequest request)
+    {
+        var v = await _unbanValidator.ValidateAsync(request);
+        if (!v.IsValid) return InvalidRequest(v);
+        return Respond(await _admin.UnbanPlayerAsync(GetActorId(), idOrUsername, request.Reason, Ip()), "Ban lifted.");
     }
 
     /// <summary>Mutes a player's chat for a fixed duration.</summary>

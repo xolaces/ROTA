@@ -156,6 +156,13 @@ public class SeedDataTests
         public Task UpdateStatsAsync(PlayerStats stats, CancellationToken ct = default) => Task.CompletedTask;
         public Task<int> CountByRoleAsync(PlayerRoles role, CancellationToken ct = default) => Task.FromResult(0);
         public Task<bool> TryDemoteAdminAsync(Guid targetId, CancellationToken ct = default) => Task.FromResult(false);
+        public async Task<long?> TrySpendGoldAsync(Guid playerId, long amount, CancellationToken ct = default)
+        {
+            var p = await FindByIdAsync(playerId, ct);
+            if (p is null || p.Gold < amount) return null;
+            p.AddGold(-amount);
+            return p.Gold;
+        }
         public async Task<TResult> MutateWithRetryAsync<TResult>(Guid playerId, Func<Player, TResult> mutate, CancellationToken ct = default)
         {
             var p = await FindByIdAsync(playerId, ct) ?? throw new InvalidOperationException($"Player {playerId} not found for reward mutation.");

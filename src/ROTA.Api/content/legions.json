@@ -6,12 +6,24 @@
     "rarity": "White",
     "powerBonus": 50,
     "generalSlots": [
-      { "constraintType": "None", "constraintValue": null },
-      { "constraintType": "None", "constraintValue": null }
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      }
     ],
     "troopSlots": [
-      { "constraintType": "None", "constraintValue": null },
-      { "constraintType": "None", "constraintValue": null }
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      }
     ],
     "iconPath": "",
     "acquisition": "Starting legion"
@@ -23,14 +35,32 @@
     "rarity": "Blue",
     "powerBonus": 120,
     "generalSlots": [
-      { "constraintType": "None", "constraintValue": null },
-      { "constraintType": "None", "constraintValue": null },
-      { "constraintType": "None", "constraintValue": null }
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      }
     ],
     "troopSlots": [
-      { "constraintType": "None", "constraintValue": null },
-      { "constraintType": "None", "constraintValue": null },
-      { "constraintType": "None", "constraintValue": null }
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      }
     ],
     "iconPath": "",
     "acquisition": "Gem shop"
@@ -42,15 +72,67 @@
     "rarity": "Purple",
     "powerBonus": 250,
     "generalSlots": [
-      { "constraintType": "Role", "constraintValue": "Tank" },
-      { "constraintType": "Role", "constraintValue": "Melee" },
-      { "constraintType": "Role", "constraintValue": "Ranged" }
+      {
+        "constraintType": "Role",
+        "constraintValue": "Tank"
+      },
+      {
+        "constraintType": "Role",
+        "constraintValue": "Melee"
+      },
+      {
+        "constraintType": "Role",
+        "constraintValue": "Ranged"
+      }
     ],
     "troopSlots": [
-      { "constraintType": "Attribute", "constraintValue": "Strength" },
-      { "constraintType": "Attribute", "constraintValue": "Strength" }
+      {
+        "constraintType": "Attribute",
+        "constraintValue": "Strength"
+      },
+      {
+        "constraintType": "Attribute",
+        "constraintValue": "Strength"
+      }
     ],
     "iconPath": "",
     "acquisition": "Raid drop"
+  },
+  {
+    "id": "legion_vanguard_ii",
+    "name": "Dawn Vanguard II",
+    "description": "The Vanguard rebuilt around a core of oathsteel — the same banner, twice the weight behind it.",
+    "rarity": "Purple",
+    "powerBonus": 240,
+    "generalSlots": [
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      }
+    ],
+    "troopSlots": [
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      }
+    ],
+    "iconPath": "",
+    "acquisition": "Crafting (General)"
   }
 ]

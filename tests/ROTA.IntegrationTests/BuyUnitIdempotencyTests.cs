@@ -97,6 +97,12 @@ public class BuyUnitIdempotencyTests : IAsyncLifetime
                     // catalogue (which references real units) would fail boot validation. This test
                     // does not exercise the shop, so stub it with an empty catalogue.
                     services.AddSingleton<IGauntletShopProvider>(new EmptyShopProvider());
+
+                    // System 26 (D-018): the crafting recipe provider validates recipes.json against
+                    // the unit/gear providers at boot. This test swaps those for stubs, so the shipped
+                    // recipes would (correctly) fail to resolve. Same reasoning as the shop stub above —
+                    // crafting is not under test here, so give it an empty catalogue.
+                    services.AddSingleton<ICraftingRecipeProvider>(new EmptyRecipeProvider());
                 });
             });
 
@@ -252,5 +258,11 @@ public class BuyUnitIdempotencyTests : IAsyncLifetime
     {
         public IReadOnlyList<GauntletShopEntry> GetAll() => Array.Empty<GauntletShopEntry>();
         public GauntletShopEntry? GetById(string id) => null;
+    }
+
+    private sealed class EmptyRecipeProvider : ICraftingRecipeProvider
+    {
+        public IReadOnlyList<CraftingRecipe> GetAll() => Array.Empty<CraftingRecipe>();
+        public CraftingRecipe? GetById(string id) => null;
     }
 }

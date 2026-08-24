@@ -241,10 +241,10 @@ public class AdminServiceTests
     // MODERATION — ban / mute / unmute (T40)
 
     [Fact]
-    public async Task BanPlayerAsync_ValidModerator_Bans_RevokesSessions_Audits_AndEmails()
+    public async Task BanPlayerAsync_ValidAdmin_Bans_RevokesSessions_Audits_AndEmails()
     {
         var (service, players, tokens, auditLog, emails) = BuildServiceEx();
-        var actor  = MakePlayer("mod", PlayerRoles.Player | PlayerRoles.Moderator);
+        var actor  = MakeAdmin("boss");
         var target = MakePlayer("baddie");
 
         players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
@@ -264,6 +264,114 @@ public class AdminServiceTests
             It.Is<EmailPayload>(p => p.Type == EmailType.ModerationAction),
             It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once,
             "every punitive action raises a ModerationAction operator email");
+    }
+
+    // Governance audit 2026-08-22: bans are PERMANENT (there is no BannedUntil), and northstar §6
+    // reserves permanent bans to Admins. A Moderator must be refused and must change nothing.
+    [Fact]
+    public async Task BanPlayerAsync_ModeratorActor_IsRefused_AndChangesNothing()
+    {
+        var (service, players, tokens, auditLog, emails) = BuildServiceEx();
+        var actor  = MakePlayer("mod", PlayerRoles.Player | PlayerRoles.Moderator);
+        var target = MakePlayer("baddie");
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+        players.Setup(r => r.FindByUsernameAsync("baddie", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+
+        var result = await service.BanPlayerAsync(actor.Id, "baddie", "cheating");
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("admin");
+        target.IsBanned.Should().BeFalse();
+        players.Verify(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>()), Times.Never);
+        tokens.Verify(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        auditLog.Verify(a => a.AppendAsync(It.IsAny<AuditLog>(), It.IsAny<CancellationToken>()), Times.Never);
+        emails.Verify(e => e.QueueAsync(It.IsAny<EmailPayload>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    // §6 forbids reasonless punishment. The validator was the ONLY guard; this pins the service-level one.
+    [Fact]
+    public async Task BanPlayerAsync_BlankReason_IsRefused()
+    {
+        var (service, players, _, _, _) = BuildServiceEx();
+        var actor = MakeAdmin("boss");
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+
+        var result = await service.BanPlayerAsync(actor.Id, "baddie", "   ");
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("reason");
+    }
+
+    [Fact]
+    public async Task UnbanPlayerAsync_ValidAdmin_LiftsBan_Audits_AndEmails()
+    {
+        var (service, players, _, auditLog, emails) = BuildServiceEx();
+        var actor  = MakeAdmin("boss");
+        var target = MakePlayer("baddie");
+        target.Ban("cheating");
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+        players.Setup(r => r.FindByUsernameAsync("baddie", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+        players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+
+        var result = await service.UnbanPlayerAsync(actor.Id, "baddie", "appeal upheld");
+
+        result.Success.Should().BeTrue();
+        target.IsBanned.Should().BeFalse();
+        target.BanReason.Should().BeNull();
+        auditLog.Verify(a => a.AppendAsync(
+            It.Is<AuditLog>(l => l.Action == "PlayerUnbanned"), It.IsAny<CancellationToken>()), Times.Once);
+        emails.Verify(e => e.QueueAsync(
+            It.Is<EmailPayload>(p => p.Type == EmailType.ModerationAction),
+            It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UnbanPlayerAsync_ModeratorActor_IsRefused()
+    {
+        var (service, players, _, _, _) = BuildServiceEx();
+        var actor  = MakePlayer("mod", PlayerRoles.Player | PlayerRoles.Moderator);
+        var target = MakePlayer("baddie");
+        target.Ban("cheating");
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+        players.Setup(r => r.FindByUsernameAsync("baddie", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+
+        var result = await service.UnbanPlayerAsync(actor.Id, "baddie", "appeal upheld");
+
+        result.Success.Should().BeFalse();
+        target.IsBanned.Should().BeTrue("a refused unban must not lift the ban");
+    }
+
+    [Fact]
+    public async Task UnbanPlayerAsync_NotBanned_ReturnsFail()
+    {
+        var (service, players, _, _, _) = BuildServiceEx();
+        var actor  = MakeAdmin("boss");
+        var target = MakePlayer("innocent");
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+        players.Setup(r => r.FindByUsernameAsync("innocent", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+
+        var result = await service.UnbanPlayerAsync(actor.Id, "innocent", "n/a");
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("not banned");
+    }
+
+    // The service-level cap must hold for any caller that bypasses the controller's validator.
+    [Fact]
+    public async Task MutePlayerAsync_DurationBeyondCap_IsRefused()
+    {
+        var (service, players, _, _, _) = BuildServiceEx();
+        var actor = MakePlayer("mod", PlayerRoles.Player | PlayerRoles.Moderator);
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+
+        var result = await service.MutePlayerAsync(actor.Id, "baddie", 60 * 24 * 31, "spam");
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("exceed");
     }
 
     [Fact]

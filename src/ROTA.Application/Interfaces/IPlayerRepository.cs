@@ -49,4 +49,14 @@ public interface IPlayerRepository
     /// Throws <see cref="InvalidOperationException"/> if the player does not exist.
     /// </summary>
     Task<TResult> MutateWithRetryAsync<TResult>(Guid playerId, Func<Player, TResult> mutate, CancellationToken ct = default);
+
+    /// <summary>
+    /// Atomically debits <paramref name="amount"/> gold, re-checking affordability in the SAME statement
+    /// (mirrors the gem ledger's SUM-guarded conditional debit). Returns the new balance, or
+    /// <c>null</c> when the player could not afford it — in which case nothing was written.
+    /// Use this for every gold SPEND: a read-then-write check can be raced by a concurrent reward and
+    /// drive the balance negative. Ambient-transaction aware, so it enlists in a mutation-lock
+    /// transaction and commits or rolls back with the grant it pays for.
+    /// </summary>
+    Task<long?> TrySpendGoldAsync(Guid playerId, long amount, CancellationToken ct = default);
 }

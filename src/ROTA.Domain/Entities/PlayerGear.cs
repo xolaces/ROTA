@@ -24,11 +24,33 @@ public class PlayerGear
     public DateTimeOffset UpdatedAt        { get; private set; }
     public bool           IsDeleted        { get; private set; }
 
-    // Acquisition stacks onto the existing row. Gear is never consumed by
-    // equip/unequip — ownership is permanent — so there is no Consume here.
+    // Acquisition stacks onto the existing row. Equipping never consumes gear —
+    // ownership is permanent — so only crafting (System 26, D-018) takes any away.
     public void AddQuantity(int amount)
     {
         Quantity += amount;
+        // Re-acquiring gear that was consumed down to nothing must bring the row back: the grant path
+        // upserts through GetAsync, which returns soft-deleted rows, so without this the player would
+        // hold a positive quantity on a row GetOwnedAsync still filters out.
+        IsDeleted = false;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
+    /// Consumes <paramref name="amount"/> copies. Throws rather than clamping: the caller has already
+    /// re-checked the balance under the player mutation lock, so a short stack here means a bug that
+    /// must not be papered over by silently crafting from gear the player does not have.
+    /// </summary>
+    public void ConsumeQuantity(int amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentOutOfRangeException(nameof(amount), "Gear consumption must be positive.");
+        if (amount > Quantity)
+            throw new InvalidOperationException(
+                $"Cannot consume {amount}x {GearDefinitionId}: only {Quantity} held.");
+
+        Quantity -= amount;
+        if (Quantity == 0) IsDeleted = true;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 }

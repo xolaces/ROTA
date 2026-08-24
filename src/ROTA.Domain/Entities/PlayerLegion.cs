@@ -36,4 +36,13 @@ public class PlayerLegion
         IsDeleted = false;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
+
+    // System 26 (D-018) — crafting consumes a legion to produce its tier-II definition. Soft delete so
+    // the row (and Restore's re-acquire path) still work exactly as they did before.
+    public void SoftDelete()
+    {
+        IsDeleted = true;
+        IsActive  = false;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
 }

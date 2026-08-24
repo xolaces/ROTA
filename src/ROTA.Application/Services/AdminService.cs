@@ -115,15 +115,29 @@ public sealed class AdminService : IAdminService
         return AdminActionResult.Ok();
     }
 
-    // Moderation — punitive actions (ban / mute / unmute) — T40
+    // Moderation — punitive actions (ban / unban / mute / unmute) — T40
+
+    /// <summary>Validator parity: 30 days, expressed in minutes.</summary>
+    private const int MaxMuteMinutes = 30 * 24 * 60;
 
     /// <inheritdoc/>
     public async Task<AdminActionResult> BanPlayerAsync(
         Guid actorId, string targetUsernameOrId, string reason, string? ipAddress = null,
         CancellationToken ct = default)
     {
-        if (!await ActorIsModeratorOrAdminAsync(actorId, ct))
-            return AdminActionResult.Fail("Actor is not a moderator or admin.");
+        // Governance audit 2026-08-22 — northstar §6 grants Moderators "temporary bans up to 3 days"
+        // and reserves PERMANENT bans to Admins. Temporary bans do not exist yet (there is no
+        // BannedUntil), so every ban this method issues is permanent — which means a Moderator
+        // issuing one exceeds the authority §6 grants them. Until temp bans ship, banning is
+        // Admin-only; Moderators retain mute. See DESIGN_DECISIONS D-017.
+        if (!await ActorIsAdminAsync(actorId, ct))
+            return AdminActionResult.Fail(
+                "Only an admin may ban. Bans are currently permanent; moderators may mute instead.");
+
+        // Defense in depth behind the validator: §6 forbids reasonless punishment, and the validator
+        // is currently the ONLY guard — any future caller (CLI verb, automation) would bypass it.
+        if (string.IsNullOrWhiteSpace(reason))
+            return AdminActionResult.Fail("A reason is required to ban a player.");
 
         var target = await ResolveTargetAsync(targetUsernameOrId, ct);
         if (target is null)
@@ -150,12 +164,53 @@ public sealed class AdminService : IAdminService
     }
 
     /// <inheritdoc/>
+    public async Task<AdminActionResult> UnbanPlayerAsync(
+        Guid actorId, string targetUsernameOrId, string reason, string? ipAddress = null,
+        CancellationToken ct = default)
+    {
+        // Admin-only, mirroring ban. Governance audit 2026-08-22: before this existed, a ban had NO
+        // in-product remedy — reversing a mistaken ban required direct SQL against the players table.
+        if (!await ActorIsAdminAsync(actorId, ct))
+            return AdminActionResult.Fail("Only an admin may lift a ban.");
+        // A reversal is a moderation action too; §6's "every punishment logged with a reason" is
+        // worth nothing for disputes if the UNDO is anonymous.
+        if (string.IsNullOrWhiteSpace(reason))
+            return AdminActionResult.Fail("A reason is required to lift a ban.");
+
+        var target = await ResolveTargetAsync(targetUsernameOrId, ct);
+        if (target is null)
+            return AdminActionResult.Fail($"Player '{targetUsernameOrId}' not found.");
+        if (!target.IsBanned)
+            return AdminActionResult.Fail("Player is not banned.");
+
+        var priorReason = target.BanReason;
+        target.Unban();
+        await _players.UpdateAsync(target, ct);
+
+        await _auditLog.AppendAsync(AuditLog.Create(
+            actorId == Guid.Empty ? null : actorId,
+            "PlayerUnbanned",
+            inputHash: null,
+            resultSummary: $"actor={actorId} target={target.Id} reason={reason} liftedBanReason={priorReason}",
+            ipAddress), ct);
+
+        await QueueModerationEmailAsync(actorId, target, "Unban", reason, expiresAt: null, ipAddress, ct);
+        return AdminActionResult.Ok();
+    }
+
+    /// <inheritdoc/>
     public async Task<AdminActionResult> MutePlayerAsync(
         Guid actorId, string targetUsernameOrId, int durationMinutes, string reason, string? ipAddress = null,
         CancellationToken ct = default)
     {
         if (durationMinutes <= 0)
             return AdminActionResult.Fail("Mute duration must be a positive number of minutes.");
+        // Service-level cap mirroring the validator's 30 days (governance audit 2026-08-22). Without
+        // it this method accepts any positive int — a ~4000-year mute — for any non-controller caller.
+        if (durationMinutes > MaxMuteMinutes)
+            return AdminActionResult.Fail($"Mute duration may not exceed {MaxMuteMinutes / 1440} days.");
+        if (string.IsNullOrWhiteSpace(reason))
+            return AdminActionResult.Fail("A reason is required to mute a player.");
         if (!await ActorIsModeratorOrAdminAsync(actorId, ct))
             return AdminActionResult.Fail("Actor is not a moderator or admin.");
 
@@ -216,6 +271,17 @@ public sealed class AdminService : IAdminService
         if (actorId == Guid.Empty) return true; // CLI/system bypass
         var actor = await _players.FindByIdAsync(actorId, ct);
         return actor is not null && (actor.HasRole(PlayerRoles.Admin) || actor.HasRole(PlayerRoles.Moderator));
+    }
+
+    /// <summary>
+    /// True if the actor is an Admin, re-verified against the DB rather than trusting the JWT claim
+    /// (a demoted admin's 15-minute access token still carries the old role). CLI actor always passes.
+    /// </summary>
+    private async Task<bool> ActorIsAdminAsync(Guid actorId, CancellationToken ct)
+    {
+        if (actorId == Guid.Empty) return true; // CLI/system bypass
+        var actor = await _players.FindByIdAsync(actorId, ct);
+        return actor is not null && actor.HasRole(PlayerRoles.Admin);
     }
 
     // Moderation polish (audit ticket): a Moderator may not ban/mute fellow staff — only an Admin
