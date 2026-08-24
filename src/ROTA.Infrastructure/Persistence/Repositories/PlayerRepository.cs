@@ -88,6 +88,47 @@ public sealed class PlayerRepository : IPlayerRepository
         }
     }
 
+    // D-008/D-013 gold sink. Conditional debit: the `gold >= @amount` guard lives in the SAME statement
+    // as the subtraction, so there is no window between checking affordability and spending — the shape
+    // that let concurrent gem buys drive a balance negative before the ledger got its advisory lock.
+    // Raw SQL rather than EF because a tracked read-modify-save reintroduces exactly that window, and
+    // because the players row carries an xmin token (T59) an entity write would also conflict with a
+    // concurrent reward grant. RETURNING hands back the committed balance without a second read.
+    // Ambient-transaction aware: inside a mutation-lock transaction this enlists and commits (or rolls
+    // back) together with whatever the gold paid for.
+    public async Task<long?> TrySpendGoldAsync(Guid playerId, long amount, CancellationToken ct = default)
+    {
+        if (amount <= 0)
+            throw new ArgumentOutOfRangeException(nameof(amount), "Gold spend must be positive.");
+
+        var conn = (NpgsqlConnection)_db.Database.GetDbConnection();
+        if (conn.State != System.Data.ConnectionState.Open)
+            await conn.OpenAsync(ct);
+        var ntx = (NpgsqlTransaction?)_db.Database.CurrentTransaction?.GetDbTransaction();
+
+        const string sql = """
+            UPDATE players
+            SET gold = gold - @amount, updated_at = now()
+            WHERE id = @p AND NOT is_deleted AND gold >= @amount
+            RETURNING gold
+            """;
+
+        await using var cmd = new NpgsqlCommand(sql, conn, ntx);
+        cmd.Parameters.AddWithValue("p", NpgsqlDbType.Uuid, playerId);
+        cmd.Parameters.AddWithValue("amount", NpgsqlDbType.Bigint, amount);
+
+        var result = await cmd.ExecuteScalarAsync(ct);
+        if (result is null || result is DBNull) return null;   // unaffordable / missing → nothing written
+
+        // The row was changed underneath EF; drop any stale tracked copy so later reads in this request
+        // see the committed balance rather than the pre-debit one.
+        var tracked = _db.ChangeTracker.Entries<Player>()
+            .FirstOrDefault(e => e.Entity.Id == playerId);
+        if (tracked is not null) await tracked.ReloadAsync(ct);
+
+        return (long)result;
+    }
+
     public async Task UpdateStatsAsync(Domain.Entities.PlayerStats stats, CancellationToken ct = default)
     {
         _db.PlayerStats.Update(stats);

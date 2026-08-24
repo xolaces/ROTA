@@ -29,6 +29,34 @@ public sealed class ItemController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>The gold-priced consumable shop (D-008/D-013), with the caller's gold and holdings.</summary>
+    [HttpGet("shop")]
+    [ProducesResponseType(typeof(ShopCatalogueResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetShop()
+        => Ok(await _items.GetShopAsync(GetPlayerId()));
+
+    /// <summary>Buys a gold-priced consumable. Debit and grant commit together.</summary>
+    [HttpPost("{itemDefinitionId}/buy")]
+    [ProducesResponseType(typeof(BuyItemResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(BuyItemResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(BuyItemResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(BuyItemResponse), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> BuyItem(
+        [FromRoute] string itemDefinitionId,
+        [FromBody] BuyItemRequest request)
+    {
+        var result = await _items.BuyItemAsync(GetPlayerId(), itemDefinitionId, request.Quantity);
+        if (result.Success) return Ok(result);
+
+        return result.FailureCode switch
+        {
+            BuyItemFailureCode.ItemNotFound     => NotFound(result),
+            // Affordability is a state problem, not a malformed request — 422 mirrors the gem shops.
+            BuyItemFailureCode.InsufficientGold => UnprocessableEntity(result),
+            _                                   => BadRequest(result),
+        };
+    }
+
     [HttpPost("{itemDefinitionId}/use")]
     [ProducesResponseType(typeof(UseItemResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(UseItemResponse), StatusCodes.Status422UnprocessableEntity)]
