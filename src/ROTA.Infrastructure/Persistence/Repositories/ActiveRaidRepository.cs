@@ -70,7 +70,14 @@ public sealed class ActiveRaidRepository : IActiveRaidRepository
 
     public async Task UpdateAsync(ActiveRaid raid, CancellationToken ct = default)
     {
-        _db.ActiveRaids.Update(raid);
+        // Mark THIS entity Modified — never DbSet.Update(raid), which cascades Modified across the
+        // whole loaded graph. Raids are loaded via FindByIdWithSummonerAsync (Include SummonedByPlayer),
+        // and Player carries an xmin concurrency token (T59). During a loot claim the reward grants bump
+        // that player's row inside the advisory-lock transaction, so cascading would re-issue an UPDATE
+        // for the summoner using the xmin captured BEFORE those grants — 0 rows matched, and the whole
+        // claim throws DbUpdateConcurrencyException after the rewards already committed.
+        // Setting State directly attaches a detached entity and touches no navigation.
+        _db.Entry(raid).State = EntityState.Modified;
         await _db.SaveChangesAsync(ct);
     }
 

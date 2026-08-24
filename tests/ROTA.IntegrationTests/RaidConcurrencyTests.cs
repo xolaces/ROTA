@@ -180,14 +180,21 @@ public class RaidConcurrencyTests : IAsyncLifetime
         }
 
         // 3b. The WINNER (the player who landed the kill) claims their deferred rewards via Loot, which
-        //     grants gems exactly once (IronColossus BaseGemReward = 2, Legendary1 in a 1v1). The race-
-        //     loser never dealt damage → no participant row → nothing to claim.
+        //     grants its gems at most once. The race-loser never dealt damage → no participant row →
+        //     nothing to claim.
+        //     NOTE (2026-08-22): boss gems became PROBABILISTIC in the 2026-06-23 beta triage — a flat
+        //     BossGemRewardAmount on a chapter-scaled chance roll, replacing the old deterministic
+        //     BaseGemReward x contribution-tier grant. So the ledger row count is tied to what the claim
+        //     actually awarded rather than hardcoded to 1; the invariant under test is idempotency (never
+        //     more than one row for a claim), which is what the advisory lock guarantees.
         var winnerId = results[0].Success ? player1.Id : player2.Id;
+        long gemsAwarded;
         using (var scope = _factory.Services.CreateScope())
         {
             var rs = scope.ServiceProvider.GetRequiredService<IRaidService>();
             var loot = await rs.LootRaidAsync(winnerId, raid.Id);
             loot.Success.Should().BeTrue("the winner can claim their deferred rewards");
+            gemsAwarded = loot.Rewards?.GemsGranted ?? 0;
         }
         using (var scope = _factory.Services.CreateScope())
         {
@@ -196,8 +203,26 @@ public class RaidConcurrencyTests : IAsyncLifetime
                 .Where(g => g.ReferenceId == $"raid:{raid.Id}:{player1.Id}"
                          || g.ReferenceId == $"raid:{raid.Id}:{player2.Id}")
                 .CountAsync();
-            gemRows.Should().Be(1,
-                "gems granted exactly once — on the winner's Loot claim (no duplicate, the lock's guarantee)");
+            gemRows.Should().Be(gemsAwarded > 0 ? 1 : 0,
+                "the ledger must match what the claim awarded — exactly one row when the boss-gem roll " +
+                "hit, none when it missed, and never a duplicate (the advisory lock's guarantee)");
+        }
+
+        // 3c. Re-claiming is a no-op — the durable latch means a second press grants nothing more.
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var rs = scope.ServiceProvider.GetRequiredService<IRaidService>();
+            await rs.LootRaidAsync(winnerId, raid.Id);
+        }
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<RotaDbContext>();
+            var gemRowsAfterRepress = await db.GemTransactions
+                .Where(g => g.ReferenceId == $"raid:{raid.Id}:{player1.Id}"
+                         || g.ReferenceId == $"raid:{raid.Id}:{player2.Id}")
+                .CountAsync();
+            gemRowsAfterRepress.Should().Be(gemsAwarded > 0 ? 1 : 0,
+                "a second Loot press must not mint a second gem row");
         }
 
         // 4. The losing player's stamina is net-unchanged (spent then refunded).
