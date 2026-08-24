@@ -1,0 +1,88 @@
+[
+  {
+    "id": "craft_ironward_ii",
+    "name": "Ironward the Unbroken",
+    "description": "Reforge Ironward around a core of oathsteel. The general is consumed; what walks out is not the same man.",
+    "category": "General",
+    "outputKind": "Unit",
+    "outputId": "gen_ironward_ii",
+    "outputQuantity": 1,
+    "ingredients": [
+      { "kind": "Unit", "id": "gen_ironward", "quantity": 1 },
+      { "kind": "Item", "id": "mat_oathsteel", "quantity": 2 },
+      { "kind": "Item", "id": "mat_iron_shard", "quantity": 10 }
+    ],
+    "goldCost": 15000,
+    "eventKey": null,
+    "iconPath": ""
+  },
+  {
+    "id": "craft_ashblade_ii",
+    "name": "Ashblade, Emberborn",
+    "description": "Quench Ashblade in wyrm-fire. Costly, and there is no way back to the blade you had.",
+    "category": "General",
+    "outputKind": "Unit",
+    "outputId": "gen_ashblade_ii",
+    "outputQuantity": 1,
+    "ingredients": [
+      { "kind": "Unit", "id": "gen_ashblade", "quantity": 1 },
+      { "kind": "Item", "id": "mat_wyrm_scale", "quantity": 1 },
+      { "kind": "Item", "id": "mat_oathsteel", "quantity": 3 },
+      { "kind": "Item", "id": "mat_arcane_dust", "quantity": 5 }
+    ],
+    "goldCost": 40000,
+    "eventKey": null,
+    "iconPath": ""
+  },
+  {
+    "id": "craft_pikemen_ii",
+    "name": "Oathsteel Pikemen",
+    "description": "Re-forge the pikes. The men are the same; the line no longer bends.",
+    "category": "General",
+    "outputKind": "Unit",
+    "outputId": "troop_pikemen_ii",
+    "outputQuantity": 1,
+    "ingredients": [
+      { "kind": "Unit", "id": "troop_pikemen", "quantity": 1 },
+      { "kind": "Item", "id": "mat_oathsteel", "quantity": 1 },
+      { "kind": "Item", "id": "mat_iron_shard", "quantity": 6 }
+    ],
+    "goldCost": 8000,
+    "eventKey": null,
+    "iconPath": ""
+  },
+  {
+    "id": "craft_vanguard_ii",
+    "name": "Dawn Vanguard II",
+    "description": "Rebuild the Vanguard around a veteran core — the banner survives, the legion under it does not.",
+    "category": "General",
+    "outputKind": "Legion",
+    "outputId": "legion_vanguard_ii",
+    "outputQuantity": 1,
+    "ingredients": [
+      { "kind": "Legion", "id": "legion_vanguard", "quantity": 1 },
+      { "kind": "Item", "id": "mat_vanguard_banner", "quantity": 3 },
+      { "kind": "Item", "id": "mat_oathsteel", "quantity": 4 }
+    ],
+    "goldCost": 50000,
+    "eventKey": null,
+    "iconPath": ""
+  },
+  {
+    "id": "craft_oathsteel_helm",
+    "name": "Oathsteel Helm",
+    "description": "A hundred conscript helms, melted down and made to mean something.",
+    "category": "General",
+    "outputKind": "Gear",
+    "outputId": "gear_oathsteel_helm",
+    "outputQuantity": 1,
+    "ingredients": [
+      { "kind": "Gear", "id": "gear_conscript_helm", "quantity": 1 },
+      { "kind": "Item", "id": "mat_oathsteel", "quantity": 2 },
+      { "kind": "Item", "id": "mat_iron_shard", "quantity": 8 }
+    ],
+    "goldCost": 12000,
+    "eventKey": null,
+    "iconPath": ""
+  }
+]

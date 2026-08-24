@@ -262,6 +262,11 @@ app.Services.GetRequiredService<IGauntletShopProvider>();
 // (4 Ancients, magnitude tables, tier checklists, breadth curve) throws at boot rather than on first use.
 app.Services.GetRequiredService<IMasteryDefinitionProvider>();
 
+// System 26 (D-018) — eagerly construct the crafting recipe provider so its content validation
+// (ids resolve across four providers, positive quantities, own-once outputs, no recipe consuming its
+// own output) throws at boot rather than on a player's first craft.
+app.Services.GetRequiredService<ICraftingRecipeProvider>();
+
 // TICKET 46 — eagerly construct the achievement definition provider so its content validation
 // (unique ids, valid category/metric, positive points/threshold, NextId chains, Collector keys)
 // throws at boot rather than on first use.

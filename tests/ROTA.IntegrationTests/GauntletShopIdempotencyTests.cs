@@ -90,6 +90,11 @@ public class GauntletShopIdempotencyTests : IAsyncLifetime
                             Rarity = ItemRarity.Orange,
                         }));
                     services.AddSingleton<IGauntletShopProvider>(new StubShopProvider());
+
+                    // System 26 (D-018): the crafting recipe provider validates recipes.json against
+                    // the gear/unit providers at boot. This test stubs those, so the shipped recipes
+                    // would (correctly) fail to resolve. Crafting is not under test here — empty it.
+                    services.AddSingleton<ICraftingRecipeProvider>(new EmptyRecipeProvider());
                 });
             });
 
@@ -268,5 +273,11 @@ public class GauntletShopIdempotencyTests : IAsyncLifetime
         public IReadOnlyList<GearDefinition> GetAll() => new[] { _gear };
         public IReadOnlyList<GearDefinition> GetBySlot(string slot)
             => _gear.Slot == slot ? new[] { _gear } : Array.Empty<GearDefinition>();
+    }
+
+    private sealed class EmptyRecipeProvider : ICraftingRecipeProvider
+    {
+        public IReadOnlyList<CraftingRecipe> GetAll() => Array.Empty<CraftingRecipe>();
+        public CraftingRecipe? GetById(string id) => null;
     }
 }

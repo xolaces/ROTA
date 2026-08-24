@@ -12,7 +12,7 @@
     "attribute": "Strength",
     "ability": {
       "procChance": 0.08,
-      "procAmount": 0.40,
+      "procAmount": 0.4,
       "conditions": []
     },
     "isPassive": false,
@@ -32,8 +32,8 @@
     "role": "Melee",
     "attribute": "Agility",
     "ability": {
-      "procChance": 0.10,
-      "procAmount": 0.60,
+      "procChance": 0.1,
+      "procAmount": 0.6,
       "conditions": []
     },
     "isPassive": false,
@@ -54,7 +54,7 @@
     "attribute": "Intellect",
     "ability": {
       "procChance": 0.06,
-      "procAmount": 0.90,
+      "procAmount": 0.9,
       "conditions": []
     },
     "isPassive": false,
@@ -75,7 +75,7 @@
     "attribute": "Wisdom",
     "ability": {
       "procChance": 0.05,
-      "procAmount": 1.20,
+      "procAmount": 1.2,
       "conditions": []
     },
     "isPassive": false,
@@ -151,12 +151,71 @@
     "attribute": "Wisdom",
     "ability": {
       "procChance": 0.05,
-      "procAmount": 0.30,
+      "procAmount": 0.3,
       "conditions": []
     },
     "isPassive": false,
     "legionBonus": 0,
     "iconPath": "",
     "acquisition": "Raid drop"
+  },
+  {
+    "id": "gen_ironward_ii",
+    "name": "Ironward the Unbroken",
+    "description": "Ironward reforged. The shield that deflected a wyrm now turns aside armies.",
+    "unitType": "General",
+    "rarity": "Blue",
+    "baseAttack": 140,
+    "baseDefense": 110,
+    "race": "Human",
+    "role": "Tank",
+    "attribute": "Strength",
+    "ability": {
+      "procChance": 0.12,
+      "procAmount": 0.6,
+      "conditions": []
+    },
+    "isPassive": false,
+    "legionBonus": 10,
+    "iconPath": "",
+    "acquisition": "Crafting (General)"
+  },
+  {
+    "id": "gen_ashblade_ii",
+    "name": "Ashblade, Emberborn",
+    "description": "The blade drank the pyre and came back hungrier.",
+    "unitType": "General",
+    "rarity": "Purple",
+    "baseAttack": 260,
+    "baseDefense": 120,
+    "race": "Human",
+    "role": "Melee",
+    "attribute": "Agility",
+    "ability": {
+      "procChance": 0.14,
+      "procAmount": 0.85,
+      "conditions": []
+    },
+    "isPassive": false,
+    "legionBonus": 15,
+    "iconPath": "",
+    "acquisition": "Crafting (General)"
+  },
+  {
+    "id": "troop_pikemen_ii",
+    "name": "Oathsteel Pikemen",
+    "description": "Iron pikes re-forged in oathsteel; the line does not break.",
+    "unitType": "Troop",
+    "rarity": "Blue",
+    "baseAttack": 55,
+    "baseDefense": 70,
+    "race": "Human",
+    "role": "Tank",
+    "attribute": "Strength",
+    "ability": null,
+    "isPassive": false,
+    "legionBonus": 0,
+    "iconPath": "",
+    "acquisition": "Crafting (General)"
   }
 ]

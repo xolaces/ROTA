@@ -99,6 +99,17 @@ public static class ServiceCollectionExtensions
             new LootTableProvider(contentRootPath, sp.GetRequiredService<IRaidDefinitionProvider>()));
         services.AddSingleton<IGearDefinitionProvider>(
             _ => new GearDefinitionProvider(contentRootPath));
+
+        // System 26 (D-018) — recipe content is validated against the item/unit/legion/gear providers,
+        // so it must be constructed AFTER them. Eagerly constructed in Program.cs so a recipe naming a
+        // nonexistent ingredient, or one that could mint value from nothing, fails the boot.
+        services.AddSingleton<ICraftingRecipeProvider>(sp =>
+            new CraftingRecipeProvider(
+                contentRootPath,
+                sp.GetRequiredService<IItemDefinitionProvider>(),
+                sp.GetRequiredService<IUnitDefinitionProvider>(),
+                sp.GetRequiredService<ILegionDefinitionProvider>(),
+                sp.GetRequiredService<IGearDefinitionProvider>()));
         services.AddSingleton<IMagicDefinitionProvider>(
             _ => new MagicDefinitionProvider(contentRootPath));
         services.AddSingleton<IUnitDefinitionProvider>(
@@ -153,6 +164,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRaidService, RaidService>();
         services.AddScoped<IItemService, ItemService>();
         services.AddScoped<IConsumableService, ConsumableService>();   // D-008/D-013 gem instant refills
+        services.AddScoped<ICraftingService, CraftingService>();       // System 26 crafting (D-018)
         services.AddScoped<IEquipmentService, EquipmentService>();
         services.AddScoped<IMagicService, MagicService>();
         services.AddScoped<ILegionService, LegionService>();

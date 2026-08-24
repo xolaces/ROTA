@@ -95,7 +95,6 @@
     "procPercent": null,
     "iconPath": "icons/gear/conscript_gloves.png"
   },
-
   {
     "id": "gear_pano_helm",
     "name": "Pano's War Helm",
@@ -191,5 +190,17 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/pano_gauntlets.png"
+  },
+  {
+    "id": "gear_oathsteel_helm",
+    "name": "Oathsteel Helm",
+    "description": "Forged from oathsteel and the shards of a hundred conscript helms.",
+    "rarity": "Blue",
+    "slot": "Head",
+    "bonusAttack": 2,
+    "bonusDefense": 8,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/oathsteel_helm.png"
   }
 ]
