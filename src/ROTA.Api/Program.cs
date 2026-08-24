@@ -204,6 +204,9 @@ builder.Services.Configure<AchievementConfig>(
 builder.Services.Configure<RateLimitConfig>(
     builder.Configuration.GetSection("RateLimitConfig"));
 
+builder.Services.Configure<ConsumableConfig>(
+    builder.Configuration.GetSection("ConsumableConfig"));
+
 builder.Services.Configure<LegalConfig>(
     builder.Configuration.GetSection("Legal"));
 

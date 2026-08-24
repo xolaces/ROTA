@@ -152,6 +152,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IQuestService, QuestService>();
         services.AddScoped<IRaidService, RaidService>();
         services.AddScoped<IItemService, ItemService>();
+        services.AddScoped<IConsumableService, ConsumableService>();   // D-008/D-013 gem instant refills
         services.AddScoped<IEquipmentService, EquipmentService>();
         services.AddScoped<IMagicService, MagicService>();
         services.AddScoped<ILegionService, LegionService>();
