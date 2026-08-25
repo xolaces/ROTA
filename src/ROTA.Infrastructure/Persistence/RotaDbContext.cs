@@ -94,4 +94,48 @@ public class RotaDbContext : DbContext
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(RotaDbContext).Assembly);
     }
+
+    // ----- audit_log is APPEND-ONLY -----------------------------------------------------------
+    // CLAUDE.md states the rule; until now nothing enforced it. AuditLog has no mutators and
+    // IAuditLogRepository exposes only AppendAsync, so the rule held by convention -- but this context
+    // exposes DbSet<AuditLog>, and any future code could Remove() or mutate a tracked row and have it
+    // silently persist. A tamperable audit trail is worth less than no audit trail, because it still
+    // looks authoritative.
+    //
+    // The guard lives on SaveChanges rather than in an interceptor so it cannot be lost by a missed DI
+    // registration: it applies to every context instance, including the design-time factory and any
+    // test that constructs one directly. A database-level trigger backs it up for anything that does
+    // not come through EF at all.
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        GuardAuditLogAppendOnly();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        GuardAuditLogAppendOnly();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    /// <summary>
+    /// Throws if this unit of work would UPDATE or DELETE an audit row. Deliberately fails loudly
+    /// rather than dropping the change: silently discarding it would leave the caller believing an
+    /// edit succeeded, which is its own kind of dishonest record.
+    /// </summary>
+    private void GuardAuditLogAppendOnly()
+    {
+        foreach (var entry in ChangeTracker.Entries<AuditLog>())
+        {
+            if (entry.State is EntityState.Modified or EntityState.Deleted)
+            {
+                throw new InvalidOperationException(
+                    $"audit_log is append-only: attempted to {entry.State.ToString().ToUpperInvariant()} "
+                    + $"audit entry {entry.Entity.Id} (action '{entry.Entity.Action}'). "
+                    + "Append a correcting entry instead of editing history.");
+            }
+        }
+    }
 }
