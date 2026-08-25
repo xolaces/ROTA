@@ -132,6 +132,39 @@ LEFT JOIN information_schema.columns c
 ORDER BY column_name;
 
 \echo ''
+\echo '=== 4b. Is audit_log actually append-only? ==================================='
+\echo ''
+\echo 'CLAUDE.md has always said audit_log is append-only. Until the'
+\echo 'EnforceAuditLogAppendOnly migration, nothing enforced it, and the API connects'
+\echo 'as the schema owner -- so any psql session could rewrite history.'
+\echo ''
+\echo 'audit_log_no_truncate is NOT redundant: TRUNCATE does not fire row-level'
+\echo 'DELETE triggers, so without it the whole table goes in one statement.'
+\echo ''
+
+WITH expected(trigger_name, why) AS (
+    VALUES
+        ('audit_log_append_only',
+         'blocks UPDATE and DELETE on audit_log'),
+        ('audit_log_no_truncate',
+         'blocks TRUNCATE, which row-level triggers never see')
+)
+SELECT
+    e.trigger_name,
+    e.why,
+    CASE
+        WHEN t.tgname IS NULL   THEN 'MISSING -- history is rewritable'
+        WHEN t.tgenabled = 'D'  THEN 'DISABLED -- someone left the escape hatch open'
+        ELSE 'OK'
+    END AS verdict
+FROM expected e
+LEFT JOIN pg_trigger t
+       ON t.tgname = e.trigger_name
+      AND t.tgrelid = 'audit_log'::regclass
+      AND NOT t.tgisinternal
+ORDER BY e.trigger_name;
+
+\echo ''
 \echo '=== 5. How close is any player to the int32 ceiling? ========================='
 \echo ''
 \echo 'Only meaningful if section 3 says a stat column was NOT widened. A value'

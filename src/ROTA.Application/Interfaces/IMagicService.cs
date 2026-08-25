@@ -23,6 +23,11 @@ public interface IMagicService
     /// <summary>Idempotent magic grant. Safe to call multiple times — duplicate = no-op.</summary>
     Task GrantMagicAsync(Guid playerId, string magicDefinitionId, CancellationToken ct = default);
 
-    /// <summary>Spend gems to purchase a magic. Duplicate purchase charges again but grant is idempotent.</summary>
+    /// <summary>
+    /// Spend gems to purchase a magic. A duplicate purchase is refused with AlreadyOwned BEFORE any
+    /// charge; the spend is also keyed by an idempotent referenceId, so a retried request cannot
+    /// double-charge. (This comment used to say a duplicate charges again -- that was the v0.2.6.1
+    /// bug, fixed by the ownership pre-check.)
+    /// </summary>
     Task<BuyMagicResult> BuyMagicAsync(Guid playerId, string magicDefinitionId, CancellationToken ct = default);
 }
