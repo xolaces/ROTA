@@ -156,9 +156,20 @@ public sealed class AuthService : IAuthService
 
         if (player.IsBanned)
         {
+            // The audit line carries the expiry so an operator fielding "why can I not log in" can
+            // answer it from the log alone.
+            //
+            // KNOWN GAP: the PLAYER is still told nothing - LoginAsync signals refusal by returning
+            // null, so every failure looks alike. That is right for bad credentials (anti-enumeration)
+            // but wrong for a ban, where the caller has already proven who they are and a temporary ban
+            // has an end date worth showing. Fixing it means changing this method's contract, so it is
+            // deliberately out of scope here.
             await _auditLog.AppendAsync(AuditLog.Create(
                 player.Id, "LoginFailed", null,
-                "Account banned", ipAddress));
+                player.BannedUntil is null
+                    ? "Account banned (permanent)"
+                    : $"Account banned until {player.BannedUntil.Value:O}",
+                ipAddress));
             return null;
         }
 

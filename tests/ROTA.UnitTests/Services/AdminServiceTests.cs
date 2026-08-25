@@ -266,10 +266,10 @@ public class AdminServiceTests
             "every punitive action raises a ModerationAction operator email");
     }
 
-    // Governance audit 2026-08-22: bans are PERMANENT (there is no BannedUntil), and northstar §6
-    // reserves permanent bans to Admins. A Moderator must be refused and must change nothing.
+    // Northstar §6 reserves PERMANENT bans to Admins. A Moderator asking for one (which is what an
+    // omitted duration means, including from an older client) must be refused and must change nothing.
     [Fact]
-    public async Task BanPlayerAsync_ModeratorActor_IsRefused_AndChangesNothing()
+    public async Task BanPlayerAsync_ModeratorAskingForAPermanentBan_IsRefused_AndChangesNothing()
     {
         var (service, players, tokens, auditLog, emails) = BuildServiceEx();
         var actor  = MakePlayer("mod", PlayerRoles.Player | PlayerRoles.Moderator);
@@ -287,6 +287,160 @@ public class AdminServiceTests
         tokens.Verify(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
         auditLog.Verify(a => a.AppendAsync(It.IsAny<AuditLog>(), It.IsAny<CancellationToken>()), Times.Never);
         emails.Verify(e => e.QueueAsync(It.IsAny<EmailPayload>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    // ── Temporary bans ── northstar §6 gives a Moderator "temporary bans up to 3 days". That split was
+    // unenforceable until BannedUntil existed, which is why banning was Admin-only in the interim.
+
+    [Fact]
+    public async Task BanPlayerAsync_ModeratorWithinThreeDays_Succeeds_AndSetsAnExpiry()
+    {
+        var (service, players, tokens, auditLog, emails) = BuildServiceEx();
+        var actor  = MakePlayer("mod", PlayerRoles.Player | PlayerRoles.Moderator);
+        var target = MakePlayer("baddie");
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+        players.Setup(r => r.FindByUsernameAsync("baddie", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+        players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        tokens.Setup(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+
+        var result = await service.BanPlayerAsync(actor.Id, "baddie", "spam", durationDays: 3);
+
+        result.Success.Should().BeTrue(result.FailureReason);
+        target.IsBanned.Should().BeTrue();
+        target.BannedUntil.Should().NotBeNull("a moderator's ban must be dated, never permanent");
+        target.BannedUntil!.Value.Should().BeCloseTo(DateTimeOffset.UtcNow.AddDays(3), TimeSpan.FromMinutes(1));
+        tokens.Verify(r => r.RevokeAllActiveAsync(target.Id, It.IsAny<CancellationToken>()), Times.Once);
+        auditLog.Verify(a => a.AppendAsync(
+            It.Is<AuditLog>(l => l.Action == "PlayerBanned" && l.ResultSummary!.Contains("duration=3d")),
+            It.IsAny<CancellationToken>()), Times.Once,
+            "the dispute trail must record how long the ban was for");
+        emails.Verify(e => e.QueueAsync(
+            It.Is<EmailPayload>(pl => pl.Type == EmailType.ModerationAction),
+            It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task BanPlayerAsync_ModeratorBeyondThreeDays_IsRefused_AndChangesNothing()
+    {
+        var (service, players, tokens, auditLog, _) = BuildServiceEx();
+        var actor  = MakePlayer("mod", PlayerRoles.Player | PlayerRoles.Moderator);
+        var target = MakePlayer("baddie");
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+        players.Setup(r => r.FindByUsernameAsync("baddie", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+
+        var result = await service.BanPlayerAsync(actor.Id, "baddie", "spam", durationDays: 4);
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("3 days");
+        target.IsBanned.Should().BeFalse();
+        players.Verify(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>()), Times.Never);
+        tokens.Verify(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        auditLog.Verify(a => a.AppendAsync(It.IsAny<AuditLog>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task BanPlayerAsync_AdminMayBanForLongerThanAModerator()
+    {
+        var (service, players, tokens, _, _) = BuildServiceEx();
+        var actor  = MakeAdmin("boss");
+        var target = MakePlayer("baddie");
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+        players.Setup(r => r.FindByUsernameAsync("baddie", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+        players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        tokens.Setup(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+
+        var result = await service.BanPlayerAsync(actor.Id, "baddie", "repeat offender", durationDays: 90);
+
+        result.Success.Should().BeTrue(result.FailureReason);
+        target.BannedUntil!.Value.Should().BeCloseTo(DateTimeOffset.UtcNow.AddDays(90), TimeSpan.FromMinutes(1));
+    }
+
+    [Fact]
+    public async Task BanPlayerAsync_BeyondTheDatedCeiling_IsRefused()
+    {
+        var (service, players, _, _, _) = BuildServiceEx();
+        var actor = MakeAdmin("boss");
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+
+        var result = await service.BanPlayerAsync(actor.Id, "baddie", "forever-ish", durationDays: 4000);
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("permanent", "past a decade the honest answer is a permanent ban");
+    }
+
+    [Fact]
+    public async Task BanPlayerAsync_NonPositiveDuration_IsRefused()
+    {
+        var (service, players, _, _, _) = BuildServiceEx();
+        var actor = MakeAdmin("boss");
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+
+        var result = await service.BanPlayerAsync(actor.Id, "baddie", "oops", durationDays: 0);
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("positive");
+    }
+
+    // A moderator may reverse the CLASS of ban they may issue — otherwise the §6 split is bypassed from
+    // the other direction, and a moderator cannot even undo their own mistake.
+
+    [Fact]
+    public async Task UnbanPlayerAsync_ModeratorMayLiftATemporaryBan()
+    {
+        var (service, players, _, auditLog, _) = BuildServiceEx();
+        var actor  = MakePlayer("mod", PlayerRoles.Player | PlayerRoles.Moderator);
+        var target = MakePlayer("baddie");
+        target.Ban("spam", DateTimeOffset.UtcNow.AddDays(2));
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+        players.Setup(r => r.FindByUsernameAsync("baddie", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+        players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+
+        var result = await service.UnbanPlayerAsync(actor.Id, "baddie", "appeal upheld");
+
+        result.Success.Should().BeTrue(result.FailureReason);
+        target.IsBanned.Should().BeFalse();
+        auditLog.Verify(a => a.AppendAsync(
+            It.Is<AuditLog>(l => l.Action == "PlayerUnbanned"), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UnbanPlayerAsync_ModeratorMayNotLiftAPermanentBan()
+    {
+        var (service, players, _, _, _) = BuildServiceEx();
+        var actor  = MakePlayer("mod", PlayerRoles.Player | PlayerRoles.Moderator);
+        var target = MakePlayer("baddie");
+        target.Ban("cheating");
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+        players.Setup(r => r.FindByUsernameAsync("baddie", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+
+        var result = await service.UnbanPlayerAsync(actor.Id, "baddie", "feeling generous");
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("permanent");
+        target.IsBanned.Should().BeTrue("a refused unban must not lift the ban");
+    }
+
+    // An expired temporary ban is already over, so there is nothing left to lift.
+    [Fact]
+    public async Task UnbanPlayerAsync_ExpiredTemporaryBan_ReportsNotBanned()
+    {
+        var (service, players, _, _, _) = BuildServiceEx();
+        var actor  = MakeAdmin("boss");
+        var target = MakePlayer("baddie");
+        target.Ban("spam", DateTimeOffset.UtcNow.AddSeconds(-1));
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+        players.Setup(r => r.FindByUsernameAsync("baddie", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+
+        var result = await service.UnbanPlayerAsync(actor.Id, "baddie", "housekeeping");
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("not banned");
     }
 
     // §6 forbids reasonless punishment. The validator was the ONLY guard; this pins the service-level one.

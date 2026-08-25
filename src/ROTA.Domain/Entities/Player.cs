@@ -33,7 +33,7 @@ public class Player
             Gold = 0,
             Roles = PlayerRoles.Player,
             DisplayName = username,
-            IsBanned = false,
+            BanIssued = false,
             IsDeleted = false,
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow,
@@ -95,7 +95,27 @@ public class Player
     // MasteryService is the single writer. The four mastery LEVELS live in player_masteries rows.
     public MasteryAncient? ActivePledgeAncient { get; private set; }
 
-    public bool IsBanned { get; private set; } = false;
+    /// <summary>
+    /// Persisted: a ban was ISSUED. Says nothing about whether it is still in effect — read
+    /// <see cref="IsBanned"/> for that. Keeps the original <c>is_banned</c> column.
+    /// </summary>
+    public bool BanIssued { get; private set; } = false;
+
+    /// <summary>
+    /// UTC instant a TEMPORARY ban lifts. Null while <see cref="BanIssued"/> is true means the ban is
+    /// PERMANENT — northstar §6 reserves those to Admins and grants Moderators ≤3 days.
+    /// </summary>
+    public DateTimeOffset? BannedUntil { get; private set; }
+
+    /// <summary>
+    /// True while a ban is actually in effect. Derived — not mapped (Ignore in config), mirroring
+    /// <see cref="IsMuted"/>. Deriving rather than storing is what makes a temporary ban expire on its
+    /// own: there is no background job to sweep them (D-009 puts scheduling at launch), so every
+    /// existing ban check reads the effective answer without any of them having to know about
+    /// <see cref="BannedUntil"/>.
+    /// </summary>
+    public bool IsBanned => BanIssued && (BannedUntil is null || BannedUntil.Value > DateTimeOffset.UtcNow);
+
     public string? BanReason { get; private set; }
 
     /// <summary>UTC instant the chat mute expires; null when the player has never been muted (T40).</summary>
@@ -173,9 +193,14 @@ public class Player
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    public void Ban(string reason)
+    /// <summary>
+    /// Issues a ban. <paramref name="until"/> null = permanent (Admin-only at the service layer);
+    /// non-null = temporary, and the ban lifts on its own once that instant passes.
+    /// </summary>
+    public void Ban(string reason, DateTimeOffset? until = null)
     {
-        IsBanned = true;
+        BanIssued = true;
+        BannedUntil = until;
         BanReason = reason;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
@@ -186,7 +211,8 @@ public class Player
     /// </summary>
     public void Unban()
     {
-        IsBanned = false;
+        BanIssued = false;
+        BannedUntil = null;
         BanReason = null;
         UpdatedAt = DateTimeOffset.UtcNow;
     }

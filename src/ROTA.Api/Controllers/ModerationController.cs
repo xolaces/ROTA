@@ -34,11 +34,12 @@ public sealed class ModerationController : ControllerBase
     }
 
     /// <summary>
-    /// Bans a player. Admin-only: bans are permanent until temporary bans exist, and northstar §6
-    /// reserves permanent bans to Admins. Moderators mute instead. Governance audit 2026-08-22.
+    /// Bans a player. Reachable by Moderators AND Admins, because the authority split is a DURATION
+    /// question the service settles: northstar §6 gives a Moderator up to three days and reserves
+    /// permanent bans to Admins. The endpoint deliberately carries no AdminOnly policy — a blanket
+    /// policy here could only re-impose the interim rule that made banning Admin-only (D-017).
     /// </summary>
     [HttpPost("players/{idOrUsername}/ban")]
-    [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -47,15 +48,18 @@ public sealed class ModerationController : ControllerBase
     {
         var v = await _banValidator.ValidateAsync(request);
         if (!v.IsValid) return InvalidRequest(v);
-        return Respond(await _admin.BanPlayerAsync(GetActorId(), idOrUsername, request.Reason, Ip()), "Player banned.");
+        return Respond(
+            await _admin.BanPlayerAsync(
+                GetActorId(), idOrUsername, request.Reason, request.DurationDays, Ip()),
+            "Player banned.");
     }
 
     /// <summary>
-    /// Lifts a ban. Admin-only (enforced in the service) — this is the only in-product way to
-    /// reverse a ban, which is otherwise permanent. Governance audit 2026-08-22.
+    /// Lifts a ban — the only in-product remedy for one. A Moderator may lift a TEMPORARY ban (the
+    /// class they may issue); only an Admin may lift a permanent one. Enforced in the service, which
+    /// is the layer that can see whether the ban is dated. Governance audit 2026-08-22.
     /// </summary>
     [HttpPost("players/{idOrUsername}/unban")]
-    [Authorize(Policy = "AdminOnly")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
