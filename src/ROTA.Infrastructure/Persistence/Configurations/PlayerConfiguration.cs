@@ -74,9 +74,18 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
         builder.Property(p => p.ActivePledgeAncient)
             .HasColumnName("active_pledge_ancient");
 
-        builder.Property(p => p.IsBanned)
+        // BanIssued keeps the original is_banned column — the flag's meaning ("a ban was issued")
+        // is unchanged, so no data migration is needed; only banned_until is new.
+        builder.Property(p => p.BanIssued)
             .HasColumnName("is_banned")
             .HasDefaultValue(false);
+
+        // Null while BanIssued = a PERMANENT ban.
+        builder.Property(p => p.BannedUntil)
+            .HasColumnName("banned_until");
+
+        // IsBanned is derived from BanIssued + BannedUntil — never a column (mirrors IsMuted).
+        builder.Ignore(p => p.IsBanned);
 
         builder.Property(p => p.BanReason)
             .HasColumnName("ban_reason");

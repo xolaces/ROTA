@@ -118,26 +118,46 @@ public sealed class AdminService : IAdminService
     // Moderation — punitive actions (ban / unban / mute / unmute) — T40
 
     /// <summary>Validator parity: 30 days, expressed in minutes.</summary>
+    /// <summary>Northstar §6: a Moderator's ban is capped at three days.</summary>
+    public const int MaxModeratorBanDays = 3;
+
+    /// <summary>Ceiling for ANY dated ban. Beyond a decade, the honest word is permanent.</summary>
+    public const int MaxBanDays = 3650;
+
     private const int MaxMuteMinutes = 30 * 24 * 60;
 
     /// <inheritdoc/>
     public async Task<AdminActionResult> BanPlayerAsync(
-        Guid actorId, string targetUsernameOrId, string reason, string? ipAddress = null,
-        CancellationToken ct = default)
+        Guid actorId, string targetUsernameOrId, string reason, int? durationDays = null,
+        string? ipAddress = null, CancellationToken ct = default)
     {
-        // Governance audit 2026-08-22 — northstar §6 grants Moderators "temporary bans up to 3 days"
-        // and reserves PERMANENT bans to Admins. Temporary bans do not exist yet (there is no
-        // BannedUntil), so every ban this method issues is permanent — which means a Moderator
-        // issuing one exceeds the authority §6 grants them. Until temp bans ship, banning is
-        // Admin-only; Moderators retain mute. See DESIGN_DECISIONS D-017.
-        if (!await ActorIsAdminAsync(actorId, ct))
-            return AdminActionResult.Fail(
-                "Only an admin may ban. Bans are currently permanent; moderators may mute instead.");
+        if (!await ActorIsModeratorOrAdminAsync(actorId, ct))
+            return AdminActionResult.Fail("Actor is not a moderator or admin.");
 
         // Defense in depth behind the validator: §6 forbids reasonless punishment, and the validator
-        // is currently the ONLY guard — any future caller (CLI verb, automation) would bypass it.
+        // is only reached through the controller — a CLI verb or automation would bypass it.
         if (string.IsNullOrWhiteSpace(reason))
             return AdminActionResult.Fail("A reason is required to ban a player.");
+        if (durationDays is <= 0)
+            return AdminActionResult.Fail("A ban duration must be a positive number of days.");
+        if (durationDays > MaxBanDays)
+            return AdminActionResult.Fail(
+                $"A ban may not exceed {MaxBanDays} days — omit the duration for a permanent ban.");
+
+        // Northstar §6: Moderators get "temporary bans up to 3 days"; PERMANENT bans are the Admin's.
+        // This is the split §6 always described — it simply could not be honoured until BannedUntil
+        // existed, which is why banning was Admin-only in the interim (D-017).
+        bool actorIsAdmin = await ActorIsAdminAsync(actorId, ct);
+        if (!actorIsAdmin)
+        {
+            if (durationDays is null)
+                return AdminActionResult.Fail(
+                    "Only an admin may issue a permanent ban. Set a duration of "
+                    + $"{MaxModeratorBanDays} days or fewer.");
+            if (durationDays > MaxModeratorBanDays)
+                return AdminActionResult.Fail(
+                    $"A moderator may not ban for more than {MaxModeratorBanDays} days.");
+        }
 
         var target = await ResolveTargetAsync(targetUsernameOrId, ct);
         if (target is null)
@@ -147,19 +167,26 @@ public sealed class AdminService : IAdminService
         if (!await ActorMayModerateAsync(actorId, target, ct))
             return AdminActionResult.Fail("Only an admin can moderate staff (moderator/developer) accounts.");
 
-        target.Ban(reason);
+        var until = durationDays.HasValue
+            ? DateTimeOffset.UtcNow.AddDays(durationDays.Value)
+            : (DateTimeOffset?)null;
+
+        target.Ban(reason, until);
         await _players.UpdateAsync(target, ct);
-        // A banned player's sessions are killed immediately.
+        // A banned player's sessions are killed immediately. Expiry does NOT restore them — the player
+        // simply signs in again, which is the correct outcome either way.
         await _refreshTokens.RevokeAllActiveAsync(target.Id, ct);
 
+        var durationLabel = durationDays.HasValue ? durationDays.Value + "d" : "permanent";
         await _auditLog.AppendAsync(AuditLog.Create(
             actorId == Guid.Empty ? null : actorId,
             "PlayerBanned",
             inputHash: null,
-            resultSummary: $"actor={actorId} target={target.Id} reason={reason}",
+            resultSummary: $"actor={actorId} target={target.Id} reason={reason} "
+                         + $"duration={durationLabel} until={until?.ToString("O") ?? "-"}",
             ipAddress), ct);
 
-        await QueueModerationEmailAsync(actorId, target, "Ban", reason, expiresAt: null, ipAddress, ct);
+        await QueueModerationEmailAsync(actorId, target, "Ban", reason, expiresAt: until, ipAddress, ct);
         return AdminActionResult.Ok();
     }
 
@@ -168,10 +195,10 @@ public sealed class AdminService : IAdminService
         Guid actorId, string targetUsernameOrId, string reason, string? ipAddress = null,
         CancellationToken ct = default)
     {
-        // Admin-only, mirroring ban. Governance audit 2026-08-22: before this existed, a ban had NO
-        // in-product remedy — reversing a mistaken ban required direct SQL against the players table.
-        if (!await ActorIsAdminAsync(actorId, ct))
-            return AdminActionResult.Fail("Only an admin may lift a ban.");
+        // Governance audit 2026-08-22: before this existed, a ban had NO in-product remedy — reversing
+        // a mistaken ban required direct SQL against the players table.
+        if (!await ActorIsModeratorOrAdminAsync(actorId, ct))
+            return AdminActionResult.Fail("Actor is not a moderator or admin.");
         // A reversal is a moderation action too; §6's "every punishment logged with a reason" is
         // worth nothing for disputes if the UNDO is anonymous.
         if (string.IsNullOrWhiteSpace(reason))
@@ -182,6 +209,12 @@ public sealed class AdminService : IAdminService
             return AdminActionResult.Fail($"Player '{targetUsernameOrId}' not found.");
         if (!target.IsBanned)
             return AdminActionResult.Fail("Player is not banned.");
+
+        // A moderator may lift a TEMPORARY ban — the class of ban they are allowed to issue — but a
+        // permanent ban is the Admin's to place and the Admin's to lift. Without this, the §6 split on
+        // issuing would be trivially bypassed from the other direction.
+        if (target.BannedUntil is null && !await ActorIsAdminAsync(actorId, ct))
+            return AdminActionResult.Fail("Only an admin may lift a permanent ban.");
 
         var priorReason = target.BanReason;
         target.Unban();

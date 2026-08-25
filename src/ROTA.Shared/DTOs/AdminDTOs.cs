@@ -24,6 +24,13 @@ public class BanPlayerRequest
 {
     /// <summary>Reason for the ban (recorded + emailed for the dispute trail).</summary>
     public string Reason { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Ban length in whole days. Null = PERMANENT, which northstar §6 reserves to Admins; a Moderator
+    /// must supply 1–3. Omitted by older clients, which therefore still mean "permanent" and are still
+    /// correctly refused for moderators.
+    /// </summary>
+    public int? DurationDays { get; set; }
 }
 
 /// <summary>Request to lift a ban (governance audit 2026-08-22).</summary>

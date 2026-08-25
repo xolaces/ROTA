@@ -29,18 +29,22 @@ public interface IAdminService
         CancellationToken ct = default);
 
     /// <summary>
-    /// Bans the target player (T40). **Admin-only** — bans are permanent until temporary bans exist,
-    /// and northstar §6 reserves permanent bans to Admins (governance audit 2026-08-22). Reason is
-    /// required. Cannot ban an admin. Revokes the target's sessions, audits, and raises a
-    /// ModerationAction operator email.
+    /// Bans the target player (T40). Reason is required; cannot ban an admin. Revokes the target's
+    /// sessions, audits, and raises a ModerationAction operator email.
+    ///
+    /// <para><paramref name="durationDays"/> null = PERMANENT, which northstar §6 reserves to Admins.
+    /// A Moderator must supply 1–<see cref="AdminService.MaxModeratorBanDays"/>; anything longer, or
+    /// permanent, is refused. This is the split §6 always described — it simply could not be honoured
+    /// until BannedUntil existed.</para>
     /// </summary>
     Task<AdminActionResult> BanPlayerAsync(
-        Guid actorId, string targetUsernameOrId, string reason, string? ipAddress = null,
-        CancellationToken ct = default);
+        Guid actorId, string targetUsernameOrId, string reason, int? durationDays = null,
+        string? ipAddress = null, CancellationToken ct = default);
 
     /// <summary>
-    /// Lifts a ban (governance audit 2026-08-22). Admin-only, reason required. This is the only
-    /// in-product remedy for a ban — without it, reversal needs direct SQL.
+    /// Lifts a ban (governance audit 2026-08-22). Reason required. A Moderator may lift a TEMPORARY
+    /// ban — the class of ban they are allowed to issue — but only an Admin may lift a permanent one.
+    /// This is the only in-product remedy for a ban; without it, reversal needs direct SQL.
     /// </summary>
     Task<AdminActionResult> UnbanPlayerAsync(
         Guid actorId, string targetUsernameOrId, string reason, string? ipAddress = null,

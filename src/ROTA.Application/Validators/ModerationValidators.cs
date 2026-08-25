@@ -10,6 +10,13 @@ public sealed class BanPlayerRequestValidator : AbstractValidator<BanPlayerReque
         RuleFor(x => x.Reason)
             .NotEmpty().WithMessage("A ban reason is required.")
             .MaximumLength(500);
+
+        // Shape only. The ROLE cap (a moderator may not exceed 3 days) lives in AdminService, which is
+        // the only layer that knows who is calling. 3650 days is a decade — past that, say permanent.
+        RuleFor(x => x.DurationDays)
+            .InclusiveBetween(1, 3650)
+            .When(x => x.DurationDays.HasValue)
+            .WithMessage("A ban duration must be between 1 and 3650 days, or omitted for permanent.");
     }
 }
 
