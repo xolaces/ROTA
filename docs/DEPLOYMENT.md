@@ -1,5 +1,15 @@
 # ROTA — Deployment (T66)
 
+
+> **Three ops documents, three audiences.** Keep them that way -- merging them would help nobody.
+> - [`OPERATIONS.md`](OPERATIONS.md) -- working on ROTA locally: services, secrets, build/test, CLI.
+> - [`DEPLOYMENT.md`](DEPLOYMENT.md) -- how a deployment is configured, host-agnostic. **Canonical for
+>   production migrations.**
+> - [`BETA_DEPLOY.md`](BETA_DEPLOY.md) -- the concrete walkthrough for the live VPS + Docker + Caddy.
+>
+> Where they overlap, one of them is canonical and the others link to it. Duplicated procedure is how
+> these three drifted apart in the first place.
+
 Host-agnostic production artifacts. Hosting provider is deliberately undecided; everything here
 works on any Docker host (VPS, Fly.io, Railway, Azure/AWS container services) or bare `dotnet`.
 
