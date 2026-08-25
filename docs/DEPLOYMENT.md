@@ -62,6 +62,30 @@ dotnet ef migrations script --idempotent -o migrate.sql --project src/ROTA.Infra
 psql "$PROD_CONNECTION" -f migrate.sql
 ```
 
+### Verifying what production actually has
+
+Applying migrations is documented above; knowing whether they *landed* was not. Run this before any
+release, and any time a doc and the database seem to disagree:
+
+```
+psql "$PROD_CONNECTION" -f scripts/verify-prod-schema.sql
+```
+
+or, against the compose stack on the droplet:
+
+```
+docker exec -i rota-postgres-prod psql -U rota_user -d rota < scripts/verify-prod-schema.sql
+```
+
+It is read-only. Every section prints a `verdict` column; anything that is not `OK` means the database
+is behind this repository. It checks migration history **and** the actual column types, because the
+history table only records what EF was told to do -- a schema edited by hand can pass the first check
+and fail the second.
+
+The int -> bigint widenings are the ones that matter most. If any of those report
+`NOT WIDENED -- OVERFLOW RISK`, section 5 shows how close the largest live value is to the int32
+ceiling, which is the difference between a theoretical problem and an imminent one.
+
 ## Reference single-host deploy
 
 ```
