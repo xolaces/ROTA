@@ -1,5 +1,15 @@
 # ROTA — Operations & Tooling Runbook
 
+
+> **Three ops documents, three audiences.** Keep them that way -- merging them would help nobody.
+> - [`OPERATIONS.md`](OPERATIONS.md) -- working on ROTA locally: services, secrets, build/test, CLI.
+> - [`DEPLOYMENT.md`](DEPLOYMENT.md) -- how a deployment is configured, host-agnostic. **Canonical for
+>   production migrations.**
+> - [`BETA_DEPLOY.md`](BETA_DEPLOY.md) -- the concrete walkthrough for the live VPS + Docker + Caddy.
+>
+> Where they overlap, one of them is canonical and the others link to it. Duplicated procedure is how
+> these three drifted apart in the first place.
+
 *Last updated 2026-05-29 · Covers Systems 1–12 (v0.2.0)*
 
 Everything an operator/developer needs to build, test, run, migrate, and administer the
@@ -63,15 +73,28 @@ dotnet ef database update --project src/ROTA.Infrastructure --startup-project sr
 # Inspect
 dotnet ef migrations list --project src/ROTA.Infrastructure --startup-project src/ROTA.Api
 ```
-Applied to date: `InitialCreate → … → AddRaidSize → AddPlayerRolesAndDisplayName → AddBetaKeys`.
+There is deliberately **no hand-maintained list of applied migrations here**. One used to live at this
+spot, naming five migrations when the repository had over fifty, and a list like that is worse than no
+list: it reads as authoritative while being wrong. It is also, in miniature, how a triage note and
+`PROJECT_STATE.md` ended up disagreeing for two months about whether three migrations had shipped.
+
+Ask a source that cannot go stale instead:
+
+```bash
+# What this checkout knows about
+dotnet ef migrations list --project src/ROTA.Infrastructure --startup-project src/ROTA.Api
+
+# What a given database ACTUALLY has -- history, real column types, and the audit triggers
+psql "$CONNECTION" -f scripts/verify-prod-schema.sql
+```
 
 > **DEPLOYMENT ORDER:**
 > - **Development:** `dotnet run` auto-migrates on startup (`db.Database.MigrateAsync()` runs before
 >   seeding). A fresh local DB bootstraps itself — no manual migration step required.
-> - **Production:** migrations are **not** applied automatically. Run
->   `dotnet ef database update --project src/ROTA.Infrastructure --startup-project src/ROTA.Api`
->   (or the CLI `-- seed-admin`, which also auto-migrates) **before** starting the app.
->   If migrations are missing, startup fails with `42P01 relation "players" does not exist`.
+> - **Production:** migrations are **not** applied automatically, and the procedure is canonical in
+>   [`DEPLOYMENT.md`](DEPLOYMENT.md#migrations--always-before-the-app-starts) — follow it there rather
+>   than a copy here. If migrations are missing, startup fails with
+>   `42P01 relation "players" does not exist`.
 
 ---
 

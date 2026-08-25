@@ -1,5 +1,15 @@
 # ROTA — Beta Deploy Runbook (Linux VPS + Docker + Caddy)
 
+
+> **Three ops documents, three audiences.** Keep them that way -- merging them would help nobody.
+> - [`OPERATIONS.md`](OPERATIONS.md) -- working on ROTA locally: services, secrets, build/test, CLI.
+> - [`DEPLOYMENT.md`](DEPLOYMENT.md) -- how a deployment is configured, host-agnostic. **Canonical for
+>   production migrations.**
+> - [`BETA_DEPLOY.md`](BETA_DEPLOY.md) -- the concrete walkthrough for the live VPS + Docker + Caddy.
+>
+> Where they overlap, one of them is canonical and the others link to it. Duplicated procedure is how
+> these three drifted apart in the first place.
+
 End-to-end, copy-paste steps to put a ROTA beta online: **server backend** on an Ubuntu VPS behind
 HTTPS, and the **Windows client** built to point at it and shared as a direct download.
 
@@ -210,6 +220,17 @@ docker compose -f docker-compose.prod.yml exec -T postgres \
 ```
 
 Re-run anytime for future releases (idempotent = safe to re-apply).
+
+Then confirm it actually landed, rather than assuming:
+
+```bash
+docker compose -f docker-compose.prod.yml exec -T postgres \
+  psql -U rota_user -d rota < scripts/verify-prod-schema.sql
+```
+
+Every section prints a `verdict`; anything other than `OK` means the database is behind the code you
+are about to run. This matters most for the `int -> bigint` widenings, which fail silently until a
+player's stats pass two billion.
 
 ---
 
