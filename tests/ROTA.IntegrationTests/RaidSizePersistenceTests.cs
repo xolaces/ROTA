@@ -19,7 +19,7 @@ public class RaidSizePersistenceTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _postgres = new PostgreSqlBuilder()
+        _postgres = new PostgreSqlBuilder(TestContainerImages.Postgres)
             .WithDatabase("rota_test")
             .WithUsername("test")
             .WithPassword("test")

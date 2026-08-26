@@ -38,12 +38,12 @@ public class CraftConcurrencyTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _postgres = new PostgreSqlBuilder()
+        _postgres = new PostgreSqlBuilder(TestContainerImages.Postgres)
             .WithDatabase("rota_crafting_test")
             .WithUsername("test")
             .WithPassword("test")
             .Build();
-        _redis = new RedisBuilder().Build();
+        _redis = new RedisBuilder(TestContainerImages.Redis).Build();
 
         await Task.WhenAll(_postgres.StartAsync(), _redis.StartAsync());
 
