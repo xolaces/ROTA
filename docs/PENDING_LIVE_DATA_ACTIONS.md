@@ -29,19 +29,33 @@ next dump bigger.
 So any live account that spent time in an auto-levelling band holds skill points it should never have
 earned. The curve fix stops it continuing; it does not undo what was already banked.
 
-### What has to be decided first
+### DECIDED: refund and re-grant
 
-"Reset SP" has at least three meanings and they are not equivalent:
+**Owner ruling, 2026-08-26: option 1 — refund and re-grant.** Zero every investment, return skill
+points equal to what the account's level legitimately grants, and let players re-spend from scratch.
+Levels are PRESERVED; only the build resets.
 
-1. **Refund and re-grant** — zero every investment, return skill points equal to what the account's
-   level legitimately grants, let players re-spend. Preserves level, resets the build.
-2. **Roll levels back too** — recompute what the account's level *should* be under the fixed curve and
-   set both level and SP from that. Most correct, most punishing, hardest to explain.
-3. **Zero unspent SP only** — leave invested stats alone, clear the unspent balance. Cheapest, and
-   leaves most of the over-earned power in place.
+The owner's reasoning, recorded because it governs how this is communicated: *"this isn't a version
+update"*. It is a beta correction, so players are not owed the continuity a live patch would owe them,
+and the two options either side were rejected for good reasons:
 
-The beta population is small (the owner plus a few friends), so any of the three is operationally
-easy. This is a fairness and player-communication call, not a technical one.
+- Rolling levels back (option 2) is the most technically correct and the most punishing. It takes away
+  progress people watched themselves earn, to fix a bug they did not cause.
+- Zeroing only unspent SP (option 3) leaves the over-earned power banked in stats, which is most of it
+   — it would have looked like a fix without being one.
+
+Refund-and-regrant lands between: nobody loses a level, and nobody keeps a build the corrected curve
+would never have funded.
+
+### Implementation notes
+
+- Preserve `players.level` and `experience`. Rewrite only `player_stats`.
+- Zero all six `*_investment` columns, then set `skill_points` to the legitimate total for that level.
+  Read the per-level grant from `StatService`'s level-up path rather than assuming a flat rate.
+- **Re-check LSI afterwards.** Investments are what LSI is computed from, so a zeroed build is
+  trivially legal — but the player's Energy/Stamina POOLS derive from those investments too, and both
+  must come back down with them or the pools outlive the investment that paid for them.
+- Health/Energy/Stamina live values should be clamped to the new maxima, not left above them.
 
 ### Notes for whoever writes the script
 
@@ -50,6 +64,8 @@ easy. This is a fairness and player-communication call, not a technical one.
   flat rate.
 - `audit_log` is append-only as of the 2026-08-25 migration, so the reset **must** append its own
   audit rows rather than editing anything. Do not disable the trigger for this.
+- One audit row per player, naming the before/after skill-point totals. A blanket "reset everyone" row
+  is not a dispute trail.
 - Take a database backup first. This is not reversible from inside the app.
 
 ---
