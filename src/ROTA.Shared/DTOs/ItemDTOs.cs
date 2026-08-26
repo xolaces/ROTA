@@ -17,6 +17,25 @@ public class InventoryItemResponse
     // Raid tier of the sigil's summon target (Standard | World | Event | Guild), so the client boss
     // card shows the right label instead of a hardcoded "World raid". Null for non-sigil items.
     public string? Tier { get; set; }
+
+    // What a CONSUMABLE actually does, hydrated from the item definition (D-008). The client could
+    // not describe its own consumables without this -- it had the name and a flavour line, but not
+    // the effect, so an inventory row could not say "restores 25 Energy" or warn that the pool it
+    // fills is already full. Null/0 for everything that is not a consumable.
+    /// <summary>Energy | Stamina | Health — the pool this restores. Null when it restores nothing.</summary>
+    public string? RestoreResourceType { get; set; }
+
+    /// <summary>Points restored. 0 when <see cref="RestoreToMax"/> is true, or when it restores nothing.</summary>
+    public int RestoreAmount { get; set; }
+
+    /// <summary>True for a full refill, where <see cref="RestoreAmount"/> is not the whole story.</summary>
+    public bool RestoreToMax { get; set; }
+
+    /// <summary>Skill points granted on use (StatBag items). 0 otherwise.</summary>
+    public int StatPointsOnUse { get; set; }
+
+    /// <summary>Gold price when this is sold in the consumable shop; 0 = not for sale.</summary>
+    public long GoldPrice { get; set; }
 }
 
 public class UseItemResponse
