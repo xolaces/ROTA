@@ -252,12 +252,20 @@ public sealed class StatService : IStatService
         };
     }
 
+    /// <summary>
+    /// XP required to advance from <paramref name="level"/> to the next.
+    ///
+    /// The linear floor is what stops a full stamina dump from being worth a whole level: the stamina
+    /// pool grows linearly with level (LSI-capped), the power curve does not, so without it the two
+    /// cross and never uncross. See LevelingConfig.XpLinearPerLevel.
+    /// </summary>
     public int XpToNextLevel(int level)
     {
         var cfg = _levelingConfig.Value;
         double baseXp = cfg.XpBaseMultiplier * Math.Pow(level, cfg.XpExponent);
-        int floor = cfg.GetFloor(level);
-        return Math.Max(floor, (int)Math.Round(baseXp));
+        double linearFloor = cfg.XpLinearPerLevel * level;
+        int milestoneFloor = cfg.GetFloor(level);
+        return Math.Max(milestoneFloor, Math.Max((int)Math.Round(linearFloor), (int)Math.Round(baseXp)));
     }
 
     public CritProfile GetCritProfile(int discernment)

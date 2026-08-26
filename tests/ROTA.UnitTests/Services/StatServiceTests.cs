@@ -22,19 +22,28 @@ public class StatServiceTests
         Mock<IEquipmentService> Equipment,
         Mock<IPinnacleService> Pinnacle);
 
+    // MIRRORS src/ROTA.Api/appsettings.json LevelingConfig. It used to carry exponent 0.7 and a
+    // partial floor table while production ran 0.8 with a fuller one, so these tests were pinning a
+    // curve nobody shipped -- the same config drift that let the auto-levelling go unnoticed.
+    // Keep this in step with appsettings.
     private static IOptions<LevelingConfig> DefaultLevelingConfig() =>
         Options.Create(new LevelingConfig
         {
             XpBaseMultiplier = 30.0,
-            XpExponent = 0.7,
+            XpExponent = 0.8,
+            XpLinearPerLevel = 14.0,
             MilestoneFloors = new Dictionary<int, int>
             {
                 [100]   = 500,
                 [500]   = 3000,
                 [1000]  = 15000,
+                [2000]  = 25000,
                 [2500]  = 35000,
                 [5000]  = 75000,
+                [7500]  = 120000,
                 [10000] = 200000,
+                [15000] = 350000,
+                [25000] = 600000,
             },
             PinnacleGemRewards = new Dictionary<int, int>
             {
@@ -404,67 +413,104 @@ public class StatServiceTests
         b.Energy.Verify(e => e.UpdateMaxAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
-    // XpToNextLevel — formula and milestone floors
-    // Formula: Math.Max(floor, (int)Math.Round(30.0 × level^0.7))
+    // XpToNextLevel -- the three-way max: power curve, LINEAR floor, milestone floor.
+    // TNL = max(milestoneFloor(level), XpLinearPerLevel * level, 30 * level^0.8)
 
     [Fact]
-    public void XpToNextLevel_Level1_ReturnsFormulaValue_NoFloor()
+    public void XpToNextLevel_Level1_PowerCurveWins()
     {
-        // 30.0 × 1^0.7 = 30.0 → round = 30; no milestone floor applies at level 1 → result = 30
+        // 30 * 1^0.8 = 30; linear = 14; no milestone at level 1. The curve is the largest.
         var b = BuildService();
         b.Service.XpToNextLevel(1).Should().Be(30);
     }
 
     [Fact]
-    public void XpToNextLevel_Level99_ReturnsFormulaValue_BelowMilestoneKey100()
+    public void XpToNextLevel_Level99_LinearFloorWins_NoMilestoneYet()
     {
-        // Level 99 < milestone key 100, so floor = 0. Formula: 30 × 99^0.7 ≈ 748.
-        // Verify: result is the formula value, no floor constrains it.
+        // Curve 30 * 99^0.8 = 1185; linear 14 * 99 = 1386; milestone 0 (level < 100).
         var b = BuildService();
-        var result = b.Service.XpToNextLevel(99);
-        result.Should().BeGreaterThan(0);
-        result.Should().BeLessThan(3000); // well below the milestone-500 floor
-        // Exact formula value (within 1 of expected due to double precision)
-        result.Should().BeInRange(745, 755);
+        b.Service.XpToNextLevel(99).Should().Be(1386);
     }
 
     [Fact]
-    public void XpToNextLevel_Level100_ReturnsFormulaValue_FloorDoesNotConstrain()
+    public void XpToNextLevel_Level500_LinearFloorBeatsBothOthers()
     {
-        // Milestone floor at key 100 is 500. Formula at 100: 30 × 100^0.7 ≈ 754 > 500.
-        // Formula value wins — floor is set but does not constrain at this level.
+        // Curve 4328, milestone 3000, linear 7000. This level used to return 3000 -- and 3000 was
+        // beatable by a single full stamina dump, which is exactly the bug.
         var b = BuildService();
-        var result = b.Service.XpToNextLevel(100);
-        result.Should().BeGreaterThanOrEqualTo(500); // floor is the minimum guarantee
-        result.Should().BeInRange(750, 760);          // formula value (~754) wins
+        b.Service.XpToNextLevel(500).Should().Be(7000);
     }
 
     [Fact]
-    public void XpToNextLevel_Level500_ReturnsMilestoneFloor_FormulaIsBelow()
+    public void XpToNextLevel_Level1000_MilestoneFloorStillWins()
     {
-        // Formula at 500: 30 × 500^0.7 ≈ 2326. Floor at milestone 500 = 3000. Floor kicks in.
-        var b = BuildService();
-        b.Service.XpToNextLevel(500).Should().Be(3000);
-    }
-
-    [Fact]
-    public void XpToNextLevel_Level1000_ReturnsMilestoneFloor_FormulaIsBelow()
-    {
-        // Formula at 1000: 30 × 1000^0.7 ≈ 3777. Floor at milestone 1000 = 15000. Floor kicks in.
+        // Curve 7536, linear 14000, milestone 15000. The milestone is the largest, so the linear
+        // floor must NOT lower it -- the fix fills troughs, it never cuts peaks.
         var b = BuildService();
         b.Service.XpToNextLevel(1000).Should().Be(15000);
     }
 
     [Fact]
-    public void XpToNextLevel_Level999_ReturnsFormulaValue_NotLevel1000Floor()
+    public void XpToNextLevel_Level2499_LinearFloorFillsTheTroughBeforeTheNextMilestone()
     {
-        // Level 999: highest matching milestone is key 500 (floor 3000). Formula ≈ 3774 > 3000.
-        // Formula wins. Must NOT return 15000 (which is the level-1000 floor).
+        // The reported case. Milestone is still 25,000 here (the 2,500 step has not landed), the
+        // curve is only 15,680, and a full stamina dump is worth ~27,900 XP -- so this level used to
+        // auto-level. The linear floor lifts it to 34,986.
         var b = BuildService();
-        var result = b.Service.XpToNextLevel(999);
-        result.Should().NotBe(15000);
-        result.Should().BeGreaterThan(3000); // formula exceeds the milestone-500 floor
-        result.Should().BeInRange(3770, 3780);
+        b.Service.XpToNextLevel(2499).Should().Be(34986);
+    }
+
+    [Fact]
+    public void XpToNextLevel_NeverDecreasesAsLevelRises()
+    {
+        // A dip would mean a level that costs less than the one before it -- a pacing cliff, and the
+        // shape that lets a fixed-size resource pool suddenly out-earn a level.
+        var b = BuildService();
+        int previous = 0;
+        for (int level = 1; level <= 26000; level++)
+        {
+            int tnl = b.Service.XpToNextLevel(level);
+            tnl.Should().BeGreaterThanOrEqualTo(previous, $"XP to next level dipped at level {level}");
+            previous = tnl;
+        }
+    }
+
+    // The property the linear floor exists to guarantee. A player at the LSI cap who spends their
+    // ENTIRE stamina pool on raids must not earn a whole level from it; if they can, levelling becomes
+    // self-sustaining, because each level grants the skill points that enlarge the pool.
+    //
+    // HOW TO VERIFY THIS TEST CATCHES THE BUG: set XpLinearPerLevel to 0 (the pre-2026-08-25 curve).
+    // It fails reporting 1.60 levels per dump at level 4,999 -- the last level before the 5,000
+    // milestone lands, where the pool has spent 2,500 levels growing against a floor that has not
+    // moved. Sweeping every level is the point: a table of round-numbered levels samples 4,000 and
+    // 5,000 and steps straight over that peak.
+    [Fact]
+    public void XpToNextLevel_AFullStaminaDump_IsNeverWorthAWholeLevel()
+    {
+        const double lsiCap          = 7.45;   // StatService.LsiCap
+        // CombatConfig rolls Uniform[1,5] PER STAMINA. A full dump at these levels is hundreds of
+        // hits, so the mean is what actually governs the outcome -- the max roll is the right figure
+        // for one lucky hit, not for a pool this size.
+        const double xpPerStamina    = 3.0;
+        const int    baseMaxStamina  = 5;      // PlayerStats.BaseMaxStamina
+
+        var b = BuildService();
+        var worst = (level: 0, ratio: 0.0);
+
+        for (int level = 1; level <= 25000; level++)
+        {
+            // An all-stamina build at the cap: (Energy + Stamina * 2) / level <= cap, Energy = 0.
+            double maxStamina = baseMaxStamina + lsiCap * level / 2.0;
+            double dumpXp = xpPerStamina * maxStamina;
+            double ratio = dumpXp / b.Service.XpToNextLevel(level);
+            if (ratio > worst.ratio) worst = (level, ratio);
+        }
+
+        // A full dump must fall short of a level everywhere. The worst case sits around 0.82, which
+        // leaves deliberate headroom rather than scraping under the line.
+        worst.ratio.Should().BeLessThan(1.0,
+            $"a full stamina dump was worth {worst.ratio:F2} levels at level {worst.level}, which "
+            + "makes levelling self-sustaining");
     }
 
     // GetCritProfile — discernment crit chance and multiplier
