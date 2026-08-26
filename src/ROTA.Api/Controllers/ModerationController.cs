@@ -20,17 +20,20 @@ public sealed class ModerationController : ControllerBase
     private readonly IValidator<BanPlayerRequest> _banValidator;
     private readonly IValidator<MutePlayerRequest> _muteValidator;
     private readonly IValidator<UnbanPlayerRequest> _unbanValidator;
+    private readonly IValidator<UnmutePlayerRequest> _unmuteValidator;
 
     public ModerationController(
         IAdminService admin,
         IValidator<BanPlayerRequest> banValidator,
         IValidator<MutePlayerRequest> muteValidator,
-        IValidator<UnbanPlayerRequest> unbanValidator)
+        IValidator<UnbanPlayerRequest> unbanValidator,
+        IValidator<UnmutePlayerRequest> unmuteValidator)
     {
         _admin = admin;
         _banValidator = banValidator;
         _muteValidator = muteValidator;
         _unbanValidator = unbanValidator;
+        _unmuteValidator = unmuteValidator;
     }
 
     /// <summary>
@@ -86,13 +89,43 @@ public sealed class ModerationController : ControllerBase
             "Player muted.");
     }
 
-    /// <summary>Lifts any active mute on a player.</summary>
-    [HttpPost("players/{idOrUsername}/unmute")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    /// <summary>
+    /// One player's moderation history, newest first — the read side of northstar §6. Logging every
+    /// punishment achieves nothing for disputes if nobody can read the record back.
+    ///
+    /// Moderator-visible, not Admin-only: a moderator about to act on a player needs to see whether
+    /// this is a first offence or a fifth, and that is the judgement §6 asks them to make.
+    /// </summary>
+    [HttpGet("players/{idOrUsername}/history")]
+    [ProducesResponseType(typeof(IReadOnlyList<PunishmentLogEntryResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Unmute([FromRoute] string idOrUsername)
-        => Respond(await _admin.UnmutePlayerAsync(GetActorId(), idOrUsername, Ip()), "Player unmuted.");
+    public async Task<IActionResult> History([FromRoute] string idOrUsername, [FromQuery] int limit = 100)
+    {
+        var history = await _admin.GetPunishmentHistoryAsync(idOrUsername, limit);
+        if (history is null) return NotFound(new { message = $"Player '{idOrUsername}' not found." });
+        return Ok(history);
+    }
+
+    /// <summary>
+    /// Lifts an active mute on a player. A reason is required, as it is for a ban lift. A Moderator may
+    /// not lift a mute an Admin placed — enforced in the service, which is the layer that can read the
+    /// mute's provenance out of punishment_log.
+    /// </summary>
+    [HttpPost("players/{idOrUsername}/unmute")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Unmute(
+        [FromRoute] string idOrUsername, [FromBody] UnmutePlayerRequest request)
+    {
+        var v = await _unmuteValidator.ValidateAsync(request);
+        if (!v.IsValid) return InvalidRequest(v);
+        return Respond(
+            await _admin.UnmutePlayerAsync(GetActorId(), idOrUsername, request.Reason, Ip()),
+            "Player unmuted.");
+    }
 
     private IActionResult Respond(AdminActionResult result, string okMessage)
     {

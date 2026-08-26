@@ -30,12 +30,38 @@ public class AdminServiceTests
                     Mock<IEmailNotificationService> emails)
         BuildServiceEx()
     {
-        var players  = new Mock<IPlayerRepository>();
-        var tokens   = new Mock<IRefreshTokenRepository>();
-        var auditLog = new Mock<IAuditLogRepository>();
-        var emails   = new Mock<IEmailNotificationService>();
-        var service  = new AdminService(players.Object, tokens.Object, auditLog.Object, emails.Object);
+        var (service, players, tokens, auditLog, emails, _) = BuildServiceFull();
         return (service, players, tokens, auditLog, emails);
+    }
+
+    /// <summary>Also exposes the punishment log, for the northstar §6 governance assertions.</summary>
+    private static (AdminService service,
+                    Mock<IPlayerRepository> players,
+                    Mock<IRefreshTokenRepository> tokens,
+                    Mock<IAuditLogRepository> auditLog,
+                    Mock<IEmailNotificationService> emails,
+                    Mock<IPunishmentLogRepository> punishments)
+        BuildServiceFull()
+    {
+        var players     = new Mock<IPlayerRepository>();
+        var tokens      = new Mock<IRefreshTokenRepository>();
+        var auditLog    = new Mock<IAuditLogRepository>();
+        var emails      = new Mock<IEmailNotificationService>();
+        var punishments = new Mock<IPunishmentLogRepository>();
+        var service     = new AdminService(
+            players.Object, tokens.Object, auditLog.Object, punishments.Object, emails.Object);
+        return (service, players, tokens, auditLog, emails, punishments);
+    }
+
+    /// <summary>Captures every entry the service appends, in order.</summary>
+    private static List<PunishmentLog> CapturePunishments(Mock<IPunishmentLogRepository> punishments)
+    {
+        var written = new List<PunishmentLog>();
+        punishments
+            .Setup(r => r.AppendAsync(It.IsAny<PunishmentLog>(), It.IsAny<CancellationToken>()))
+            .Callback<PunishmentLog, CancellationToken>((entry, _) => written.Add(entry))
+            .Returns(Task.CompletedTask);
+        return written;
     }
 
     private static Player MakeAdmin(string username = "admin") =>
@@ -660,10 +686,271 @@ public class AdminServiceTests
         players.Setup(r => r.FindByUsernameAsync("muted", It.IsAny<CancellationToken>())).ReturnsAsync(target);
         players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
 
-        var result = await service.UnmutePlayerAsync(actor.Id, "muted");
+        var result = await service.UnmutePlayerAsync(actor.Id, "muted", "Appeal upheld.");
 
         result.Success.Should().BeTrue();
         target.IsMuted.Should().BeFalse();
         target.MuteExpiresAt.Should().BeNull();
+    }
+
+    // ---- northstar §6: the punishment log -----------------------------------------------------
+    // "Every punishment, by any role, against any player, is logged -- actor, role, target, type,
+    // reason, duration/expiry, timestamp. Append-only, like the audit log. Non-negotiable."
+
+    [Fact]
+    public async Task BanPlayerAsync_WritesTheGovernanceRecord_WithRoleSnapshotAndExpiry()
+    {
+        var (service, players, _, _, _, punishments) = BuildServiceFull();
+        var written = CapturePunishments(punishments);
+        var actor   = MakeAdmin();
+        var target  = MakePlayer("cheater");
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+        players.Setup(r => r.FindByUsernameAsync("cheater", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+        players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+
+        var result = await service.BanPlayerAsync(actor.Id, "cheater", "Botting.", durationDays: 3);
+
+        result.Success.Should().BeTrue();
+        written.Should().ContainSingle();
+        var entry = written[0];
+        entry.Type.Should().Be(PunishmentType.Ban);
+        entry.ActorPlayerId.Should().Be(actor.Id);
+        entry.ActorRole.Should().Be("Admin");
+        entry.TargetPlayerId.Should().Be(target.Id);
+        entry.TargetUsername.Should().Be("cheater", "usernames change; the record must not");
+        entry.Reason.Should().Be("Botting.");
+        entry.ExpiresAt.Should().NotBeNull("a three-day ban has an expiry");
+        entry.ReversalOfId.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task BanPlayerAsync_PermanentBan_RecordsNoExpiry()
+    {
+        var (service, players, _, _, _, punishments) = BuildServiceFull();
+        var written = CapturePunishments(punishments);
+        var actor   = MakeAdmin();
+        var target  = MakePlayer("cheater");
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+        players.Setup(r => r.FindByUsernameAsync("cheater", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+        players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+
+        await service.BanPlayerAsync(actor.Id, "cheater", "Repeat offender.", durationDays: null);
+
+        written.Should().ContainSingle();
+        written[0].ExpiresAt.Should().BeNull("null expiry IS the permanence, not a missing field");
+    }
+
+    [Fact]
+    public async Task CliActor_IsRecordedAsSystem_NotAsAMissingActor()
+    {
+        var (service, players, _, _, _, punishments) = BuildServiceFull();
+        var written = CapturePunishments(punishments);
+        var target  = MakePlayer("cheater");
+
+        players.Setup(r => r.FindByUsernameAsync("cheater", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+        players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+
+        await service.BanPlayerAsync(Guid.Empty, "cheater", "Automated ruling.", durationDays: 1);
+
+        written.Should().ContainSingle();
+        written[0].ActorPlayerId.Should().BeNull("Guid.Empty has no player row");
+        written[0].ActorRole.Should().Be("System");
+    }
+
+    [Fact]
+    public async Task UnbanPlayerAsync_LinksTheReversalToTheBanItLifts()
+    {
+        var (service, players, _, _, _, punishments) = BuildServiceFull();
+        var written = CapturePunishments(punishments);
+        var actor   = MakeAdmin();
+        var target  = MakePlayer("banned");
+        target.Ban("Botting.", DateTimeOffset.UtcNow.AddDays(3));
+
+        var theBan = PunishmentLog.Create(
+            actor.Id, "Admin", target.Id, "banned", PunishmentType.Ban, "Botting.",
+            DateTimeOffset.UtcNow.AddDays(3), null, null);
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+        players.Setup(r => r.FindByUsernameAsync("banned", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+        players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        punishments
+            .Setup(r => r.FindActivePunishmentAsync(target.Id, PunishmentType.Ban, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(theBan);
+
+        var result = await service.UnbanPlayerAsync(actor.Id, "banned", "Appeal upheld.");
+
+        result.Success.Should().BeTrue();
+        written.Should().ContainSingle();
+        written[0].Type.Should().Be(PunishmentType.Unban);
+        written[0].ReversalOfId.Should().Be(theBan.Id);
+        written[0].Reason.Should().Be("Appeal upheld.");
+    }
+
+    [Fact]
+    public async Task UnmutePlayerAsync_RequiresAReason()
+    {
+        var (service, players, _, _, _, _) = BuildServiceFull();
+        var actor = MakeAdmin();
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+
+        var result = await service.UnmutePlayerAsync(actor.Id, "muted", "   ");
+
+        result.Success.Should().BeFalse("a reversal with no stated reason is a reasonless punishment record");
+    }
+
+    [Fact]
+    public async Task UnmutePlayerAsync_RejectsAPlayerWhoIsNotMuted()
+    {
+        var (service, players, _, _, _, punishments) = BuildServiceFull();
+        var written = CapturePunishments(punishments);
+        var actor   = MakeAdmin();
+        var target  = MakePlayer("quiet");
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+        players.Setup(r => r.FindByUsernameAsync("quiet", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+
+        var result = await service.UnmutePlayerAsync(actor.Id, "quiet", "Tidying up.");
+
+        result.Success.Should().BeFalse();
+        written.Should().BeEmpty("a phantom reversal describes something that never happened");
+    }
+
+    [Fact]
+    public async Task UnmutePlayerAsync_ModeratorCannotLiftAnAdminPlacedMute()
+    {
+        var (service, players, _, _, _, punishments) = BuildServiceFull();
+        var written   = CapturePunishments(punishments);
+        var moderator = MakePlayer("mod", PlayerRoles.Player | PlayerRoles.Moderator);
+        var admin     = MakeAdmin();
+        var target    = MakePlayer("muted");
+        target.Mute(DateTimeOffset.UtcNow.AddHours(1));
+
+        players.Setup(r => r.FindByIdAsync(moderator.Id, It.IsAny<CancellationToken>())).ReturnsAsync(moderator);
+        players.Setup(r => r.FindByUsernameAsync("muted", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+        punishments
+            .Setup(r => r.FindActivePunishmentAsync(target.Id, PunishmentType.Mute, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(PunishmentLog.Create(
+                admin.Id, "Admin", target.Id, "muted", PunishmentType.Mute, "Harassment.",
+                DateTimeOffset.UtcNow.AddHours(1), null, null));
+
+        var result = await service.UnmutePlayerAsync(moderator.Id, "muted", "They said sorry.");
+
+        result.Success.Should().BeFalse("a moderator must not silently override an admin's decision");
+        target.IsMuted.Should().BeTrue();
+        written.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task UnmutePlayerAsync_ModeratorMayLiftAModeratorPlacedMute()
+    {
+        var (service, players, _, _, _, punishments) = BuildServiceFull();
+        CapturePunishments(punishments);
+        var moderator = MakePlayer("mod", PlayerRoles.Player | PlayerRoles.Moderator);
+        var target    = MakePlayer("muted");
+        target.Mute(DateTimeOffset.UtcNow.AddHours(1));
+
+        players.Setup(r => r.FindByIdAsync(moderator.Id, It.IsAny<CancellationToken>())).ReturnsAsync(moderator);
+        players.Setup(r => r.FindByUsernameAsync("muted", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+        players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        punishments
+            .Setup(r => r.FindActivePunishmentAsync(target.Id, PunishmentType.Mute, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(PunishmentLog.Create(
+                moderator.Id, "Moderator", target.Id, "muted", PunishmentType.Mute, "Spam.",
+                DateTimeOffset.UtcNow.AddHours(1), null, null));
+
+        var result = await service.UnmutePlayerAsync(moderator.Id, "muted", "Warned instead.");
+
+        result.Success.Should().BeTrue("the gate is about authority, not about reversals generally");
+        target.IsMuted.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task UnmutePlayerAsync_ModeratorMayLiftALegacyMuteWithNoRecordedProvenance()
+    {
+        var (service, players, _, _, _, punishments) = BuildServiceFull();
+        CapturePunishments(punishments);
+        var moderator = MakePlayer("mod", PlayerRoles.Player | PlayerRoles.Moderator);
+        var target    = MakePlayer("muted");
+        target.Mute(DateTimeOffset.UtcNow.AddHours(1));
+
+        players.Setup(r => r.FindByIdAsync(moderator.Id, It.IsAny<CancellationToken>())).ReturnsAsync(moderator);
+        players.Setup(r => r.FindByUsernameAsync("muted", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+        players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        punishments
+            .Setup(r => r.FindActivePunishmentAsync(target.Id, PunishmentType.Mute, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PunishmentLog?)null);
+
+        var result = await service.UnmutePlayerAsync(moderator.Id, "muted", "Pre-existing mute, cleared.");
+
+        result.Success.Should().BeTrue(
+            "mutes placed before the log existed would otherwise have no in-product remedy");
+    }
+
+    [Fact]
+    public async Task UnmutePlayerAsync_AdminMayLiftAnAdminPlacedMute()
+    {
+        var (service, players, _, _, _, punishments) = BuildServiceFull();
+        var written = CapturePunishments(punishments);
+        var admin   = MakeAdmin();
+        var target  = MakePlayer("muted");
+        target.Mute(DateTimeOffset.UtcNow.AddHours(1));
+
+        var theMute = PunishmentLog.Create(
+            admin.Id, "Admin", target.Id, "muted", PunishmentType.Mute, "Harassment.",
+            DateTimeOffset.UtcNow.AddHours(1), null, null);
+
+        players.Setup(r => r.FindByIdAsync(admin.Id, It.IsAny<CancellationToken>())).ReturnsAsync(admin);
+        players.Setup(r => r.FindByUsernameAsync("muted", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+        players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        punishments
+            .Setup(r => r.FindActivePunishmentAsync(target.Id, PunishmentType.Mute, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(theMute);
+
+        var result = await service.UnmutePlayerAsync(admin.Id, "muted", "Appeal upheld.");
+
+        result.Success.Should().BeTrue();
+        written.Should().ContainSingle();
+        written[0].Type.Should().Be(PunishmentType.Unmute);
+        written[0].ReversalOfId.Should().Be(theMute.Id);
+    }
+
+    [Fact]
+    public async Task MutePlayerAsync_WritesTheGovernanceRecord()
+    {
+        var (service, players, _, _, _, punishments) = BuildServiceFull();
+        var written   = CapturePunishments(punishments);
+        var moderator = MakePlayer("mod", PlayerRoles.Player | PlayerRoles.Moderator);
+        var target    = MakePlayer("loud");
+
+        players.Setup(r => r.FindByIdAsync(moderator.Id, It.IsAny<CancellationToken>())).ReturnsAsync(moderator);
+        players.Setup(r => r.FindByUsernameAsync("loud", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+        players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+
+        var result = await service.MutePlayerAsync(moderator.Id, "loud", 60, "Spam.");
+
+        result.Success.Should().BeTrue();
+        written.Should().ContainSingle();
+        written[0].Type.Should().Be(PunishmentType.Mute);
+        written[0].ActorRole.Should().Be("Moderator");
+        written[0].ExpiresAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task FailedModerationAction_WritesNoGovernanceRecord()
+    {
+        var (service, players, _, _, _, punishments) = BuildServiceFull();
+        var written = CapturePunishments(punishments);
+        var actor   = MakeAdmin();
+        var target  = MakeAdmin("otheradmin");
+
+        players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
+        players.Setup(r => r.FindByUsernameAsync("otheradmin", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+
+        var result = await service.BanPlayerAsync(actor.Id, "otheradmin", "Nope.", durationDays: 1);
+
+        result.Success.Should().BeFalse("admins cannot be banned");
+        written.Should().BeEmpty("a refused action is not a punishment");
     }
 }
