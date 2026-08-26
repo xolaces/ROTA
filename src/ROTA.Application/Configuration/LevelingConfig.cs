@@ -3,7 +3,33 @@ namespace ROTA.Application.Configuration;
 public class LevelingConfig
 {
     public double XpBaseMultiplier { get; set; } = 30.0;
-    public double XpExponent { get; set; } = 0.7;
+
+    // Defaults MUST match appsettings.json. This was 0.7 while appsettings said 0.8, so a binding
+    // failure would silently have halved the late-game XP requirement instead of failing loudly.
+    public double XpExponent { get; set; } = 0.8;
+
+    /// <summary>
+    /// Minimum XP-to-next-level per level -- a LINEAR floor under the whole curve.
+    ///
+    /// Why it exists: a player's stamina pool grows LINEARLY with level (the LSI cap bounds
+    /// Energy + Stamina x 2 to 7.45 x level, so an all-stamina build reaches ~3.725 x level), while
+    /// `XpBaseMultiplier * level^XpExponent` grows SUBLINEARLY. Linear always overtakes sublinear --
+    /// past about level 139 a single full stamina dump earns more XP than a level costs.
+    ///
+    /// MilestoneFloors only patched that in steps, so pacing sawtoothed: each milestone bought some
+    /// headroom, the pool caught up, and the player auto-levelled until the next milestone. At level
+    /// 2,499 one dump was worth 1.12 levels; at 4,000, 1.28.
+    ///
+    /// A linear floor fixes it structurally because it grows at the same rate as the pool. At 14 the
+    /// worst case across the whole 1..25,000 range is 0.82 levels per full dump, and it LOWERS the
+    /// requirement nowhere -- every existing milestone floor already exceeds 14 x level at its own
+    /// level, so this only fills the troughs between them.
+    ///
+    /// Tuning: levels-per-dump is about (3.0 XP/stamina x 3.725 x level) / (this x level), i.e.
+    /// roughly 11.2 / this. Raise it to slow levelling, lower it to speed up; below ~11.2 the
+    /// auto-levelling returns. 0 disables the floor entirely (the pre-2026-08-25 behaviour).
+    /// </summary>
+    public double XpLinearPerLevel { get; set; } = 14.0;
 
     public Dictionary<int, int> MilestoneFloors { get; set; } = new();
 
