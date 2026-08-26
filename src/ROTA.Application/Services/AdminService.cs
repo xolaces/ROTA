@@ -9,24 +9,32 @@ namespace ROTA.Application.Services;
 /// <summary>
 /// Admin service: role grant/revoke and punitive moderation (ban/mute) with all safety guards applied.
 /// Actor == Guid.Empty is the system/CLI bypass — no DB re-verification.
-/// Every punitive action writes to audit_log AND raises a ModerationAction operator email (T40).
+///
+/// Every punitive action writes THREE records, and they are not redundant:
+///   audit_log      — the operational trail, uniform across every action in the system.
+///   punishment_log — the governance record northstar §6 requires (actor, ROLE, target, type, reason,
+///                    expiry, timestamp), structured so a dispute can be reviewed without parsing prose.
+///   ModerationAction email — the operator notification (T40).
 /// </summary>
 public sealed class AdminService : IAdminService
 {
     private readonly IPlayerRepository _players;
     private readonly IRefreshTokenRepository _refreshTokens;
     private readonly IAuditLogRepository _auditLog;
+    private readonly IPunishmentLogRepository _punishments;
     private readonly IEmailNotificationService _emails;
 
     public AdminService(
         IPlayerRepository players,
         IRefreshTokenRepository refreshTokens,
         IAuditLogRepository auditLog,
+        IPunishmentLogRepository punishments,
         IEmailNotificationService emails)
     {
         _players       = players;
         _refreshTokens = refreshTokens;
         _auditLog      = auditLog;
+        _punishments   = punishments;
         _emails        = emails;
     }
 
@@ -186,6 +194,8 @@ public sealed class AdminService : IAdminService
                          + $"duration={durationLabel} until={until?.ToString("O") ?? "-"}",
             ipAddress), ct);
 
+        await AppendPunishmentAsync(
+            actorId, target, PunishmentType.Ban, reason, expiresAt: until, reversalOf: null, ipAddress, ct);
         await QueueModerationEmailAsync(actorId, target, "Ban", reason, expiresAt: until, ipAddress, ct);
         return AdminActionResult.Ok();
     }
@@ -216,6 +226,9 @@ public sealed class AdminService : IAdminService
         if (target.BannedUntil is null && !await ActorIsAdminAsync(actorId, ct))
             return AdminActionResult.Fail("Only an admin may lift a permanent ban.");
 
+        // Read BEFORE the reversal is appended, so the lookup cannot find its own Unban row.
+        var activeBan = await _punishments.FindActivePunishmentAsync(target.Id, PunishmentType.Ban, ct);
+
         var priorReason = target.BanReason;
         target.Unban();
         await _players.UpdateAsync(target, ct);
@@ -227,6 +240,9 @@ public sealed class AdminService : IAdminService
             resultSummary: $"actor={actorId} target={target.Id} reason={reason} liftedBanReason={priorReason}",
             ipAddress), ct);
 
+        await AppendPunishmentAsync(
+            actorId, target, PunishmentType.Unban, reason, expiresAt: null, reversalOf: activeBan?.Id,
+            ipAddress, ct);
         await QueueModerationEmailAsync(actorId, target, "Unban", reason, expiresAt: null, ipAddress, ct);
         return AdminActionResult.Ok();
     }
@@ -266,21 +282,53 @@ public sealed class AdminService : IAdminService
             resultSummary: $"actor={actorId} target={target.Id} minutes={durationMinutes} until={expiresAt:O} reason={reason}",
             ipAddress), ct);
 
+        await AppendPunishmentAsync(
+            actorId, target, PunishmentType.Mute, reason, expiresAt, reversalOf: null, ipAddress, ct);
         await QueueModerationEmailAsync(actorId, target, "Mute", reason, expiresAt, ipAddress, ct);
         return AdminActionResult.Ok();
     }
 
     /// <inheritdoc/>
     public async Task<AdminActionResult> UnmutePlayerAsync(
-        Guid actorId, string targetUsernameOrId, string? ipAddress = null,
+        Guid actorId, string targetUsernameOrId, string reason, string? ipAddress = null,
         CancellationToken ct = default)
     {
         if (!await ActorIsModeratorOrAdminAsync(actorId, ct))
             return AdminActionResult.Fail("Actor is not a moderator or admin.");
+        // Governance audit 2026-08-22: the reason used to be the hardcoded literal "Mute lifted", so
+        // every reversal in the record was indistinguishable from every other. §6's "no reasonless
+        // punishment" is worth nothing if the UNDO is anonymous — the same argument that already
+        // applies to Unban.
+        if (string.IsNullOrWhiteSpace(reason))
+            return AdminActionResult.Fail("A reason is required to lift a mute.");
 
         var target = await ResolveTargetAsync(targetUsernameOrId, ct);
         if (target is null)
             return AdminActionResult.Fail($"Player '{targetUsernameOrId}' not found.");
+        // Mirrors Unban. Without it a non-muted player yields a phantom reversal in the governance
+        // record — an entry describing something that never happened.
+        if (!target.IsMuted)
+            return AdminActionResult.Fail("Player is not muted.");
+
+        // Read BEFORE appending, so the lookup cannot find its own Unmute row.
+        var activeMute = await _punishments.FindActivePunishmentAsync(target.Id, PunishmentType.Mute, ct);
+
+        // Governance audit 2026-08-22: ANY moderator could lift ANY admin-placed mute, silently
+        // overriding a decision made with higher authority. This is the mute-side counterpart of the
+        // rule Unban already enforces (a moderator may lift a temporary ban, never a permanent one),
+        // and it is only answerable now that punishment_log records WHO placed the mute and under what
+        // role.
+        //
+        // A mute with no recorded provenance predates this log. Those stay liftable by a moderator:
+        // being strict would leave legacy mutes with no in-product remedy, which is exactly the failure
+        // that made unban necessary in the first place. New mutes are all recorded, so the hole closes
+        // on its own.
+        if (activeMute is not null
+            && string.Equals(activeMute.ActorRole, "Admin", StringComparison.Ordinal)
+            && !await ActorIsAdminAsync(actorId, ct))
+        {
+            return AdminActionResult.Fail("Only an admin may lift a mute placed by an admin.");
+        }
 
         target.Unmute();
         await _players.UpdateAsync(target, ct);
@@ -289,14 +337,83 @@ public sealed class AdminService : IAdminService
             actorId == Guid.Empty ? null : actorId,
             "PlayerUnmuted",
             inputHash: null,
-            resultSummary: $"actor={actorId} target={target.Id}",
+            resultSummary: $"actor={actorId} target={target.Id} reason={reason}",
             ipAddress), ct);
 
-        await QueueModerationEmailAsync(actorId, target, "Unmute", reason: "Mute lifted", expiresAt: null, ipAddress, ct);
+        await AppendPunishmentAsync(
+            actorId, target, PunishmentType.Unmute, reason, expiresAt: null, reversalOf: activeMute?.Id,
+            ipAddress, ct);
+        await QueueModerationEmailAsync(actorId, target, "Unmute", reason, expiresAt: null, ipAddress, ct);
         return AdminActionResult.Ok();
     }
 
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<PunishmentLogEntryResponse>?> GetPunishmentHistoryAsync(
+        string targetUsernameOrId, int limit = 100, CancellationToken ct = default)
+    {
+        var target = await ResolveTargetAsync(targetUsernameOrId, ct);
+        if (target is null) return null;
+
+        // Clamped rather than trusted: the parameter reaches this from a query string.
+        limit = Math.Clamp(limit, 1, 500);
+
+        var entries = await _punishments.GetHistoryAsync(target.Id, limit, ct);
+        return entries.Select(e => new PunishmentLogEntryResponse
+        {
+            Id             = e.Id,
+            Type           = e.Type.ToString(),
+            ActorPlayerId  = e.ActorPlayerId,
+            ActorRole      = e.ActorRole,
+            TargetUsername = e.TargetUsername,
+            Reason         = e.Reason,
+            ExpiresAt      = e.ExpiresAt,
+            ReversalOfId   = e.ReversalOfId,
+            CreatedAt      = e.CreatedAt,
+        }).ToList();
+    }
+
     // Private helpers
+
+    /// <summary>
+    /// Writes the northstar §6 governance record. Separate from the audit trail on purpose: audit_log
+    /// is uniform free text across every action in the system, which is fine for operations and
+    /// useless for dispute review.
+    /// </summary>
+    private async Task AppendPunishmentAsync(
+        Guid actorId, Player target, PunishmentType type, string reason,
+        DateTimeOffset? expiresAt, long? reversalOf, string? ipAddress, CancellationToken ct)
+    {
+        await _punishments.AppendAsync(PunishmentLog.Create(
+            actorPlayerId: actorId == Guid.Empty ? null : actorId,
+            actorRole: await ActorRoleSnapshotAsync(actorId, ct),
+            targetPlayerId: target.Id,
+            targetUsername: target.Username,
+            type: type,
+            reason: reason,
+            expiresAt: expiresAt,
+            reversalOfId: reversalOf,
+            ipAddress: ipAddress), ct);
+    }
+
+    /// <summary>
+    /// The actor's authority at the moment of the action, as a stored string rather than a join.
+    /// Roles are grantable and revocable, so resolving the role at REVIEW time answers a different
+    /// question from the one a dispute asks: a moderator later promoted to admin would appear to have
+    /// acted with authority they did not have, and one later demoted would appear to have had none.
+    ///
+    /// Highest-first, because roles are additive flags and an admin who also holds Moderator acted as
+    /// an admin.
+    /// </summary>
+    private async Task<string> ActorRoleSnapshotAsync(Guid actorId, CancellationToken ct)
+    {
+        if (actorId == Guid.Empty) return "System";
+
+        var actor = await _players.FindByIdAsync(actorId, ct);
+        if (actor is null) return "Unknown";
+        if (actor.HasRole(PlayerRoles.Admin))     return "Admin";
+        if (actor.HasRole(PlayerRoles.Moderator)) return "Moderator";
+        return "Player";
+    }
 
     /// <summary>True if the actor may take moderation actions. CLI actor (Guid.Empty) always passes.</summary>
     private async Task<bool> ActorIsModeratorOrAdminAsync(Guid actorId, CancellationToken ct)

@@ -58,8 +58,22 @@ public interface IAdminService
         Guid actorId, string targetUsernameOrId, int durationMinutes, string reason, string? ipAddress = null,
         CancellationToken ct = default);
 
-    /// <summary>Lifts any active mute on the target (T40). Audits + raises a ModerationAction email.</summary>
+    /// <summary>
+    /// One player's moderation history, newest first, for dispute review (northstar §6). Empty if the
+    /// player has none; null only when the player does not exist, which the caller renders as 404.
+    /// </summary>
+    Task<IReadOnlyList<PunishmentLogEntryResponse>?> GetPunishmentHistoryAsync(
+        string targetUsernameOrId, int limit = 100, CancellationToken ct = default);
+
+    /// <summary>
+    /// Lifts an active mute on the target (T40). Audits, writes the §6 governance record, and raises a
+    /// ModerationAction email.
+    ///
+    /// A reason is REQUIRED — a reversal is a moderation action, and §6's "no reasonless punishment"
+    /// buys nothing for disputes if the undo is anonymous. A moderator may not lift a mute an admin
+    /// placed; that gate reads the provenance out of punishment_log.
+    /// </summary>
     Task<AdminActionResult> UnmutePlayerAsync(
-        Guid actorId, string targetUsernameOrId, string? ipAddress = null,
+        Guid actorId, string targetUsernameOrId, string reason, string? ipAddress = null,
         CancellationToken ct = default);
 }

@@ -30,6 +30,16 @@ public sealed class UnbanPlayerRequestValidator : AbstractValidator<UnbanPlayerR
     }
 }
 
+public sealed class UnmutePlayerRequestValidator : AbstractValidator<UnmutePlayerRequest>
+{
+    public UnmutePlayerRequestValidator()
+    {
+        RuleFor(x => x.Reason)
+            .NotEmpty().WithMessage("A reason is required to lift a mute.")
+            .MaximumLength(500);
+    }
+}
+
 public sealed class MutePlayerRequestValidator : AbstractValidator<MutePlayerRequest>
 {
     // Cap the mute at 30 days so a typo can't mute a player effectively forever.

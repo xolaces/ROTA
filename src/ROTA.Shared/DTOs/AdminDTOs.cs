@@ -40,6 +40,46 @@ public class UnbanPlayerRequest
     public string Reason { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// One entry from a player's moderation history, for dispute review (northstar §6).
+///
+/// Actor role and target username are the values RECORDED AT THE TIME, not resolved now: roles are
+/// grantable and revocable and usernames change, so re-resolving either would answer a different
+/// question from the one a dispute asks.
+/// </summary>
+public class PunishmentLogEntryResponse
+{
+    public long Id { get; set; }
+
+    /// <summary>"Ban" | "Unban" | "Mute" | "Unmute".</summary>
+    public string Type { get; set; } = string.Empty;
+
+    /// <summary>Null for the system/CLI actor.</summary>
+    public Guid? ActorPlayerId { get; set; }
+
+    /// <summary>The actor's authority at the time: "Admin", "Moderator", or "System".</summary>
+    public string ActorRole { get; set; } = string.Empty;
+
+    public string TargetUsername { get; set; } = string.Empty;
+
+    public string Reason { get; set; } = string.Empty;
+
+    /// <summary>When the punishment lapses. Null means permanent for a ban, n/a for a reversal.</summary>
+    public DateTimeOffset? ExpiresAt { get; set; }
+
+    /// <summary>For a reversal, the id of the entry it lifted. Null if the original predates the log.</summary>
+    public long? ReversalOfId { get; set; }
+
+    public DateTimeOffset CreatedAt { get; set; }
+}
+
+/// <summary>Request to lift a player's mute. A reason is required, as it is for a ban lift.</summary>
+public class UnmutePlayerRequest
+{
+    /// <summary>Reason the mute is being lifted (recorded + emailed for the dispute trail).</summary>
+    public string Reason { get; set; } = string.Empty;
+}
+
 /// <summary>Request to mute a player's chat for a fixed duration (T40).</summary>
 public class MutePlayerRequest
 {
