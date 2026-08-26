@@ -18,6 +18,7 @@ public sealed class MagicService : IMagicService
     private readonly IMagicDefinitionProvider _defs;
     private readonly IAuditLogRepository      _auditLog;
     private readonly IGemService              _gems;
+    private readonly IPlayerMutationLock      _mutationLock;
     private readonly MagicConfig              _config;
 
     public MagicService(
@@ -29,6 +30,7 @@ public sealed class MagicService : IMagicService
         IMagicDefinitionProvider  defs,
         IAuditLogRepository       auditLog,
         IGemService               gems,
+        IPlayerMutationLock       mutationLock,
         IOptions<MagicConfig>     config)
     {
         _magicRepo    = magicRepo;
@@ -39,6 +41,7 @@ public sealed class MagicService : IMagicService
         _defs         = defs;
         _auditLog     = auditLog;
         _gems         = gems;
+        _mutationLock = mutationLock;
         _config       = config.Value;
     }
 
@@ -246,8 +249,16 @@ public sealed class MagicService : IMagicService
         await _magicRepo.UpsertAsync(playerId, magicDefinitionId, ct);
     }
 
-    public async Task<BuyMagicResult> BuyMagicAsync(
+    /// <summary>
+    /// Buys a magic for gems. The charge, the grant and the audit row are one transaction; see the
+    /// note inside.
+    /// </summary>
+    public Task<BuyMagicResult> BuyMagicAsync(
         Guid playerId, string magicDefinitionId, CancellationToken ct = default)
+        => _mutationLock.RunAsync(playerId, () => BuyMagicCoreAsync(playerId, magicDefinitionId, ct), ct);
+
+    private async Task<BuyMagicResult> BuyMagicCoreAsync(
+        Guid playerId, string magicDefinitionId, CancellationToken ct)
     {
         var def = _defs.GetById(magicDefinitionId);
         if (def is null)
@@ -269,8 +280,19 @@ public sealed class MagicService : IMagicService
         // not). Both outcomes must proceed with GrantMagicAsync (idempotent upsert) so the
         // player receives their magic on retry. InsufficientBalance → reject.
         //
-        // PHASE-2: wrap SpendGemsAsync + GrantMagicAsync in a single DB transaction (see
-        // LegionService.BuyUnitAsync for the same PHASE-2 note and the required abstraction).
+        // ATOMIC (was PHASE-2). The spend and the grant now commit or roll back together, because
+        // IPlayerMutationLock.RunAsync opens one transaction, holds this player's advisory lock for
+        // its lifetime, and commits at the end -- and IGemService's spend participates in an ambient
+        // transaction rather than owning its own. That abstraction did not exist when the PHASE-2 note
+        // was written; it does now, so the note is discharged rather than deferred again.
+        //
+        // The tri-state spend and the idempotent grant are KEPT. They are not redundant: atomicity
+        // closes the window between the charge and the grant, while idempotency covers a retry of a
+        // request whose response the player never saw. AlreadyProcessed now means a genuinely earlier
+        // completed purchase, so re-granting stays correct.
+        //
+        // The audit row now commits with the purchase too, so the trail can no longer record a
+        // purchase that was rolled back.
         var referenceId = $"magicbuy:{playerId}:{magicDefinitionId}";
         var outcome = await _gems.SpendGemsAsync(
             playerId, def.GemPrice, GemTransactionType.MagicPurchase, referenceId, ct);

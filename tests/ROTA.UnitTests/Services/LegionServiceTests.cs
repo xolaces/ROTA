@@ -52,7 +52,13 @@ public class LegionServiceTests
         var svc = new LegionService(units.Object, legions.Object, slots.Object,
                                     unitDefs.Object, legionDefs.Object,
                                     commanderGear.Object, gearDefs.Object,
-                                    gearRepo.Object, gems.Object, legionCfg);
+                                    gearRepo.Object, gems.Object,
+                                    // Buying now runs inside the per-player mutation lock so the
+                                    // charge and the grant share one transaction. Pass-through here:
+                                    // unit tests have no real DB tx, and the atomicity itself is
+                                    // covered by BuyUnitIdempotencyTests against Postgres.
+                                    new ROTA.UnitTests.TestSupport.PassThroughPlayerMutationLock(),
+                                    legionCfg);
         return new Bundle(svc, units, legions, slots, unitDefs, legionDefs, commanderGear, gearDefs, gearRepo, gems);
     }
 

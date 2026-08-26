@@ -347,9 +347,15 @@ public sealed class GauntletService : IGauntletService
         //    Pitchfork-priced entry debits the Pitchfork balance, so a caller with only Tokens gets
         //    Insufficient (wrong-currency = insufficient in THAT currency).
         //
-        // PHASE-2: wrap SpendAsync + the grant in one DB transaction (see LegionService.BuyUnitAsync).
-        // The AlreadyCharged recovery path already makes a mid-air crash recoverable; atomicity is a
-        // hardening step, not a correctness fix.
+        // ALREADY ATOMIC. The whole method runs inside IPlayerMutationLock.RunAsync (see the public
+        // BuyFromShopAsync above), which holds one transaction for its lifetime, and the currency
+        // spend participates in an ambient transaction rather than owning its own -- so the spend and
+        // the grant commit or roll back together. The PHASE-2 note that used to sit here was stale:
+        // it survived the change that discharged it.
+        //
+        // The tri-state spend and the idempotent grants are KEPT, and are not redundant: atomicity
+        // closes the window between charge and grant, while idempotency covers a retry of a request
+        // whose response the player never saw.
         var referenceId = $"gauntletshop:{playerId}:{entry.Id}";
         var outcome = await _currency.SpendAsync(playerId, entry.Currency, entry.Price, referenceId, ct);
 
