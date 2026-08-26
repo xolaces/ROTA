@@ -25,12 +25,12 @@ public class AchievementServiceIntegrationTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _postgres = new PostgreSqlBuilder()
+        _postgres = new PostgreSqlBuilder(TestContainerImages.Postgres)
             .WithDatabase("rota_achievement_e2e_test")
             .WithUsername("test")
             .WithPassword("test")
             .Build();
-        _redis = new RedisBuilder().Build();
+        _redis = new RedisBuilder(TestContainerImages.Redis).Build();
         await Task.WhenAll(_postgres.StartAsync(), _redis.StartAsync());
 
         using var rsa = RSA.Create(2048);

@@ -33,7 +33,7 @@ public class LeaderboardStatSnapshotIntegrationTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _postgres = new PostgreSqlBuilder()
+        _postgres = new PostgreSqlBuilder(TestContainerImages.Postgres)
             .WithDatabase("rota_lb_stat_test")
             .WithUsername("test")
             .WithPassword("test")

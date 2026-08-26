@@ -25,7 +25,7 @@ public class GauntletSettlementTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _postgres = new PostgreSqlBuilder()
+        _postgres = new PostgreSqlBuilder(TestContainerImages.Postgres)
             .WithDatabase("rota_gauntlet_settle_test")
             .WithUsername("test")
             .WithPassword("test")

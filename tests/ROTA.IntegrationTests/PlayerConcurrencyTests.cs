@@ -24,7 +24,7 @@ public class PlayerConcurrencyTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _postgres = new PostgreSqlBuilder()
+        _postgres = new PostgreSqlBuilder(TestContainerImages.Postgres)
             .WithDatabase("rota_player_conc_test")
             .WithUsername("test")
             .WithPassword("test")
