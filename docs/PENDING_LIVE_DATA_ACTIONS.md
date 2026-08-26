@@ -70,13 +70,20 @@ would never have funded.
 
 ---
 
-## 2. Verify the two pending schema migrations landed
+## 2. Verify the three pending schema migrations landed
 
-**Status:** OPEN.
+**Status:** OPEN. *(Updated 2026-08-26 — a third migration joined the queue.)*
 
-`20260825121651_AddBannedUntil` and `20260825122918_EnforceAuditLogAppendOnly` are on `main` and have
-not been applied to production. `AddBannedUntil` is **required before deploying** that release — every
-player read fails on a missing column without it.
+All three are on `main` and none has been applied to production:
+
+| Migration | When to apply | Why |
+|---|---|---|
+| `20260825121651_AddBannedUntil` | **Before deploying that release** | Every player read fails on a missing column without it. |
+| `20260825122918_EnforceAuditLogAppendOnly` | Any time | Adds the `audit_log` triggers. Blocks nothing legitimate — nothing in the codebase ever updates or deletes an audit row. |
+| `20260826174500_AddPunishmentLog` | Any time | Purely additive: one new table, no change to any existing one. Ships its own append-only triggers in the SAME migration, so `punishment_log` can never exist unguarded. |
+
+The moderation endpoints that write `punishment_log` will fail until `AddPunishmentLog` is applied, so
+apply it before anyone bans or mutes on the deployed build. Nothing else touches the table.
 
 ```
 psql "$PROD_CONNECTION" -f scripts/verify-prod-schema.sql
