@@ -19,6 +19,7 @@ public sealed class LegionService : ILegionService
     private readonly IGearDefinitionProvider        _gearDefs;
     private readonly IPlayerGearRepository          _gearRepo;   // exploit audit 2026-06-14 (C): commander ownership gate
     private readonly IGemService                    _gems;
+    private readonly IPlayerMutationLock            _mutationLock;
     private readonly LegionConfig                   _legionConfig;
 
     public LegionService(
@@ -31,6 +32,7 @@ public sealed class LegionService : ILegionService
         IGearDefinitionProvider        gearDefs,
         IPlayerGearRepository          gearRepo,
         IGemService                    gems,
+        IPlayerMutationLock            mutationLock,
         IOptions<LegionConfig>         legionConfig)
     {
         _units         = units;
@@ -42,6 +44,7 @@ public sealed class LegionService : ILegionService
         _gearDefs      = gearDefs;
         _gearRepo      = gearRepo;
         _gems          = gems;
+        _mutationLock  = mutationLock;
         _legionConfig  = legionConfig.Value;
     }
 
@@ -348,8 +351,15 @@ public sealed class LegionService : ILegionService
     public async Task GrantLegionAsync(Guid playerId, string legionDefinitionId, CancellationToken ct = default)
         => await _legions.UpsertAsync(playerId, legionDefinitionId, ct);
 
-    public async Task<BuyUnitResult> BuyUnitAsync(
+    /// <summary>
+    /// Buys a unit for gems. The charge and the grant are one transaction; see the note inside.
+    /// </summary>
+    public Task<BuyUnitResult> BuyUnitAsync(
         Guid playerId, string unitDefinitionId, CancellationToken ct = default)
+        => _mutationLock.RunAsync(playerId, () => BuyUnitCoreAsync(playerId, unitDefinitionId, ct), ct);
+
+    private async Task<BuyUnitResult> BuyUnitCoreAsync(
+        Guid playerId, string unitDefinitionId, CancellationToken ct)
     {
         var def = _unitDefs.GetById(unitDefinitionId);
         if (def is null)
@@ -368,11 +378,16 @@ public sealed class LegionService : ILegionService
         // Both outcomes proceed with UpsertAsync (idempotent) so the player receives the unit
         // on retry without being double-charged. InsufficientBalance → reject.
         //
-        // PHASE-2: wrap SpendGemsAsync + UpsertAsync in a single DB transaction so a mid-air
-        // crash cannot produce the AlreadyProcessed state at all. Requires an
-        // ITransactionScope or similar abstraction to share a transaction across repos without
-        // leaking DbContext into Application. The current AlreadyProcessed path already handles
-        // crash recovery correctly; atomicity is a hardening step, not a correctness fix.
+        // ATOMIC (was PHASE-2). The spend and the grant now commit or roll back together, because
+        // IPlayerMutationLock.RunAsync opens one transaction, holds this player's advisory lock for
+        // its lifetime, and commits at the end -- and IGemService's spend participates in an ambient
+        // transaction rather than owning its own. That abstraction did not exist when the PHASE-2 note
+        // was written; it does now, so the note is discharged rather than deferred again.
+        //
+        // The tri-state spend and the idempotent grant are KEPT. They are not redundant: atomicity
+        // closes the window between the charge and the grant, while idempotency covers a retry of a
+        // request whose response the player never saw. AlreadyProcessed now means a genuinely earlier
+        // completed purchase, so re-granting stays correct.
         var refId   = $"unitbuy:{playerId}:{unitDefinitionId}";
         var outcome = await _gems.SpendGemsAsync(
             playerId, def.GemPrice, GemTransactionType.UnitPurchase, refId, ct);
@@ -392,8 +407,15 @@ public sealed class LegionService : ILegionService
         };
     }
 
-    public async Task<BuyLegionResult> BuyLegionAsync(
+    /// <summary>
+    /// Buys a legion for gems. The charge and the grant are one transaction; see BuyUnitAsync.
+    /// </summary>
+    public Task<BuyLegionResult> BuyLegionAsync(
         Guid playerId, string legionDefinitionId, CancellationToken ct = default)
+        => _mutationLock.RunAsync(playerId, () => BuyLegionCoreAsync(playerId, legionDefinitionId, ct), ct);
+
+    private async Task<BuyLegionResult> BuyLegionCoreAsync(
+        Guid playerId, string legionDefinitionId, CancellationToken ct)
     {
         var def = _legionDefs.GetById(legionDefinitionId);
         if (def is null)
@@ -412,7 +434,7 @@ public sealed class LegionService : ILegionService
         // Both outcomes proceed with UpsertAsync (idempotent) so the player receives the legion
         // on retry without being double-charged. InsufficientBalance → reject.
         //
-        // PHASE-2: wrap SpendGemsAsync + UpsertAsync in a single DB transaction (see BuyUnitAsync).
+        // ATOMIC (was PHASE-2) -- see BuyUnitAsync for why the tri-state spend is still needed.
         var refId   = $"legionbuy:{playerId}:{legionDefinitionId}";
         var outcome = await _gems.SpendGemsAsync(
             playerId, def.GemPrice, GemTransactionType.LegionPurchase, refId, ct);

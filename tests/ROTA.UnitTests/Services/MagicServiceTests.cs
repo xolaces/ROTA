@@ -50,7 +50,10 @@ public class MagicServiceTests
         return new ServiceBundle(
             new MagicService(magicRepo.Object, raidMagics.Object, raids.Object,
                              raidDefs.Object, participants.Object, defs.Object,
-                             auditLog.Object, gems.Object, cfg),
+                             auditLog.Object, gems.Object,
+                             // See LegionServiceTests: buying is now transactional, and a
+                             // pass-through keeps these unit tests exercising the body.
+                             new ROTA.UnitTests.TestSupport.PassThroughPlayerMutationLock(), cfg),
             magicRepo, raidMagics, raids, raidDefs, participants, defs, auditLog, gems);
     }
 
