@@ -69,6 +69,13 @@ public sealed class ItemService : IItemService
                 Tier             = def.SummonRaidId is null
                                        ? null
                                        : _raidDefs.GetById(def.SummonRaidId)?.Tier,
+                // D-008 consumables: the effect travels with the item so the client can state what
+                // a potion does, and warn when using it would be wasted.
+                RestoreResourceType = def.RestoreResourceType,
+                RestoreAmount       = def.RestoreAmount,
+                RestoreToMax        = def.RestoreToMax,
+                StatPointsOnUse     = def.StatPointsOnUse,
+                GoldPrice           = def.GoldPrice,
             });
         }
         return result;
