@@ -50,3 +50,33 @@ Open-ended 5000+ is fine while the population above 5,000 is thin. Higher bands 
 
 **What would settle it:** a league leaderboard where the top and bottom of the 5000+ band are no
 longer comparable.
+
+---
+
+## 23 of 25 raids have no loot table
+
+**Found:** 2026-08-28, while building the summon screen's loot preview.
+**Where:** `content/raids.json` — every raid except `raid_ironcolossus` and `raid_malachar`
+carries an **empty `lootTableId`**. `content/loot_tables.json` defines only those two raid tables
+(the other five are quest tables).
+
+**This is handled, not broken.** `RaidService` guards with
+`if (!string.IsNullOrEmpty(definition.LootTableId))`, so those raids still grant their
+`baseGoldReward` / `baseExperienceReward` / `baseGemReward` and the Rare/Participant contribution
+multiplier still applies. What they do **not** grant is any item drop, and any threshold stat points —
+`unassignedStatPoints`, attack/defense/discernment — since those live on the loot table's brackets.
+
+So every zone Guardian, which is 23 of the 25 raids and the entire mid-game raid ladder, pays gold
+and XP and nothing else.
+
+**Open question:** is that the intended economy, or did the zone Guardians simply never get tables
+written? The two that have one are both World bosses, which reads like the content phase started at
+the top and stopped.
+
+**Why it surfaced now:** the summon screen shows loot per contribution bracket. It offers that
+disclosure only when the raid actually has a table, so today it appears on two bosses out of
+twenty-five. The UI is correct either way — but if the answer is "they should have tables", the
+screen will look far emptier than intended until they do.
+
+**What would settle it:** an owner call on whether Guardians are meant to drop items at all. If yes,
+it is a content-authoring task (23 tables), not a code one — nothing in the engine needs to change.

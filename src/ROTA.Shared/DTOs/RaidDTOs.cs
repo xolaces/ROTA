@@ -258,3 +258,81 @@ public class RaidParticipantRankDto
     public long   TotalDamage { get; set; }
     public int    HitCount    { get; set; }
 }
+
+// ─── Raid catalogue / summon preview ──────────────────────────────────────────
+// Added 2026-08-28. The summon screen could not say how much HP a boss had or what it
+// dropped, because none of it reached the client: sigils carry only SummonRaidId,
+// SummonDifficulty and Tier. All of this already existed in raids.json and
+// loot_tables.json and was simply never sent.
+
+/// <summary>One raid as the summon list needs it. Content only — no player state.</summary>
+public class RaidPreviewResponse
+{
+    public string RaidDefinitionId { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>Standard | World | Event | Guild.</summary>
+    public string Tier { get; set; } = string.Empty;
+    public string ArtKey { get; set; } = string.Empty;
+
+    /// <summary>Health of a full-size raid.</summary>
+    public long BaseHp { get; set; }
+
+    /// <summary>
+    /// Health when a sigil summons a personal-size raid, which is what the summon screen is
+    /// actually about. Falls back to <see cref="BaseHp"/> when the definition leaves it at 0.
+    /// </summary>
+    public long PersonalHp { get; set; }
+
+    /// <summary>Hours the raid stays open once summoned.</summary>
+    public int TimerHours { get; set; }
+
+    /// <summary>The difficulties this raid's loot table actually defines.</summary>
+    public List<string> Difficulties { get; set; } = new();
+}
+
+/// <summary>
+/// What one difficulty pays out, by contribution bracket.
+///
+/// Raid loot is not a flat drop list — it is bracketed on the share of damage you deal, and the
+/// brackets are the only part of it a player can influence. Anything rendering this should keep
+/// that shape rather than flattening it into "things this boss drops".
+/// </summary>
+public class RaidLootPreviewResponse
+{
+    public string RaidDefinitionId { get; set; } = string.Empty;
+    public string Difficulty { get; set; } = string.Empty;
+
+    /// <summary>Ascending by contribution.</summary>
+    public List<LootBracketResponse> Brackets { get; set; } = new();
+}
+
+public class LootBracketResponse
+{
+    /// <summary>Share of total damage required to reach this bracket, as a percentage.</summary>
+    public double ContributionPercent { get; set; }
+
+    public int StatPoints { get; set; }
+    public int AttackPoints { get; set; }
+    public int DefensePoints { get; set; }
+    public int DiscernmentPoints { get; set; }
+
+    public List<LootDropResponse> Drops { get; set; } = new();
+}
+
+public class LootDropResponse
+{
+    /// <summary>Item | Magic | Unit | Legion | Gear.</summary>
+    public string Kind { get; set; } = string.Empty;
+
+    public string DefinitionId { get; set; } = string.Empty;
+
+    /// <summary>Resolved display name; falls back to the id when the definition is unknown.</summary>
+    public string Name { get; set; } = string.Empty;
+    public string Rarity { get; set; } = string.Empty;
+
+    public int Quantity { get; set; } = 1;
+
+    /// <summary>0..1.</summary>
+    public double Chance { get; set; } = 1.0;
+}
