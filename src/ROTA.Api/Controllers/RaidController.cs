@@ -13,10 +13,52 @@ namespace ROTA.Api.Controllers;
 public sealed class RaidController : ControllerBase
 {
     private readonly IRaidService _raids;
+    private readonly IRaidCatalogueService _catalogue;
 
-    public RaidController(IRaidService raids)
+    public RaidController(IRaidService raids, IRaidCatalogueService catalogue)
     {
         _raids = raids;
+        _catalogue = catalogue;
+    }
+
+    // ── Catalogue: raid CONTENT for the summon screen ────────────────────────
+    // Deliberately under /catalogue rather than hanging off {raidDefinitionId} directly. This
+    // controller already has POST {activeRaidId}/loot, which takes a GUID and claims rewards; a
+    // sibling GET {raidDefinitionId}/loot that takes a content id and only reads would be the same
+    // URL shape meaning two unrelated things, separated by nothing but the verb.
+
+    /// <summary>Every raid definition, as the summon list needs it. Content only — no player state.</summary>
+    [HttpGet("catalogue")]
+    [ProducesResponseType(typeof(IReadOnlyList<RaidPreviewResponse>), StatusCodes.Status200OK)]
+    public IActionResult GetCatalogue() => Ok(_catalogue.GetCatalogue());
+
+    /// <summary>One raid's headline numbers: health, timer, and which difficulties exist.</summary>
+    [HttpGet("catalogue/{raidDefinitionId}")]
+    [ProducesResponseType(typeof(RaidPreviewResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public IActionResult GetPreview([FromRoute] string raidDefinitionId)
+    {
+        var preview = _catalogue.GetPreview(raidDefinitionId);
+        if (preview is null) return NotFound(new { message = $"Raid '{raidDefinitionId}' not found." });
+        return Ok(preview);
+    }
+
+    /// <summary>
+    /// What one difficulty pays out, by contribution bracket. Fetched when a row expands rather than
+    /// with the catalogue, because it is the expensive half and only ever wanted for one row.
+    /// </summary>
+    [HttpGet("catalogue/{raidDefinitionId}/loot")]
+    [ProducesResponseType(typeof(RaidLootPreviewResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public IActionResult GetLootPreview(
+        [FromRoute] string raidDefinitionId, [FromQuery] string difficulty = "Normal")
+    {
+        var loot = _catalogue.GetLootPreview(raidDefinitionId, difficulty);
+        // 404 covers both an unknown raid and a difficulty its table does not define. "No Nightmare
+        // tier" and "drops nothing" are different answers, and an empty 200 would conflate them.
+        if (loot is null)
+            return NotFound(new { message = $"No loot for '{raidDefinitionId}' at '{difficulty}'." });
+        return Ok(loot);
     }
 
     [HttpGet]

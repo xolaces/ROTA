@@ -163,6 +163,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IStatService, StatService>();
         services.AddScoped<IQuestService, QuestService>();
         services.AddScoped<IRaidService, RaidService>();
+        services.AddScoped<IRaidCatalogueService, RaidCatalogueService>();
         services.AddScoped<IItemService, ItemService>();
         services.AddScoped<IConsumableService, ConsumableService>();   // D-008/D-013 gem instant refills
         services.AddScoped<ICraftingService, CraftingService>();       // System 26 crafting (D-018)
