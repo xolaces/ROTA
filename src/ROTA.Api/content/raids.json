@@ -3,9 +3,9 @@
     "id": "raid_ironcolossus",
     "name": "The Iron Colossus",
     "tier": "World",
-    "baseHp": 100000,
-    "personalBaseHp": 500,
-    "timerHours": 48,
+    "baseHp": 0,
+    "personalBaseHp": 0,
+    "timerHours": 168,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
     "lootTableId": "lt_raid_ironcolossus",
@@ -13,15 +13,16 @@
     "baseExperienceReward": 300,
     "baseGemReward": 2,
     "hasOnHitDrops": false,
-    "artKey": "raid_ironcolossus"
+    "artKey": "raid_ironcolossus",
+    "grade": "Mythic"
   },
   {
     "id": "raid_malachar",
     "name": "Lord Malachar",
     "tier": "World",
-    "baseHp": 250000,
-    "personalBaseHp": 1000,
-    "timerHours": 48,
+    "baseHp": 0,
+    "personalBaseHp": 0,
+    "timerHours": 168,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
     "lootTableId": "lt_raid_malachar",
@@ -29,13 +30,14 @@
     "baseExperienceReward": 700,
     "baseGemReward": 4,
     "hasOnHitDrops": false,
-    "artKey": "raid_malachar"
+    "artKey": "raid_malachar",
+    "grade": "Mythic"
   },
   {
     "id": "raid_c1z1b",
     "name": "Guardian of Ashen Causeway",
     "tier": "Standard",
-    "baseHp": 115000,
+    "baseHp": 120000,
     "personalBaseHp": 600,
     "timerHours": 48,
     "staminaCostPerHit": 1,
@@ -45,14 +47,15 @@
     "baseExperienceReward": 350,
     "baseGemReward": 2,
     "hasOnHitDrops": false,
-    "artKey": "raid_c1z1b"
+    "artKey": "raid_c1z1b",
+    "grade": "Common"
   },
   {
     "id": "raid_c1z2b",
-    "name": "Guardian of Hollow Marches",
+    "name": "The Hollow Marcher",
     "tier": "Standard",
-    "baseHp": 130000,
-    "personalBaseHp": 600,
+    "baseHp": 156000,
+    "personalBaseHp": 780,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
@@ -61,14 +64,15 @@
     "baseExperienceReward": 400,
     "baseGemReward": 2,
     "hasOnHitDrops": false,
-    "artKey": "raid_c1z2b"
+    "artKey": "raid_c1z2b",
+    "grade": "Common"
   },
   {
     "id": "raid_c2z1b",
-    "name": "Guardian of Emberfall Reach",
+    "name": "Warden of Emberfall",
     "tier": "Standard",
-    "baseHp": 288000,
-    "personalBaseHp": 1400,
+    "baseHp": 203000,
+    "personalBaseHp": 1020,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
@@ -77,14 +81,15 @@
     "baseExperienceReward": 850,
     "baseGemReward": 5,
     "hasOnHitDrops": false,
-    "artKey": "raid_c2z1b"
+    "artKey": "raid_c2z1b",
+    "grade": "Common"
   },
   {
     "id": "raid_c2z2b",
     "name": "Guardian of Cinderwood",
     "tier": "Standard",
-    "baseHp": 325000,
-    "personalBaseHp": 1600,
+    "baseHp": 265000,
+    "personalBaseHp": 1320,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
@@ -93,14 +98,15 @@
     "baseExperienceReward": 1000,
     "baseGemReward": 5,
     "hasOnHitDrops": false,
-    "artKey": "raid_c2z2b"
+    "artKey": "raid_c2z2b",
+    "grade": "Common"
   },
   {
     "id": "raid_c2z3b",
-    "name": "Guardian of Gloomspire",
+    "name": "The Gloomspire Sentinel",
     "tier": "Standard",
-    "baseHp": 362000,
-    "personalBaseHp": 1800,
+    "baseHp": 863000,
+    "personalBaseHp": 4320,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
@@ -109,14 +115,15 @@
     "baseExperienceReward": 1100,
     "baseGemReward": 5,
     "hasOnHitDrops": false,
-    "artKey": "raid_c2z3b"
+    "artKey": "raid_c2z3b",
+    "grade": "Deadly"
   },
   {
     "id": "raid_c3z0b",
     "name": "Guardian of Keepwall",
     "tier": "Standard",
-    "baseHp": 600000,
-    "personalBaseHp": 3000,
+    "baseHp": 1120000,
+    "personalBaseHp": 5600,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
@@ -125,14 +132,15 @@
     "baseExperienceReward": 1800,
     "baseGemReward": 12,
     "hasOnHitDrops": false,
-    "artKey": "raid_c3z0b"
+    "artKey": "raid_c3z0b",
+    "grade": "Deadly"
   },
   {
     "id": "raid_c3z1b",
-    "name": "Guardian of Sunken Vaults",
+    "name": "The Drowned Custodian",
     "tier": "Standard",
-    "baseHp": 690000,
-    "personalBaseHp": 3400,
+    "baseHp": 1460000,
+    "personalBaseHp": 7300,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
@@ -141,14 +149,15 @@
     "baseExperienceReward": 2050,
     "baseGemReward": 12,
     "hasOnHitDrops": false,
-    "artKey": "raid_c3z1b"
+    "artKey": "raid_c3z1b",
+    "grade": "Deadly"
   },
   {
     "id": "raid_c3z2b",
-    "name": "Guardian of Throne Approach",
+    "name": "Herald of the Approach",
     "tier": "Standard",
-    "baseHp": 780000,
-    "personalBaseHp": 3900,
+    "baseHp": 1900000,
+    "personalBaseHp": 9500,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
@@ -157,14 +166,15 @@
     "baseExperienceReward": 2350,
     "baseGemReward": 12,
     "hasOnHitDrops": false,
-    "artKey": "raid_c3z2b"
+    "artKey": "raid_c3z2b",
+    "grade": "Deadly"
   },
   {
     "id": "raid_c3z3b",
-    "name": "Guardian of Shattered Spire",
+    "name": "Spirebreaker",
     "tier": "Standard",
-    "baseHp": 870000,
-    "personalBaseHp": 4400,
+    "baseHp": 2480000,
+    "personalBaseHp": 12400,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
@@ -173,14 +183,15 @@
     "baseExperienceReward": 2600,
     "baseGemReward": 12,
     "hasOnHitDrops": false,
-    "artKey": "raid_c3z3b"
+    "artKey": "raid_c3z3b",
+    "grade": "Deadly"
   },
   {
     "id": "raid_c4z0b",
-    "name": "Guardian of Rimewood",
+    "name": "The Rimewood Stalker",
     "tier": "Standard",
-    "baseHp": 1400000,
-    "personalBaseHp": 7000,
+    "baseHp": 7750000,
+    "personalBaseHp": 38800,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
@@ -189,14 +200,15 @@
     "baseExperienceReward": 4200,
     "baseGemReward": 28,
     "hasOnHitDrops": false,
-    "artKey": "raid_c4z0b"
+    "artKey": "raid_c4z0b",
+    "grade": "Elite"
   },
   {
     "id": "raid_c4z1b",
     "name": "Guardian of Frostmere",
     "tier": "Standard",
-    "baseHp": 1610000,
-    "personalBaseHp": 8000,
+    "baseHp": 10100000,
+    "personalBaseHp": 50500,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
@@ -205,14 +217,15 @@
     "baseExperienceReward": 4850,
     "baseGemReward": 28,
     "hasOnHitDrops": false,
-    "artKey": "raid_c4z1b"
+    "artKey": "raid_c4z1b",
+    "grade": "Elite"
   },
   {
     "id": "raid_c4z2b",
-    "name": "Guardian of Glacier Maw",
+    "name": "Maw of the Glacier",
     "tier": "Standard",
-    "baseHp": 1820000,
-    "personalBaseHp": 9100,
+    "baseHp": 13100000,
+    "personalBaseHp": 65500,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
@@ -221,14 +234,15 @@
     "baseExperienceReward": 5450,
     "baseGemReward": 28,
     "hasOnHitDrops": false,
-    "artKey": "raid_c4z2b"
+    "artKey": "raid_c4z2b",
+    "grade": "Elite"
   },
   {
     "id": "raid_c4z3b",
-    "name": "Guardian of Pale Citadel",
+    "name": "Warden of the Pale Citadel",
     "tier": "Standard",
-    "baseHp": 2030000,
-    "personalBaseHp": 10200,
+    "baseHp": 17100000,
+    "personalBaseHp": 85500,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
@@ -237,14 +251,15 @@
     "baseExperienceReward": 6100,
     "baseGemReward": 28,
     "hasOnHitDrops": false,
-    "artKey": "raid_c4z3b"
+    "artKey": "raid_c4z3b",
+    "grade": "Elite"
   },
   {
     "id": "raid_c5z0b",
-    "name": "Guardian of Dustfall",
+    "name": "The Dustfall Colossus",
     "tier": "Standard",
-    "baseHp": 3200000,
-    "personalBaseHp": 16000,
+    "baseHp": 22300000,
+    "personalBaseHp": 112000,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
@@ -253,14 +268,15 @@
     "baseExperienceReward": 9600,
     "baseGemReward": 64,
     "hasOnHitDrops": false,
-    "artKey": "raid_c5z0b"
+    "artKey": "raid_c5z0b",
+    "grade": "Elite"
   },
   {
     "id": "raid_c5z1b",
-    "name": "Guardian of Emberpan",
+    "name": "Tyrant of Emberpan",
     "tier": "Standard",
-    "baseHp": 3680000,
-    "personalBaseHp": 18400,
+    "baseHp": 29000000,
+    "personalBaseHp": 145000,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
@@ -269,14 +285,15 @@
     "baseExperienceReward": 11050,
     "baseGemReward": 64,
     "hasOnHitDrops": false,
-    "artKey": "raid_c5z1b"
+    "artKey": "raid_c5z1b",
+    "grade": "Elite"
   },
   {
     "id": "raid_c5z2b",
     "name": "Guardian of Magma Rift",
     "tier": "Standard",
-    "baseHp": 4160000,
-    "personalBaseHp": 20800,
+    "baseHp": 37800000,
+    "personalBaseHp": 189000,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
@@ -285,14 +302,15 @@
     "baseExperienceReward": 12500,
     "baseGemReward": 64,
     "hasOnHitDrops": false,
-    "artKey": "raid_c5z2b"
+    "artKey": "raid_c5z2b",
+    "grade": "Elite"
   },
   {
     "id": "raid_c5z3b",
-    "name": "Guardian of Ashen Throne",
+    "name": "The Ashen Throne",
     "tier": "Standard",
-    "baseHp": 4640000,
-    "personalBaseHp": 23200,
+    "baseHp": 115000000,
+    "personalBaseHp": 575000,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
@@ -301,14 +319,15 @@
     "baseExperienceReward": 13900,
     "baseGemReward": 64,
     "hasOnHitDrops": false,
-    "artKey": "raid_c5z3b"
+    "artKey": "raid_c5z3b",
+    "grade": "Mythic"
   },
   {
     "id": "raid_c5z4b",
-    "name": "Guardian of Cinder Crown",
+    "name": "The Cinder Crown",
     "tier": "Standard",
-    "baseHp": 5120000,
-    "personalBaseHp": 25600,
+    "baseHp": 150000000,
+    "personalBaseHp": 750000,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
@@ -317,14 +336,15 @@
     "baseExperienceReward": 15350,
     "baseGemReward": 64,
     "hasOnHitDrops": false,
-    "artKey": "raid_c5z4b"
+    "artKey": "raid_c5z4b",
+    "grade": "Mythic"
   },
   {
     "id": "raid_c6z0b",
     "name": "Guardian of Twilight Gate",
     "tier": "Standard",
-    "baseHp": 7000000,
-    "personalBaseHp": 35000,
+    "baseHp": 195000000,
+    "personalBaseHp": 975000,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
@@ -333,14 +353,15 @@
     "baseExperienceReward": 21000,
     "baseGemReward": 140,
     "hasOnHitDrops": false,
-    "artKey": "raid_c6z0b"
+    "artKey": "raid_c6z0b",
+    "grade": "Mythic"
   },
   {
     "id": "raid_c6z1b",
-    "name": "Guardian of Star Hollow",
+    "name": "Devourer of Star Hollow",
     "tier": "Standard",
-    "baseHp": 8050000,
-    "personalBaseHp": 40200,
+    "baseHp": 254000000,
+    "personalBaseHp": 1270000,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
@@ -349,14 +370,15 @@
     "baseExperienceReward": 24150,
     "baseGemReward": 140,
     "hasOnHitDrops": false,
-    "artKey": "raid_c6z1b"
+    "artKey": "raid_c6z1b",
+    "grade": "Mythic"
   },
   {
     "id": "raid_c6z2b",
-    "name": "Guardian of Void Threshold",
+    "name": "The Void Threshold",
     "tier": "Standard",
-    "baseHp": 9100000,
-    "personalBaseHp": 45500,
+    "baseHp": 330000000,
+    "personalBaseHp": 1650000,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
@@ -365,14 +387,15 @@
     "baseExperienceReward": 27300,
     "baseGemReward": 140,
     "hasOnHitDrops": false,
-    "artKey": "raid_c6z2b"
+    "artKey": "raid_c6z2b",
+    "grade": "Mythic"
   },
   {
     "id": "raid_c6z3b",
-    "name": "Guardian of Eternal Stair",
+    "name": "Warden of the Eternal Stair",
     "tier": "Standard",
-    "baseHp": 10150000,
-    "personalBaseHp": 50800,
+    "baseHp": 430000000,
+    "personalBaseHp": 2150000,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
@@ -381,14 +404,15 @@
     "baseExperienceReward": 30450,
     "baseGemReward": 140,
     "hasOnHitDrops": false,
-    "artKey": "raid_c6z3b"
+    "artKey": "raid_c6z3b",
+    "grade": "Mythic"
   },
   {
     "id": "raid_c6z4b",
-    "name": "Guardian of Throne of Ancients",
+    "name": "Guardian of the Throne of Ancients",
     "tier": "Standard",
-    "baseHp": 11200000,
-    "personalBaseHp": 56000,
+    "baseHp": 560000000,
+    "personalBaseHp": 2800000,
     "timerHours": 48,
     "staminaCostPerHit": 1,
     "goldPerStamina": 1,
@@ -397,6 +421,7 @@
     "baseExperienceReward": 33600,
     "baseGemReward": 140,
     "hasOnHitDrops": false,
-    "artKey": "raid_c6z4b"
+    "artKey": "raid_c6z4b",
+    "grade": "Mythic"
   }
 ]

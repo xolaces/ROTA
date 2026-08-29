@@ -273,9 +273,19 @@ public class RaidPreviewResponse
 
     /// <summary>Standard | World | Event | Guild.</summary>
     public string Tier { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Danger class — Common | Deadly | Elite | Mythic. Separate from the NAME on purpose, so the
+    /// UI can badge it and a later re-theme does not become a rewrite.
+    /// </summary>
+    public string Grade { get; set; } = string.Empty;
     public string ArtKey { get; set; } = string.Empty;
 
-    /// <summary>Health of a full-size raid.</summary>
+    /// <summary>
+    /// Health of a full-size raid. ZERO means the raid has no collective health at all and is
+    /// decided by its timer, with rewards paid from a damage ladder — which is how World raids
+    /// work as of 2026-08-29. A client must not render a health bar for those.
+    /// </summary>
     public long BaseHp { get; set; }
 
     /// <summary>

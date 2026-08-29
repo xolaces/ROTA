@@ -81,6 +81,7 @@ public sealed class RaidCatalogueService : IRaidCatalogueService
             RaidDefinitionId = def.Id,
             Name             = def.Name,
             Tier             = def.Tier,
+            Grade            = def.Grade,
             ArtKey           = def.ArtKey,
             BaseHp           = def.BaseHp,
             // The definition treats 0 as "no separate personal size", and the summon screen is

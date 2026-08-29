@@ -19,6 +19,8 @@ public sealed class RaidDefinitionProvider : IRaidDefinitionProvider
         var list = JsonSerializer.Deserialize<List<RaidDefinition>>(json, options)
             ?? throw new InvalidOperationException("raids.json deserialized to null.");
 
+        Validate(list);
+
         var byId = list.ToDictionary(r => r.Id, r => r);
 
         // BETA (System 16 Slice 7) — the Gauntlet ladder stages (content/gauntlet_raids.json) are ALSO
@@ -102,4 +104,60 @@ public sealed class RaidDefinitionProvider : IRaidDefinitionProvider
             HasOnHitDrops        = false,
             ArtKey               = g.ArtKey,
         };
+
+    private static readonly HashSet<string> KnownGrades =
+        new(StringComparer.OrdinalIgnoreCase) { "Common", "Deadly", "Elite", "Mythic" };
+
+    /// <summary>
+    /// Fails the boot on content a designer got wrong, rather than surfacing it as a raid nobody can
+    /// kill. Health is hand-typed in raids.json now (owner 2026-08-29: "we just input the health"),
+    /// which makes adding a raid trivial and makes a typo silent — so this is where the typo stops.
+    /// </summary>
+    private static void Validate(List<RaidDefinition> raids)
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var r in raids)
+        {
+            if (string.IsNullOrWhiteSpace(r.Id))
+                throw new InvalidOperationException("raids.json: a raid has no id.");
+            if (!seen.Add(r.Id))
+                throw new InvalidOperationException($"raids.json: duplicate raid id '{r.Id}'.");
+            if (string.IsNullOrWhiteSpace(r.Name))
+                throw new InvalidOperationException($"raids.json: raid '{r.Id}' has no name.");
+
+            if (!KnownGrades.Contains(r.Grade))
+                throw new InvalidOperationException(
+                    $"raids.json: raid '{r.Id}' has grade '{r.Grade}'; expected one of "
+                    + string.Join(", ", KnownGrades) + ".");
+
+            // A World raid is TIMER-ONLY (owner 2026-08-29): no collective health, rewards come from
+            // a damage ladder. Zero health is therefore meaningful there and a mistake anywhere else,
+            // which is exactly the distinction a hand-typed number cannot make for itself.
+            bool timerOnly = string.Equals(r.Tier, "World", StringComparison.OrdinalIgnoreCase);
+
+            if (!timerOnly && r.BaseHp <= 0)
+                throw new InvalidOperationException(
+                    $"raids.json: raid '{r.Id}' has baseHp {r.BaseHp}. Only World raids may have no "
+                    + "health; everything else needs a positive number.");
+
+            if (timerOnly && r.BaseHp != 0)
+                throw new InvalidOperationException(
+                    $"raids.json: World raid '{r.Id}' has baseHp {r.BaseHp}. World raids are decided "
+                    + "by a timer and a damage ladder, so their health must be 0.");
+
+            if (r.PersonalBaseHp < 0)
+                throw new InvalidOperationException(
+                    $"raids.json: raid '{r.Id}' has a negative personalBaseHp.");
+
+            if (r.TimerHours <= 0)
+                throw new InvalidOperationException(
+                    $"raids.json: raid '{r.Id}' has timerHours {r.TimerHours}; a raid that never "
+                    + "expires can never be settled.");
+
+            if (r.StaminaCostPerHit <= 0)
+                throw new InvalidOperationException(
+                    $"raids.json: raid '{r.Id}' has staminaCostPerHit {r.StaminaCostPerHit}.");
+        }
+    }
 }

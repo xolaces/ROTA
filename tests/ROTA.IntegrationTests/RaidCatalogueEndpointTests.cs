@@ -129,13 +129,35 @@ public class RaidCatalogueEndpointTests : IAsyncLifetime
 
         var p = await res.Content.ReadFromJsonAsync<RaidPreviewResponse>();
 
-        // Pinned against raids.json rather than a fixture: if content changes, this should say so.
+        // Pinned against raids.json rather than a fixture: if content changes, this should say so —
+        // and it did. Owner 2026-08-29 made World raids TIMER-ONLY, so the Iron Colossus now carries
+        // no collective health at all and runs for seven days instead of two.
         p!.Name.Should().Be("The Iron Colossus");
         p.Tier.Should().Be("World");
-        p.BaseHp.Should().Be(100000);
-        p.PersonalHp.Should().Be(500);
-        p.TimerHours.Should().Be(48);
+        p.Grade.Should().Be("Mythic");
+        p.BaseHp.Should().Be(0,
+            "a World raid is decided by its timer and a damage ladder, so it has no health to show");
+        p.PersonalHp.Should().Be(0);
+        p.TimerHours.Should().Be(168, "seven days");
         p.Difficulties.Should().Contain(new[] { "Normal", "Hard", "Legendary", "Nightmare" });
+    }
+
+    [Fact]
+    public async Task Preview_ACampaignRaid_CarriesRealHealth()
+    {
+        // The counterpart to the World-raid case above: everything that is not timer-only must have
+        // health, which RaidDefinitionProvider.Validate now enforces at boot.
+        var res = await _client.GetAsync("/api/raids/catalogue/raid_c6z4b");
+        res.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var p = await res.Content.ReadFromJsonAsync<RaidPreviewResponse>();
+
+        p!.Tier.Should().Be("Standard");
+        p.Grade.Should().Be("Mythic", "the last campaign raid is the top danger class");
+        p.BaseHp.Should().BeGreaterThan(100_000_000,
+            "endgame raids are goaled for mass hitters — hundreds of millions, not tens of thousands");
+        p.PersonalHp.Should().BeGreaterThan(0);
+        p.TimerHours.Should().BeGreaterThan(0);
     }
 
     [Fact]
