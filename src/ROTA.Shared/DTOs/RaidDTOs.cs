@@ -322,6 +322,12 @@ public class LootBracketResponse
     /// <summary>Share of total damage required to reach this bracket, as a percentage.</summary>
     public double ContributionPercent { get; set; }
 
+    /// <summary>
+    /// Absolute damage required, on a timer-only raid. Zero means this rung is percentage-keyed.
+    /// A client should render whichever of the two is non-zero — they are never both meaningful.
+    /// </summary>
+    public long DamageThreshold { get; set; }
+
     public int StatPoints { get; set; }
     public int AttackPoints { get; set; }
     public int DefensePoints { get; set; }

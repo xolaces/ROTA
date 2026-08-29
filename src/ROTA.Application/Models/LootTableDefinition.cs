@@ -26,6 +26,17 @@ public class LootTableDifficulty
 public class ThresholdReward
 {
     public double ContributionPercent { get; set; }
+
+    /// <summary>
+    /// ABSOLUTE damage required to bank this rung, used INSTEAD of <see cref="ContributionPercent"/>
+    /// on a timer-only raid (owner 2026-08-29: World raids have no collective health and pay on
+    /// "raid dmg being the tier reward").
+    ///
+    /// A share of the total is meaningless before a raid ends — there is no total yet — and a ladder
+    /// a player can see mid-event is worth more than one they can only compute afterwards. 0 means
+    /// this rung is percentage-keyed, which is every campaign raid.
+    /// </summary>
+    public long DamageThreshold { get; set; }
     public int UnassignedStatPoints { get; set; }
     public int AttackPoints { get; set; }
     public int DefensePoints { get; set; }

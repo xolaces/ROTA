@@ -255,4 +255,59 @@ public class RaidCatalogueServiceTests
 
         svc.GetLootPreview("raid_colossus", "Normal")!.Brackets.Should().BeEmpty();
     }
+
+    // ── the World-raid damage ladder ──────────────────────────────────────────
+    // Timer-only raids pay on ABSOLUTE damage rather than a share of the total, because there is
+    // no total to take a share of until the raid ends.
+
+    [Fact]
+    public void ADamageLadder_ComesBackInRungOrder_NotFileOrder()
+    {
+        var (svc, raids, loot, _, _) = Build();
+        raids.Setup(r => r.GetById("raid_colossus")).Returns(Raid(baseHp: 0, personalHp: 0));
+
+        // Every rung leaves ContributionPercent at 0, so sorting by it would preserve file order —
+        // correct only by luck. Deliberately shuffled here to prove the ladder sorts on damage.
+        ThresholdReward Rung(long dmg, int sp) => new()
+        {
+            DamageThreshold = dmg, ContributionPercent = 0, UnassignedStatPoints = sp,
+        };
+        loot.Setup(l => l.GetById("lt_colossus")).Returns(Table(
+            ("Normal", new[] { Rung(1_000_000_000, 15), Rung(500, 1), Rung(62_750_000, 8) })));
+
+        var result = svc.GetLootPreview("raid_colossus", "Normal");
+
+        result!.Brackets.Select(b => b.DamageThreshold)
+            .Should().ContainInOrder(new[] { 500L, 62_750_000L, 1_000_000_000L });
+    }
+
+    [Fact]
+    public void APercentageTable_StillSortsOnPercentage()
+    {
+        var (svc, raids, loot, _, _) = Build();
+        raids.Setup(r => r.GetById("raid_colossus")).Returns(Raid());
+        loot.Setup(l => l.GetById("lt_colossus")).Returns(Table(
+            ("Hard", new[] { Reward(20, 4), Reward(0.1, 2), Reward(5, 3) })));
+
+        var result = svc.GetLootPreview("raid_colossus", "Hard");
+
+        result!.Brackets.Select(b => b.ContributionPercent)
+            .Should().ContainInOrder(new[] { 0.1, 5.0, 20.0 });
+        result.Brackets.Should().OnlyContain(b => b.DamageThreshold == 0,
+            "a percentage table has no damage rungs, and a client picks whichever is non-zero");
+    }
+
+    [Fact]
+    public void ATimerOnlyRaid_ReportsNoHealth_SoNoClientDrawsABar()
+    {
+        var (svc, raids, loot, _, _) = Build();
+        raids.Setup(r => r.GetById("raid_colossus")).Returns(Raid(baseHp: 0, personalHp: 0));
+        loot.Setup(l => l.GetById(It.IsAny<string>())).Returns(Table(("Normal", new[] { Reward(0.1, 1) })));
+
+        var preview = svc.GetPreview("raid_colossus");
+
+        preview!.BaseHp.Should().Be(0);
+        preview.PersonalHp.Should().Be(0,
+            "the personal fallback must not resurrect health for a raid that has none");
+    }
 }

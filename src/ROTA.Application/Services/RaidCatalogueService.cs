@@ -57,8 +57,15 @@ public sealed class RaidCatalogueService : IRaidCatalogueService
         if (key is null) return null;
 
         var tier = table.Difficulties[key];
-        var brackets = (tier.ThresholdRewards ?? new List<ThresholdReward>())
-            .OrderBy(t => t.ContributionPercent)
+
+        // Order by whichever key the table actually uses. A damage ladder sorted by a
+        // contribution percent every rung leaves at zero would come back in file order, which is
+        // only correct by luck.
+        var rewards = tier.ThresholdRewards ?? new List<ThresholdReward>();
+        bool damageLadder = rewards.Any(t => t.DamageThreshold > 0);
+        var brackets = (damageLadder
+                ? rewards.OrderBy(t => t.DamageThreshold)
+                : rewards.OrderBy(t => t.ContributionPercent))
             .Select(ToBracket)
             .ToList();
 
@@ -159,6 +166,7 @@ public sealed class RaidCatalogueService : IRaidCatalogueService
         return new LootBracketResponse
         {
             ContributionPercent = t.ContributionPercent,
+            DamageThreshold     = t.DamageThreshold,
             StatPoints          = t.UnassignedStatPoints,
             AttackPoints        = t.AttackPoints,
             DefensePoints       = t.DefensePoints,

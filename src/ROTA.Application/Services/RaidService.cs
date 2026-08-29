@@ -1627,14 +1627,28 @@ public sealed class RaidService : IRaidService
                         ? (double)p.TotalDamageDealt / totalDamage * 100.0
                         : 0;
 
+                    // A timer-only raid (no collective health) pays on ABSOLUTE damage instead of a
+                    // share of the total, because there is no total to take a share of until it ends.
+                    // Detected from the definition rather than a flag on the raid row: baseHp 0 IS the
+                    // marker, and RaidDefinitionProvider.Validate guarantees only World raids carry it.
+                    bool timerOnly = definition.BaseHp <= 0;
+
                     // System 22 Phase A follow-up — only the killer's chance drops are Hoard-scaled
                     // (see ScaleDropChance). Every other participant keeps their base chance.
                     double hoardForThisPlayer = p.PlayerId == callerPlayerId ? callerHoardDropMultiplier : 1.0;
 
-                    // Cumulative: collect all threshold tiers the player qualifies for
-                    foreach (var threshold in diffLoot.ThresholdRewards
-                        .OrderBy(t => t.ContributionPercent)
-                        .Where(t => contribPct >= t.ContributionPercent))
+                    // Cumulative either way: a player banks every rung they passed, not just the
+                    // highest. On the damage ladder that is the point — nothing is lost when the
+                    // timer beats you to the next rung.
+                    var qualified = timerOnly
+                        ? diffLoot.ThresholdRewards
+                            .OrderBy(t => t.DamageThreshold)
+                            .Where(t => p.TotalDamageDealt >= t.DamageThreshold)
+                        : diffLoot.ThresholdRewards
+                            .OrderBy(t => t.ContributionPercent)
+                            .Where(t => contribPct >= t.ContributionPercent);
+
+                    foreach (var threshold in qualified)
                     {
                         unassignedSP += (int)Math.Round(threshold.UnassignedStatPoints * (double)multiplier);
 
