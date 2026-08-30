@@ -1288,7 +1288,15 @@ public sealed class RaidService : IRaidService
 
             // Kill detection and reward distribution — fully inside the advisory lock.
             // On a killing hit, these kill rewards stack on top of the on-hit grant above.
-            bool isKill = lockedRaid.CurrentHp == 0;
+            // A raid with NO HEALTH POOL can never be killed by damage. World raids carry MaxHp 0 as
+            // the timer-only marker (owner 2026-08-29), and CurrentHp 0 is their RESTING state rather
+            // than a death — so the bare `CurrentHp == 0` this used to be was already true before any
+            // damage landed, and the first hit ended a seven-day event instantly, paying out as though
+            // one player had soloed it.
+            //
+            // Keyed on MaxHp, not on the raid's tier: MaxHp is what the kill actually depends on, and
+            // RaidDefinitionProvider.Validate already guarantees only World raids reach zero.
+            bool isKill = lockedRaid.MaxHp > 0 && lockedRaid.CurrentHp == 0;
             if (isKill)
             {
                 lockedRaid.MarkDefeated();
