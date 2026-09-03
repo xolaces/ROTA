@@ -162,8 +162,21 @@ builder.Services.AddSingleton<IUserIdProvider, SubUserIdProvider>();
 builder.Services.AddDbContext<RotaDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.Configure<LevelingConfig>(
-    builder.Configuration.GetSection("LevelingConfig"));
+// These three configs carry tables whose C# default is EMPTY, not a fallback — appsettings ships the
+// whole thing. An empty table is therefore indistinguishable from a binding failure, and it degrades
+// SILENTLY rather than loudly: no milestone floors makes the late game 1.71x faster at L25000, no
+// regen map collapses all nineteen class identities to a flat 5.0/5.0, and no refill cost map quietly
+// removes gem refills altogether. ValidateOnStart turns each of those into a boot failure.
+//
+// This is the same shape as the XpExponent default that disagreed with what shipped: the danger is not
+// a wrong value, it is a wrong value nobody notices.
+builder.Services.AddOptions<LevelingConfig>()
+    .Bind(builder.Configuration.GetSection("LevelingConfig"))
+    .Validate(c => c.MilestoneFloors.Count > 0,
+        "LevelingConfig.MilestoneFloors is empty — appsettings ships the table, so this means it did not bind.")
+    .Validate(c => c.PinnacleGemRewards.Count > 0,
+        "LevelingConfig.PinnacleGemRewards is empty — appsettings ships the table, so this means it did not bind.")
+    .ValidateOnStart();
 
 builder.Services.Configure<LeaderboardConfig>(
     builder.Configuration.GetSection("LeaderboardConfig"));
@@ -171,8 +184,15 @@ builder.Services.Configure<LeaderboardConfig>(
 builder.Services.Configure<GauntletConfig>(
     builder.Configuration.GetSection("GauntletConfig"));
 
-builder.Services.Configure<ClassConfig>(
-    builder.Configuration.GetSection("ClassConfig"));
+builder.Services.AddOptions<ClassConfig>()
+    .Bind(builder.Configuration.GetSection("ClassConfig"))
+    .Validate(c => c.RegenMinutesPerPoint.Count > 0,
+        "ClassConfig.RegenMinutesPerPoint is empty — every class would fall back to a flat 5.0/5.0 regen.")
+    .Validate(c => c.ConvergenceLevels.Count > 0,
+        "ClassConfig.ConvergenceLevels is empty — no class gate would ever fire.")
+    .Validate(c => c.ClassUnlockLevels.Count > 0,
+        "ClassConfig.ClassUnlockLevels is empty — tier 2/3 unlock levels would be unresolvable.")
+    .ValidateOnStart();
 
 builder.Services.Configure<CombatConfig>(
     builder.Configuration.GetSection("CombatConfig"));
@@ -204,8 +224,11 @@ builder.Services.Configure<AchievementConfig>(
 builder.Services.Configure<RateLimitConfig>(
     builder.Configuration.GetSection("RateLimitConfig"));
 
-builder.Services.Configure<ConsumableConfig>(
-    builder.Configuration.GetSection("ConsumableConfig"));
+builder.Services.AddOptions<ConsumableConfig>()
+    .Bind(builder.Configuration.GetSection("ConsumableConfig"))
+    .Validate(c => c.InstantRefillGemCost.Count > 0,
+        "ConsumableConfig.InstantRefillGemCost is empty — no resource would be refillable for gems.")
+    .ValidateOnStart();
 
 builder.Services.Configure<LegalConfig>(
     builder.Configuration.GetSection("Legal"));

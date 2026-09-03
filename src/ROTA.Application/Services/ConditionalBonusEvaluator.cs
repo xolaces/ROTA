@@ -36,8 +36,17 @@ public static class ConditionalBonusEvaluator
             double gained = stacks * b.BonusAmount;
             switch (b.BonusType)
             {
-                case BonusType.FlatAttack:         flatAtk        += (int)gained; break;
-                case BonusType.FlatDefense:        flatDef        += (int)gained; break;
+                // ROUND, do not truncate. A bare (int) cast truncates toward zero, and it does so
+                // PER BONUS before summing — so three bonuses of 2.5 granted 6 instead of 8, and the
+                // shortfall compounds rather than cancelling. The fractional lanes below already keep
+                // their full precision; these two were the odd ones out.
+                //
+                // No shipped content authors a fractional bonusAmount today, so this is a latent
+                // under-grant rather than a live one — which is exactly when it is cheapest to fix.
+                case BonusType.FlatAttack:
+                    flatAtk += (int)Math.Round(gained, MidpointRounding.AwayFromZero); break;
+                case BonusType.FlatDefense:
+                    flatDef += (int)Math.Round(gained, MidpointRounding.AwayFromZero); break;
                 case BonusType.ProcChanceFlat:     procChanceFlat += gained;      break;
                 case BonusType.ProcAmountFlat:     procAmountFlat += gained;      break;
                 case BonusType.FlatDamagePercent:  flatDmgPct     += gained;      break;

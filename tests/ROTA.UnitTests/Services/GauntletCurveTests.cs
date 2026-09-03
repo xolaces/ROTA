@@ -20,9 +20,21 @@ public class GauntletCurveTests
     private readonly ITestOutputHelper _out;
     public GauntletCurveTests(ITestOutputHelper output) => _out = output;
 
-    // Defaults already match appsettings (base 5000, growth 1.0493, StrikesPerDefeat 10); only the ladder
-    // length is opt-in, so set it here to exercise the full 250-stage curve.
-    private static GauntletConfig Config() => new() { MaxLadderStage = 250 };
+    // MIRRORS appsettings.json. This fixture used to set only MaxLadderStage, on the belief that
+    // "defaults already match appsettings" — but T76's late ramp is opt-in too (LateRampStartStage
+    // defaults to 0 = off), so every test below exercised the PURE EXPONENTIAL curve while production
+    // ships the ramped one. The gap is not small: H(250) is 8.0e8 unramped and 6.2e16 shipped.
+    //
+    // That is the same failure that let XpExponent ship at 0.8 while defaulting to 0.7 — a green suite
+    // characterising a curve nobody runs. Any opt-in knob added to GauntletConfig must be added here.
+    private static GauntletConfig Config() => new()
+    {
+        MaxLadderStage       = 250,
+        StageHpBase          = 5000,
+        StageHpGrowth        = 1.0493,
+        LateRampStartStage   = 200,
+        LateRampFinalGrowth  = 2.0,
+    };
 
     [Fact]
     public void Curve_StrictlyRises_AnchorsAt5000_AndNeverOverflows()
@@ -33,7 +45,11 @@ public class GauntletCurveTests
         {
             long hp = GauntletStageCurve.Hp(n, c);
             hp.Should().BeGreaterThan(prev, $"stage {n} HP must strictly rise (ladder invariant)");
-            hp.Should().BeLessThan(long.MaxValue / 1000, $"stage {n} HP must stay far from long overflow");
+            // The shipped ramped curve tops out at 6.22e16 — 0.67% of long capacity, so the headroom
+            // is real, but it does NOT clear the old long.MaxValue/1000 bound (9.22e15) this assertion
+            // used to carry. That bound was only ever satisfied by the unramped curve it was written
+            // against, which is the point: the one assertion guarding width was guarding the wrong curve.
+            hp.Should().BeLessThan(long.MaxValue / 100, $"stage {n} HP must stay far from long overflow");
             prev = hp;
         }
         // The shipped integration test asserts stage-1 baseHp == 5000; the curve must preserve that.
@@ -45,8 +61,14 @@ public class GauntletCurveTests
     {
         var c = Config();
         double breakEven = GauntletStageCurve.BreakEvenPower(c.MaxLadderStage, c);
-        breakEven.Should().BeInRange(60_000_000, 100_000_000,
-            "stage 250 should break even near the ~80M endgame battalion power so 250 is the natural frontier");
+
+        // ~6.2e15 on the SHIPPED ramped curve. The old assertion here was 60M-100M, which the unramped
+        // curve satisfied exactly (8.0e7) — that is where the "stage 250 breaks even at the ~80M endgame
+        // power" claim came from. T76's ramp moved the top of the ladder far beyond any reachable
+        // battalion power, deliberately: the last fifty stages near-double each. Pinned so a future
+        // curve change is loud rather than silent. OWNER: see the frontier note in the test below.
+        breakEven.Should().BeInRange(5.0e15, 8.0e15,
+            "the shipped ramp puts the top of the ladder far past the endgame power, by design");
     }
 
     [Fact]
@@ -64,14 +86,20 @@ public class GauntletCurveTests
         (s10k  - s1k ).Should().BeInRange(35, 60);
         (s100k - s10k).Should().BeInRange(35, 60);
         (s1m   - s100k).Should().BeInRange(35, 60);
-        s80m.Should().BeInRange(240, 250, "the ~80M endgame power should reach (about) the top of the ladder");
+        // OWNER DECISION POINT. On the unramped curve an 80M-power player reached stage 250 exactly,
+        // which is where the "250 is the natural frontier" design note came from. Under the SHIPPED
+        // ramp they reach ~213 — the last ~37 stages are gem-pushed territory, not natural progress.
+        // That may be exactly what T76 intended; it contradicts the older design note, so it is pinned
+        // here rather than left to drift.
+        s80m.Should().BeInRange(205, 220,
+            "the shipped late ramp moves the natural 80M frontier down from 250 to about 213");
     }
 
     [Fact]
     public void Print_CurveTable_PowerMap_AndGemOverpush()
     {
         var c = Config();
-        _out.WriteLine($"Gauntlet curve  H(n) = {c.StageHpBase} × {c.StageHpGrowth}^(n-1)   |   StrikesPerDefeat = {c.StrikesPerDefeat}   |   ~{(int)(1.0 / System.Math.Log10(c.StageHpGrowth))} stages per ×10 power");
+        _out.WriteLine($"Gauntlet curve  H(n) = {c.StageHpBase} × {c.StageHpGrowth}^(n-1), ramping to ×{c.LateRampFinalGrowth}/stage from {c.LateRampStartStage}   |   StrikesPerDefeat = {c.StrikesPerDefeat}");
         _out.WriteLine("");
         _out.WriteLine("stage |              HP | break-even power |        gold |      xp");
         _out.WriteLine("------+-----------------+------------------+-------------+--------");

@@ -1229,7 +1229,7 @@ public sealed class RaidService : IRaidService
             // XP scales with STAMINA SPENT, not player level (level only raises XpToNextLevel). Owner
             // 2026-06-14: SUMMED per-stamina roll — each point of stamina independently rolls Uniform
             // [min, max] and the rolls are summed (batching-invariant, tight spread ⇒ ~50 on a 20-stamina
-            // hit). Defaults [1.0, 4.0]. Quests run the same model over energy (QuestService.RollEnergyXp).
+            // hit). Defaults [1.0, 5.0]. Quests run the same model over energy (QuestService.RollEnergyXp).
             xpGained = Math.Max(1L, ResourceReward.RollSummed(
                 _random, staminaCost, _combatConfig.XpPerStaminaRollMin, _combatConfig.XpPerStaminaRollMax));
             // Gold mirrors the XP roll — staminaCost × Uniform[min,max] (default 3-8/stamina).
