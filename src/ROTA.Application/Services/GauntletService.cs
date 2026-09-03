@@ -135,6 +135,18 @@ public sealed class GauntletService : IGauntletService
         if (active.StartsAt > DateTimeOffset.UtcNow)
             return new GauntletLadderResponse { NotStarted = true, StageCount = stageCount };
 
+        // The counterpart the StartsAt gate never had. The window opened automatically and never shut,
+        // so once EndsAt passed this kept spawning stages with an ALREADY-PAST expiry — step (1) filters
+        // the expired stage out, step (2) does not count it as defeated, so step (4) spawned another
+        // one. An active_raids row and an audit row per ladder page-load, per player, each born
+        // unusable, and the player is handed a raid they cannot hit.
+        //
+        // Reported as NoActiveEvent rather than a new state: RaidExpirySettlementService's Gauntlet
+        // counterpart settles the event within a tick anyway, and this makes the answer identical
+        // before and after that lands instead of flickering through a state for one sweep interval.
+        if (active.EndsAt <= DateTimeOffset.UtcNow)
+            return new GauntletLadderResponse { NoActiveEvent = true, StageCount = stageCount };
+
         // Must have joined the event (a GauntletEntry) before climbing — joining locks the league and
         // is what makes the player scoreable. Mirrors "you must join to be scored" in the combat hook.
         var entry = await _entries.FindByEventAndPlayerAsync(active.Id, playerId, ct);

@@ -771,6 +771,16 @@ public class GauntletServiceTests
         return ev;
     }
 
+    private static GauntletEvent EndedEvent()
+    {
+        // Still Active in the database but past its clock — the state that exists between EndsAt and
+        // the settlement sweeper's next tick.
+        var ev = GauntletEvent.Create("Cycle Over",
+            DateTimeOffset.UtcNow.AddDays(-8), DateTimeOffset.UtcNow.AddMinutes(-1));
+        ev.Activate();
+        return ev;
+    }
+
     private static GauntletEvent NotStartedEvent()
     {
         // Opened (Active) but with a future window — the Coming Soon shape.
@@ -938,6 +948,28 @@ public class GauntletServiceTests
         ladder.ActiveRaid.Should().BeNull();
         b.Raids.Verify(r => r.CreateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Never,
             "no stage may spawn before the event window opens");
+    }
+
+    // The counterpart the StartsAt gate never had. Past EndsAt the ladder used to keep spawning:
+    // step (1) filters the expired stage out, step (2) does not count it as defeated, so step (4)
+    // spawned another — one already-dead raid row and one audit row per page-load, per player,
+    // forever, and the player was handed a raid they could not hit.
+    [Fact]
+    public async Task Ladder_AfterEndsAt_SpawnsNothing()
+    {
+        var b = new Bundle();
+        WireActiveEvent(b, EndedEvent());
+        b.Content.Setup(c => c.GetGauntletRaids()).Returns(new List<GauntletRaidDefinition>
+        {
+            new() { Id = "gauntlet_stage_1", LadderStage = 1, BaseHp = 5000 },
+        });
+
+        var ladder = await b.Build().GetLadderAsync(Guid.NewGuid());
+
+        ladder.NoActiveEvent.Should().BeTrue("the clock has run out; there is nothing left to climb");
+        ladder.ActiveRaid.Should().BeNull();
+        b.Raids.Verify(r => r.CreateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Never,
+            "a stage spawned after EndsAt is born already expired and can never be hit");
     }
 
     [Fact]
