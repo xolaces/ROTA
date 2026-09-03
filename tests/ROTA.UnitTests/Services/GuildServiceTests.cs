@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using ROTA.Application.Configuration;
 using ROTA.Application.Interfaces;
+using ROTA.UnitTests.TestSupport;
 using ROTA.Application.Services;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
@@ -130,6 +131,7 @@ public class GuildServiceTests
         {
             Requests.PlayerSource = Players.Players;   // the fake join reads the same player list
             Service = new GuildService(Guilds, Memberships, Requests, Players, Audit.Object,
+                new PassThroughPlayerMutationLock(),
                 Options.Create(config ?? new GuildConfig()));
         }
 

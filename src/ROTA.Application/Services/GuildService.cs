@@ -29,6 +29,7 @@ public sealed class GuildService : IGuildService
     private readonly IGuildJoinRequestRepository _requests;
     private readonly IPlayerRepository _players;
     private readonly IAuditLogRepository _audit;
+    private readonly IPlayerMutationLock _mutationLock;
     private readonly GuildConfig _config;
     private readonly string _devTagNormalized;
 
@@ -38,6 +39,7 @@ public sealed class GuildService : IGuildService
         IGuildJoinRequestRepository requests,
         IPlayerRepository players,
         IAuditLogRepository audit,
+        IPlayerMutationLock mutationLock,
         IOptions<GuildConfig> config)
     {
         _guilds = guilds;
@@ -45,6 +47,7 @@ public sealed class GuildService : IGuildService
         _requests = requests;
         _players = players;
         _audit = audit;
+        _mutationLock = mutationLock;
         _config = config.Value;
         _devTagNormalized = Guild.Normalize(_config.DevGuildTag);
     }
@@ -55,9 +58,22 @@ public sealed class GuildService : IGuildService
 
     // ════════════════════════════════════════════════════════════ Lifecycle
 
-    public async Task<CreateGuildResult> CreateGuildAsync(
+    // Runs inside the player's advisory-lock transaction so the gold charge, the guild row, the
+    // membership row and the player's denormalised GuildId/GuildRank all commit together.
+    //
+    // They used to be THREE separate SaveChanges calls with no lock. A crash — or a
+    // DbUpdateConcurrencyException from the final players write, which had no retry — left the player
+    // charged, the guild created, and GuildId never set. Because the "already in a guild" gate reads
+    // player.GuildId, that half-state did not even stop them creating another one.
+    public Task<CreateGuildResult> CreateGuildAsync(
         Guid playerId, string name, string tag, string description, GuildJoinPolicy joinPolicy,
         CancellationToken ct = default)
+        => _mutationLock.RunAsync(
+            playerId, () => CreateGuildCoreAsync(playerId, name, tag, description, joinPolicy, ct), ct);
+
+    private async Task<CreateGuildResult> CreateGuildCoreAsync(
+        Guid playerId, string name, string tag, string description, GuildJoinPolicy joinPolicy,
+        CancellationToken ct)
     {
         var player = await _players.FindByIdAsync(playerId, ct);
         if (player is null)
@@ -92,8 +108,19 @@ public sealed class GuildService : IGuildService
         if (await _guilds.TagExistsAsync(tag, null, ct))
             return CreateGuildResult.Fail(GuildFailureCode.TagTaken, "That guild tag is already taken.");
 
-        // Deduct gold (guard ≥ 0 — checked above, AddGold with a negative amount).
-        player.AddGold(-_config.CreationGoldCost);
+        // TrySpendGoldAsync, not an entity write. IPlayerRepository is explicit that this is for every
+        // gold SPEND: it is a single conditional statement (gold >= @amount) so a concurrent reward
+        // cannot drive the balance negative, and it avoids writing the players row — which carries an
+        // xmin token that a concurrent reward grant would otherwise collide with, throwing after the
+        // guild already existed.
+        // Guarded on > 0: creation can be configured free, and TrySpendGoldAsync rejects a
+        // non-positive amount rather than silently no-opping.
+        if (_config.CreationGoldCost > 0
+            && await _players.TrySpendGoldAsync(playerId, _config.CreationGoldCost, ct) is null)
+        {
+            return CreateGuildResult.Fail(GuildFailureCode.InsufficientGold,
+                $"Creating a guild costs {_config.CreationGoldCost} gold.");
+        }
 
         var guild = Guild.Create(playerId, name.Trim(), tag.Trim(), description ?? string.Empty, joinPolicy, _config.MemberCap);
         await _guilds.CreateAsync(guild, ct);

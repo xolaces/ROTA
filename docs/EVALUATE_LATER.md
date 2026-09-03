@@ -102,3 +102,75 @@ at runtime is indistinguishable from a raid designed to carry no loot. Two guard
   many raids carry no loot table, so the gap can never quietly grow again.
 
 The owner design question is unchanged and still open: should zone Guardians drop items at all?
+
+---
+
+## Audit sweep 2026-09-02 — what was found, fixed, and deliberately left
+
+Two read-only audits ran over the codebase: one for the "terminal moment with nothing running"
+shape, one for currency spend/grant safety. Everything below was verified against the code by hand
+afterwards, not taken on the auditor's word.
+
+### Fixed
+
+- **Gauntlet events never closed.** Same shape as the World-raid expiry defect and costlier: rank
+  prizes stranded AND every future event blocked, because `OpenEventAsync` refuses while an Active
+  event exists. Now swept by `GauntletEventSettlementService`.
+- **Skill-point grants were silently lost.** `PlayerStats` has no concurrency token and the grant was
+  a read-modify-write; raid loot claims serialize on the PARTICIPANT row while quests serialize on
+  the PLAYER, so concurrent grants for one player overwrote each other. Now an atomic SQL increment.
+- **Strike purchases could charge without delivering.** `BuyStrikesAsync` was missing the
+  `IPlayerMutationLock.RunAsync` wrapper its sibling `BuyFromShopAsync` has. Now wrapped.
+- **Guild creation could half-commit.** Three separate `SaveChanges` calls with no lock, and the
+  final players write had no retry against its own xmin token — a failure left the player charged
+  with `GuildId` unset, which the "already in a guild" gate reads. Now one transaction, and the gold
+  goes through `TrySpendGoldAsync`.
+
+### Checked and found CORRECT — do not re-file
+
+- **Lapsed temporary bans and mutes feeding the moderator-authority gate.** Flagged as a possible
+  staleness bug because `PunishmentLog.ExpiresAt` is written but never evaluated, and
+  `FindActivePunishmentAsync` therefore reports a lapsed punishment as still in force. It never
+  reaches a decision: both `UnbanPlayerAsync` and `UnmutePlayerAsync` gate on the DERIVED
+  `target.IsBanned` / `target.IsMuted` first and return early, and the permanent-vs-temporary split
+  reads `target.BannedUntil`, not the log. The derived-expiry design covers it.
+- **Ordinary raids expiring un-killed.** Nothing is stranded: rewards are only computed on the
+  killing hit, so an un-killed raid has no banked value to lose. Deliberately NOT settled — expiry is
+  a failure, and failure pays nothing.
+- **Claiming loot on a long-expired defeated raid.** `LootRaidAsync` never checks `ExpiresAt`. That
+  is deliberate: a raid you helped kill stays claimable.
+
+### Open, needing an owner decision rather than a code answer
+
+0. **Can a Gauntlet gem bundle be bought more than once?** `BuyFromShopCoreAsync` builds
+   `referenceId = $"gauntletshop:{playerId}:{entry.Id}"` — constant for the life of the account. The
+   currency ledger returns `AlreadyCharged` for any repeat of a reference and the gem grant is deduped
+   on the same string, so a player's SECOND purchase of `shop_gembundle_small` or
+   `shop_strikerefill_medium` charges nothing, grants nothing, and returns SUCCESS. In effect each is
+   a once-per-account purchase that reports otherwise.
+
+   **This may well be intended.** `GauntletShopRewardKind` documents GemBundle as "repeatable" and the
+   catalogue deliberately never marks these entries owned — but `GauntletShopIdempotencyTests` pins
+   "buy-twice charges once" as a SPEC requirement of System 16 Slice 6, and its header calls the
+   GemBundle repeatable while asserting exactly this behaviour. The two readings cannot both be right.
+
+   A fix was drafted and REVERTED rather than shipped: it time-bucketed the reference for repeatable
+   kinds, mirroring `ConsumableService` refills. It preserved every behaviour the existing tests check
+   (two rapid buys still charge once) and failed them only on the literal reference string. It was
+   backed out because changing a spec'd, test-pinned economy rule is an owner's call, not an
+   overnight one.
+
+   **What settles it:** should a player be able to buy a second gem bundle at all? If yes, the shape
+   question follows — a time bucket like refills, a purchase counter, or a client-supplied
+   idempotency key as `BuyStrikesAsync` already takes.
+
+
+1. **`GuildJoinRequest.Expire()` has no callers, and there is no time field to drive it.** The entity
+   doc comment promises an `Expired` terminal state; the enum has one; nothing reaches it. A `Pending`
+   invite therefore lives forever, and because `FindPendingAsync` short-circuits re-invitation with a
+   silent success, an officer re-inviting someone who ignored a stale invite gets nothing. No currency
+   is at risk — this is a stuck row and a UX dead end. **The question is how long an invite should
+   live**, which is a design call, not a defect fix.
+
+2. **Should zone Guardians drop items at all?** Unchanged from the entry above. 23 of 25 raids carry
+   no loot table.
