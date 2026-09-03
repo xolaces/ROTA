@@ -1,0 +1,26 @@
+# The repository stores text as LF, and every one of the 825 tracked text files already is. This file
+# makes that explicit rather than leaving it to each machine's core.autocrlf, so a clone with different
+# settings cannot commit CRLF back in. Working copies still get native endings on checkout.
+* text=auto
+
+# Shell scripts and SQL run on Linux (the droplet, the Docker build, psql). CRLF in a shell script is a
+# syntax error at the shebang, so these are LF on checkout too, on every platform.
+*.sh text eol=lf
+*.sql text eol=lf
+Dockerfile text eol=lf
+
+# Binary — never touched, never diffed as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.zip binary
+*.dll binary
+*.so binary
+*.dylib binary
