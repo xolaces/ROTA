@@ -51,6 +51,25 @@ public sealed class LootTableProvider : ILootTableProvider
         }
 
         _tables = list.ToDictionary(t => t.Id, t => t);
+
+        // The REVERSE cross-check: every raid that names a loot table must actually resolve to one.
+        // The loop above validates tables against raids; nothing validated raids against tables, so a
+        // typo in a raid's lootTableId failed SILENTLY — GetById returns null, the loot pass short-
+        // circuits on `lt?.Difficulties`, and the raid quietly pays gold and XP only. That is
+        // indistinguishable at runtime from a raid that was designed to carry no loot, which is why it
+        // has to be caught at startup instead.
+        //
+        // An EMPTY lootTableId is legitimate and deliberately not flagged here: it is how a raid says it
+        // has no threshold loot, and every Gauntlet ladder stage relies on it.
+        var danglingLootTables = raidDefinitions.GetAll()
+            .Where(r => !string.IsNullOrEmpty(r.LootTableId) && !_tables.ContainsKey(r.LootTableId))
+            .Select(r => $"{r.Id} -> '{r.LootTableId}'")
+            .ToList();
+
+        if (danglingLootTables.Count > 0)
+            throw new InvalidOperationException(
+                "raids.json: lootTableId does not resolve to any table in loot_tables.json: "
+                + string.Join(", ", danglingLootTables) + ".");
     }
 
     public LootTableDefinition? GetById(string id)

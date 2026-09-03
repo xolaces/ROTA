@@ -80,3 +80,25 @@ screen will look far emptier than intended until they do.
 
 **What would settle it:** an owner call on whether Guardians are meant to drop items at all. If yes,
 it is a content-authoring task (23 tables), not a code one — nothing in the engine needs to change.
+
+**Verified 2026-09-02.** Re-checked against the code, and the conclusion above holds: this is a
+content gap, not a defect. `LootTableProvider.GetById` is a plain dictionary lookup that returns null
+for an unknown key, and the loot pass in `DistributeKillRewardsAsync` short-circuits on
+`!string.IsNullOrEmpty(definition.LootTableId)` BEFORE it is ever called. Nothing throws, nothing is
+lost. An empty `lootTableId` is a supported state that the Gauntlet ladder stages rely on deliberately
+— `RaidDefinitionProvider` documents exactly that.
+
+The count is **23 of 25** on the committed content pack. (A later note quoting "26 of 28" was counting
+three uncommitted raids alongside it.)
+
+**What did turn up:** nothing validated the reverse direction. `LootTableProvider` checked loot tables
+against raids but never raids against loot tables, so a *typo* in a `lootTableId` would have failed
+silently — GetById returns null, the loot pass is skipped, and the raid pays gold and XP only, which
+at runtime is indistinguishable from a raid designed to carry no loot. Two guardrails now close that:
+
+- `LootTableProvider`'s constructor throws at startup on a dangling `lootTableId`. Empty is still
+  accepted. Covered by `LootTableProviderValidationTests`.
+- `tools/validate_content_pack.py` fails on a dangling reference and *reports* (without failing) how
+  many raids carry no loot table, so the gap can never quietly grow again.
+
+The owner design question is unchanged and still open: should zone Guardians drop items at all?

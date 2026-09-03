@@ -77,28 +77,62 @@ def validate_quests(quests: list[dict[str, Any]], raid_ids: set[str], item_ids: 
             pass
 
 
-def validate_raids(raids: list[dict[str, Any]], item_ids: set[str]) -> None:
+def collect_loot_table_ids(loot_tables: Any) -> set[str]:
+    """Every loot table id, whichever shape loot_tables.json is in."""
+    if isinstance(loot_tables, dict):
+        return {str(k) for k in loot_tables}
+    if isinstance(loot_tables, list):
+        return {t["id"] for t in loot_tables if isinstance(t, dict) and isinstance(t.get("id"), str)}
+    return set()
+
+
+def validate_raids(raids: list[dict[str, Any]], loot_table_ids: set[str]) -> list[str]:
+    """Structural checks over raids.json. Returns the ids of raids that carry no loot table.
+
+    An EMPTY lootTableId is legitimate: it is how a raid says it has no threshold loot, and the
+    runtime short-circuits on it cleanly. A DANGLING one is not — GetById returns null, the loot pass
+    is skipped, and the raid silently pays gold and XP only, which is indistinguishable from a raid
+    designed to carry no loot. That is why one is reported and the other is fatal.
+    """
     ensure_unique_ids(raids, "raids")
-    raid_ids = {r["id"] for r in raids}
+
+    lootless: list[str] = []
     for raid in raids:
+        raid_id = raid.get("id", "<unknown>")
+
         name = raid.get("name")
         if not isinstance(name, str) or not name.strip():
-            raise RuntimeError(f"raid '{raid.get('id', '<unknown>')}' is missing a valid name")
+            raise RuntimeError(f"raid '{raid_id}' is missing a valid name")
 
-        tier = raid.get("tier", "Standard")
-        if tier != "World":
-            hp = raid.get("baseHp")
-            if not isinstance(hp, (int, float)) or hp < 0:
-                raise RuntimeError(f"raid '{raid['id']}' must have a non-negative baseHp")
+        # A World raid is TIMER-ONLY: no collective health, rewards come from a damage ladder. Zero
+        # health is meaningful there and a mistake anywhere else. Mirrors RaidDefinitionProvider.Validate.
+        timer_only = str(raid.get("tier", "Standard")).lower() == "world"
+        hp = raid.get("baseHp")
+        if not isinstance(hp, (int, float)):
+            raise RuntimeError(f"raid '{raid_id}' is missing baseHp")
+        if timer_only and hp != 0:
+            raise RuntimeError(
+                f"World raid '{raid_id}' has baseHp {hp}; World raids are decided by a timer and a "
+                "damage ladder, so their health must be 0"
+            )
+        if not timer_only and hp <= 0:
+            raise RuntimeError(
+                f"raid '{raid_id}' has baseHp {hp}; only World raids may have no health"
+            )
 
-        # Item-sigil linkage is intentionally validated here because it is a game-logic relationship
-        # the runtime uses directly during summon flow. Every non-null summon item should resolve.
-        for item in [
-            item for item in (item_ids if False else [])
-        ]:
-            pass
+        if not raid.get("timerHours", 0):
+            raise RuntimeError(f"raid '{raid_id}' has no timerHours; a raid that never expires "
+                               "can never be settled")
 
-        # No-op: this script validates the structural existence, not the designer's chosen values.
+        loot_id = raid.get("lootTableId", "")
+        if not loot_id:
+            lootless.append(raid_id)
+        elif loot_id not in loot_table_ids:
+            raise RuntimeError(
+                f"raid '{raid_id}' references missing loot table '{loot_id}'"
+            )
+
+    return lootless
 
 
 def validate_items(items: list[dict[str, Any]], raid_ids: set[str]) -> None:
@@ -157,15 +191,23 @@ def main() -> int:
 
     raid_ids = {r["id"] for r in raids}
     item_ids = {i["id"] for i in items}
+    loot_table_ids = collect_loot_table_ids(loot_tables)
 
     validate_quests(quests, raid_ids, item_ids)
-    validate_raids(raids, item_ids)
+    lootless = validate_raids(raids, loot_table_ids)
     validate_items(items, raid_ids)
     validate_gear(gear)
     validate_loot_tables(loot_tables)
 
     print("Content validation OK")
     print(f"quests: {len(quests)} | raids: {len(raids)} | items: {len(items)} | gear: {len(gear)}")
+
+    # Reported, not fatal. Whether a Standard-tier raid SHOULD drop items is a design decision, not a
+    # correctness one — but the number is large enough that it should never go unnoticed again.
+    if lootless:
+        print()
+        print(f"NOTE: {len(lootless)} of {len(raids)} raids carry no loot table "
+              f"(gold and XP only): {', '.join(sorted(lootless))}")
     return 0
 
 
