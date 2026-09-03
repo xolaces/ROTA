@@ -64,8 +64,12 @@ public class GuildChatHubTests
         public Mock<IClientProxy> GroupProxy = new();
         public Mock<ISingleClientProxy> CallerProxy = new();
         public Mock<IGroupManager> Groups = new();
+        public Mock<IGuildMembershipRepository> GuildMembers = new();
         public string? LastCallerEvent;
         public string? LastGroupName;
+        // Who the message was actually addressed to. Guild chat fans out to the guild's CURRENT
+        // members rather than to a join-time SignalR group, so this is the delivery list under test.
+        public IReadOnlyList<string>? LastUserIds;
 
         public Harness(Player caller)
         {
@@ -77,6 +81,18 @@ public class GuildChatHubTests
             clients.Setup(c => c.Group(It.IsAny<string>()))
                 .Callback((string g) => LastGroupName = g)
                 .Returns(GroupProxy.Object);
+            clients.Setup(c => c.Users(It.IsAny<IReadOnlyList<string>>()))
+                .Callback((IReadOnlyList<string> ids) => LastUserIds = ids)
+                .Returns(GroupProxy.Object);
+
+            // Default roster: just the caller, when they are in a guild.
+            GuildMembers.Setup(r => r.GetForGuildAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(caller.GuildId is null
+                    ? new List<GuildMembership>()
+                    : new List<GuildMembership>
+                      {
+                          GuildMembership.Create(caller.GuildId.Value, caller.Id, ROTA.Domain.Enums.GuildRank.Member),
+                      });
 
             // Capture which event the caller was sent (Muted / GuildChatUnavailable).
             CallerProxy.Setup(p => p.SendCoreAsync(It.IsAny<string>(), It.IsAny<object?[]>(), It.IsAny<CancellationToken>()))
@@ -101,7 +117,8 @@ public class GuildChatHubTests
                 .ReturnsAsync(true);
 
             Hub = new ChatHub(Mock.Of<IWorldChatStore>(), Store, Players.Object,
-                              Mock.Of<IRaidParticipantRepository>(), RateLimiter.Object)
+                              Mock.Of<IRaidParticipantRepository>(), RateLimiter.Object,
+                              GuildMembers.Object)
             {
                 Clients = clients.Object,
                 Groups = Groups.Object,
@@ -127,8 +144,8 @@ public class GuildChatHubTests
 
         await h.Hub.SendGuildMessage("hello guild");
 
-        // Broadcast to the per-guild group.
-        h.LastGroupName.Should().Be($"guild:{guildId}");
+        // Addressed to the guild's current members, not to a join-time group.
+        h.LastUserIds.Should().Contain(member.Id.ToString());
         h.GroupProxy.Verify(p => p.SendCoreAsync("GuildMessage", It.IsAny<object?[]>(), It.IsAny<CancellationToken>()), Times.Once);
         // Landed in that guild's ring buffer with both the display name and the stable username handle.
         var history = await h.Store.GetRecentAsync(guildId, 100);
@@ -137,6 +154,38 @@ public class GuildChatHubTests
         persisted.SenderName.Should().Be(member.DisplayName);
         persisted.SenderUsername.Should().Be(member.Username, "the hub copies Player.Username from the 'name' claim for moderation targeting");
         h.LastCallerEvent.Should().BeNull("a member is not blocked");
+    }
+
+    // THE LEAK THIS PINS. A SignalR group is join-time state, and nothing evicted a connection when a
+    // membership ended — LeaveGuildChannel resolved the group from Player.GuildId, which leaving has
+    // already nulled, so it could not clean up even for an honest client, and a KICKED member was never
+    // asked to. The ex-member kept receiving guild chat on the open socket, including the conversation
+    // about why they were kicked, and could stack channels by joining and leaving guild after guild.
+    //
+    // Addressing the CURRENT roster makes membership authoritative at delivery.
+    [Fact]
+    public async Task SendGuildMessage_IsNotDeliveredToSomeoneWhoHasLeftTheGuild()
+    {
+        var guildId = Guid.NewGuid();
+        var member  = MakePlayer("alice");
+        member.JoinGuild(guildId, ROTA.Domain.Enums.GuildRank.Member);
+        var exMember = MakePlayer("mallory");   // was in the guild, has since left or been kicked
+
+        var h = new Harness(member);
+        // The roster no longer carries the ex-member, even though their socket may still be open and
+        // still be in the old SignalR group.
+        h.GuildMembers.Setup(r => r.GetForGuildAsync(guildId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<GuildMembership>
+            {
+                GuildMembership.Create(guildId, member.Id, ROTA.Domain.Enums.GuildRank.Member),
+            });
+
+        await h.Hub.SendGuildMessage("we kicked mallory, here is the plan");
+
+        h.LastUserIds.Should().NotBeNull();
+        h.LastUserIds.Should().Contain(member.Id.ToString(), "a current member still receives it");
+        h.LastUserIds.Should().NotContain(exMember.Id.ToString(),
+            "someone who has left the guild must not keep reading its chat");
     }
 
     [Fact]

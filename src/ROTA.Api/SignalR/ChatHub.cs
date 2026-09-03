@@ -28,15 +28,18 @@ public sealed class ChatHub : Hub
     private readonly IPlayerRepository _players;
     private readonly IRaidParticipantRepository _raidParticipants;
     private readonly IChatRateLimiter _rateLimiter;
+    private readonly IGuildMembershipRepository _guildMembers;
 
     public ChatHub(IWorldChatStore world, IGuildChatStore guild, IPlayerRepository players,
-                   IRaidParticipantRepository raidParticipants, IChatRateLimiter rateLimiter)
+                   IRaidParticipantRepository raidParticipants, IChatRateLimiter rateLimiter,
+                   IGuildMembershipRepository guildMembers)
     {
         _world = world;
         _guild = guild;
         _players = players;
         _raidParticipants = raidParticipants;
         _rateLimiter = rateLimiter;
+        _guildMembers = guildMembers;
     }
 
     /// <summary>Broadcasts a world-chat message to all clients and stores it in the ring buffer.</summary>
@@ -130,7 +133,23 @@ public sealed class ChatHub : Hub
         var guildId = player.GuildId.Value;
         var msg = BuildMessage("Guild", null, body);
         await _guild.AppendAsync(guildId, msg);
-        await Clients.Group(GuildGroup(guildId)).SendAsync("GuildMessage", msg);
+
+        // Fan out to the guild's CURRENT members, re-resolved on every message, rather than to whoever
+        // once joined the group.
+        //
+        // A SignalR group is join-time state and nothing evicted a connection when membership ended.
+        // LeaveGuildChannel resolved the group from Player.GuildId, which leaving has already nulled,
+        // so it could not clean up even for an honest client — and a KICKED member was never asked to.
+        // An ex-member simply kept receiving guild chat on the open socket, including the conversation
+        // about why they were kicked, and could stack channels by joining and leaving guild after
+        // guild. Sending was already safe (it re-resolves the guild); only receiving leaked.
+        //
+        // Addressing users instead of a group makes membership authoritative at delivery, so the whole
+        // staleness class goes away rather than being patched at each membership-change call site.
+        var memberIds = (await _guildMembers.GetForGuildAsync(guildId))
+            .Select(m => m.PlayerId.ToString())
+            .ToList();
+        await Clients.Users(memberIds).SendAsync("GuildMessage", msg);
     }
 
     private ChatMessageDto BuildMessage(string scope, string? raidId, string body) => new()
