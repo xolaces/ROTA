@@ -137,6 +137,47 @@ public sealed class GauntletAdminService : IGauntletAdminService
         return granted;
     }
 
+    // ── Automatic settlement at EndsAt ────────────────────────────────────────────────────────────
+    //
+    // A Gauntlet event opens on its own — StartsAt is gated live at GauntletService.cs:84 and :135 —
+    // but nothing ever closed it. EndsAt was read only for display and to stamp each ladder stage's
+    // expiry; it was never compared against now for a state transition. So the window opened
+    // automatically and never shut.
+    //
+    // Two things were stranded. Every prize-ranked player's tokens, pitchfork, trophy and mastery credit
+    // sat unpaid until an admin remembered to press Close and then Settle. And because OpenEventAsync
+    // refuses to open while an Active event exists, the stuck event blocked every future Gauntlet run —
+    // the whole system halted, not just one payout.
+    //
+    // This adds only the TRIGGER. The payout logic is untouched: it calls the same CloseEventAsync and
+    // SettleEventAsync an admin calls, so there is no second implementation of the prize rules to drift.
+    public async Task<int> CloseAndSettleDueEventsAsync(CancellationToken ct = default)
+    {
+        var due = await _events.GetAwaitingSettlementAsync(DateTimeOffset.UtcNow, ct);
+
+        int settled = 0;
+        foreach (var ev in due)
+        {
+            if (ct.IsCancellationRequested) break;
+
+            // Active → Closed. The state guard inside CloseEventAsync is the latch: a second sweep, or a
+            // second app instance, finds Closed and falls through to settlement instead of re-closing.
+            if (ev.State == GauntletEventState.Active)
+            {
+                var closed = await CloseEventAsync(ev.Id, ct);
+                if (!closed.Success) continue;   // another sweep won the race, or the row moved on
+            }
+
+            // Closed → Settled. Every grant inside is idempotent on a per-(event, player) referenceId
+            // with a unique index as the hard backstop, and an already-Settled event takes the zero-count
+            // fast path — so a double-fire cannot double-pay.
+            var result = await SettleEventAsync(ev.Id, ct);
+            if (result.Success) settled++;
+        }
+
+        return settled;
+    }
+
     public async Task<GauntletEventActionResult> CloseEventAsync(
         Guid eventId, CancellationToken ct = default)
     {

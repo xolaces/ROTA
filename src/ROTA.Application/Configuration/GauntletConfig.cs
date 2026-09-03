@@ -33,6 +33,10 @@ public class GauntletConfig
     // Cadence of the Postgres rank snapshot.
     public int ScoreSnapshotSeconds { get; set; } = 60;
 
+    // How often the settlement sweeper looks for an event that has reached EndsAt. An event runs for
+    // days, so settling within a minute of the clock expiring is ample.
+    public int SettlementSweepSeconds { get; set; } = 60;
+
     // Per-hit Strike cost, scaling with hit size (Small/Medium/Large = 1/5/20).
     public StrikeRateBySize StrikeRatePerSize { get; set; } = new();
 

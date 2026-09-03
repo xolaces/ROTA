@@ -18,6 +18,18 @@ public sealed class GauntletEventRepository : IGauntletEventRepository
             .FirstOrDefaultAsync(
                 e => e.State == GauntletEventState.Active && !e.IsDeleted, ct);
 
+    // Everything past its terminal moment and not yet paid. Closed is included as well as expired-Active
+    // because an admin who pressed Close and stopped there strands the prizes just as completely as a
+    // clock nobody was watching.
+    public async Task<IReadOnlyList<GauntletEvent>> GetAwaitingSettlementAsync(
+        DateTimeOffset asOf, CancellationToken ct = default)
+        => await _db.GauntletEvents
+            .Where(e => !e.IsDeleted
+                        && (e.State == GauntletEventState.Closed
+                            || (e.State == GauntletEventState.Active && e.EndsAt <= asOf)))
+            .OrderBy(e => e.EndsAt)
+            .ToListAsync(ct);
+
     // System 16 Slice 7 — most recently settled event (by SettledAt desc). Settled events always have
     // a non-null SettledAt (stamped by MarkSettled), so ordering is well-defined.
     public Task<GauntletEvent?> GetMostRecentSettledAsync(CancellationToken ct = default)

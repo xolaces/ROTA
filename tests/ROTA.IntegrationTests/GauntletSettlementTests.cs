@@ -319,4 +319,118 @@ public class GauntletSettlementTests : IAsyncLifetime
         }
         return AppContext.BaseDirectory;
     }
+    // ── Automatic settlement at EndsAt ──────────────────────────────────────────
+    //
+    // THE DEFECT THESE PIN. A Gauntlet event opened on its own — StartsAt is gated live — but nothing
+    // ever closed it. EndsAt was read only for display and to stamp each ladder stage's expiry; it was
+    // never compared against now for a state transition. So the window opened automatically and never
+    // shut: every ranked player's tokens, pitchfork and trophy waited on an admin pressing Close and
+    // then Settle, and because a new event cannot open while an Active one exists, the stuck event
+    // halted the whole Gauntlet system rather than delaying one payout.
+
+    // An ACTIVE event whose clock has already run out — the state the sweeper exists to resolve.
+    private async Task<Guid> SeedExpiredActiveEventAsync()
+    {
+        await using var db = NewDbContext();
+        var ev = GauntletEvent.Create(
+            "Cycle", DateTimeOffset.UtcNow.AddDays(-8), DateTimeOffset.UtcNow.AddMinutes(-1));
+        ev.Activate();
+        db.GauntletEvents.Add(ev);
+        await db.SaveChangesAsync();
+        return ev.Id;
+    }
+
+    private async Task<GauntletEventState> EventStateAsync(Guid eventId)
+    {
+        await using var db = NewDbContext();
+        return (await db.GauntletEvents.AsNoTracking().FirstAsync(e => e.Id == eventId)).State;
+    }
+
+    [Fact]
+    public async Task Sweep_ClosesAndSettles_AnActiveEventWhoseClockHasRunOut()
+    {
+        var eventId = await SeedExpiredActiveEventAsync();
+        var winner  = await SeedEntryAsync(eventId, GauntletLeague.Whelpling, 5_000, DateTimeOffset.UtcNow);
+
+        await using var db = NewDbContext();
+        var settled = await BuildAdmin(db, Content()).CloseAndSettleDueEventsAsync();
+
+        settled.Should().Be(1, "the event had reached EndsAt and nobody had settled it");
+        (await EventStateAsync(eventId)).Should().Be(GauntletEventState.Settled);
+        (await TokenBalanceAsync(winner)).Should().BeGreaterThan(0,
+            "rank prizes were stranded until something closed the event");
+    }
+
+    [Fact]
+    public async Task Sweep_LeavesAnEventAlone_WhileItsClockIsStillRunning()
+    {
+        await using var seed = NewDbContext();
+        var ev = GauntletEvent.Create("Cycle", DateTimeOffset.UtcNow.AddHours(-1), DateTimeOffset.UtcNow.AddDays(7));
+        ev.Activate();
+        seed.GauntletEvents.Add(ev);
+        await seed.SaveChangesAsync();
+
+        await using var db = NewDbContext();
+        var settled = await BuildAdmin(db, Content()).CloseAndSettleDueEventsAsync();
+
+        settled.Should().Be(0, "the event has seven days left to run");
+        (await EventStateAsync(ev.Id)).Should().Be(GauntletEventState.Active);
+    }
+
+    [Fact]
+    public async Task Sweep_AlsoSettles_AnEventAnAdminClosedAndLeft()
+    {
+        // Half-finished manual settlement strands the prizes exactly as completely as a clock nobody
+        // was watching, so Closed is swept too — not only expired-Active.
+        var eventId = await SeedClosedEventAsync();
+        var winner  = await SeedEntryAsync(eventId, GauntletLeague.Whelpling, 5_000, DateTimeOffset.UtcNow);
+
+        await using var db = NewDbContext();
+        var settled = await BuildAdmin(db, Content()).CloseAndSettleDueEventsAsync();
+
+        settled.Should().Be(1);
+        (await EventStateAsync(eventId)).Should().Be(GauntletEventState.Settled);
+        (await TokenBalanceAsync(winner)).Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task SweepingTwice_PaysOnce()
+    {
+        var eventId = await SeedExpiredActiveEventAsync();
+        var winner  = await SeedEntryAsync(eventId, GauntletLeague.Whelpling, 5_000, DateTimeOffset.UtcNow);
+
+        await using (var first = NewDbContext())
+            (await BuildAdmin(first, Content()).CloseAndSettleDueEventsAsync()).Should().Be(1);
+
+        var tokensAfterFirst    = await TokenBalanceAsync(winner);
+        var pitchforkAfterFirst = await PitchforkBalanceAsync(winner);
+        var trophiesAfterFirst  = await TrophyCountAsync(winner);
+
+        await using (var second = NewDbContext())
+            (await BuildAdmin(second, Content()).CloseAndSettleDueEventsAsync()).Should().Be(0,
+                "a Settled event is no longer awaiting settlement");
+
+        (await TokenBalanceAsync(winner)).Should().Be(tokensAfterFirst, "a re-sweep must not re-pay");
+        (await PitchforkBalanceAsync(winner)).Should().Be(pitchforkAfterFirst);
+        (await TrophyCountAsync(winner)).Should().Be(trophiesAfterFirst);
+    }
+
+    [Fact]
+    public async Task Sweep_UnblocksTheNextEvent()
+    {
+        // The wider damage: OpenEventAsync refuses while an Active event exists, so an event that never
+        // closes does not merely delay its own payout — it stops every future Gauntlet run.
+        var eventId = await SeedExpiredActiveEventAsync();
+
+        await using var db = NewDbContext();
+        var events = new GauntletEventRepository(db);
+
+        (await events.GetActiveAsync()).Should().NotBeNull("the expired event is still holding the slot");
+
+        await BuildAdmin(db, Content()).CloseAndSettleDueEventsAsync();
+
+        (await events.GetActiveAsync()).Should().BeNull(
+            "settling releases the slot, so the next event can open");
+        (await EventStateAsync(eventId)).Should().Be(GauntletEventState.Settled);
+    }
 }

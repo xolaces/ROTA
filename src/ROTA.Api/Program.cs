@@ -225,6 +225,10 @@ builder.Services.AddHostedService<GauntletRankSnapshotService>();
 // else pays the damage ladder they banked.
 builder.Services.AddHostedService<RaidExpirySettlementService>();
 
+// Closes and settles a Gauntlet event once it reaches EndsAt. Nothing else did: the window opened
+// automatically and never shut, stranding rank prizes and blocking every future event.
+builder.Services.AddHostedService<GauntletEventSettlementService>();
+
 // Redis — factory-based so the connection string is resolved from the fully-built
 // IConfiguration (after all sources, including test overrides, have been applied)
 // rather than from builder.Configuration at service-registration time.

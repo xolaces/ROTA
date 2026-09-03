@@ -22,6 +22,14 @@ public interface IGauntletEventRepository
     /// <summary>T76 — count of all (non-deleted) events of the given kind; drives RunNumber.</summary>
     Task<int> CountByKindAsync(Domain.Enums.GauntletEventKind kind, CancellationToken ct = default);
 
+    /// <summary>
+    /// Events that have reached their terminal moment but have not been paid out: an Active event whose
+    /// <c>EndsAt</c> has passed, or one already Closed by an admin and left unsettled. Drives the
+    /// settlement sweeper. Ordered oldest-first so a backlog drains in the order it accrued.
+    /// </summary>
+    Task<IReadOnlyList<GauntletEvent>> GetAwaitingSettlementAsync(
+        DateTimeOffset asOf, CancellationToken ct = default);
+
     Task<GauntletEvent?> FindByIdAsync(Guid id, CancellationToken ct = default);
 
     Task<GauntletEvent> CreateAsync(GauntletEvent gauntletEvent, CancellationToken ct = default);

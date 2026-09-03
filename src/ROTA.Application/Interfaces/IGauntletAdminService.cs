@@ -30,4 +30,11 @@ public interface IGauntletAdminService
     /// summary. The result's <c>Settlement</c> carries the payout counts.
     /// </summary>
     Task<GauntletEventActionResult> SettleEventAsync(Guid eventId, CancellationToken ct = default);
+
+    // Closes and settles every event that has reached its terminal moment — an Active event past EndsAt,
+    // or one an admin closed and left unsettled. Driven by GauntletEventSettlementService. Returns how
+    // many events this call settled. Safe to run repeatedly and concurrently: it delegates to the
+    // existing CloseEventAsync / SettleEventAsync, whose state guards and per-(event,player) referenceIds
+    // already make settlement idempotent.
+    Task<int> CloseAndSettleDueEventsAsync(CancellationToken ct = default);
 }
