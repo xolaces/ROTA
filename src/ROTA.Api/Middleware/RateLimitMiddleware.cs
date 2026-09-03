@@ -59,7 +59,8 @@ public class RateLimitMiddleware
 
             if (await IsLimitExceededAsync(key, _authLimit))
             {
-                await WriteLimitBreachAuditAsync(null, $"RateLimitIp:{path}", ip);
+                if (await ShouldAuditBreachAsync(key))
+                    await WriteLimitBreachAuditAsync(null, $"RateLimitIp:{path}", ip);
                 await WriteRateLimitResponse(context, key);
                 return;
             }
@@ -74,7 +75,8 @@ public class RateLimitMiddleware
                 var key = $"ratelimit:player:{playerId}";
                 if (await IsLimitExceededAsync(key, _playerLimit))
                 {
-                    await WriteLimitBreachAuditAsync(Guid.Parse(playerId), $"RateLimitPlayer:{path}", ip);
+                    if (await ShouldAuditBreachAsync(key))
+                        await WriteLimitBreachAuditAsync(Guid.Parse(playerId), $"RateLimitPlayer:{path}", ip);
                     await WriteRateLimitResponse(context, key);
                     return;
                 }
@@ -86,7 +88,8 @@ public class RateLimitMiddleware
                 var key = $"ratelimit:ip:{ip}:anon";
                 if (await IsLimitExceededAsync(key, _playerLimit))
                 {
-                    await WriteLimitBreachAuditAsync(null, $"RateLimitAnon:{path}", ip);
+                    if (await ShouldAuditBreachAsync(key))
+                        await WriteLimitBreachAuditAsync(null, $"RateLimitAnon:{path}", ip);
                     await WriteRateLimitResponse(context, key);
                     return;
                 }
@@ -119,6 +122,33 @@ public class RateLimitMiddleware
         }
     }
 
+    // Log a breach ONCE per key per window, not once per rejected request.
+    //
+    // The 429 path is deliberately cheap — that is the whole point of rate limiting — but auditing
+    // every rejection made it expensive for US and free for the caller: one DI scope and one durable
+    // INSERT per request, unbounded, and on the anon branch without any authentication at all. A
+    // client stuck in a retry loop, or anyone pointing a scanner at the API, wrote rows at line rate.
+    //
+    // Nothing is lost by deduping. The signal an investigator needs is "this key breached the limit
+    // during this window", which the first row already carries; the thousandth adds no information.
+    // SET NX EX on the same Redis the counter uses returns true only for the first caller in the
+    // window, and the key expires with it.
+    private async Task<bool> ShouldAuditBreachAsync(string key)
+    {
+        try
+        {
+            return await _redis.StringSetAsync($"{key}:audited", 1, _window, When.NotExists);
+        }
+        catch (RedisException)
+        {
+            return false;
+        }
+        catch (RedisTimeoutException)
+        {
+            return false;
+        }
+    }
+
     private async Task WriteRateLimitResponse(HttpContext context, string key)
     {
         var ttl = await _redis.KeyTimeToLiveAsync(key);
@@ -138,7 +168,10 @@ public class RateLimitMiddleware
         {
             using var scope = _scopeFactory.CreateScope();
             var auditLog = scope.ServiceProvider.GetRequiredService<IAuditLogRepository>();
-            await auditLog.AppendAsync(AuditLog.Create(playerId, action, null, "Rate limit exceeded", ip));
+            await auditLog.AppendAsync(AuditLog.Create(
+                playerId, action, null,
+                "Rate limit exceeded. First breach this window; later rejections in the same window are not logged.",
+                ip));
         }
         catch
         {
