@@ -12,6 +12,11 @@ up unattended work starts here and finishes here.
 5. If the work reveals new work, add it to **Ready** ranked, or to **Owner decisions** if it needs a
    human call. Never silently expand an item's scope — split it instead.
 6. Commit. Small commits, explicit paths.
+7. **Stop the running API before building.** A `dotnet run` instance on port 5035 holds
+   ROTA.Application.dll and ROTA.Infrastructure.dll, so `dotnet build` fails with MSB3027/MSB3021
+   file locks — and `dotnet test --no-build` then passes against the STALE binaries, which reads as
+   a clean run. Stop it, build, test, restart it:
+   `Get-Process ROTA.Api | Stop-Process -Force`
 
 ## Standing rules that override any item here
 
