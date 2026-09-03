@@ -332,7 +332,9 @@ if (app.Configuration.GetValue("ForwardedHeaders:Enabled", false))
                          | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto,
     };
     fwd.KnownProxies.Clear();
-    fwd.KnownNetworks.Clear();
+    // KnownIPNetworks, not the obsolete KnownNetworks — same list, renamed in ASP.NET Core. Cleared so
+    // the framework's default loopback trust cannot widen who may set X-Forwarded-For.
+    fwd.KnownIPNetworks.Clear();
     foreach (var proxy in app.Configuration.GetSection("ForwardedHeaders:TrustedProxies").Get<string[]>() ?? [])
         fwd.KnownProxies.Add(System.Net.IPAddress.Parse(proxy));
     app.UseForwardedHeaders(fwd);
