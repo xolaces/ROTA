@@ -211,6 +211,53 @@ public class ItemServiceTests
         b.Inventory.Verify(r => r.UpdateAsync(It.Is<PlayerInventoryItem>(i => i.Quantity == 0 && i.IsUsed), It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    // The partial-restore sibling of the sigil bug. RefillEnergyAsync clamps at the pool max, so
+    // passing RestoreAmount x quantity and then consuming `quantity` destroyed the surplus: ten
+    // 50-point potions used at 90/100 restored 10 and burned all ten. Bulk use is legitimate here, so
+    // the fix takes only what the pool can absorb rather than refusing the call.
+    [Fact]
+    public async Task UseItem_PartialRestore_ConsumesOnlyWhatThePoolCanAbsorb()
+    {
+        var b = BuildService();
+        var playerId = Guid.NewGuid();
+        var def = PotionDef(res: "Energy", amount: 50);
+        var inv = MakeInvItem(def.Id, 10);
+
+        b.ItemDefs.Setup(d => d.GetById(def.Id)).Returns(def);
+        b.Inventory.Setup(r => r.GetAsync(playerId, def.Id, It.IsAny<CancellationToken>())).ReturnsAsync(inv);
+        SetupPool(b, playerId, ResourceType.Energy, max: 100, before: 90, after: 100);
+
+        var result = await b.Service.UseItemAsync(playerId, def.Id, 10);
+
+        result.Success.Should().BeTrue();
+        result.QuantityConsumed.Should().Be(1,
+            "one 50-point potion already overfills a 10-point deficit; the other nine are untouched");
+        result.RemainingQuantity.Should().Be(9);
+        b.Energy.Verify(e => e.RefillEnergyAsync(playerId, ResourceType.Energy, 50, It.IsAny<CancellationToken>()),
+            Times.Once, "it restores one potion's worth, not ten");
+    }
+
+    // The counterpart: a genuine bulk use must still spend every potion it needs.
+    [Fact]
+    public async Task UseItem_PartialRestore_OnAnEmptyPool_ConsumesTheFullAmountNeeded()
+    {
+        var b = BuildService();
+        var playerId = Guid.NewGuid();
+        var def = PotionDef(res: "Energy", amount: 50);
+        var inv = MakeInvItem(def.Id, 10);
+
+        b.ItemDefs.Setup(d => d.GetById(def.Id)).Returns(def);
+        b.Inventory.Setup(r => r.GetAsync(playerId, def.Id, It.IsAny<CancellationToken>())).ReturnsAsync(inv);
+        SetupPool(b, playerId, ResourceType.Energy, max: 100, before: 0, after: 100);
+
+        var result = await b.Service.UseItemAsync(playerId, def.Id, 10);
+
+        result.Success.Should().BeTrue();
+        result.QuantityConsumed.Should().Be(2, "two 50s fill an empty 100 pool exactly");
+        b.Energy.Verify(e => e.RefillEnergyAsync(playerId, ResourceType.Energy, 100, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
     // One sigil summons one raid, and the consume at the end of UseItemAsync takes `quantity`
     // regardless of how many were actually spent — so using four summoned ONE raid and destroyed all
     // four. The full-refill consumable branch already guarded exactly this, for exactly this reason.

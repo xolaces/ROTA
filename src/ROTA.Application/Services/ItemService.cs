@@ -106,6 +106,10 @@ public sealed class ItemService : IItemService
         if (inv is null || inv.Quantity < quantity)
             return UseFail(UseItemFailureCode.InsufficientItems, "Insufficient quantity in inventory.");
 
+        // How many are actually SPENT. Defaults to the requested amount; the partial-restore branch
+        // lowers it to what the pool could absorb, so a bulk use never destroys the surplus.
+        int consumedQuantity = quantity;
+
         int statPointsGranted = 0;
         SummonRaidResponse? raidSummoned = null;
         string? resourceRestored = null;
@@ -146,8 +150,22 @@ public sealed class ItemService : IItemService
                     if (def.RestoreAmount <= 0)
                         return UseFail(UseItemFailureCode.ItemNotUsable,
                             "Consumable restores nothing.");
-                    // Overfill is clamped by RefillEnergyAsync; the response reports what actually landed.
-                    await _energy.RefillEnergyAsync(playerId, restoreType, def.RestoreAmount * quantity, ct);
+
+                    // Consume only what the pool can actually absorb. RefillEnergyAsync clamps at max,
+                    // so passing RestoreAmount x quantity and then eating `quantity` destroyed the
+                    // surplus: ten 50-point potions used at 90/100 restored 10 and burned all ten.
+                    //
+                    // Unlike a full-refill or a sigil, using several of these at once is LEGITIMATE —
+                    // two 50s do fill an empty 100 pool — so the remedy is to take the number needed
+                    // rather than to refuse the call.
+                    long deficit = pool.MaxValue - before;
+                    long needed  = (deficit + def.RestoreAmount - 1) / def.RestoreAmount;   // ceiling
+                    consumedQuantity = (int)Math.Clamp(needed, 1, quantity);
+
+                    // Bounded by the deficit plus one potion now, so the product cannot lap int32 the
+                    // way RestoreAmount x an arbitrary caller-supplied quantity could.
+                    await _energy.RefillEnergyAsync(
+                        playerId, restoreType, def.RestoreAmount * consumedQuantity, ct);
                 }
 
                 resourceNewValue = await _energy.GetCurrentEnergyAsync(playerId, restoreType, ct);
@@ -196,12 +214,12 @@ public sealed class ItemService : IItemService
                 return UseFail(UseItemFailureCode.ItemNotUsable, "This item type cannot be used directly.");
         }
 
-        inv.ConsumeQuantity(quantity);
+        inv.ConsumeQuantity(consumedQuantity);
         await _inventory.UpdateAsync(inv, ct);
 
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, "ItemUsed", null,
-            $"Used {quantity}x {def.Name} ({itemDefinitionId}). StatPoints: {statPointsGranted}"
+            $"Used {consumedQuantity}x {def.Name} ({itemDefinitionId}). StatPoints: {statPointsGranted}"
                 + (resourceRestored is null ? "" : $". Restored: {restoredAmount} {resourceRestored}"),
             null), ct);
 
@@ -209,7 +227,7 @@ public sealed class ItemService : IItemService
         {
             Success          = true,
             ItemDefinitionId = itemDefinitionId,
-            QuantityConsumed = quantity,
+            QuantityConsumed = consumedQuantity,
             RemainingQuantity = inv.Quantity,
             StatPointsGranted = statPointsGranted,
             RaidSummoned     = raidSummoned,
