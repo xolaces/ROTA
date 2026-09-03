@@ -347,6 +347,34 @@ app.Map("/error", (HttpContext ctx) =>
 // RemoteIpAddress is the proxy's — which would collapse per-IP rate limiting and audit IPs.
 // SECURITY: honoured ONLY for the explicitly-listed proxy IPs; X-Forwarded-For from anyone
 // else stays untrusted (the audit's "spoofable header" rule still holds end-to-end).
+//
+// The setting now demands an EXPLICIT decision outside Development, because both ways of getting it
+// wrong are silent. Left unset behind a proxy, every caller shares one rate-limit bucket and one
+// audit IP — the limiter still returns 429s, so it reads as working while protecting nobody and
+// throttling everybody. Set to true with an empty TrustedProxies it is worse: KnownProxies and
+// KnownIPNetworks are cleared just below, so nothing is trusted, no header is honoured, and the
+// config reads as configured. A boot that refuses to start is the only signal that cannot be missed.
+if (!app.Environment.IsDevelopment())
+{
+    var fwdSection = app.Configuration.GetSection("ForwardedHeaders");
+    var enabledRaw = fwdSection["Enabled"];
+    var proxyCount = fwdSection.GetSection("TrustedProxies").Get<string[]>()?.Length ?? 0;
+
+    if (string.IsNullOrWhiteSpace(enabledRaw))
+        throw new InvalidOperationException(
+            "ForwardedHeaders:Enabled must be set explicitly outside Development. Set it to true and "
+            + "list ForwardedHeaders:TrustedProxies when the API sits behind a reverse proxy, or to "
+            + "false to state that it is exposed directly. Leaving it unset behind a proxy collapses "
+            + "every per-IP rate-limit bucket and every audit IP onto the proxy.");
+
+    if (app.Configuration.GetValue("ForwardedHeaders:Enabled", false) && proxyCount == 0)
+        throw new InvalidOperationException(
+            "ForwardedHeaders:Enabled is true but ForwardedHeaders:TrustedProxies is empty. The known-"
+            + "proxy lists are cleared for safety, so this combination trusts nothing and honours no "
+            + "X-Forwarded-For header — it reads as configured while behaving exactly like disabled. "
+            + "List the proxy IP the API actually sees, or set Enabled to false.");
+}
+
 if (app.Configuration.GetValue("ForwardedHeaders:Enabled", false))
 {
     var fwd = new ForwardedHeadersOptions
