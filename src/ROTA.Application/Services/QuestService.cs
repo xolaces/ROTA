@@ -8,8 +8,17 @@ using ROTA.Shared.DTOs;
 
 namespace ROTA.Application.Services;
 
-// Reward steps after the energy spend are not wrapped in an explicit transaction — a server crash
-// mid-reward would be unfair but acceptable. PHASE-2: wrap quest reward steps in an explicit transaction.
+// Reward steps ARE transactional with the energy spend. AttemptQuestAsync runs the whole core inside
+// IPlayerMutationLock.RunAsync, which opens a transaction, takes a per-player advisory lock and
+// commits at the end; the energy spend and every reward step enlist in that ambient transaction
+// rather than owning one, so a failure mid-reward rolls the spend back with it. (This supersedes the
+// old "PHASE-2: wrap quest reward steps in an explicit transaction" note, which predated the mutation
+// lock and was stale.) Pinned by QuestRewardConcurrencyTests.AFailedRewardStep_RollsBackTheEnergySpend.
+//
+// Note which guard does which job here: concurrent overspend is prevented by AtomicUpdateAsync's
+// SELECT ... FOR UPDATE on the resource row, NOT by the mutation lock. The mutation lock is what
+// makes spend-and-reward atomic. Removing it because "the row lock covers us" reintroduces
+// charge-without-reward — verified by neutering it and watching only the atomicity tests fail.
 public sealed class QuestService : IQuestService
 {
     private static readonly IReadOnlyDictionary<QuestDifficulty, float> EnergyMultipliers =
