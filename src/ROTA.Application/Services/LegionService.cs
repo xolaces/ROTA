@@ -18,6 +18,7 @@ public sealed class LegionService : ILegionService
     private readonly IPlayerCommanderGearRepository _commanderGear;
     private readonly IGearDefinitionProvider        _gearDefs;
     private readonly IPlayerGearRepository          _gearRepo;   // exploit audit 2026-06-14 (C): commander ownership gate
+    private readonly IPlayerEquipmentRepository     _equipment;  // equipped copies count against the commander slot
     private readonly IGemService                    _gems;
     private readonly IPlayerMutationLock            _mutationLock;
     private readonly LegionConfig                   _legionConfig;
@@ -31,6 +32,7 @@ public sealed class LegionService : ILegionService
         IPlayerCommanderGearRepository commanderGear,
         IGearDefinitionProvider        gearDefs,
         IPlayerGearRepository          gearRepo,
+        IPlayerEquipmentRepository     equipment,
         IGemService                    gems,
         IPlayerMutationLock            mutationLock,
         IOptions<LegionConfig>         legionConfig)
@@ -43,6 +45,7 @@ public sealed class LegionService : ILegionService
         _commanderGear = commanderGear;
         _gearDefs      = gearDefs;
         _gearRepo      = gearRepo;
+        _equipment     = equipment;
         _gems          = gems;
         _mutationLock  = mutationLock;
         _legionConfig  = legionConfig.Value;
@@ -288,6 +291,20 @@ public sealed class LegionService : ILegionService
             {
                 FailureCode   = CommanderEquipFailureCode.NotOwned,
                 FailureReason = $"You do not own '{def.Name}'.",
+            };
+
+        // Require a SPARE, which is the half this gate was missing while its comment above claimed to
+        // mirror EquipmentService.EquipAsync. Owning one copy and wearing it in an equipment slot let a
+        // player also make it their commander, producing two independent procs from one item.
+        // The commander row itself is not counted: it is what this call replaces.
+        var equippedCount = (await _equipment.GetEquippedAsync(playerId, ct))
+            .Count(e => string.Equals(e.GearDefinitionId, gearDefinitionId, StringComparison.OrdinalIgnoreCase));
+
+        if (owned.Quantity - equippedCount < 1)
+            return new CommanderEquipResult
+            {
+                FailureCode   = CommanderEquipFailureCode.NotOwned,
+                FailureReason = $"No spare copy of '{def.Name}' — it is already equipped.",
             };
 
         var existing = await _commanderGear.FindAsync(playerId, ct);

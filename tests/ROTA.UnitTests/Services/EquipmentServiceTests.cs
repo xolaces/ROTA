@@ -11,6 +11,26 @@ namespace ROTA.UnitTests.Services;
 
 public class EquipmentServiceTests
 {
+    // Builds a service whose commander slot is wired explicitly, for the overlap cases.
+    private static EquipmentService BuildServiceWithCommander(
+        Mock<IPlayerEquipmentRepository> repo,
+        Mock<IGearDefinitionProvider> gearDefs,
+        Mock<IPlayerGearRepository> gearRepo,
+        IPlayerCommanderGearRepository commander)
+        => new(repo.Object, gearDefs.Object, new Mock<IAuditLogRepository>().Object,
+               new Mock<IPlayerInventoryRepository>().Object, new Mock<IItemDefinitionProvider>().Object,
+               gearRepo.Object, new Mock<IAchievementService>().Object, commander);
+
+    // Default: nothing in the commander slot. That slot wears a copy too, so EquipAsync counts it —
+    // one copy cannot be worn as both a mount and a commander.
+    private static IPlayerCommanderGearRepository NoCommanderGear()
+    {
+        var m = new Mock<IPlayerCommanderGearRepository>();
+        m.Setup(r => r.FindAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerCommanderGear?)null);
+        return m.Object;
+    }
+
     private static (EquipmentService service,
                     Mock<IPlayerEquipmentRepository> repo,
                     Mock<IGearDefinitionProvider> gearDefs,
@@ -44,7 +64,8 @@ public class EquipmentServiceTests
             .ReturnsAsync(new List<PlayerEquipment>().AsReadOnly());
 
         var service = new EquipmentService(
-            repo.Object, gearDefs.Object, auditLog.Object, inventory.Object, itemDefs.Object, gearRepo.Object, new Mock<IAchievementService>().Object);
+            repo.Object, gearDefs.Object, auditLog.Object, inventory.Object, itemDefs.Object, gearRepo.Object, new Mock<IAchievementService>().Object,
+            NoCommanderGear());
         return (service, repo, gearDefs, auditLog, inventory, itemDefs, gearRepo);
     }
 
@@ -430,7 +451,8 @@ public class EquipmentServiceTests
             .ReturnsAsync(new List<PlayerEquipment>());
 
         var service = new EquipmentService(
-            equipRepo.Object, gearDefs.Object, auditLog.Object, inventory.Object, itemDefs.Object, gearRepo.Object, new Mock<IAchievementService>().Object);
+            equipRepo.Object, gearDefs.Object, auditLog.Object, inventory.Object, itemDefs.Object, gearRepo.Object, new Mock<IAchievementService>().Object,
+            NoCommanderGear());
         return (service, gearRepo, equipRepo, gearDefs);
     }
 
@@ -520,7 +542,8 @@ public class EquipmentServiceTests
         var gearRepo  = new Mock<IPlayerGearRepository>();
 
         var service = new EquipmentService(
-            equipRepo.Object, gearDefs.Object, auditLog.Object, inventory.Object, itemDefs.Object, gearRepo.Object, new Mock<IAchievementService>().Object);
+            equipRepo.Object, gearDefs.Object, auditLog.Object, inventory.Object, itemDefs.Object, gearRepo.Object, new Mock<IAchievementService>().Object,
+            NoCommanderGear());
         return (service, gearRepo);
     }
 
@@ -589,7 +612,8 @@ public class EquipmentServiceTests
             });
 
         var service = new EquipmentService(
-            equipRepo.Object, gearDefs.Object, auditLog.Object, inventory.Object, itemDefs.Object, gearRepo.Object, achievements.Object);
+            equipRepo.Object, gearDefs.Object, auditLog.Object, inventory.Object, itemDefs.Object, gearRepo.Object, achievements.Object,
+            NoCommanderGear());
 
         await service.GrantGearAsync(playerId, "gear_iron_ring", 5);
 
@@ -626,7 +650,35 @@ public class EquipmentServiceTests
         gearDefs.Setup(g => g.GetById(gearId)).Returns(HelmDef());
         gearRepo.Setup(r => r.GetAsync(playerId, gearId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(PlayerGear.Create(playerId, gearId, 1));
-        // One copy already equipped in Head — owned(1) − equippedCount(1) = 0 → fail.
+        // Nothing in an equipment slot — the only copy is worn as COMMANDER.
+        repo.Setup(r => r.GetEquippedAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerEquipment>().AsReadOnly());
+
+        // The commander slot wears a copy too. Leaving it out of the count let ONE item be worn twice —
+        // in an equipment slot and as commander — firing two independent procs in a single attack.
+        var commander = new Mock<IPlayerCommanderGearRepository>();
+        commander.Setup(r => r.FindAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(PlayerCommanderGear.Create(playerId, gearId));
+        var service2 = BuildServiceWithCommander(repo, gearDefs, gearRepo, commander.Object);
+
+        var result = await service2.EquipAsync(playerId, "Head", gearId);
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("No available copy");
+    }
+
+    // Re-equipping the item ALREADY in that slot is a no-op, not a failure. The slot being overwritten
+    // releases its copy, so a single-copy stack does not fail against itself.
+    [Fact]
+    public async Task EquipAsync_ReEquippingTheSameItemIntoTheSameSlot_Succeeds()
+    {
+        var (service, repo, gearDefs, _, _, _, gearRepo) = BuildService();
+        var playerId = Guid.NewGuid();
+        const string gearId = "gear_conscript_helm";
+
+        gearDefs.Setup(g => g.GetById(gearId)).Returns(HelmDef());
+        gearRepo.Setup(r => r.GetAsync(playerId, gearId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(PlayerGear.Create(playerId, gearId, 1));
         repo.Setup(r => r.GetEquippedAsync(playerId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<PlayerEquipment>
             {
@@ -635,8 +687,7 @@ public class EquipmentServiceTests
 
         var result = await service.EquipAsync(playerId, "Head", gearId);
 
-        result.Success.Should().BeFalse();
-        result.FailureReason.Should().Contain("No available copy");
+        result.Success.Should().BeTrue("the slot being overwritten frees the copy it was holding");
     }
 
     [Fact]

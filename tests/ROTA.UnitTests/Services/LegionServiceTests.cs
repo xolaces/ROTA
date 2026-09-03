@@ -24,7 +24,8 @@ public class LegionServiceTests
         Mock<IPlayerCommanderGearRepository>     CommanderGear,
         Mock<IGearDefinitionProvider>            GearDefs,
         Mock<IPlayerGearRepository>              GearRepo,
-        Mock<IGemService>                        Gems);
+        Mock<IGemService>                        Gems,
+        Mock<IPlayerEquipmentRepository>         Equipment);
 
     private static Bundle Build()
     {
@@ -37,6 +38,12 @@ public class LegionServiceTests
         var gearDefs      = new Mock<IGearDefinitionProvider>();
         var gearRepo      = new Mock<IPlayerGearRepository>();
         var gems          = new Mock<IGemService>();
+        var equipment     = new Mock<IPlayerEquipmentRepository>();
+
+        // Default: no equipment worn. Equipped copies count against the commander slot, so a player
+        // wearing their only mount cannot also make it their commander.
+        equipment.Setup(r => r.GetEquippedAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerEquipment>().AsReadOnly());
 
         slots.Setup(s => s.GetForLegionAsync(
                 It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -52,14 +59,14 @@ public class LegionServiceTests
         var svc = new LegionService(units.Object, legions.Object, slots.Object,
                                     unitDefs.Object, legionDefs.Object,
                                     commanderGear.Object, gearDefs.Object,
-                                    gearRepo.Object, gems.Object,
+                                    gearRepo.Object, equipment.Object, gems.Object,
                                     // Buying now runs inside the per-player mutation lock so the
                                     // charge and the grant share one transaction. Pass-through here:
                                     // unit tests have no real DB tx, and the atomicity itself is
                                     // covered by BuyUnitIdempotencyTests against Postgres.
                                     new ROTA.UnitTests.TestSupport.PassThroughPlayerMutationLock(),
                                     legionCfg);
-        return new Bundle(svc, units, legions, slots, unitDefs, legionDefs, commanderGear, gearDefs, gearRepo, gems);
+        return new Bundle(svc, units, legions, slots, unitDefs, legionDefs, commanderGear, gearDefs, gearRepo, gems, equipment);
     }
 
     private static PlayerUnit MakeUnit(Guid playerId, string defId)
@@ -401,6 +408,61 @@ public class LegionServiceTests
     }
 
     // Slice 5 — Commander slot
+
+    // The commander slot wears a copy, exactly as an equipment slot does — CraftingService already
+    // counts it that way ("a craft may take gear only while it leaves a copy behind for every slot
+    // still wearing it"). This gate was missing that half while its own comment claimed to mirror
+    // EquipmentService.EquipAsync, so owning ONE mount and wearing it let a player also make it their
+    // commander: two independent procs off the same item in a single attack.
+    [Fact]
+    public async Task EquipCommander_WhenTheOnlyCopyIsAlreadyWorn_IsRefused()
+    {
+        var b        = Build();
+        var playerId = Guid.NewGuid();
+
+        b.GearDefs.Setup(d => d.GetById("gear_mount_wolf")).Returns(new GearDefinition
+        {
+            Id = "gear_mount_wolf", Name = "Wolf Mount", ProcChance = 0.2, ProcPercent = 0.5,
+        });
+        b.Equipment.Setup(r => r.GetEquippedAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerEquipment>
+            {
+                PlayerEquipment.Create(playerId, EquipmentSlot.Mount, "gear_mount_wolf"),
+            }.AsReadOnly());
+
+        var result = await b.Service.EquipCommanderAsync(playerId, "gear_mount_wolf");
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("No spare copy");
+        b.CommanderGear.Verify(r => r.CreateAsync(It.IsAny<PlayerCommanderGear>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    // The counterpart: a spare copy is still allowed through.
+    [Fact]
+    public async Task EquipCommander_WithASpareCopy_Succeeds()
+    {
+        var b        = Build();
+        var playerId = Guid.NewGuid();
+
+        b.GearDefs.Setup(d => d.GetById("gear_mount_wolf")).Returns(new GearDefinition
+        {
+            Id = "gear_mount_wolf", Name = "Wolf Mount", ProcChance = 0.2, ProcPercent = 0.5,
+        });
+        b.GearRepo.Setup(r => r.GetAsync(playerId, "gear_mount_wolf", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(PlayerGear.Create(playerId, "gear_mount_wolf", 2));
+        b.Equipment.Setup(r => r.GetEquippedAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerEquipment>
+            {
+                PlayerEquipment.Create(playerId, EquipmentSlot.Mount, "gear_mount_wolf"),
+            }.AsReadOnly());
+        b.CommanderGear.Setup(r => r.CreateAsync(It.IsAny<PlayerCommanderGear>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerCommanderGear row, CancellationToken _) => row);
+
+        var result = await b.Service.EquipCommanderAsync(playerId, "gear_mount_wolf");
+
+        result.Success.Should().BeTrue("two copies means one may be worn and one commanded");
+    }
 
     [Fact]
     public async Task EquipCommander_Success_NoExistingRow_CreatesRow()

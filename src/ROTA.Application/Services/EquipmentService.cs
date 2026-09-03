@@ -16,6 +16,9 @@ public sealed class EquipmentService : IEquipmentService
     private readonly IItemDefinitionProvider    _itemDefs;
     private readonly IPlayerGearRepository      _gearRepo;
     private readonly IAchievementService        _achievements;
+    // The commander slot wears a copy too — it just lives in another table. Counted here so one copy
+    // cannot be worn in an equipment slot AND as commander at the same time.
+    private readonly IPlayerCommanderGearRepository _commanderGear;
 
     public EquipmentService(
         IPlayerEquipmentRepository repo,
@@ -24,7 +27,8 @@ public sealed class EquipmentService : IEquipmentService
         IPlayerInventoryRepository inventory,
         IItemDefinitionProvider    itemDefs,
         IPlayerGearRepository      gearRepo,
-        IAchievementService        achievements)
+        IAchievementService        achievements,
+        IPlayerCommanderGearRepository commanderGear)
     {
         _repo         = repo;
         _gearDefs     = gearDefs;
@@ -33,6 +37,7 @@ public sealed class EquipmentService : IEquipmentService
         _itemDefs     = itemDefs;
         _gearRepo     = gearRepo;
         _achievements = achievements;
+        _commanderGear = commanderGear;
     }
 
     public async Task<EquipResult> EquipAsync(
@@ -58,7 +63,20 @@ public sealed class EquipmentService : IEquipmentService
 
         var equippedRows  = await _repo.GetEquippedAsync(playerId, ct);
         var equippedCount = equippedRows.Count(e =>
-            string.Equals(e.GearDefinitionId, gearDefinitionId, StringComparison.OrdinalIgnoreCase));
+            // This slot is about to be overwritten, so whatever it holds releases its copy — otherwise
+            // re-equipping the item already in the slot would fail against a single-copy stack.
+            e.Slot != slot
+            && string.Equals(e.GearDefinitionId, gearDefinitionId, StringComparison.OrdinalIgnoreCase));
+
+        // The commander slot is a slot. It lives in player_commander_gear rather than player_equipment,
+        // and leaving it out of this count let ONE copy be worn twice — as a mount and as commander —
+        // firing two independent procs off the same item in a single attack. CraftingService already
+        // counts it for exactly this reason ("a craft may take gear only while it leaves a copy behind
+        // for every slot still wearing it"); this side had drifted from that model.
+        var commander = await _commanderGear.FindAsync(playerId, ct);
+        if (commander is not null && !commander.IsDeleted
+            && string.Equals(commander.GearDefinitionId, gearDefinitionId, StringComparison.OrdinalIgnoreCase))
+            equippedCount++;
 
         if (owned.Quantity - equippedCount < 1)
             return new EquipResult { FailureReason = $"No available copy of '{def.Name}' to equip (all copies already equipped)." };
