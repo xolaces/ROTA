@@ -124,3 +124,6 @@ $RECYCLE.BIN/
 # Keep only the cleaned text under _clean/ if desired; never commit raw .htm or asset folders.
 docs/research/dotd-wiki/*.htm
 docs/research/dotd-wiki/*_files/
+
+# Transient test result output
+.tmp-testresults/
