@@ -89,6 +89,26 @@ var rsaPublicKey = RSA.Create();
 // PEM may arrive single-line with literal "\n" (a Docker .env can't hold real newlines) — normalize first.
 rsaPublicKey.ImportFromPem(ROTA.Application.Configuration.PemKey.Normalize(builder.Configuration["Jwt:PublicKey"]));
 
+// The token issuer and the token validator read the SAME two settings, so a missing one does not
+// disagree — it disables the claim on both sides at once, in opposite directions. Issuance omits a
+// null iss/aud entirely; validation still demands them because ValidateIssuer/ValidateAudience are
+// true. The result is an API where every login returns 200 with a real token and every authenticated
+// request that follows returns 401, with nothing logged anywhere to say why. Both are plain
+// identifiers rather than secrets and now ship with defaults, so this can only be reached by
+// explicitly blanking them; it is still worth failing at boot rather than at the first request.
+foreach (var (key, value) in new[]
+         {
+             ("Jwt:Issuer",   builder.Configuration["Jwt:Issuer"]),
+             ("Jwt:Audience", builder.Configuration["Jwt:Audience"]),
+         })
+{
+    if (string.IsNullOrWhiteSpace(value))
+        throw new InvalidOperationException(
+            $"{key} is not configured. The API signs tokens with it and validates tokens against it, "
+            + "so leaving it blank produces tokens this same process will reject — every login "
+            + "succeeds and every authenticated request then fails with 401.");
+}
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
