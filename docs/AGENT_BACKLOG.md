@@ -57,20 +57,6 @@ happens to exist rather than the intended one, which is worse than no test.
 **BLOCKED on Owner decision 2.** Once settled, reuse the QuestRewardConcurrencyTests shape and
 neuter the guard to confirm the test fails for the right reason.
 
-### R2. Eval sheet — potion economy end to end
-`docs/eval/POTION_ECONOMY_EVAL.md`. A reproducible table, not prose: R (refund ratio) against
-Discernment × energy-per-click × pool size, with the self-supply crossover marked. Include the
-sensitivity: how far does the 2M anchor move if SP/raid goes 200 → 400 → 1000 → 2000. State the
-assumption set at the top so the numbers can be re-derived rather than trusted.
-
-### R3. Quest energy cost must keep scaling with chapter
-The single unresolved structural risk in the potion design. Potion value is a PERCENTAGE of the pool
-so it grows linearly with level; quest cost currently flattens. Linear beats capped, always — this is
-the same shape as the stamina-pool-vs-XP-curve bug past level 139 and the auto-levelling bug.
-Confirm whether `QuestConfig` / the content actually caps cost, and if it does, write the fix as a
-chapter-scaled cost so the two curves share a shape. **Do not ship a drop-rate suppression instead** —
-that is the punitive alternative.
-
 ### R4. Client support for nine-rung ladders
 The zone ladder went 6 → 9 rungs and raids gained a 9-rung per-raid ladder
 (`AchievementCategory.RaidMastery`). Check `C:\Dev\ROTA.Client6` for anything that assumes six tiers,
@@ -117,6 +103,15 @@ validator — a real defect in unreviewed Copilot content, which must be fixed b
 
 ## Owner decisions — the agent must not decide these
 
+0. **The potion design ends the energy economy at level 13,092 — decide before it is built.**
+   `QuestConfig.ChapterScalingCap = 16` caps quest energy cost at chapter 16 while the pool grows
+   linearly with level forever, so the refund ratio crosses 1.0 and keeps climbing. Below the
+   200-energy gate the cost cancels out of the ratio entirely, so no choice of quest avoids it and a
+   player who never invests in Discernment still crosses at 36,716. Four options with trade-offs are
+   in `docs/eval/POTION_ECONOMY_EVAL.md`; only "make cost track the pool" removes the term rather
+   than bounding it, and it is what the design doc already assumed was true. This is a core-design
+   call about how quest cost works, so the agent will not pick.
+
 Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-contained:
 
 1. **Should zone Guardians drop items at all?** 23 of 25 raids carry no loot table. Empty is a
@@ -142,6 +137,11 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- `daa2801` — **potion economy eval sheet, and it answers the old R3.** Quest energy cost IS capped
+  (`ChapterScalingCap = 16`), which reinstates the runaway the design doc warned about. Below the
+  200-energy gate the cost cancels out of the refund ratio, so R = 1.025e-5 x pool and crosses 1.0 at
+  level 13,092 regardless of which quest is played. Promoted to Owner decision 0 — the fix is a
+  core-design call.
 - `a67fbbe` — corrected a stale QuestService comment claiming reward steps were not transactional.
   They have been for some time; the note predated the mutation lock and told readers the opposite of
   the truth.
