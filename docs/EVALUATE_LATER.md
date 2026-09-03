@@ -311,3 +311,62 @@ regressed. The three differences that exist are deliberate and documented in-cod
    accumulator is `int` too and no content configuration reaches 2^31, so this is a leftover from the
    widening pass rather than a live overflow. Left alone deliberately: the Unity client mirrors both
    widths exactly, so changing it needs a coordinated two-repo change for an unreachable case.
+
+---
+
+## Fifth audit sweep 2026-09-03 — social, leaderboards, mastery
+
+### Fixed
+- **An ex-member kept reading guild chat.** SignalR groups are join-time state and nothing evicted a
+  connection on leave, kick or disband. Guild chat now addresses the current roster.
+- **Zone reruns counted once across all four difficulties.** The referenceId omitted the difficulty,
+  and the exactly-once ledger SKIPS the increment on a duplicate rather than deduping it.
+- **Every tied player was told they were Rank 1.** Snapshot boards stamp one identical
+  `last_progress_at` on every row, so with no terminal tiebreak nobody was strictly above anybody.
+
+### Open — worth doing, not yet done
+
+1. **A block only stops PMs and friend requests.** `IBlockRepository` is consulted in six places, all
+   in `SocialService`, all on the PM path. `ChatHub` does not take it as a dependency at all, and
+   world chat fans out with `Clients.All`. A blocked player can still name and abuse the blocker in
+   world, guild and raid chat at 10 messages per 10 seconds. The entity comment says "no longer
+   receives PMs from", so this may be the intended scope — but it is the most likely harassment
+   complaint in a closed beta. **Decide whether block means "no PMs" or "no contact".**
+
+2. **Hub join/leave paths are unthrottled.** The three SEND paths share one Redis budget, correctly.
+   `JoinRaid`, `JoinGuildChannel` and `LeaveGuildChannel` have no throttle and each does one or two
+   DB reads per frame. `RateLimitMiddleware` is HTTP-only and never sees hub frames, and there is no
+   per-user connection cap. One authenticated socket looping `JoinGuildChannel` reads the players
+   table at line rate. Same gap that was closed for sending, left open on joining.
+
+3. **`LastActiveAt` is a presence oracle.** `GET /api/guilds/{id}` is `[Authorize]` only — no
+   membership gate — and returns the full roster including each member's last-active timestamp.
+   Guilds are enumerable via the paged list. Anyone can poll a target's online/offline state. No
+   credentials, email, IP or currency leak; the exposure is activity metadata only.
+
+4. **Developer accounts are leaderboard-eligible.** The eligibility filter masks the Admin bit only
+   (`p.roles & 4`). `Developer` is a separate bit granted independently, and dev accounts can
+   force-set mastery levels — which lands them on the public Mastery Rating board above real players.
+   The config comment reasons only about Admin and Moderator; `Developer` postdates it. Looks like an
+   un-updated filter rather than a decision.
+
+5. **`GET /api/leaderboards/MasteryRatingActive` is a hard 400 without an explicit `period=Live`.**
+   The two Mastery Rating boards are missing from `DefaultPeriodForBoard`, so they default to Weekly,
+   which the service rejects as an unsupported period for those boards.
+
+6. **A day of `DaysPlayed` is lost if the achievement write fails.** The `RecordLogin` latch commits
+   before the counter write, so a swallowed failure means the same-day retry returns false and never
+   runs — even though the per-day referenceId would have made the retry safe.
+
+7. **Achievement completion writes back a stale `progress_value`.** `EvaluateCompletionsAsync` reads
+   `AsNoTracking` and `UpsertAsync` copies every property, so a concurrent atomic increment is
+   overwritten. Latent today: higher tiers are separate rows and the completed row's surplus is
+   clamped on display. It becomes visible the moment a tier is inserted between thresholds.
+
+8. **Chat bodies are length-capped but not character-filtered.** No control-character or NUL strip.
+   Newline flooding renders badly; a NUL in a PM body reaches Postgres, which rejects it in a `text`
+   column, surfacing as an unhandled 500.
+
+9. **Friend requests can be re-sent indefinitely** by remove-then-resend, since the "already pending"
+   guard filters on `!IsDeleted`. Bounded by the HTTP rate limit and stopped entirely by a block.
+   Annoyance rather than a harassment amplifier, since nothing pushes a notification.
