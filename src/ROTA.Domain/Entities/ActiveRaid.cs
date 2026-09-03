@@ -99,6 +99,23 @@ public class ActiveRaid
         UpdatedAt      = DateTimeOffset.UtcNow;
     }
 
+    // World-raid expiry settlement. A timer-only raid ENDS when its clock runs out — nobody killed it,
+    // so IsDefeated stays false, but the banked damage ladder still has to pay. Moving it to Lootable is
+    // what makes the rewards claimable: both LootRaidAsync and GetLootableUnclaimedForPlayerAsync gate on
+    // LifecycleState alone, never on IsDefeated.
+    //
+    // This transition IS the settlement latch. It is guarded to Active, so a second sweep (or a second app
+    // instance) that re-enters after the first has committed finds Lootable and returns false rather than
+    // paying the ladder twice. Callers must hold the raid's advisory lock across the check and the write.
+    public bool TryMarkExpiredSettled()
+    {
+        if (LifecycleState != RaidLifecycleState.Active)
+            return false;
+        LifecycleState = RaidLifecycleState.Lootable;
+        UpdatedAt      = DateTimeOffset.UtcNow;
+        return true;
+    }
+
     public void IncrementParticipantCount()
     {
         ParticipantCount++;

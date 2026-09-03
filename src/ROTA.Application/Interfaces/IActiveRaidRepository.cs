@@ -24,6 +24,14 @@ public interface IActiveRaidRepository
     Task<IReadOnlyList<ActiveRaid>> GetGauntletStagesForPlayerAsync(
         Guid playerId, Guid gauntletEventId, CancellationToken ct = default);
 
+    // World-raid expiry settlement — timer-only raids (MaxHp == 0) whose clock has run out but which are
+    // still sitting in Active, i.e. nobody has settled the damage ladder yet. Scoped to MaxHp == 0 on
+    // purpose: an ordinary health-pool raid that expires un-killed FAILED, and failing pays nothing.
+    // Ordered oldest-first so a backlog drains in the order it accrued, and capped so one sweep tick can
+    // never pull an unbounded set into memory.
+    Task<IReadOnlyList<ActiveRaid>> GetExpiredUnsettledTimerRaidsAsync(
+        DateTimeOffset asOf, int limit, CancellationToken ct = default);
+
     Task<ActiveRaid> CreateAsync(ActiveRaid raid, CancellationToken ct = default);
     Task UpdateAsync(ActiveRaid raid, CancellationToken ct = default);
 

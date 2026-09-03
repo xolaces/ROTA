@@ -47,5 +47,12 @@ public interface IRaidService
     // NOTE: LootRaidFailureCode.NotSummoner is now dead — still mapped to 403, never returned.
     Task<LootRaidResult> LootRaidAsync(Guid callerId, Guid activeRaidId, CancellationToken ct = default);
 
+    // World-raid expiry settlement. Finds timer-only raids (MaxHp == 0) whose clock has run out and which
+    // are still Active, pays each one's banked damage ladder using the same compute-and-stash the kill path
+    // uses, and flips the raid to Lootable so participants claim through the ordinary Loot flow.
+    // Driven by RaidExpirySettlementService. Idempotent and safe to run concurrently: the Active → Lootable
+    // transition is latched under the raid's advisory lock. Returns how many raids this call settled.
+    Task<int> SettleExpiredRaidsAsync(int maxRaids = 50, CancellationToken ct = default);
+
     Task<IReadOnlyList<RaidParticipantRankDto>> GetParticipantsAsync(Guid activeRaidId, int top, CancellationToken ct = default);
 }

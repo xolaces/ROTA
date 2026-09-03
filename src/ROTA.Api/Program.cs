@@ -210,6 +210,9 @@ builder.Services.Configure<ConsumableConfig>(
 builder.Services.Configure<LegalConfig>(
     builder.Configuration.GetSection("Legal"));
 
+builder.Services.Configure<RaidConfig>(
+    builder.Configuration.GetSection("RaidConfig"));
+
 builder.Services.AddRotaServices(builder.Environment.ContentRootPath);
 
 // Phase 2 (T39): out-of-band sender that drains the email queue without blocking requests.
@@ -217,6 +220,10 @@ builder.Services.AddHostedService<EmailSendBackgroundService>();
 
 // System 16 Slice 3: periodic per-league rank snapshot for the active Gauntlet event.
 builder.Services.AddHostedService<GauntletRankSnapshotService>();
+
+// Settles World (timer-only) raids whose clock has run out. Expiry is their only ending — nothing
+// else pays the damage ladder they banked.
+builder.Services.AddHostedService<RaidExpirySettlementService>();
 
 // Redis — factory-based so the connection string is resolved from the fully-built
 // IConfiguration (after all sources, including test overrides, have been applied)

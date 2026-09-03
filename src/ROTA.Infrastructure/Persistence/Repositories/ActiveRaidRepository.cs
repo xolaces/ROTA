@@ -49,6 +49,21 @@ public sealed class ActiveRaidRepository : IActiveRaidRepository
                                && !p.IsDeleted && p.RewardedAt == null))
             .ToListAsync(ct);
 
+    // World-raid expiry settlement — timer-only raids past ExpiresAt still sitting in Active.
+    // LifecycleState is the settlement latch, so filtering on it here is what stops an already-settled
+    // raid coming back on the next tick. Not Include()-hydrated: the sweeper re-reads each raid inside
+    // its own advisory lock and never maps a summoner name.
+    public async Task<IReadOnlyList<ActiveRaid>> GetExpiredUnsettledTimerRaidsAsync(
+        DateTimeOffset asOf, int limit, CancellationToken ct = default)
+        => await _db.ActiveRaids
+            .Where(r => !r.IsDeleted
+                        && r.MaxHp == 0
+                        && r.ExpiresAt <= asOf
+                        && r.LifecycleState == Domain.Enums.RaidLifecycleState.Active)
+            .OrderBy(r => r.ExpiresAt)
+            .Take(limit)
+            .ToListAsync(ct);
+
     // System 16 Slice 7 — every Gauntlet ladder raid this player has for the event (any state).
     // Ordered by CreatedAt so the most recent stage is last; the ladder service re-derives the stage
     // number from RaidDefinitionId ("gauntlet_stage_N") rather than trusting order.

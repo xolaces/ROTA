@@ -1505,9 +1505,82 @@ public sealed class RaidService : IRaidService
         return 0;
     }
 
+    // ── World-raid expiry settlement ──────────────────────────────────────────────────────────────
+    //
+    // A timer-only raid (MaxHp == 0) has no health pool, so nothing can ever kill it — its clock running
+    // out IS its ending. Until this existed nothing ran at that moment: HitRaidAsync started rejecting
+    // hits, the raid sat in Active forever, and every participant's banked ladder damage went unpaid.
+    //
+    // Settlement reuses the kill path wholesale rather than reimplementing the ladder. It computes and
+    // STASHES onto each participant row exactly as a kill does, then flips the raid to Lootable so the
+    // ordinary per-participant Loot claim grants it. No new reward code, and no new claim path.
+    public async Task<int> SettleExpiredRaidsAsync(int maxRaids = 50, CancellationToken ct = default)
+    {
+        var due = await _raids.GetExpiredUnsettledTimerRaidsAsync(DateTimeOffset.UtcNow, maxRaids, ct);
+
+        int settled = 0;
+        foreach (var raid in due)
+        {
+            if (ct.IsCancellationRequested) break;
+            // Each raid settles in its OWN lock and its own transaction. One raid whose definition has
+            // been pulled from content must not strand the rest of the backlog.
+            if (await SettleOneExpiredRaidAsync(raid.Id, ct))
+                settled++;
+        }
+        return settled;
+    }
+
+    // Returns true only for the sweep that actually settled this raid. Everything below runs inside the
+    // raid's advisory lock, so it serialises against a concurrent hit on the same raid AND against a
+    // second app instance sweeping the same row.
+    private async Task<bool> SettleOneExpiredRaidAsync(Guid raidId, CancellationToken ct)
+        => await _raids.AtomicWithAdvisoryLockAsync(raidId, async () =>
+        {
+            // Re-read INSIDE the lock. The row was selected before we held it, so anything could have
+            // happened in between — including another instance settling it.
+            var raid = await _raids.FindByIdAsync(raidId, ct);
+            if (raid is null || raid.IsDeleted) return false;
+
+            // An ordinary health-pool raid that runs out of time FAILED. Failure pays nothing, so it is
+            // deliberately left in Active rather than settled.
+            if (raid.MaxHp > 0) return false;
+
+            if (raid.ExpiresAt > DateTimeOffset.UtcNow) return false;
+            if (raid.LifecycleState != RaidLifecycleState.Active) return false;
+
+            var definition = _raidDefinitions.GetById(raid.RaidDefinitionId);
+            if (definition is null) return false;
+
+            var participants = await _participants.GetAllForRaidAsync(raidId, ct);
+            if (participants.Count > 0)
+            {
+                // No killer: Guid.Empty / null caller, and a neutral 1.0 Hoard multiplier so nobody
+                // collects the killer's drop bonus for a raid nobody killed.
+                await DistributeKillRewardsAsync(
+                    callerPlayerId:            Guid.Empty,
+                    callerPlayer:              null,
+                    raid:                      raid,
+                    definition:                definition,
+                    allParticipants:           participants,
+                    callerHoardDropMultiplier: 1.0,
+                    ct:                        ct);
+            }
+
+            // The latch. Guarded to Active, and it commits in the same transaction as the stashes above,
+            // so a crash between the two is impossible: either both land or neither does. A raid with no
+            // participants still settles, otherwise it would be re-swept on every tick forever.
+            if (!raid.TryMarkExpiredSettled()) return false;
+            await _raids.UpdateAsync(raid, ct);
+            return true;
+        }, ct);
+
+    // callerPlayerId / callerPlayer are the KILLER. On an expiry settlement there is no killer, and the
+    // sweeper passes Guid.Empty / null: every participant then resolves hoardForThisPlayer to 1.0 (nobody
+    // earned the killer's Hoard bonus) and the caller-facing RaidRewards tail is skipped, because there is
+    // no caller to return it to. Everything else — tiering, the ladder, the stash — is identical.
     private async Task<RaidRewards> DistributeKillRewardsAsync(
         Guid callerPlayerId,
-        Player callerPlayer,
+        Player? callerPlayer,
         ActiveRaid raid,
         RaidDefinition definition,
         IReadOnlyList<RaidParticipant> allParticipants,
@@ -1717,10 +1790,20 @@ public sealed class RaidService : IRaidService
             }
         }
 
+        bool settledByExpiry = callerPlayer is null;
         await _auditLog.AppendAsync(AuditLog.Create(
-            callerPlayerId, "RaidKill", null,
-            $"Raid {raid.Id} ({definition.Name}) [{raid.Difficulty}] defeated. {allParticipants.Count} participants rewarded.",
+            callerPlayerId,
+            settledByExpiry ? "RaidExpirySettled" : "RaidKill",
+            null,
+            settledByExpiry
+                ? $"Raid {raid.Id} ({definition.Name}) [{raid.Difficulty}] expired. {allParticipants.Count} participants settled on the damage ladder."
+                : $"Raid {raid.Id} ({definition.Name}) [{raid.Difficulty}] defeated. {allParticipants.Count} participants rewarded.",
             null), ct);
+
+        // No caller means nobody is waiting on a response. Every participant's rewards are already stashed
+        // on their row above; they collect via the ordinary Loot claim.
+        if (callerPlayer is null)
+            return new RaidRewards();
 
         var caller = callerPlayer;
         return new RaidRewards
