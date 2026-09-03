@@ -48,16 +48,16 @@ Worth doing properly rather than leaving as a checkbox: `ApplyConfigOverrides()`
 conveniently. Consider an editor-only default of live-when-a-backend-answers, or a visible on-screen
 badge when mock is active — the current failure mode is silent and cost a whole playtest window.
 
-### R1. Concurrent gem double-spend — the highest-value untested attack
-Already an open defect in the project notes, and the one thing a security audit could not close for
-lack of budget. Needs a funded account and genuinely parallel in-flight spends, not sequential ones.
-The tri-state spend (Charged / AlreadyProcessed / InsufficientBalance) plus advisory-lock discipline
-suggests it holds, but that is an argument, not a test. Then repeat the shape across the other
-economy seams: raid loot, quest rewards, shop purchases. The zone-rerun referenceId was the one seam
-actually examined this session and it was broken (`17bbc50`), which is the reason to check the rest
-rather than assume them.
+### R1b. The other economy seams have no concurrency test
+The gem ledger is now proven under contention (`216c985`), and the same proof does not exist for
+raid loot, quest rewards or shop purchases. Each has its own referenceId scheme and its own lock
+domain, and they do NOT all share the gem ledger's advisory-lock discipline: raid loot serializes on
+the PARTICIPANT row while quests serialize on the PLAYER, which is exactly the mismatch that lost
+skill-point grants (`251fec1`). Reuse the GemSpendConcurrencyTests shape -- own DbContext per task,
+assert the invariant, then neuter the guard and confirm the test fails.
 
-Full context in `docs/eval/SECURITY_AUDIT_2026-09-03.md`.
+Priority order by how much value a race would mint: raid loot claim, quest reward grant, then the
+Gauntlet shop (which additionally has the unresolved repeatability question below).
 
 ### R2. Eval sheet — potion economy end to end
 `docs/eval/POTION_ECONOMY_EVAL.md`. A reproducible table, not prose: R (refund ratio) against
@@ -144,6 +144,9 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- `216c985` — **gem double-spend pinned.** Five concurrency cases; verified against the real bug by
+  neutering the advisory lock, which charged 11 spends against a 10-gem balance and took it to -1.
+  The implementation was already correct — this closes the open defect as tested, not as argued.
 - `b8191c3` — **CRITICAL: the API issued tokens it would then reject.** No `Jwt` section existed in
   appsettings.json, so issuer/audience were undefined; signing omitted them while validation still
   required them. Every login returned 200 and every authenticated request then 401'd, silently. Found
