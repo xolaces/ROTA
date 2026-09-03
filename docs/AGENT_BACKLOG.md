@@ -48,20 +48,14 @@ Worth doing properly rather than leaving as a checkbox: `ApplyConfigOverrides()`
 conveniently. Consider an editor-only default of live-when-a-backend-answers, or a visible on-screen
 badge when mock is active — the current failure mode is silent and cost a whole playtest window.
 
-### R1b. Quest rewards and the Gauntlet shop still have no concurrency test
-Gems (`216c985`) and raid loot (`a9ad926`) are now proven under contention. Two seams remain, and
-they cannot borrow either proof because the lock domains genuinely differ: raid loot serializes on
-the PARTICIPANT row, quests serialize on the PLAYER. That exact mismatch is what silently lost
-skill-point grants (`251fec1`).
+### R1c. The Gauntlet shop is the last untested economy seam — BLOCKED on an owner call
+Gems (`216c985`), raid loot (`a9ad926`) and quest rewards (`3adb93a`) are all now proven under
+contention. The Gauntlet shop is the remaining one, and it cannot be tested yet: its gem-bundle
+repeatability is an open owner decision (see below). A test written now would pin whichever behaviour
+happens to exist rather than the intended one, which is worse than no test.
 
-**Quest reward grant** — next. Check what serializes an attempt, whether the reward grant rides that
-same transaction, and whether the referenceId is unique per attempt rather than per node. Reuse the
-RaidLootClaimConcurrencyTests shape: own DbContext per task, assert the invariant, then neuter the
-guard and confirm the test fails for the right reason.
-
-**Gauntlet shop** — after it, and note it carries an unresolved owner decision (gem bundle
-repeatability) that has to be settled before a test can assert the right thing. Testing it first
-would just pin whichever behaviour happens to exist.
+**BLOCKED on Owner decision 2.** Once settled, reuse the QuestRewardConcurrencyTests shape and
+neuter the guard to confirm the test fails for the right reason.
 
 ### R2. Eval sheet — potion economy end to end
 `docs/eval/POTION_ECONOMY_EVAL.md`. A reproducible table, not prose: R (refund ratio) against
@@ -148,6 +142,14 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- `a67fbbe` — corrected a stale QuestService comment claiming reward steps were not transactional.
+  They have been for some time; the note predated the mutation lock and told readers the opposite of
+  the truth.
+- `3adb93a` — **quest reward grant pinned.** Five cases. The neuter was the informative part: removing
+  the mutation lock failed only the ATOMICITY tests and left the concurrency test passing, because
+  the resource row's SELECT ... FOR UPDATE prevents overspend on its own. The two guards do different
+  jobs, and removing the mutation lock on the reasoning that the row lock covers it would silently
+  reintroduce charge-without-reward.
 - `a9ad926` — **raid loot claim pinned.** Four cases against the real composition (advisory lock +
   conditional latch + grant on the same transaction). Verified against TWO separate neuters: dropping
   the latch condition failed three tests; making the loser commit rather than roll back failed the
