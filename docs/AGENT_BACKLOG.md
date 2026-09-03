@@ -68,11 +68,22 @@ The zone ladder went 6 → 9 rungs and raids gained a 9-rung per-raid ladder
 a rarity-keyed achievement id, or a fixed-height achievement list. The ids changed shape:
 `ach_zonererun_c1z0_grey` → `ach_zonererun_c1z0_t10`.
 
-### R5. Eval sheet — achievement pacing against the stated endgame
-`docs/eval/ACHIEVEMENT_PACING_EVAL.md`. The 5,000 top rung is a deliberate chase ceiling: maxing it
-across 25 raids is 125,000 clears against a ~50,000-raid endgame, so ~40% of the roster's top rung is
-reachable in a full playthrough. Model the AP curve: total AP available, AP per hour at plausible
-clear rates, and where the ladder stops rewarding. Flag whether the 10 → 5000 span has dead stretches.
+### R5b. The achievement hot path fetches three times what it needs, on every quest click
+`EvaluateCompletionsAsync` runs on every quest attempt (`QuestService.cs:524`), plus login, equipment
+grants and profile reads. It calls `AchievementProgressRepository.GetForPlayerAsync`, which selects
+every progress row for the player unfiltered by completion; the loop then does
+`if (row.IsCompleted) continue`, so completed rows cross the wire only to be discarded.
+
+The definition roster went from 163 to 466 when the ladders were extended (`f59e481`), so a veteran
+now returns roughly 3x the rows on the most frequently executed query in the game — and the set only
+grows, because completed rows are never filtered out. The potion design assumes hundreds of quest
+clicks per pool drain, which makes this the hottest path there is.
+
+The fix looks clean: the method only ever acts on incomplete rows, so it can ask for incomplete rows.
+It must NOT be added to `GetForPlayerAsync` — the achievement overview screen uses the same method
+and legitimately needs every row. Add a separate repository method, and measure before and after
+rather than asserting an improvement. Evidence and arithmetic in
+`docs/eval/ACHIEVEMENT_PACING_EVAL.md`, Finding 4.
 
 ### R6. Cross-check the economy against comparable games
 Genuine research, written up as `docs/research/`. The useful comparison set is async/idle RPGs with
@@ -142,6 +153,10 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- `4790326` — **achievement pacing eval.** No dead stretches: the reward rate holds inside
+  0.467-0.800 AP/clear across a 500x span of thresholds. 5,000 across the roster is 125,000 clears,
+  2.5x the stated endgame — unreachable, as intended. Surfaced that extending the ladder moved 89.3%
+  of all AP behind a 9x longer grind, and that the hot path got ~3x heavier (now R5b).
 - `daa2801` — **potion economy eval sheet, and it answers the old R3.** Quest energy cost IS capped
   (`ChapterScalingCap = 16`), which reinstates the runaway the design doc warned about. Below the
   200-energy gate the cost cancels out of the refund ratio, so R = 1.025e-5 x pool and crosses 1.0 at
