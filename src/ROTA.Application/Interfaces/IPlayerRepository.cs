@@ -20,6 +20,21 @@ public interface IPlayerRepository
 
     Task UpdateAsync(Player player, CancellationToken ct = default);
 
+    /// <summary>
+    /// Atomically adds to a player's unassigned skill points with a single SQL statement
+    /// (<c>skill_points = skill_points + @amount</c>), returning the committed total.
+    /// <para>
+    /// Use this for every skill-point GRANT. PlayerStats carries no concurrency token — the xmin token
+    /// is on <c>players</c> only — and the grant callers do not share a lock domain: a raid loot claim
+    /// serializes on the PARTICIPANT row while a quest or item use serializes on the PLAYER. Two grants
+    /// for the same player therefore run concurrently, and a read-modify-write loses one of them
+    /// silently and permanently. Doing the arithmetic in the database removes the read entirely.
+    /// </para>
+    /// Ambient-transaction aware: inside a mutation-lock or advisory-lock transaction this enlists and
+    /// commits (or rolls back) with whatever earned the points.
+    /// </summary>
+    Task<long> IncrementSkillPointsAsync(Guid playerId, long amount, CancellationToken ct = default);
+
     Task UpdateStatsAsync(Domain.Entities.PlayerStats stats, CancellationToken ct = default);
 
     /// <summary>Looks up a player by username. Returns null if not found or soft-deleted.</summary>

@@ -99,6 +99,7 @@ public class GuildServiceTests
         public Task<Player> CreateAsync(Player player, CancellationToken ct = default) { Players.Add(player); return Task.FromResult(player); }
         public Task<Player?> FindByIdWithResourcesAsync(Guid id, CancellationToken ct = default) => FindByIdAsync(id, ct);
         public Task<Player?> FindByIdWithStatsAsync(Guid id, CancellationToken ct = default) => FindByIdAsync(id, ct);
+        public Task<long> IncrementSkillPointsAsync(Guid playerId, long amount, CancellationToken ct = default) => Task.FromResult(0L);
         public Task UpdateStatsAsync(PlayerStats stats, CancellationToken ct = default) => Task.CompletedTask;
         public Task<int> CountByRoleAsync(PlayerRoles role, CancellationToken ct = default) => Task.FromResult(0);
         public Task<bool> TryDemoteAdminAsync(Guid targetId, CancellationToken ct = default) => Task.FromResult(false);

@@ -250,8 +250,19 @@ public sealed class GauntletService : IGauntletService
         return 0;
     }
 
-    public async Task<BuyStrikesResult> BuyStrikesAsync(
+    // Wrapped in the per-player advisory-lock transaction, exactly as BuyFromShopAsync below is.
+    // Without it the gem debit committed in its own transaction and the strike credit committed in
+    // another, so a crash between the two left the player charged with nothing to show for it. The
+    // referenceId makes a RETRY safe, but only if the client replays the same key — a player tapping
+    // Buy again generates a fresh one, the gem ledger sees a new reference, and charges a second time.
+    // Atomicity closes the crash window; the referenceId still covers a retry whose response was lost.
+    public Task<BuyStrikesResult> BuyStrikesAsync(
         Guid playerId, int strikes, string idempotencyKey, CancellationToken ct = default)
+        => _mutationLock.RunAsync(
+            playerId, () => BuyStrikesCoreAsync(playerId, strikes, idempotencyKey, ct), ct);
+
+    private async Task<BuyStrikesResult> BuyStrikesCoreAsync(
+        Guid playerId, int strikes, string idempotencyKey, CancellationToken ct)
     {
         if (strikes <= 0)
             return BuyStrikesResult.Fail("Strikes to buy must be greater than zero.", 0);

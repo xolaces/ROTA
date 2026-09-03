@@ -151,11 +151,16 @@ public sealed class StatService : IStatService
         var player = await _players.FindByIdWithStatsAsync(playerId, ct);
         if (player?.Stats is null) return;
 
-        player.Stats.AddSkillPoints(10);
-
         // T22 — restore health to full on level-up (forward-compatible; health is PHASE-2 in combat).
         player.Stats.RestoreFullHealth();
         await _players.UpdateStatsAsync(player.Stats, ct);
+
+        // The +10 is an ATOMIC increment, not a read-modify-write. This runs for every participant of a
+        // raid kill while only the RAID's advisory lock is held, so the same player may be levelling from
+        // a quest in another request at the same instant; an entity write would silently drop one of the
+        // two grants. Done after the health save on purpose — the save above must not carry a stale
+        // skill_points value over the top of it.
+        await _players.IncrementSkillPointsAsync(playerId, 10, ct);
 
         // T24 — GuildStamina scales 1:1 with level. Sync the stored pool max to the new level before
         // the refill below (Energy/Stamina max depend on investment, not level, so they need no resync).
@@ -211,11 +216,12 @@ public sealed class StatService : IStatService
 
     public async Task AddUnassignedPointsAsync(Guid playerId, long amount, CancellationToken ct = default)
     {
-        var player = await _players.FindByIdWithStatsAsync(playerId, ct);
-        if (player?.Stats is null) return;
-
-        player.Stats.AddSkillPoints(amount);
-        await _players.UpdateStatsAsync(player.Stats, ct);
+        // Atomic increment rather than read-modify-write. Raid loot claims serialize on the PARTICIPANT
+        // row, so a player claiming two lootable raids at once runs both grants concurrently — both used
+        // to read the same starting total and one grant vanished, unrecoverably, because the claim latch
+        // had already marked both participant rows rewarded.
+        var granted = await _players.IncrementSkillPointsAsync(playerId, amount, ct);
+        if (granted == 0 && amount != 0) return;   // no stats row → nothing to grant
 
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, "StatBagUsed", null,

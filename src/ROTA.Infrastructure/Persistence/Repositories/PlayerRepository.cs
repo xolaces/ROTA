@@ -129,9 +129,48 @@ public sealed class PlayerRepository : IPlayerRepository
         return (long)result;
     }
 
+    // Mirrors TrySpendGoldAsync: raw parameterised SQL so the arithmetic happens in the database and
+    // no concurrent grant can be lost. There is no affordability guard — a grant only ever adds.
+    public async Task<long> IncrementSkillPointsAsync(
+        Guid playerId, long amount, CancellationToken ct = default)
+    {
+        var conn = (NpgsqlConnection)_db.Database.GetDbConnection();
+        if (conn.State != System.Data.ConnectionState.Open)
+            await conn.OpenAsync(ct);
+        var ntx = (NpgsqlTransaction?)_db.Database.CurrentTransaction?.GetDbTransaction();
+
+        const string sql = """
+            UPDATE player_stats
+            SET skill_points = skill_points + @amount, updated_at = now()
+            WHERE player_id = @p
+            RETURNING skill_points
+            """;
+
+        await using var cmd = new NpgsqlCommand(sql, conn, ntx);
+        cmd.Parameters.AddWithValue("p", NpgsqlDbType.Uuid, playerId);
+        cmd.Parameters.AddWithValue("amount", NpgsqlDbType.Bigint, amount);
+
+        var result = await cmd.ExecuteScalarAsync(ct);
+        if (result is null || result is DBNull) return 0;   // no stats row → nothing granted
+
+        // The row changed underneath EF; drop any stale tracked copy so a later read in this request
+        // sees the committed total rather than the pre-grant one.
+        var tracked = _db.ChangeTracker.Entries<Domain.Entities.PlayerStats>()
+            .FirstOrDefault(e => e.Entity.PlayerId == playerId);
+        if (tracked is not null) await tracked.ReloadAsync(ct);
+
+        return (long)result;
+    }
+
     public async Task UpdateStatsAsync(Domain.Entities.PlayerStats stats, CancellationToken ct = default)
     {
-        _db.PlayerStats.Update(stats);
+        // Only force every column Modified when the entity is DETACHED and EF has no change history to
+        // work from. A tracked entity saves just the properties that actually changed — which matters
+        // because a blanket full-row write also rewrites skill_points from a possibly-stale in-memory
+        // value, silently undoing a concurrent grant.
+        if (_db.Entry(stats).State == EntityState.Detached)
+            _db.PlayerStats.Update(stats);
+
         await _db.SaveChangesAsync(ct);
     }
 

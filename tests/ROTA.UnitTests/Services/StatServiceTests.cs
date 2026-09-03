@@ -271,7 +271,11 @@ public class StatServiceTests
 
         await b.Service.GrantLevelUpPointsAsync(player.Id, level);
 
-        player.Stats!.SkillPoints.Should().Be(10);
+        // The +10 is an ATOMIC database increment now, not a write to the tracked entity — a
+        // read-modify-write here silently lost a concurrent grant, because PlayerStats has no
+        // concurrency token and the grant callers do not share a lock domain.
+        b.Players.Verify(p => p.IncrementSkillPointsAsync(player.Id, 10, It.IsAny<CancellationToken>()),
+            Times.Once, "levelling up grants 10 skill points");
 
         if (expectGems)
         {
@@ -407,8 +411,11 @@ public class StatServiceTests
 
         await b.Service.AddUnassignedPointsAsync(player.Id, 7);
 
-        player.Stats!.SkillPoints.Should().Be(7);
-        b.Players.Verify(p => p.UpdateStatsAsync(player.Stats, It.IsAny<CancellationToken>()), Times.Once);
+        // Atomic increment, not a read-modify-write — see IPlayerRepository.IncrementSkillPointsAsync.
+        b.Players.Verify(p => p.IncrementSkillPointsAsync(player.Id, 7, It.IsAny<CancellationToken>()),
+            Times.Once);
+        b.Players.Verify(p => p.UpdateStatsAsync(It.IsAny<PlayerStats>(), It.IsAny<CancellationToken>()),
+            Times.Never, "granting points must not write the whole stats row over a concurrent grant");
         // No LSI check — these can exceed cap via items/raids (only manual allocation is capped)
         b.Energy.Verify(e => e.UpdateMaxAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
     }
