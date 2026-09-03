@@ -64,11 +64,18 @@ def validate_quests(quests: list[dict[str, Any]], raid_ids: set[str], item_ids: 
                         f"quest '{quest['id']}' references missing sigil item '{item_id}' for {diff}"
                     )
 
-        if quest.get("nodeType", "Battle") == "Boss" and not quest.get("sigilDropChance", 0):
-            # Bosses may intentionally have 0 chance on a non-sigil-content area, but the content
-            # engine should still be aware. We do not fail here because some bosses legitimately have
-            # no sigil reward plus no item reference.
-            pass
+        # A boss that advertises a sigil drop but carries no sigil MAP drops nothing: QuestService
+        # gates the grant on the map, not the chance, so the chance alone is inert. That is silent —
+        # no error, no log, just a boss whose advertised reward never appears. The reverse (a map with
+        # no chance) is fine, since the chance field is vestigial.
+        if quest.get("nodeType", "Battle") == "Boss":
+            has_chance = bool(quest.get("sigilDropChance", 0))
+            has_map = isinstance(quest.get("sigils"), dict) and bool(quest.get("sigils"))
+            if has_chance and not has_map:
+                raise RuntimeError(
+                    f"quest '{quest['id']}' is a Boss with sigilDropChance "
+                    f"{quest.get('sigilDropChance')} but no sigils map, so it can never drop one"
+                )
 
         loot_id = quest.get("lootTableId")
         if loot_id:

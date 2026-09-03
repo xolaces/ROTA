@@ -211,6 +211,31 @@ public class ItemServiceTests
         b.Inventory.Verify(r => r.UpdateAsync(It.Is<PlayerInventoryItem>(i => i.Quantity == 0 && i.IsUsed), It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    // One sigil summons one raid, and the consume at the end of UseItemAsync takes `quantity`
+    // regardless of how many were actually spent — so using four summoned ONE raid and destroyed all
+    // four. The full-refill consumable branch already guarded exactly this, for exactly this reason.
+    [Fact]
+    public async Task UseItem_Sigil_WithQuantityAboveOne_IsRefused_AndConsumesNothing()
+    {
+        var b = BuildService();
+        var playerId = Guid.NewGuid();
+        var def = SigilDef();
+        var inv = MakeInvItem(def.Id, 4);
+
+        b.ItemDefs.Setup(d => d.GetById(def.Id)).Returns(def);
+        b.Inventory.Setup(r => r.GetAsync(playerId, def.Id, It.IsAny<CancellationToken>())).ReturnsAsync(inv);
+
+        var result = await b.Service.UseItemAsync(playerId, def.Id, 4);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(UseItemFailureCode.ItemNotUsable);
+        b.Raids.Verify(r => r.SummonRaidAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<RaidDifficulty>(),
+            It.IsAny<RaidSize>(), It.IsAny<CancellationToken>()), Times.Never);
+        b.Inventory.Verify(r => r.UpdateAsync(It.IsAny<PlayerInventoryItem>(), It.IsAny<CancellationToken>()),
+            Times.Never, "a refused use must not eat the sigils");
+        inv.Quantity.Should().Be(4);
+    }
+
     // UseItemAsync — insufficient quantity
 
     [Fact]

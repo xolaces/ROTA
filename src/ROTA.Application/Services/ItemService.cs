@@ -164,6 +164,15 @@ public sealed class ItemService : IItemService
                 break;
 
             case ItemType.Sigil when def.SummonRaidId is not null && def.SummonDifficulty is not null:
+                // One sigil summons one raid, so anything beyond the first is pure waste — and the
+                // consume below takes `quantity` regardless of how many were actually spent. Using
+                // four sigils summoned ONE raid and destroyed all four. Same rule, and the same
+                // reasoning, as the full-refill consumable above: silently eating the extras would
+                // read as theft.
+                if (quantity != 1)
+                    return UseFail(UseItemFailureCode.ItemNotUsable,
+                        "A sigil can only be used one at a time.");
+
                 if (!Enum.TryParse<RaidDifficulty>(def.SummonDifficulty, out var raidDiff))
                     return UseFail(UseItemFailureCode.ItemNotUsable, "Sigil has invalid difficulty configuration.");
 
