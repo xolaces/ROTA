@@ -191,6 +191,64 @@ public class LeaderboardEligibilityTests : IAsyncLifetime
             "equal values: the player who reached it FIRST (earlier last_progress_at) ranks higher");
     }
 
+    // A SNAPSHOT board (stat boards, mastery rating) stamps ONE identical last_progress_at on every row
+    // it writes, so (value, last_progress_at) is not unique across a tie block. With no terminal
+    // tiebreak, nobody was strictly above anybody: every tied player was told they were Rank 1 while
+    // the list beside it showed them at their real position. player_id now breaks the final tie.
+    [Fact]
+    public async Task ExactTie_OnValueAndTimestamp_StillProducesDistinctRanks()
+    {
+        const long tiedValue = 5000L;
+        var stamp = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
+
+        var a = await SeedPlayerWithEntryAsync(tiedValue, level: 25, lastProgressAt: stamp);
+        var b = await SeedPlayerWithEntryAsync(tiedValue, level: 25, lastProgressAt: stamp);
+        var c = await SeedPlayerWithEntryAsync(tiedValue, level: 25, lastProgressAt: stamp);
+
+        var repo = await OpenRepoAsync();
+
+        var ranks = new List<int>();
+        foreach (var id in new[] { a, b, c })
+        {
+            var r = await repo.GetCallerRankAsync(
+                id, LeaderboardBoard.DamageDealt, PeriodKey, MinLevel, ExcludeAdmins);
+            r.Should().NotBeNull();
+            ranks.Add(r!.Rank);
+        }
+
+        ranks.Should().OnlyHaveUniqueItems(
+            "three players tied on BOTH columns must not all be told they are rank 1");
+        ranks.Should().BeEquivalentTo(new[] { 1, 2, 3 },
+            "a tie block occupies consecutive ranks, one each");
+    }
+
+    // The caller's own rank must agree with where the list puts them. These were computed by two
+    // separate SQL statements whose ordering did not match, so they could disagree outright.
+    [Fact]
+    public async Task ExactTie_CallerRank_AgreesWithListPosition()
+    {
+        const long tiedValue = 5000L;
+        var stamp = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
+
+        var ids = new List<Guid>();
+        for (int i = 0; i < 4; i++)
+            ids.Add(await SeedPlayerWithEntryAsync(tiedValue, level: 25, lastProgressAt: stamp));
+
+        var repo = await OpenRepoAsync();
+        var page = (await repo.GetEligiblePageAsync(
+            LeaderboardBoard.DamageDealt, PeriodKey, 1, 200, MinLevel, ExcludeAdmins)).ToList();
+
+        foreach (var id in ids)
+        {
+            var listPosition = page.FindIndex(e => e.PlayerId == id) + 1;
+            var callerRank = await repo.GetCallerRankAsync(
+                id, LeaderboardBoard.DamageDealt, PeriodKey, MinLevel, ExcludeAdmins);
+
+            callerRank!.Rank.Should().Be(listPosition,
+                "the rank a player is told must be the row they occupy in the list they are shown");
+        }
+    }
+
     [Fact]
     public async Task CallerRank_IneligiblePlayersInterleaved_DoNotOccupyRanks()
     {

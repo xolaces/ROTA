@@ -503,9 +503,15 @@ public sealed class QuestService : IQuestService
             }
             // System 25 — one zone-rerun per zone-boss clear (zoneReset fires on every boss clear, incl.
             // the first → cycle #1). Exactly-once per cycle via the boss node's CompletionCount.
+            // The reference MUST carry the difficulty. `progress` is the per-DIFFICULTY row and each
+            // difficulty clears its own zone boss at the same CompletionCount (40, 80, 120 ...), so
+            // without it a Hard rerun produced a reference byte-identical to the Normal one — and the
+            // exactly-once ledger does not merely dedupe, it SKIPS THE INCREMENT. Every rerun after the
+            // first difficulty was silently lost, so the ladder counted the max across difficulties
+            // instead of the sum. The boss-gem reference three blocks up already includes it.
             if (zoneReset)
                 await _achievements.RecordZoneRerunAsync(playerId, quest.Chapter, quest.ZoneIndex,
-                    $"zonererun:{quest.Chapter}:{quest.ZoneIndex}:{progress.CompletionCount}", ct);
+                    $"zonererun:{quest.Chapter}:{quest.ZoneIndex}:{difficulty}:{progress.CompletionCount}", ct);
             await _achievements.EvaluateCompletionsAsync(playerId, ct);
         }
         catch (Exception) when (!ct.IsCancellationRequested) { /* best-effort — never break the attempt */ }

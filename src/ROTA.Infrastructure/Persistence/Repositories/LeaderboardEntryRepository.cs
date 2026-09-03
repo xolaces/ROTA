@@ -176,8 +176,13 @@ public sealed class LeaderboardEntryRepository : ILeaderboardEntryRepository
               AND p.is_banned   = false
               AND p.level       >= @minLevel
               AND (@excludeAdmins = false OR (p.roles & 4) = 0)
+            -- player_id is the TERMINAL tiebreak. Without it, (value, last_progress_at) is not unique:
+            -- a snapshot board stamps one identical last_progress_at on every row it writes, so a whole
+            -- tie block had no defined order. That made LIMIT/OFFSET unstable between page queries — a
+            -- tied player could appear on two pages while another appeared on none.
             ORDER BY le.value DESC,
-                     le.last_progress_at ASC
+                     le.last_progress_at ASC,
+                     le.player_id ASC
             LIMIT @pageSize OFFSET @offset
             """;
 
@@ -258,7 +263,7 @@ public sealed class LeaderboardEntryRepository : ILeaderboardEntryRepository
         // "Strictly above" = value > callerValue OR (value = callerValue AND last_progress_at < callerLastProgressAt).
         const string sql = """
             WITH caller AS (
-                SELECT le.value, le.last_progress_at
+                SELECT le.value, le.last_progress_at, le.player_id
                 FROM leaderboard_entry le
                 JOIN players p ON p.id = le.player_id
                 WHERE le.player_id  = @callerId
@@ -282,8 +287,14 @@ public sealed class LeaderboardEntryRepository : ILeaderboardEntryRepository
                    AND p2.is_banned   = false
                    AND p2.level       >= @minLevel
                    AND (@excludeAdmins = false OR (p2.roles & 4) = 0)
+                   -- Must mirror the ORDER BY above, terminal tiebreak included. Counting only rows
+                   -- STRICTLY above meant that on a snapshot board — where every row shares one
+                   -- last_progress_at — nobody was above anybody, so every tied player was told they
+                   -- were Rank 1 while the list beside it showed them at 137.
                    AND (le2.value > c.value
-                        OR (le2.value = c.value AND le2.last_progress_at < c.last_progress_at))
+                        OR (le2.value = c.value AND le2.last_progress_at < c.last_progress_at)
+                        OR (le2.value = c.value AND le2.last_progress_at = c.last_progress_at
+                            AND le2.player_id < c.player_id))
                 ) + 1 AS rank
             FROM caller c
             """;
