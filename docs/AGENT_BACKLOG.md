@@ -35,15 +35,18 @@ up unattended work starts here and finishes here.
 
 ## Ready — ranked
 
-### R1. Rewrite `docs/design/POTION_ECONOMY.md` to the shipped model
-The committed version documents the SUPERSEDED model (Discernment drives frequency, flat tier
-weights). The owner reversed this: **Discernment drives TIER, energy spent drives FREQUENCY**, with
-self-supply anchored at 2,000,000 Discernment. The document is now actively misleading.
+### R0. Client runs in MOCK mode — the playtest never touched the backend
+`AppBootstrap.useMock` defaults to `true` and the scene's serialized value wins over the code default,
+so `Assets/Scenes/Main.unity` starts on canned data. The console says `[ROTA] client started (MOCK).`
+and the profile shows DEV_Owner at Lv 2498 with 24.8M gold — none of it from the API.
 
-Must carry: the tier-weight interpolation (floor `[88,10,2,0,0]` avg 3.29%, ceiling `[20,25,25,20,10]`
-avg 9.225%), the `t³` easing on the Discernment axis, the R ceiling of 1.025 at 500 clicks/pool, and
-the note that exact self-supply is 488 clicks. Keep the structural warning section — it is still the
-correct analysis, only the axis assignment changed.
+Fix is one checkbox: select `UIDocument` in the Hierarchy, Inspector → AppBootstrap → Backend →
+uncheck **Use Mock**. The log line becomes `[ROTA] client started (http://localhost:5035).`
+
+Worth doing properly rather than leaving as a checkbox: `ApplyConfigOverrides()` already reads
+`ROTA_USE_MOCK` / `ROTA_BASE_URL` and a `rota-config.json`, but neither reaches the Editor
+conveniently. Consider an editor-only default of live-when-a-backend-answers, or a visible on-screen
+badge when mock is active — the current failure mode is silent and cost a whole playtest window.
 
 ### R2. Eval sheet — potion economy end to end
 `docs/eval/POTION_ECONOMY_EVAL.md`. A reproducible table, not prose: R (refund ratio) against
@@ -130,6 +133,15 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- `b5244b3` — **docs: potion economy rewritten to the shipped model.** Axes were documented
+  backwards (Discernment→frequency); corrected to Discernment→tier, energy→frequency. All figures
+  re-derived from the model with the arithmetic shown. Surfaced three things not previously written
+  down: self-supply lands at D=1,808,205 rather than the 2M anchor (R settles at 1.025, so it crosses
+  1.0 early); above level 13,420 R is level-INDEPENDENT because cost tracking pool makes
+  MaxPool/QuestCost constant; below it the energy gate scales R down linearly, which is the
+  "pushback not a wall" as one number (7.7% recovery at L1,000).
+- `43dbb7f` — chore: Unity scratch dirs ignored in the backend repo after the editor was pointed at
+  it by mistake and generated Library/, Temp/, UserSettings/, ProjectSettings/ beside the .NET source.
 - `f59e481` — **balance: stretch every Discernment sink across the real endgame.** Crit saturation
   ×100 (chance 1k → 100k, damage 5k → 500k, caps unchanged); rare drops re-anchored on 1M with a hard
   10M ceiling (halfway 50k → 111,111 + `RareDropDiscernmentCap`); zone ladder 6 → 9 rungs to 5,000;
