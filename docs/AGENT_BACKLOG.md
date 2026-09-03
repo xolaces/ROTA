@@ -48,16 +48,20 @@ Worth doing properly rather than leaving as a checkbox: `ApplyConfigOverrides()`
 conveniently. Consider an editor-only default of live-when-a-backend-answers, or a visible on-screen
 badge when mock is active — the current failure mode is silent and cost a whole playtest window.
 
-### R1b. The other economy seams have no concurrency test
-The gem ledger is now proven under contention (`216c985`), and the same proof does not exist for
-raid loot, quest rewards or shop purchases. Each has its own referenceId scheme and its own lock
-domain, and they do NOT all share the gem ledger's advisory-lock discipline: raid loot serializes on
-the PARTICIPANT row while quests serialize on the PLAYER, which is exactly the mismatch that lost
-skill-point grants (`251fec1`). Reuse the GemSpendConcurrencyTests shape -- own DbContext per task,
-assert the invariant, then neuter the guard and confirm the test fails.
+### R1b. Quest rewards and the Gauntlet shop still have no concurrency test
+Gems (`216c985`) and raid loot (`a9ad926`) are now proven under contention. Two seams remain, and
+they cannot borrow either proof because the lock domains genuinely differ: raid loot serializes on
+the PARTICIPANT row, quests serialize on the PLAYER. That exact mismatch is what silently lost
+skill-point grants (`251fec1`).
 
-Priority order by how much value a race would mint: raid loot claim, quest reward grant, then the
-Gauntlet shop (which additionally has the unresolved repeatability question below).
+**Quest reward grant** — next. Check what serializes an attempt, whether the reward grant rides that
+same transaction, and whether the referenceId is unique per attempt rather than per node. Reuse the
+RaidLootClaimConcurrencyTests shape: own DbContext per task, assert the invariant, then neuter the
+guard and confirm the test fails for the right reason.
+
+**Gauntlet shop** — after it, and note it carries an unresolved owner decision (gem bundle
+repeatability) that has to be settled before a test can assert the right thing. Testing it first
+would just pin whichever behaviour happens to exist.
 
 ### R2. Eval sheet — potion economy end to end
 `docs/eval/POTION_ECONOMY_EVAL.md`. A reproducible table, not prose: R (refund ratio) against
@@ -144,6 +148,10 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- `a9ad926` — **raid loot claim pinned.** Four cases against the real composition (advisory lock +
+  conditional latch + grant on the same transaction). Verified against TWO separate neuters: dropping
+  the latch condition failed three tests; making the loser commit rather than roll back failed the
+  rollback test with 1099 gems where 100 was expected. Implementation was already correct.
 - `216c985` — **gem double-spend pinned.** Five concurrency cases; verified against the real bug by
   neutering the advisory lock, which charged 11 spends against a 10-gem balance and took it to -1.
   The implementation was already correct — this closes the open defect as tested, not as argued.
