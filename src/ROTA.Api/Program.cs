@@ -342,6 +342,10 @@ app.Map("/error", (HttpContext ctx) =>
         statusCode: 500
     ));
 
+// [1a] Security response headers — early, so they also land on the 500 from the handler above,
+// the 429 from the rate limiter and the 403 from the ban gate.
+app.UseMiddleware<SecurityHeadersMiddleware>();
+
 // [1b] Reverse-proxy client IPs (T66, host-agnostic deploys)
 // OFF by default. When the API sits behind a TLS-terminating proxy/load balancer, every
 // RemoteIpAddress is the proxy's — which would collapse per-IP rate limiting and audit IPs.
