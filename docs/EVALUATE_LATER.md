@@ -174,3 +174,73 @@ afterwards, not taken on the auditor's word.
 
 2. **Should zone Guardians drop items at all?** Unchanged from the entry above. 23 of 25 raids carry
    no loot table.
+
+---
+
+## Second audit sweep 2026-09-02 — growth, and player lockout
+
+Two more read-only audits: unbounded row growth, and whether a player can get stuck. Verified by
+hand afterwards. What was fixed is in the commit log; what needs a decision is below.
+
+### 1. A player who never invests in Energy hits a wall at Chapter 4, and cannot undo it
+
+**This is the most player-facing thing found all session, and it lands squarely in beta.**
+
+Max energy is purely investment-driven — `ComputeMaxEnergy() => BaseMaxEnergy + EnergyInvestment`,
+with `BaseMaxEnergy = 25`. Level does NOT raise it; `GrantLevelUpPointsAsync` resyncs GuildStamina's
+max and deliberately not Energy's.
+
+Quest cost scales by chapter. Quest `c4z0b` costs `ceil(20 x 1.38) = 28` on Normal — the first node
+in the chain to exceed a base pool of 25. Every restore path clamps to `MaxValue`, so gems, potions
+and waiting are all useless. And stat allocation is ONE-WAY: `PlayerStats` exposes only
+`AllocateTo*`, with no de-allocation anywhere. The only respec in the codebase is
+`MasteryService.RespecAsync`, which respecs masteries, not stat points.
+
+A new player who pours all 10 SP/level into Attack and Defence — a completely reasonable "I want to
+hit harder" build — arrives at Chapter 4 unable to attempt the next quest, with no in-product action
+that fixes it.
+
+**It is a wall, not a tomb.** A zone-boss clear resets the zone (`ResetZoneAsync`), so Chapters 1-3
+stay farmable indefinitely: XP, levels, new skill points, then Energy. The LSI cap aggravates it —
+Stamina counts double, so a Stamina-heavy build is REJECTED when it later tries to allocate Energy
+and must level further first.
+
+**What settles it, and it is a design call:** a gem-priced stat respec mirroring the mastery one, or
+a floor under `ComputeMaxEnergy` that grows with level. Either removes the trap; they imply very
+different economies. There is currently no signposting either — nothing tells a player their build
+is about to wall them.
+
+### 2. Refresh tokens are never deleted
+
+Rotation revokes in place (`IsRevoked = true`) and nothing ever removes a row. The 3-session cap
+counts only live rows, so revoked and expired ones are invisible to it and accumulate forever. With
+a 15-minute access token a connected client rotates roughly 96 times a day per session.
+
+**Do not just add a purge.** Replay detection works by recognising a revoked token being presented
+again (and revoking the family) — deleting history would silently disable it. The question is a
+RETENTION WINDOW: how long after expiry is a token still worth keeping to catch a replay? Pick that,
+and the purge follows.
+
+### 3. Balances are a full SUM over the player's lifetime ledger, on hot GET paths
+
+`GetBalanceAsync` for gems, strikes and Gauntlet currency each sum every row the player has ever
+had. They are called from the player profile, from the Gauntlet overview GET (three ledger scans in
+one handler), and from the raid hit path. Read cost per request therefore grows linearly with
+account age, forever.
+
+Correct, but not free. It will not bite in a closed beta; it is the sort of thing that is much
+cheaper to fix before there is a year of ledger history. **The design question is whether to keep a
+materialised balance column** alongside the append-only ledger — which has real money-safety
+implications and so is not a change to make casually.
+
+### 4. Idempotency ledgers grow per action with no bound
+
+`mastery_activity_events` and `achievement_progress_events` write a row per distinct referenceId —
+per raid kill, per settled event, multiplied by the number of achievement tiers on the metric. Rows
+older than the raid they reference can never be needed for dedup again, and nothing prunes them.
+Ordinary raid HITS do not write here, so this is per meaningful action, not per request. Low
+urgency, same retention-window question as the refresh tokens.
+
+**There is no purge, cron, or retention job anywhere in the repo** — established by absence across
+the whole tree, not by failing to find a specific one. That is fine today. It is worth one decision
+covering all four tables above rather than four separate ones later.
