@@ -84,6 +84,12 @@ public class ActiveRaid
         UpdatedAt  = DateTimeOffset.UtcNow;
     }
 
+    // World raids use a timer + damage ladder, not a health pool. A zero-HP raid with MaxHp == 0 is a
+    // valid resting state (the timer determines the outcome), not a kill. Ordinary raids are only dead
+    // when their health pool reaches zero.
+    public bool CanBeKilledByDamage()
+        => MaxHp > 0 && CurrentHp == 0;
+
     public void MarkDefeated()
     {
         IsDefeated     = true;
