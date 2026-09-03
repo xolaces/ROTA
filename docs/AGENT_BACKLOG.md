@@ -48,6 +48,17 @@ Worth doing properly rather than leaving as a checkbox: `ApplyConfigOverrides()`
 conveniently. Consider an editor-only default of live-when-a-backend-answers, or a visible on-screen
 badge when mock is active — the current failure mode is silent and cost a whole playtest window.
 
+### R1. Concurrent gem double-spend — the highest-value untested attack
+Already an open defect in the project notes, and the one thing a security audit could not close for
+lack of budget. Needs a funded account and genuinely parallel in-flight spends, not sequential ones.
+The tri-state spend (Charged / AlreadyProcessed / InsufficientBalance) plus advisory-lock discipline
+suggests it holds, but that is an argument, not a test. Then repeat the shape across the other
+economy seams: raid loot, quest rewards, shop purchases. The zone-rerun referenceId was the one seam
+actually examined this session and it was broken (`17bbc50`), which is the reason to check the rest
+rather than assume them.
+
+Full context in `docs/eval/SECURITY_AUDIT_2026-09-03.md`.
+
 ### R2. Eval sheet — potion economy end to end
 `docs/eval/POTION_ECONOMY_EVAL.md`. A reproducible table, not prose: R (refund ratio) against
 Discernment × energy-per-click × pool size, with the self-supply crossover marked. Include the
@@ -133,6 +144,15 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- `b8191c3` — **CRITICAL: the API issued tokens it would then reject.** No `Jwt` section existed in
+  appsettings.json, so issuer/audience were undefined; signing omitted them while validation still
+  required them. Every login returned 200 and every authenticated request then 401'd, silently. Found
+  by probing the running API, not by reading it.
+- `15daf86` — security response headers (nosniff, DENY, no-referrer, Permissions-Policy, strict CSP
+  outside Development), set early so they land on 401/429/403/500 too. Four pipeline-level tests,
+  verified by neutering the registration.
+- `a7abe05` — ForwardedHeaders now refuses to boot on an ambiguous config instead of warning.
+- `docs/eval/SECURITY_AUDIT_2026-09-03.md` — the full audit, including what was NOT tested.
 - `b5244b3` — **docs: potion economy rewritten to the shipped model.** Axes were documented
   backwards (Discernment→frequency); corrected to Discernment→tier, energy→frequency. All figures
   re-derived from the model with the arithmetic shown. Surfaced three things not previously written
