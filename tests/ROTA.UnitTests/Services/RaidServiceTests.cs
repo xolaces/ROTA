@@ -54,7 +54,8 @@ public class RaidServiceTests
         Mock<IGuildEconomyRepository> GuildEconomy,
         Mock<IMasteryService> Mastery,
         Mock<IAchievementService> Achievements,
-        Mock<IFriendshipRepository> Friendships);
+        Mock<IFriendshipRepository> Friendships,
+        Mock<IGauntletBattalionService> Battalion);
 
     private static ServiceBundle BuildService(Random? random = null, MagicConfig? magicConfig = null, LegionConfig? legionConfig = null, CombatConfig? combatConfig = null, GauntletConfig? gauntletConfig = null, QuestConfig? questConfig = null)
     {
@@ -243,7 +244,7 @@ public class RaidServiceTests
             raidMagics, magicDefs, magicSvc, playerLegions, legionSlots, unitDefs, legionDefs,
             commanderGear, gearDefs, legionSvc, leaderboards,
             trophyRepo, gauntletContent, playerEventMagics, playerMagicHonors, strikes, gauntletScoring,
-            gauntletCurrency, guildMemberships, guildEconomy, mastery, achievements, friendships);
+            gauntletCurrency, guildMemberships, guildEconomy, mastery, achievements, friendships, battalion);
     }
 
     private static Player MakePlayer(long xp = 0)
@@ -3513,6 +3514,32 @@ public class RaidServiceTests
             Times.Once, "Gauntlet hit spends a flat 1 ticket regardless of hit size");
         b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
             Times.Never, "Gauntlet hit must NOT spend stamina");
+    }
+
+    [Fact]
+    public async Task Hit_GauntletRaid_UsesBattalionPower_ForDamageBase()
+    {
+        var eventId = Guid.NewGuid();
+        var b      = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid   = MakeGauntletRaid(eventId);
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+        b.Battalion.Setup(s => s.ComputePowerAsync(
+                player.Id, It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(12345L);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        b.Battalion.Verify(s => s.ComputePowerAsync(
+                player.Id, It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()),
+            Times.Once, "Gauntlet raids must compute base damage from the battalion power, not the player's raw base stats");
+        result.Response!.DamageDealt.Should().BeGreaterThan(0, "the battalion-powered Gauntlet hit still deals real damage");
     }
 
     [Fact]
