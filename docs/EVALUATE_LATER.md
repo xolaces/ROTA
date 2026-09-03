@@ -268,3 +268,46 @@ covering all four tables above rather than four separate ones later.
   and the stat drifts" failure mode is structurally impossible.
 - **Crafting is atomic and re-verifies under the lock** — ingredients checked inside
   `IPlayerMutationLock`, gold via conditional update, consume before grant, all one transaction.
+
+---
+
+## Fourth audit sweep 2026-09-03 — config defaults and formulas
+
+The audit that previously caught `XpExponent` shipping 0.8 while defaulting to 0.7, re-run over
+every config class and every formula.
+
+**Good news first: there are ZERO accidental default-vs-appsettings value disagreements.** Every
+scalar appsettings sets carries an identical C# default, `XpExponent` included — bug (b) has not
+regressed. The three differences that exist are deliberate and documented in-code.
+
+### Fixed
+- **Six config tables defaulted to EMPTY** while appsettings ships the whole thing, so a binding
+  failure degraded silently instead of throwing. Now `ValidateOnStart`.
+- **The Gauntlet curve tests exercised the unramped curve**, including the one assertion guarding
+  overflow headroom. Fixture now mirrors appsettings.
+- **Flat conditional bonuses truncated toward zero** per bonus, compounding the shortfall. Now rounds.
+
+### Open — owner decisions
+
+1. **T76's late ramp moved the natural endgame frontier from stage 250 to about 213.** On the
+   unramped curve an 80M-power player reached exactly stage 250, which is where the "250 is the
+   natural frontier" design note came from. Under the shipped ramp the last ~37 stages are gem-pushed
+   territory rather than natural progress. That may be exactly what the ramp was for — it contradicts
+   the older note, so it is now pinned in `GauntletCurveTests` rather than left to drift. Retune, or
+   update the design note.
+
+2. **`AchievementConfig` has no appsettings section at all.** Its `ZoneRerunLadder` default IS the
+   shipped curve, so nothing is broken — but `Program.cs` binds it against a section that does not
+   exist, and the in-code comment calls the curve owner-tunable. It is currently code-locked. Add the
+   section if it is meant to be tunable.
+
+3. **Roughly twenty scalars are untunable without a code change** — most of `CombatConfig`'s Gauntlet
+   health knobs and several `QuestConfig` drop rates — despite `CombatConfig`'s own comment saying
+   "All values are appsettings-overridable for tuning." Their defaults are the shipped values, so
+   nothing is wrong today; the comment is just no longer true.
+
+4. **`RaidRewards.UnassignedStatPointsGranted` is still `int`** while its sibling
+   `RaidParticipant.StatPointsEarned` was widened to `long` by the int32 audit. The upstream
+   accumulator is `int` too and no content configuration reaches 2^31, so this is a leftover from the
+   widening pass rather than a live overflow. Left alone deliberately: the Unity client mirrors both
+   widths exactly, so changing it needs a coordinated two-repo change for an unreachable case.
