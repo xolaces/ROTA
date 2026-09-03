@@ -127,3 +127,12 @@ docs/research/dotd-wiki/*_files/
 
 # Transient test result output
 .tmp-testresults/
+
+# ----- Unity scratch, if the Unity editor is ever pointed at THIS repo by mistake -----
+# ROTA-Qwen is the BACKEND. The Unity client lives in C:\Dev\ROTA.Client6. Opening this folder in
+# Unity makes it adopt the tracked `assets/` directory as a project root and generates the dirs
+# below. They are ignored so a stray `git add -A` cannot commit them.
+/Library/
+/Temp/
+/UserSettings/
+/ProjectSettings/
