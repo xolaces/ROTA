@@ -244,3 +244,27 @@ urgency, same retention-window question as the refresh tokens.
 **There is no purge, cron, or retention job anywhere in the repo** — established by absence across
 the whole tree, not by failing to find a specific one. That is fine today. It is worth one decision
 covering all four tables above rather than four separate ones later.
+
+---
+
+## Third audit sweep 2026-09-03 — inventory and duplication
+
+### Fixed
+- **One gear copy could be worn twice.** `EquipCommanderAsync` required only ownership, never a spare,
+  while `EquipAsync` required a spare but counted only equipment rows. One Orange mount therefore
+  fired a mount proc AND a commander proc in the same attack. Both sides now count both slots.
+- **A bulk potion use destroyed the surplus.** Ten 50-point potions at 90/100 restored 10 and burned
+  all ten. Now consumes only what the pool can absorb.
+
+### Checked and found CORRECT — do not re-file
+- **The craft-loop exploit does not exist in shipped content.** The hypothesis was: farm a
+  re-droppable Unit, craft it into stacking Gear, farm it again, repeat for unbounded gear. Of the
+  five recipes, four output Unit/Legion — own-once, and `CraftAsync` refuses an already-owned output
+  BEFORE charging gold or consuming ingredients. The only Gear-output recipe, `craft_oathsteel_helm`,
+  consumes Gear + Item, not a Unit. There is no recipe turning a re-farmable collectible into a
+  stacking output.
+- **No stored stat bonuses anywhere.** Effective attack/defence and legion power are recomputed from
+  the live definitions on every read, so the "unequip subtracts a value content has since changed,
+  and the stat drifts" failure mode is structurally impossible.
+- **Crafting is atomic and re-verifies under the lock** — ingredients checked inside
+  `IPlayerMutationLock`, gold via conditional update, consume before grant, all one transaction.
