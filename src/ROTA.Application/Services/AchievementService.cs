@@ -90,6 +90,26 @@ public sealed class AchievementService : IAchievementService
         }
     }
 
+    public async Task RecordRaidClearAsync(Guid playerId, string raidDefinitionId,
+        string referenceId, CancellationToken ct = default)
+    {
+        // SCOPED exactly like RecordZoneRerunAsync: only this raid's ladder tiers, never the metric-wide
+        // fan-out. The per-(player, achievement, ref) event ledger makes one kill count exactly once on
+        // each tier, so a re-processed kill cannot double-advance the ladder.
+        if (string.IsNullOrWhiteSpace(raidDefinitionId)) return;
+
+        var defs = _defs.GetRaidClearTiers(raidDefinitionId);
+        if (defs.Count == 0) return;
+
+        foreach (var def in defs)
+        {
+            var created = await _progressEvents.CreateAsync(
+                AchievementProgressEvent.Create(playerId, def.Id, referenceId), ct);
+            if (!created) continue;
+            await _progress.IncrementAsync(playerId, def.Id, 1, ct);
+        }
+    }
+
     public async Task RecountCollectorCountersAsync(Guid playerId, CancellationToken ct = default)
     {
         var collectorDefs = _defs.GetByMetric(AchievementMetric.CollectorItemCount)

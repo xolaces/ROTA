@@ -42,6 +42,12 @@ public interface IAchievementService
     Task RecordZoneRerunAsync(Guid playerId, int chapter, int zoneIndex, string referenceId, CancellationToken ct = default);
 
     /// <summary>
+    /// Records ONE clear of a single raid definition against that raid's ladder only (scoped, not a
+    /// metric-wide fan-out). <paramref name="referenceId"/> makes it exactly-once across tiers.
+    /// </summary>
+    Task RecordRaidClearAsync(Guid playerId, string raidDefinitionId, string referenceId, CancellationToken ct = default);
+
+    /// <summary>
     /// Awards every achievement whose counter ≥ threshold and is not yet awarded — exactly one ledger
     /// row each (unique index), latching IsCompleted + auditing "AchievementUnlocked". Idempotent;
     /// safe to call repeatedly. Called on profile read and after quest completion.

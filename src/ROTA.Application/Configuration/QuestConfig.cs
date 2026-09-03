@@ -56,8 +56,15 @@ public class QuestConfig
     // use the asymptotic curve: chance = base + RareDropMaxBonus × d / (d + Halfway).
     // With the Pano base of 0.005: 0 Disc → 0.5%, 100k Disc → ~3.5%, asymptote 5%.
     // The Pano set is the chase set — a crafting upgrade recipe is planned with the crafting menus.
+    // Owner 2026-09-03 — the curve was retuned to reach across the real endgame Discernment range
+    // (15M-100M) instead of finishing inside the first half-million. Halfway is the Discernment at
+    // which HALF the bonus is earned; the shape then gives:
+    //   111,111 -> 50% of bonus      1,000,000 -> 90%      10,000,000 -> 98.9% (the cap)
+    // RareDropDiscernmentCap is a HARD ceiling on the Discernment fed to the curve, so the ladder has
+    // a stated end rather than an asymptote nobody reaches. Past 10M, rare-drop chance stops moving.
     public double RareDropMaxBonus { get; set; } = 0.045;
-    public double RareDropDiscernmentHalfway { get; set; } = 50_000;
+    public double RareDropDiscernmentHalfway { get; set; } = 111_111;
+    public double RareDropDiscernmentCap { get; set; } = 10_000_000;
 
     // Owner 2026-06-14 — XP earned scales with ENERGY SPENT, NOT player level (level only raises
     // XpToNextLevel). Each point of energy rolls Uniform[min,max], summed (see ResourceReward.RollSummed).

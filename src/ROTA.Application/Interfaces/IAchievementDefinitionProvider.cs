@@ -27,4 +27,11 @@ public interface IAchievementDefinitionProvider
     /// the matching zone instead of the metric-wide fan-out.
     /// </summary>
     IReadOnlyList<AchievementDefinition> GetZoneRerunTiers(int chapter, int zoneIndex);
+
+    /// <summary>
+    /// The per-raid clear ladder for one raid definition, ordered by ascending threshold; an empty list
+    /// if that raid has none. Used by <c>RecordRaidClearAsync</c> to route a kill to exactly that raid's
+    /// ladder rather than fanning it across every RaidClears definition.
+    /// </summary>
+    IReadOnlyList<AchievementDefinition> GetRaidClearTiers(string raidDefinitionId);
 }

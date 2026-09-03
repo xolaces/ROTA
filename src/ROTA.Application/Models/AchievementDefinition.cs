@@ -50,5 +50,13 @@ public class AchievementDefinition
     /// <summary>System 25 — the 0-based zone within <see cref="Chapter"/>. REQUIRED iff Metric == ZoneReruns.</summary>
     public int? ZoneIndex { get; set; }
 
+    /// <summary>
+    /// Owner 2026-09-03 — the raid definition this achievement is scoped to. REQUIRED when
+    /// Metric == RaidClears, null otherwise (startup-validated). Set on the per-raid clear ladders the
+    /// provider synthesizes; lets <c>RecordRaidClearAsync</c> route a kill to exactly one raid's ladder
+    /// instead of the metric-wide fan-out.
+    /// </summary>
+    public string? RaidDefinitionId { get; set; }
+
     public string? IconKey { get; set; }
 }

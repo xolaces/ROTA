@@ -274,7 +274,7 @@ public sealed class StatService : IStatService
         return Math.Max(milestoneFloor, Math.Max((int)Math.Round(linearFloor), (int)Math.Round(baseXp)));
     }
 
-    public CritProfile GetCritProfile(int discernment)
+    public CritProfile GetCritProfile(long discernment)
     {
         var cfg = _combatConfig.Value;
         double chance = cfg.BaseCritChance

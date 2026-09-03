@@ -595,7 +595,9 @@ public sealed class QuestService : IQuestService
         // exceed base + RareDropMaxBonus (~5%). Hoard still multiplies inside that ceiling.
         double RareScale(double baseChance)
         {
-            double d = discernmentInvestment;
+            // Clamp FIRST: past RareDropDiscernmentCap the curve stops moving, so the chase has a stated
+            // end instead of an asymptote. Guarding against <= 0 keeps a zero-Discernment player at base.
+            double d = Math.Clamp((double)discernmentInvestment, 0.0, _questConfig.RareDropDiscernmentCap);
             double bonus = _questConfig.RareDropMaxBonus * (d / (d + _questConfig.RareDropDiscernmentHalfway));
             double cap = baseChance + _questConfig.RareDropMaxBonus;
             return Math.Min((baseChance + bonus) * hoardDropMultiplier, cap);

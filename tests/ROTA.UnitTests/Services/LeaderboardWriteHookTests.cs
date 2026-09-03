@@ -565,7 +565,7 @@ public class LeaderboardWriteHookTests
         stats.Setup(s => s.AddUnassignedPointsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         stats.Setup(s => s.XpToNextLevel(It.IsAny<int>())).Returns(1000);
-        stats.Setup(s => s.GetCritProfile(It.IsAny<int>()))
+        stats.Setup(s => s.GetCritProfile(It.IsAny<long>()))
             .Returns(new CritProfile(Chance: 0.0, Multiplier: 1.5));
         equipment.Setup(e => e.GetEffectiveCombatDataAsync(
                 It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))

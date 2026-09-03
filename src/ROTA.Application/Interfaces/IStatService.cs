@@ -19,5 +19,5 @@ public interface IStatService
 
     int XpToNextLevel(int level);
 
-    CritProfile GetCritProfile(int discernment);
+    CritProfile GetCritProfile(long discernment);
 }

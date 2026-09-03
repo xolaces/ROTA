@@ -227,7 +227,7 @@ public class AchievementDefinitionProviderTests : IDisposable
         JsonSerializer.Serialize(BuildValid(), new JsonSerializerOptions { Converters = { new JsonStringEnumConverter() } }));
 
     [Fact]
-    public void Provider_SynthesizesSixTierLadderPerZone_FromQuestTopologyAndConfig()
+    public void Provider_SynthesizesNineTierLadderPerZone_FromQuestTopologyAndConfig()
     {
         WriteValidRoster();
         var quests = new FakeQuests(
@@ -236,18 +236,63 @@ public class AchievementDefinitionProviderTests : IDisposable
         var provider = new AchievementDefinitionProvider(_tmpDir, quests, new AchievementConfig());
 
         var tiers = provider.GetZoneRerunTiers(1, 0);
-        tiers.Should().HaveCount(6);
-        tiers.Select(t => t.Threshold).Should().Equal(10, 25, 50, 100, 250, 500);
-        tiers[0].Id.Should().Be("ach_zonererun_c1z0_grey");
-        tiers[0].NextId.Should().Be("ach_zonererun_c1z0_white");
-        tiers[^1].Id.Should().Be("ach_zonererun_c1z0_orange");
+        tiers.Should().HaveCount(9);
+        tiers.Select(t => t.Threshold).Should().Equal(10, 25, 50, 100, 250, 500, 1000, 2500, 5000);
+
+        // Ids are keyed on THRESHOLD, not rarity: the ladder runs past Orange, which is the permanent
+        // top of ItemRarity, so the last four rungs share a rarity and only the threshold is unique.
+        tiers[0].Id.Should().Be("ach_zonererun_c1z0_t10");
+        tiers[0].NextId.Should().Be("ach_zonererun_c1z0_t25");
+        tiers[^1].Id.Should().Be("ach_zonererun_c1z0_t5000");
         tiers[^1].NextId.Should().BeNull();
+        tiers.Select(t => t.Id).Should().OnlyHaveUniqueItems();
         tiers.Should().OnlyContain(t =>
             t.Metric == AchievementMetric.ZoneReruns && t.Category == AchievementCategory.ZoneMastery);
 
-        // Two distinct zones → two ladders (12 synthesized defs total).
-        provider.GetZoneRerunTiers(1, 1).Should().HaveCount(6);
-        provider.GetAll().Count(a => a.Metric == AchievementMetric.ZoneReruns).Should().Be(12);
+        // Two distinct zones → two ladders (18 synthesized defs total).
+        provider.GetZoneRerunTiers(1, 1).Should().HaveCount(9);
+        provider.GetAll().Count(a => a.Metric == AchievementMetric.ZoneReruns).Should().Be(18);
+    }
+
+    [Fact]
+    public void Provider_SynthesizesNineTierClearLadderPerRaid_ScopedByRaidId()
+    {
+        WriteValidRoster();
+        var raids = new FakeRaids(("raid_a", "The Hollow"), ("raid_b", "Lastwatch Relay"));
+        var provider = new AchievementDefinitionProvider(_tmpDir, quests: null,
+            config: new AchievementConfig(), raids: raids);
+
+        var tiers = provider.GetRaidClearTiers("raid_a");
+        tiers.Should().HaveCount(9);
+        tiers.Select(t => t.Threshold).Should().Equal(10, 25, 50, 100, 250, 500, 1000, 2500, 5000);
+        tiers[0].Id.Should().Be("ach_raidclear_raid_a_t10");
+        tiers[^1].Id.Should().Be("ach_raidclear_raid_a_t5000");
+        tiers[^1].NextId.Should().BeNull();
+        tiers.Should().OnlyContain(t =>
+            t.Metric == AchievementMetric.RaidClears
+            && t.Category == AchievementCategory.RaidMastery
+            && t.RaidDefinitionId == "raid_a");
+
+        // SCOPED, not fanned: the other raid has its own chain, and an unknown id yields nothing.
+        provider.GetRaidClearTiers("raid_b").Should().HaveCount(9);
+        provider.GetRaidClearTiers("raid_missing").Should().BeEmpty();
+        provider.GetAll().Count(a => a.Metric == AchievementMetric.RaidClears).Should().Be(18);
+    }
+
+    [Fact]
+    public void Provider_NoRaidProvider_SynthesizesNoRaidLadders()
+    {
+        var provider = new AchievementDefinitionProvider(FindApiContentRoot());
+        provider.GetAll().Should().NotContain(a => a.Metric == AchievementMetric.RaidClears);
+    }
+
+    private sealed class FakeRaids : IRaidDefinitionProvider
+    {
+        private readonly List<RaidDefinition> _all;
+        public FakeRaids(params (string Id, string Name)[] raids) =>
+            _all = raids.Select(r => new RaidDefinition { Id = r.Id, Name = r.Name }).ToList();
+        public IReadOnlyList<RaidDefinition> GetAll() => _all;
+        public RaidDefinition? GetById(string id) => _all.FirstOrDefault(r => r.Id == id);
     }
 
     [Fact]

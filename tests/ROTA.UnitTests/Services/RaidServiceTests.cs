@@ -128,7 +128,7 @@ public class RaidServiceTests
         // Default: 1000 XP per level — keeps existing kill-reward tests from triggering extra level-ups
         stats.Setup(s => s.XpToNextLevel(It.IsAny<int>())).Returns(1000);
         // Default: no crit (chance=0 → never crits) — preserves existing damage-range assertions
-        stats.Setup(s => s.GetCritProfile(It.IsAny<int>()))
+        stats.Setup(s => s.GetCritProfile(It.IsAny<long>()))
             .Returns(new CritProfile(Chance: 0.0, Multiplier: 1.5));
         // Default: pass-through — no gear bonus, no proc, no conditional bonus
         equipment.Setup(e => e.GetEffectiveCombatDataAsync(
@@ -1953,7 +1953,7 @@ public class RaidServiceTests
             .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
 
         // Override the default no-crit setup: force crit with multiplier 1.5
-        b.Stats.Setup(s => s.GetCritProfile(It.IsAny<int>()))
+        b.Stats.Setup(s => s.GetCritProfile(It.IsAny<long>()))
             .Returns(new CritProfile(Chance: 1.0, Multiplier: 1.5));
 
         var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
@@ -1981,7 +1981,7 @@ public class RaidServiceTests
             .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
 
         // Ensure no-crit profile (matches the BuildService default — explicit for clarity)
-        b.Stats.Setup(s => s.GetCritProfile(It.IsAny<int>()))
+        b.Stats.Setup(s => s.GetCritProfile(It.IsAny<long>()))
             .Returns(new CritProfile(Chance: 0.0, Multiplier: 1.5));
 
         var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
@@ -2010,7 +2010,7 @@ public class RaidServiceTests
             .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
 
         // Cap multiplier = BaseCritMultiplier(1.5) + MaxCritDamageBonus(1.0) = 2.5
-        b.Stats.Setup(s => s.GetCritProfile(It.IsAny<int>()))
+        b.Stats.Setup(s => s.GetCritProfile(It.IsAny<long>()))
             .Returns(new CritProfile(Chance: 1.0, Multiplier: 2.5));
 
         var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());

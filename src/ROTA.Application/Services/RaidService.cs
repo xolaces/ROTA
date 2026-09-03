@@ -1136,8 +1136,11 @@ public sealed class RaidService : IRaidService
 
             // Apply discernment crit — adjusted by magic CritChanceFlat, capped at 1.0.
             // int32-overflow-audit Unit 2 — DiscernmentInvestment is long; crit math is bounded (clamped
-            // chance/multiplier), so the (int) narrowing for GetCritProfile is safe.
-            var crit = _stats.GetCritProfile((int)player.Stats.DiscernmentInvestment);
+            // GetCritProfile takes a long, so no narrowing happens here. It used to take an int, and
+            // the (int) cast that fed it was the thinnest numeric margin in the game: endgame Discernment
+            // runs to ~100M against an int32 ceiling of 2.1B, and a wrap would have silently clamped crit
+            // back to base rather than failing loudly.
+            var crit = _stats.GetCritProfile(player.Stats.DiscernmentInvestment);
             double adjustedCritChance = Math.Min(1.0, crit.Chance + magicCritBonus);
             isCrit = _random.NextDouble() < adjustedCritChance;
             if (isCrit)
@@ -1304,6 +1307,13 @@ public sealed class RaidService : IRaidService
                 // kill hook. Idempotent via the same per-(raid,player) referenceId; enlisted in this tx.
                 await _achievements.RecordProgressAsync(
                     playerId, AchievementMetric.RaidCompletions, 1, $"ach:raidkill:{activeRaidId}:{playerId}", ct);
+
+                // Owner 2026-09-03 — the PER-RAID clear ladder, alongside the global tally above. The
+                // referenceId carries the active-raid id (unique per spawn) and the player, so one kill
+                // advances each tier exactly once even if this block is re-entered; the ladder is routed
+                // by raid DEFINITION id, so every spawn of the same raid feeds the same chain.
+                await _achievements.RecordRaidClearAsync(
+                    playerId, lockedRaid.RaidDefinitionId, $"ach:raidclear:{activeRaidId}:{playerId}", ct);
 
                 // System 16 Slice 5 — per-Gauntlet-raid-defeat reward. GAUNTLET RAIDS ONLY (gated on
                 // GauntletEventId). Gauntlet raids are Personal/solo, so the killer is the lone

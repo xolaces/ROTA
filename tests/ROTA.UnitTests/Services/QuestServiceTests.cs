@@ -1278,7 +1278,7 @@ public class QuestServiceTests
     }
 
     private static (ServiceBundle b, Player player) GearDropFixture(
-        double roll, int discernment, bool rare = false, double baseChance = 0.10)
+        double roll, long discernment, bool rare = false, double baseChance = 0.10)
     {
         var b = BuildService(new FixedRandom(roll));
         var player = MakePlayer();
@@ -1312,9 +1312,11 @@ public class QuestServiceTests
         return (b, player);
     }
 
-    // Owner 2026-06-12 — chase-set ("rare") drop curve:
-    //   chance = base + RareDropMaxBonus(0.045) × d / (d + 50,000), hard-capped at base + bonus.
-    //   Pano base 0.005 → 0.5% at 0 Disc, ~3.5% at 100k Disc, asymptote 5%.
+    // Owner 2026-09-03 — chase-set ("rare") drop curve, retuned to span the real endgame Discernment
+    // range (15M-100M) instead of finishing inside the first half-million:
+    //   d      = min(Discernment, RareDropDiscernmentCap = 10,000,000)
+    //   chance = base + RareDropMaxBonus(0.045) × d / (d + 111,111), hard-capped at base + bonus.
+    //   Pano base 0.005 → 0.5% at 0 Disc, ~2.6% at 100k, ~4.55% at 1M (90% of bonus), 4.95% at the cap.
 
     [Fact]
     public async Task AttemptQuest_RareGearDrop_StaysAtBase_WithZeroDiscernment()
@@ -1329,15 +1331,48 @@ public class QuestServiceTests
     }
 
     [Fact]
-    public async Task AttemptQuest_RareGearDrop_ReachesMidCurve_At100kDiscernment()
+    public async Task AttemptQuest_RareGearDrop_IsStillEarly_At100kDiscernment()
     {
-        // base 0.005, Disc 100k → 0.005 + 0.045 × (100k / 150k) = 0.035; roll 0.03 < 0.035 → drops.
+        // PINS THE RETUNE. base 0.005, Disc 100k → 0.005 + 0.045 × (100k / 211,111) = 0.0263.
+        // A roll of 0.03 used to land UNDER the old 0.035 and drop; under the new curve 100k is early
+        // game and it does not. If this starts dropping again, the curve has been reverted.
         var (b, player) = GearDropFixture(roll: 0.03, discernment: 100_000, rare: true, baseChance: 0.005);
 
         await b.Service.AttemptQuestAsync(player.Id, "q_disc", QuestDifficulty.Normal);
 
         b.Equipment.Verify(e => e.GrantGearAsync(
+            It.IsAny<Guid>(), "gear_pano_helm", It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_RareGearDrop_ReachesMostOfTheCurve_At1mDiscernment()
+    {
+        // 1,000,000 is the owner's "saturated" anchor: 0.005 + 0.045 × (1M / 1,111,111) = 0.0455,
+        // i.e. 90% of the full bonus. Roll 0.03 < 0.0455 → drops.
+        var (b, player) = GearDropFixture(roll: 0.03, discernment: 1_000_000, rare: true, baseChance: 0.005);
+
+        await b.Service.AttemptQuestAsync(player.Id, "q_disc", QuestDifficulty.Normal);
+
+        b.Equipment.Verify(e => e.GrantGearAsync(
             player.Id, "gear_pano_helm", 1, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_RareGearDrop_StopsImproving_PastTheDiscernmentCap()
+    {
+        // The 10M cap is what gives the chase a stated END rather than an asymptote nobody reaches.
+        // At the cap the curve sits at 0.005 + 0.045 × (10M / 10,111,111) = 0.049505. A roll placed
+        // just ABOVE that must miss at 10M and still miss at 50M — five times the Discernment buys
+        // nothing, which is the whole point of the cap.
+        foreach (var discernment in new long[] { 10_000_000, 50_000_000 })
+        {
+            var (b, player) = GearDropFixture(roll: 0.0496, discernment: discernment, rare: true, baseChance: 0.005);
+
+            await b.Service.AttemptQuestAsync(player.Id, "q_disc", QuestDifficulty.Normal);
+
+            b.Equipment.Verify(e => e.GrantGearAsync(
+                It.IsAny<Guid>(), "gear_pano_helm", It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
     }
 
     [Fact]

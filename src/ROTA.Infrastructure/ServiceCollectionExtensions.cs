@@ -126,7 +126,8 @@ public static class ServiceCollectionExtensions
             new AchievementDefinitionProvider(
                 contentRootPath,
                 sp.GetRequiredService<IQuestDefinitionProvider>(),
-                sp.GetRequiredService<IOptions<AchievementConfig>>().Value));
+                sp.GetRequiredService<IOptions<AchievementConfig>>().Value,
+                sp.GetRequiredService<IRaidDefinitionProvider>()));
         // T52 — subject catalog (bug/report subject lists + feedback category); throws at startup on bad content.
         services.AddSingleton<ISubjectCatalogProvider>(
             _ => new SubjectCatalogProvider(contentRootPath));

@@ -32,4 +32,14 @@ public enum AchievementMetric
     /// to all defs on the metric — it is routed only to the matching zone's ladder via RecordZoneRerunAsync.
     /// </summary>
     ZoneReruns = 6,
+
+    /// <summary>
+    /// Owner 2026-09-03 — clears of ONE raid definition. SCOPED by RaidDefinitionId, exactly like
+    /// ZoneReruns is scoped by (Chapter, ZoneIndex): a RaidClears achievement is NOT fanned to all defs
+    /// on the metric, it is routed only to the matching raid's ladder via RecordRaidClearAsync.
+    ///
+    /// This does NOT replace <see cref="RaidCompletions"/>, which stays the account-wide lifetime tally.
+    /// Both are recorded on a kill: one global, one per raid.
+    /// </summary>
+    RaidClears = 7,
 }

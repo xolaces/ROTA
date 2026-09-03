@@ -22,11 +22,13 @@ public sealed class AchievementDefinitionProvider : IAchievementDefinitionProvid
     private readonly IReadOnlyDictionary<string, AchievementDefinition> _byId;
     private readonly List<AchievementDefinition> _ordered;
     private readonly IReadOnlyDictionary<(int Chapter, int ZoneIndex), List<AchievementDefinition>> _zoneReruns;
+    private readonly IReadOnlyDictionary<string, List<AchievementDefinition>> _raidClears;
 
     public AchievementDefinitionProvider(
         string contentRootPath,
         IQuestDefinitionProvider? quests = null,
-        AchievementConfig? config = null)
+        AchievementConfig? config = null,
+        IRaidDefinitionProvider? raids = null)
     {
         var path = Path.Combine(contentRootPath, "content", "achievements.json");
         if (!File.Exists(path))
@@ -53,6 +55,7 @@ public sealed class AchievementDefinitionProvider : IAchievementDefinitionProvid
         // System 25 — append the per-zone rerun ladders (skipped when there's no quest provider/ladder,
         // e.g. bare unit fixtures that construct the provider with just a path).
         list.AddRange(SynthesizeZoneRerunLadders(quests, config));
+        list.AddRange(SynthesizeRaidClearLadders(raids, config));
 
         Validate(list);
 
@@ -62,6 +65,10 @@ public sealed class AchievementDefinitionProvider : IAchievementDefinitionProvid
             .Where(a => a.Metric == AchievementMetric.ZoneReruns && a.Chapter is not null && a.ZoneIndex is not null)
             .GroupBy(a => (a.Chapter!.Value, a.ZoneIndex!.Value))
             .ToDictionary(g => g.Key, g => g.OrderBy(a => a.Threshold).ToList());
+        _raidClears = list
+            .Where(a => a.Metric == AchievementMetric.RaidClears && !string.IsNullOrWhiteSpace(a.RaidDefinitionId))
+            .GroupBy(a => a.RaidDefinitionId!)
+            .ToDictionary(g => g.Key, g => g.OrderBy(a => a.Threshold).ToList(), StringComparer.Ordinal);
     }
 
     public IReadOnlyList<AchievementDefinition> GetAll() => _ordered;
@@ -77,9 +84,18 @@ public sealed class AchievementDefinitionProvider : IAchievementDefinitionProvid
             ? tiers
             : Array.Empty<AchievementDefinition>();
 
+    public IReadOnlyList<AchievementDefinition> GetRaidClearTiers(string raidDefinitionId)
+        => _raidClears.TryGetValue(raidDefinitionId, out var tiers)
+            ? tiers
+            : Array.Empty<AchievementDefinition>();
+
     // Expand the rarity ladder across every distinct (chapter, zone) in the quest roster. Deterministic
     // ids + a synthesized NextId chain per zone, so the result is stable across restarts and validated
     // exactly like authored rows (strictly-increasing thresholds, same metric, no cycles).
+    //
+    // Ids are keyed on THRESHOLD, not rarity. ItemRarity stops at Orange permanently, so a ladder with
+    // more than six rungs necessarily repeats a rarity — keying on rarity would emit duplicate ids and
+    // fail the boot validator. Thresholds are strictly increasing, so they are unique by construction.
     private static IEnumerable<AchievementDefinition> SynthesizeZoneRerunLadders(
         IQuestDefinitionProvider? quests, AchievementConfig? config)
     {
@@ -100,21 +116,55 @@ public sealed class AchievementDefinitionProvider : IAchievementDefinitionProvid
             {
                 var tier = tiers[i];
                 var rarity = tier.Rarity.ToString().ToLowerInvariant();
+                string ZoneId(int n) => $"ach_zonererun_c{zone.Chapter}z{zone.ZoneIndex}_t{tiers[n].Threshold}";
                 yield return new AchievementDefinition
                 {
-                    Id          = $"ach_zonererun_c{zone.Chapter}z{zone.ZoneIndex}_{rarity}",
+                    Id          = ZoneId(i),
                     Category    = AchievementCategory.ZoneMastery,
                     Metric      = AchievementMetric.ZoneReruns,
                     Name        = $"{zone.ZoneName} — {tier.Rarity} Mastery",
                     Description = $"Re-run {zone.ZoneName} {tier.Threshold} times.",
                     Points      = tier.Points,
                     Threshold   = tier.Threshold,
-                    NextId      = i < tiers.Count - 1
-                        ? $"ach_zonererun_c{zone.Chapter}z{zone.ZoneIndex}_{tiers[i + 1].Rarity.ToString().ToLowerInvariant()}"
-                        : null,
+                    NextId      = i < tiers.Count - 1 ? ZoneId(i + 1) : null,
                     Chapter     = zone.Chapter,
                     ZoneIndex   = zone.ZoneIndex,
                     IconKey     = $"rarity_{rarity}",
+                };
+            }
+        }
+    }
+
+    // The same expansion, per RAID definition. Owner 2026-09-03: RaidCompletions stays the global
+    // lifetime tally; this adds a per-raid ladder so each raid carries its own chase to 5,000 clears.
+    private static IEnumerable<AchievementDefinition> SynthesizeRaidClearLadders(
+        IRaidDefinitionProvider? raids, AchievementConfig? config)
+    {
+        var ladder = config?.RaidClearLadder;
+        if (raids is null || ladder is null || ladder.Count == 0)
+            yield break;
+
+        var tiers = ladder.OrderBy(t => t.Threshold).ToList();
+
+        foreach (var raid in raids.GetAll().OrderBy(r => r.Id, StringComparer.Ordinal))
+        {
+            for (int i = 0; i < tiers.Count; i++)
+            {
+                var tier = tiers[i];
+                var rarity = tier.Rarity.ToString().ToLowerInvariant();
+                string RaidId(int n) => $"ach_raidclear_{raid.Id}_t{tiers[n].Threshold}";
+                yield return new AchievementDefinition
+                {
+                    Id               = RaidId(i),
+                    Category         = AchievementCategory.RaidMastery,
+                    Metric           = AchievementMetric.RaidClears,
+                    Name             = $"{raid.Name} — {tier.Rarity} Mastery",
+                    Description      = $"Defeat {raid.Name} {tier.Threshold} times.",
+                    Points           = tier.Points,
+                    Threshold        = tier.Threshold,
+                    NextId           = i < tiers.Count - 1 ? RaidId(i + 1) : null,
+                    RaidDefinitionId = raid.Id,
+                    IconKey          = $"rarity_{rarity}",
                 };
             }
         }
@@ -156,6 +206,12 @@ public sealed class AchievementDefinitionProvider : IAchievementDefinitionProvid
             if (a.Metric == AchievementMetric.ZoneReruns && (a.Chapter is null || a.ZoneIndex is null))
                 throw new InvalidOperationException(
                     $"achievements.json: ZoneReruns achievement '{a.Id}' must set chapter + zoneIndex.");
+
+            // Owner 2026-09-03 — RaidClears achievements MUST be scoped so RecordRaidClearAsync can route
+            // them. An unscoped one would be invisible to the scoped path and never advance at all.
+            if (a.Metric == AchievementMetric.RaidClears && string.IsNullOrWhiteSpace(a.RaidDefinitionId))
+                throw new InvalidOperationException(
+                    $"achievements.json: RaidClears achievement '{a.Id}' must set raidDefinitionId.");
         }
 
         // NextId chains: resolve, same metric, strictly increasing threshold, no cycles.

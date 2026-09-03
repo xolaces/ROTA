@@ -2,12 +2,21 @@ namespace ROTA.Application.Configuration;
 
 public class CombatConfig
 {
+    // Owner 2026-09-03 — crit saturation moved out by 100x. The CAPS are unchanged (crit chance still
+    // tops out at +10pp, crit damage at +1.0x); only the per-point rate changed, so the same ceiling is
+    // now reached at 100x the Discernment. Rationale: every Discernment sink saturated inside the first
+    // 0.5% of an endgame that runs to 15M-100M Discernment, which made the stat dead for the whole
+    // late game and made Attack strictly better past ~5k. Saturation points:
+    //   crit chance  MaxCritChanceBonus / CritChancePerDiscernment = 0.10 / 1e-6 = 100,000 Discernment
+    //   crit damage  MaxCritDamageBonus / CritDamagePerDiscernment = 1.00 / 2e-6 = 500,000 Discernment
+    // NOTE the low-end cost: at 1,000 Discernment crit bonus is now +0.1pp, not the old capped +10pp.
+    // Early crit is effectively base until a few tens of thousands of Discernment.
     public double BaseCritChance { get; set; } = 0.05;
     public double MaxCritChanceBonus { get; set; } = 0.10;
-    public double CritChancePerDiscernment { get; set; } = 0.0001;
+    public double CritChancePerDiscernment { get; set; } = 0.000001;
     public double BaseCritMultiplier { get; set; } = 1.5;
     public double MaxCritDamageBonus { get; set; } = 1.0;
-    public double CritDamagePerDiscernment { get; set; } = 0.0002;
+    public double CritDamagePerDiscernment { get; set; } = 0.000002;
 
     // On-hit raid XP = summed Uniform[XpPerStaminaRollMin, XpPerStaminaRollMax] per stamina spent
     // (ResourceReward.RollSummed). Dawn-faithful (owner 2026-06-15): raids are the PREMIUM leveling path —

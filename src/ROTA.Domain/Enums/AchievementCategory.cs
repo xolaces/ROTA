@@ -13,4 +13,5 @@ public enum AchievementCategory
     DaysPlayed     = 3,
     Collector      = 4,
     ZoneMastery    = 5,   // System 25 — per-zone rerun ladders
+    RaidMastery    = 6,   // Owner 2026-09-03 — per-raid clear ladders
 }

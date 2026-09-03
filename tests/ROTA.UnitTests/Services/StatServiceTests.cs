@@ -60,10 +60,10 @@ public class StatServiceTests
         {
             BaseCritChance            = 0.05,
             MaxCritChanceBonus        = 0.10,
-            CritChancePerDiscernment  = 0.0001,
+            CritChancePerDiscernment  = 0.000001,
             BaseCritMultiplier        = 1.5,
             MaxCritDamageBonus        = 1.0,
-            CritDamagePerDiscernment  = 0.0002,
+            CritDamagePerDiscernment  = 0.000002,
         });
 
     private static ServiceBundle BuildService()
@@ -521,9 +521,9 @@ public class StatServiceTests
     }
 
     // GetCritProfile — discernment crit chance and multiplier
-    // Formulas:
-    //   Chance     = 0.05 + min(0.10, discernment × 0.0001)   cap at 0.15
-    //   Multiplier = 1.50 + min(1.00, discernment × 0.0002)   cap at 2.50
+    // Formulas (owner 2026-09-03 — saturation moved out 100x; the CAPS are unchanged):
+    //   Chance     = 0.05 + min(0.10, discernment × 0.000001)   cap at 0.15, reached at 100,000
+    //   Multiplier = 1.50 + min(1.00, discernment × 0.000002)   cap at 2.50, reached at 500,000
 
     [Fact]
     public void GetCritProfile_ZeroDiscernment_ReturnsBaseValues()
@@ -536,33 +536,56 @@ public class StatServiceTests
     }
 
     [Fact]
-    public void GetCritProfile_1000Discernment_HitsCritChanceCap()
+    public void GetCritProfile_100kDiscernment_HitsCritChanceCap()
     {
-        // At 1000 discernment: chance bonus = 1000 × 0.0001 = 0.10 = MaxCritChanceBonus → cap reached
+        // At 100,000 discernment: chance bonus = 100000 × 0.000001 = 0.10 = MaxCritChanceBonus → cap
         // Chance = 0.05 + 0.10 = 0.15 (max); Multiplier = 1.5 + min(1.0, 0.2) = 1.7
         var b = BuildService();
-        var profile = b.Service.GetCritProfile(1000);
-        profile.Chance.Should().BeApproximately(0.15, 1e-9, "1000 discernment hits the 0.10 crit chance bonus cap");
+        var profile = b.Service.GetCritProfile(100_000);
+        profile.Chance.Should().BeApproximately(0.15, 1e-9, "100k discernment hits the 0.10 crit chance bonus cap");
         profile.Multiplier.Should().BeApproximately(1.7, 1e-9);
     }
 
     [Fact]
-    public void GetCritProfile_5000Discernment_HitsCritDamageCap()
+    public void GetCritProfile_OldSaturationPoint_IsNowNearlyBase()
     {
-        // At 5000 discernment: damage bonus = 5000 × 0.0002 = 1.0 = MaxCritDamageBonus → cap reached
-        // Chance = 0.15 (capped); Multiplier = 1.5 + 1.0 = 2.5 (max)
+        // PINS THE RETUNE. 1,000 Discernment used to cap crit chance outright; it is now worth +0.1pp.
+        // If this ever reads 0.15 again the 100x saturation change has been silently reverted.
         var b = BuildService();
-        var profile = b.Service.GetCritProfile(5000);
-        profile.Chance.Should().BeApproximately(0.15, 1e-9);
-        profile.Multiplier.Should().BeApproximately(2.5, 1e-9, "5000 discernment hits the 1.0 crit damage bonus cap");
+        var profile = b.Service.GetCritProfile(1_000);
+        profile.Chance.Should().BeApproximately(0.051, 1e-9);
+        profile.Multiplier.Should().BeApproximately(1.502, 1e-9);
     }
 
     [Fact]
-    public void GetCritProfile_100000Discernment_StillCappedAtBothMaxima()
+    public void GetCritProfile_EndgameDiscernment_DoesNotOverflow()
+    {
+        // 100,000,000 Discernment is the stated endgame ceiling and overflows int32 arithmetic. The
+        // parameter is a long precisely so this stays capped rather than wrapping negative and
+        // silently clamping crit back to base.
+        var b = BuildService();
+        var profile = b.Service.GetCritProfile(100_000_000L);
+        profile.Chance.Should().BeApproximately(0.15, 1e-9);
+        profile.Multiplier.Should().BeApproximately(2.5, 1e-9);
+    }
+
+    [Fact]
+    public void GetCritProfile_500kDiscernment_HitsCritDamageCap()
+    {
+        // At 500,000 discernment: damage bonus = 500000 × 0.000002 = 1.0 = MaxCritDamageBonus → cap
+        // Chance = 0.15 (capped); Multiplier = 1.5 + 1.0 = 2.5 (max)
+        var b = BuildService();
+        var profile = b.Service.GetCritProfile(500_000);
+        profile.Chance.Should().BeApproximately(0.15, 1e-9);
+        profile.Multiplier.Should().BeApproximately(2.5, 1e-9, "500k discernment hits the 1.0 crit damage bonus cap");
+    }
+
+    [Fact]
+    public void GetCritProfile_1mDiscernment_StillCappedAtBothMaxima()
     {
         // Far beyond any cap — both should remain at their hard ceilings
         var b = BuildService();
-        var profile = b.Service.GetCritProfile(100000);
+        var profile = b.Service.GetCritProfile(1_000_000);
         profile.Chance.Should().BeApproximately(0.15, 1e-9, "chance must never exceed BaseCritChance + MaxCritChanceBonus");
         profile.Multiplier.Should().BeApproximately(2.5, 1e-9, "multiplier must never exceed BaseCritMultiplier + MaxCritDamageBonus");
     }
@@ -570,10 +593,10 @@ public class StatServiceTests
     [Fact]
     public void GetCritProfile_MidDiscernment_InterpolatesCorrectly()
     {
-        // At 500 discernment: chance bonus = 500 × 0.0001 = 0.05
+        // At 50,000 discernment: chance bonus = 50000 × 0.000001 = 0.05
         // Chance = 0.05 + 0.05 = 0.10; Multiplier = 1.5 + min(1.0, 0.10) = 1.60
         var b = BuildService();
-        var profile = b.Service.GetCritProfile(500);
+        var profile = b.Service.GetCritProfile(50_000);
         profile.Chance.Should().BeApproximately(0.10, 1e-9);
         profile.Multiplier.Should().BeApproximately(1.60, 1e-9);
     }
