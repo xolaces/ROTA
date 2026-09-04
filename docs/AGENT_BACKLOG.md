@@ -136,16 +136,25 @@ catches it at build rather than in a player's first minute.
 
 ## Blocked
 
-### B1. Held content — three Standard-tier raids
-`src/ROTA.Api/content/raids.json` and `quests.json` carry `raid_lastwatch_relay`, `_vault`, `_lamp`,
-all with `lootTableId: ""` so they grant gold and XP only. Held pending the zone-Guardian loot
-decision (Owner decisions, below). `q_lastwatch_boss` additionally fails the hardened content
-validator — a real defect in unreviewed Copilot content, which must be fixed before these ship.
-**BLOCKED on the loot decision.**
+*(B1 cleared 2026-09-04 — see Done.)*
 
 ---
 
 ## Owner decisions — the agent must not decide these
+
+0e. **Should raid threshold gear roll against its chance, or stay unconditional?**
+   `RaidService.DistributeKillRewardsAsync` grants threshold gear with **no chance roll** — the
+   comment states it deliberately: *"a GUARANTEED drop, so it is intentionally NOT Hoard-scaled."*
+   Threshold rewards are also cumulative, so gear on rung *n* is granted once for every rung at or
+   below the player's damage. Together those mean a `chance` value on a `GearDropChance` inside a
+   RAID table is **dead data** — the field exists, the JSON carries it, nothing reads it. (In QUEST
+   tables the same field IS read, which is what makes this a trap.)
+   The 26 raid tables written on 2026-09-04 now put exactly one piece on the last rung at chance
+   1.0, so the JSON states what the engine does. That is a workaround, not a decision. The call:
+   **(a)** leave it unconditional and treat one top-rung piece as the raid's gear reward, **(b)**
+   make raid gear honour `Chance` like quest gear does, so a raid can carry a chase piece, or
+   **(c)** drop `Chance` from `GearDropChance` on the raid path so the dead field stops inviting
+   the mistake. (b) is the only one that lets a stamina build chase gear the way an energy build can.
 
 0d. **Regen is flat while pools grow linearly, so nothing paces play past low level.**
    `RegenMinutesPerPoint` grants one point per interval regardless of level, so daily regen is a
@@ -221,6 +230,32 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- `d40dc84` — **Raid gear was four guaranteed copies a clear.** My own defect from `66808bf`: I put
+  gear on the top four of eight cumulative rungs with a `chance` field the raid path never reads, so
+  a Mythic clear paid 4x a Purple mount and 4x an ORANGE relic, every time. Now one piece on the last
+  rung at chance 1.0, never Orange. The two hand-authored raid tables are byte-untouched. Raised
+  Owner decision 0e.
+- `3b0d2b1` — **A relic item stopped being rare at 63,300 Discernment.** `RareScaling` was on
+  `GearDropChance` and not on `ItemDropChance`, so every item chance-drop used the generic
+  `base x (1 + 0.03d)` curve clamped at 0.95. A 0.0005 relic hits that clamp at
+  `d = (1900-1)/0.03 = 63,300`. Added the flag and honoured it; four tests, one of which asserts the
+  OLD behaviour so the trap stays visible. Neutered: 2 of 4 fail.
+- `66808bf` — **Every zone and raid now drops something, with a reason.** 134 quest nodes and 26
+  raids had no loot table at all. +56 tables. Road reagents (energy/quests) and Field reagents
+  (stamina/raids) never appear in each other's tables, so no single pool buys the other's materials.
+  Verified live: cleared ch1 z0 against the running API and the Ashen Causeway paid `mat_causeway_ash`
+  x144 off the new `lt_zone_c1z1`.
+- `369e441` — **B1 cleared.** The held Black Archive nodes and raids are committed (separately, so
+  they stay easy to drop), and `q_lastwatch_boss` got the sigils map it was missing — it declared
+  `sigilDropChance: 0.2` against a null map, which the content validator refused, blocking all
+  content verification.
+- `398f134` — **59 new items.** A full Green/Blue/Purple gear ladder across all 8 slots (the game had
+  8 Grey, 1 Blue, 8 Orange and nothing between), six Armory relics from Master Canon XIX, two reagent
+  lines, the upper draught rungs, two stat-bag rungs, four Black Archive sigils.
+- `e9ce608` — **A large `page` 500'd three endpoints.** `(page - 1) * pageSize` in int arithmetic
+  overflows at page 10,737,420 against the shipped PageSize 200; PostgreSQL then refuses the negative
+  OFFSET. Reproduced live on `/api/leaderboards` and `/api/guilds`, fixed in one shared helper,
+  re-verified live.
 - (R9) — **E/S parity pinned to all four constants that create it**, not the two the item named: the
   LSI weight, stamina's skill-point price, and both XP rates. Tests read the config rather than
   repeating it. Verified by retuning each constant alone — every one breaks parity. Also collapsed
