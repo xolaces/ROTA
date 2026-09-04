@@ -68,16 +68,20 @@ The zone ladder went 6 → 9 rungs and raids gained a 9-rung per-raid ladder
 a rarity-keyed achievement id, or a fixed-height achievement list. The ids changed shape:
 `ach_zonererun_c1z0_grey` → `ach_zonererun_c1z0_t10`.
 
-### R5c. Consider a partial index for the narrowed sweep query
-`GetIncompleteForPlayerAsync` filters `player_id AND NOT is_deleted AND NOT is_completed`. It will use
-the existing `player_id` index and then filter, which is already far better than before, but a partial
-index on `(player_id) WHERE NOT is_completed AND NOT is_deleted` would let Postgres skip the completed
-rows at the index rather than after it.
+### R5d. Write the partial-index migration — OWNER APPLIES
+R5c is answered: the index is worth roughly 14 to 1, measured in
+`docs/eval/PARTIAL_INDEX_BENCHMARK.md`. Reads 1.662 ms -> 0.096 ms on a 932,000-row table; writes
++10.9 us per incremented row; index size 432 kB against 56 MB for the existing composite.
 
-Deliberately NOT done with the query change: it needs a migration, the owner applies those, and the
-query change alone is the large win. Measure first — with the roster at 466 the filtered result is
-small enough that the index may not be worth an extra write cost on every progress upsert. This is a
-"prove it helps" item, not a "do it" item.
+    CREATE INDEX ix_ap_player_incomplete ON achievement_progress (player_id)
+        WHERE NOT is_completed AND NOT is_deleted;
+
+Add it via `dotnet ef migrations add` so the model snapshot stays in step — do NOT hand-write raw SQL
+into a migration here, the snapshot is what keeps future migrations honest. **The agent must not apply
+it.** Four migrations are already pending owner application; this would be the fifth.
+
+Worth pairing with a `CONCURRENTLY` build if it is ever applied to a live database with real traffic,
+since a plain CREATE INDEX takes a write lock for its duration.
 
 ### R6. Cross-check the economy against comparable games
 Genuine research, written up as `docs/research/`. The useful comparison set is async/idle RPGs with
@@ -147,6 +151,10 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- `bcaba3c` — **partial index benchmarked: worth ~14 to 1.** Reads 1.662 ms -> 0.096 ms (440 of 466
+  heap fetches eliminated); writes +10.9 us/row. First write benchmark was invalid — compared arms
+  against different table states — and was redone with identical state per arm. Migration deliberately
+  not written: that is R5d and the owner applies migrations.
 - `409a3f8` — **achievement sweep narrowed.** The completion sweep no longer fetches completed rows
   (new filtered repository method — `GetForPlayerAsync` untouched, the overview needs every row) and
   the loop is driven by the player's incomplete rows rather than all 466 definitions. Reduction
