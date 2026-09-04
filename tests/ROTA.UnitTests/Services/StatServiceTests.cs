@@ -600,4 +600,79 @@ public class StatServiceTests
         profile.Chance.Should().BeApproximately(0.10, 1e-9);
         profile.Multiplier.Should().BeApproximately(1.60, 1e-9);
     }
+
+    // ── Skill-point PRICE per stat (owner-locked: Energy 1, Stamina 2) ─────────
+
+    // THE DEFECT THIS PINS. Stamina counts DOUBLE toward the LSI cap
+    // ((Energy + Stamina x 2) / level <= 7.45) but used to cost the same 1 SP as energy. So a pure
+    // stamina build reached the identical ceiling for HALF the skill points -- 93,125 instead of
+    // 186,250 at level 25,000 -- and banked the difference in Attack, Defense and Discernment.
+    // Strictly better at every level, by exactly 2x. The 2 in the price matches the 2 in the LSI
+    // weight, so parity is exact rather than tuned.
+
+    [Fact]
+    public async Task Stamina_Costs2SkillPointsPerPoint()
+    {
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: 1000, skillPoints: 100);
+        SetupPlayer(b, player);
+
+        var result = await b.Service.AllocateStatPointAsync(player.Id, StatType.Stamina, 10);
+
+        result.Success.Should().BeTrue();
+        result.NewStaminaInvestment.Should().Be(10, "ten points were requested");
+        result.NewSkillPointsRemaining.Should().Be(80, "ten stamina points cost twenty skill points");
+    }
+
+    [Fact]
+    public async Task Energy_StillCosts1SkillPointPerPoint()
+    {
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: 1000, skillPoints: 100);
+        SetupPlayer(b, player);
+
+        var result = await b.Service.AllocateStatPointAsync(player.Id, StatType.Energy, 10);
+
+        result.Success.Should().BeTrue();
+        result.NewEnergyInvestment.Should().Be(10);
+        result.NewSkillPointsRemaining.Should().Be(90, "energy is owner-locked at 1 SP per point");
+    }
+
+    [Fact]
+    public async Task Stamina_IsRefused_WhenSkillPointsCoverThePointsButNotThePrice()
+    {
+        // The trap the old code fell into: 10 SP looks like enough for 10 stamina, and is not.
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: 1000, skillPoints: 10);
+        SetupPlayer(b, player);
+
+        var result = await b.Service.AllocateStatPointAsync(player.Id, StatType.Stamina, 10);
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("20", "the price, not the point count, is what is checked");
+        b.Players.Verify(p => p.UpdateStatsAsync(It.IsAny<PlayerStats>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ReachingTheLsiCeiling_CostsTheSameEitherWay()
+    {
+        // The whole point of the 2:1 price. At level 100 the LSI ceiling is 745, reachable by
+        // 745 energy (745 SP) or by 372 stamina (744 SP) -- parity within one point of rounding.
+        var bE = BuildService();
+        var pE = MakePlayerWithStats(level: 100, skillPoints: 10_000);
+        SetupPlayer(bE, pE);
+        var rE = await bE.Service.AllocateStatPointAsync(pE.Id, StatType.Energy, 745);
+        rE.Success.Should().BeTrue();
+        long spentOnEnergy = 10_000 - rE.NewSkillPointsRemaining;
+
+        var bS = BuildService();
+        var pS = MakePlayerWithStats(level: 100, skillPoints: 10_000);
+        SetupPlayer(bS, pS);
+        var rS = await bS.Service.AllocateStatPointAsync(pS.Id, StatType.Stamina, 372);
+        rS.Success.Should().BeTrue();
+        long spentOnStamina = 10_000 - rS.NewSkillPointsRemaining;
+
+        spentOnStamina.Should().BeCloseTo(spentOnEnergy, 2,
+            "reaching the same LSI ceiling must cost the same skill points whichever pool is used");
+    }
 }

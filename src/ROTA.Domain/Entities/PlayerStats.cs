@@ -71,45 +71,48 @@ public class PlayerStats
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    public void AllocateToEnergy(int amount)
+    // skillPointCost is the TOTAL skill points to debit, which is not always the number of stat
+    // points gained -- stamina costs 2 SP per point. Passing it explicitly keeps the price in one
+    // place (LevelingConfig.SkillPointCost) instead of letting the entity assume 1:1.
+    public void AllocateToEnergy(int amount, int skillPointCost)
     {
         EnergyInvestment += amount;
-        SkillPoints -= amount;
+        SkillPoints -= skillPointCost;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    public void AllocateToStamina(int amount)
+    public void AllocateToStamina(int amount, int skillPointCost)
     {
         StaminaInvestment += amount;
-        SkillPoints -= amount;
+        SkillPoints -= skillPointCost;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    public void AllocateToDiscernment(int amount)
+    public void AllocateToDiscernment(int amount, int skillPointCost)
     {
         DiscernmentInvestment += amount;
-        SkillPoints -= amount;
+        SkillPoints -= skillPointCost;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    public void AllocateToAttack(int amount)
+    public void AllocateToAttack(int amount, int skillPointCost)
     {
         BaseAttack += amount;
-        SkillPoints -= amount;
+        SkillPoints -= skillPointCost;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    public void AllocateToDefense(int amount)
+    public void AllocateToDefense(int amount, int skillPointCost)
     {
         BaseDefense += amount;
-        SkillPoints -= amount;
+        SkillPoints -= skillPointCost;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    public void AllocateToHealth(int amount)
+    public void AllocateToHealth(int amount, int skillPointCost)
     {
         BaseMaxHealth += amount;
-        SkillPoints -= amount;
+        SkillPoints -= skillPointCost;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 }

@@ -42,6 +42,28 @@ public class LevelingConfig
     /// </summary>
     public Dictionary<int, int> PinnacleGemRewards { get; set; } = new();
 
+    // Owner 2026-09-03 — skill-point PRICE per stat point. Stamina is 2 because it counts DOUBLE
+    // toward the LSI cap ((Energy + Stamina x 2) / level <= 7.45) while previously costing the same
+    // 1 SP as energy. That made stamina reach the same ceiling for half the skill points and banked
+    // the difference in Attack/Defense/Discernment -- strictly better at every level, by exactly 2x.
+    // The 2 here matches the 2 in the LSI weight, so parity is exact rather than approximate.
+    //
+    // A stat absent from this map costs 1. Scaling the price with the stat's CURRENT value is a
+    // separate, open owner decision (see docs/eval/SP_COST_CURVE_EVAL.md) -- this map is a flat
+    // per-stat price and deliberately does not encode a curve.
+    //
+    // OWNER-LOCKED 2026-09-03: Energy stays 1 SP and Stamina stays 2 SP, permanently. If a scaling
+    // curve is ever adopted for the other stats, ENERGY AND STAMINA ARE EXEMPT -- their price is
+    // pinned to the LSI weighting, and changing either would re-open the parity this fixed.
+    public Dictionary<string, int> SkillPointCostByStat { get; set; } = new()
+    {
+        ["Stamina"] = 2,
+    };
+
+    /// <summary>Skill points charged per point of <paramref name="statType"/>. Defaults to 1.</summary>
+    public int SkillPointCost(string statType)
+        => SkillPointCostByStat.TryGetValue(statType, out var c) && c > 0 ? c : 1;
+
     public int GetFloor(int level)
         => MilestoneFloors
             .Where(kvp => level >= kvp.Key)

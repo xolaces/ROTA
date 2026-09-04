@@ -61,8 +61,17 @@ public sealed class StatService : IStatService
 
         var stats = player.Stats;
 
-        if (stats.SkillPoints < amount)
-            return Fail($"Insufficient SkillPoints. Have {stats.SkillPoints}, need {amount}.");
+        // The PRICE is per stat point and is not always 1. Stamina costs 2, because it counts double
+        // toward the LSI cap below; charging 1 for it let a stamina build reach the same ceiling for
+        // half the skill points and bank the rest in Attack/Defense/Discernment.
+        int costPerPoint = _levelingConfig.Value.SkillPointCost(statType.ToString());
+        long totalCost   = (long)amount * costPerPoint;
+
+        if (stats.SkillPoints < totalCost)
+            return Fail(costPerPoint == 1
+                ? $"Insufficient SkillPoints. Have {stats.SkillPoints}, need {totalCost}."
+                : $"Insufficient SkillPoints. Have {stats.SkillPoints}, need {totalCost} " +
+                  $"({amount} x {costPerPoint} per {statType} point).");
 
         // LSI cap check — only for Energy and Stamina investment
         if (statType is StatType.Energy or StatType.Stamina)
@@ -77,14 +86,15 @@ public sealed class StatService : IStatService
                 return Fail($"Allocation would exceed LSI cap of {LsiCap:F2}. Current LSI: {stats.ComputeLSI(player.Level):F2}");
         }
 
+        int charge = (int)totalCost;   // bounded: amount is validator-capped at 100,000,000 and cost is small
         switch (statType)
         {
-            case StatType.Energy:      stats.AllocateToEnergy(amount);      break;
-            case StatType.Stamina:     stats.AllocateToStamina(amount);     break;
-            case StatType.Discernment: stats.AllocateToDiscernment(amount); break;
-            case StatType.Attack:      stats.AllocateToAttack(amount);      break;
-            case StatType.Defense:     stats.AllocateToDefense(amount);     break;
-            case StatType.Health:      stats.AllocateToHealth(amount);      break;
+            case StatType.Energy:      stats.AllocateToEnergy(amount, charge);      break;
+            case StatType.Stamina:     stats.AllocateToStamina(amount, charge);     break;
+            case StatType.Discernment: stats.AllocateToDiscernment(amount, charge); break;
+            case StatType.Attack:      stats.AllocateToAttack(amount, charge);      break;
+            case StatType.Defense:     stats.AllocateToDefense(amount, charge);     break;
+            case StatType.Health:      stats.AllocateToHealth(amount, charge);      break;
             default: return Fail($"Unknown stat type: {statType}");
         }
 
