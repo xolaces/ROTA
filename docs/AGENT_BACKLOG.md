@@ -75,36 +75,6 @@ The zone ladder went 6 → 9 rungs and raids gained a 9-rung per-raid ladder
 a rarity-keyed achievement id, or a fixed-height achievement list. The ids changed shape:
 `ach_zonererun_c1z0_grey` → `ach_zonererun_c1z0_t10`.
 
-### R7b. Which drops should use the asymptotic curve rather than the capped multiplier
-The generic Discernment drop multiplier — `base x (1 + D x 0.03)` capped at 0.95 — saturates at 3,133
-Discernment for a 1% drop and at 30 for a 50% drop, against an endgame of 15M–100M. Rare-scaling drops
-deliberately skip it for the asymptotic curve, so the chase set is handled; everything unflagged is
-not.
-
-Audit which loot entries carry `rareScaling` today, and decide whether the unflagged ones should move
-to the asymptotic curve as well. Include the raid-side twin, `MaxThresholdDropChance` (0.95), which is
-the same shape driven by Hoard mastery rather than Discernment — Hoard's percentage curve was not read
-during the sweep and needs quantifying the same way.
-
-This is a content + balance decision, not a pure defect: some drops may be *intended* to reach their
-ceiling early. Bring numbers, do not re-flag content autonomously. Evidence in
-`docs/eval/SATURATING_SINKS_SWEEP.md`, Finding 2.
-
-**Numbers now exist for the first half of this** (`docs/eval/DISCERNMENT_SINK_OPTIONS.md` §4). The
-generic multiplier saturates as a function of the drop's OWN base rate, which is the part that makes
-it urgent — the common drops die first:
-
-    base 0.5     saturates at D =      30
-    base 0.1     saturates at D =     283
-    base 0.01    saturates at D =   3,133
-    base 0.005   saturates at D =   6,300
-    base 0.0005  saturates at D =  63,300
-
-A 50%-base drop stops responding to Discernment at THIRTY points. Every guaranteed and near-guaranteed
-drop in the game is therefore already at its ceiling for every player. Still needs the Hoard twin
-quantified and still a content call, not a defect — but it is now the highest-value unanswered
-balance question in the queue.
-
 ### R10. Is 2,000,000 Discernment reachable near level 7,500?
 Open tuning question left by the pacing eval. If quest cost tracks the pool, R depends only on
 Discernment (0.366 floor -> 1.025 ceiling), which matches the owner's stated intent — autolevelling
@@ -141,6 +111,18 @@ catches it at build rather than in a player's first minute.
 ---
 
 ## Owner decisions — the agent must not decide these
+
+0j. **Hoard's raid drop bonus is killer-only, and both World raids have no killer.**
+   `RaidService`: `hoardForThisPlayer = p.PlayerId == callerPlayerId ? callerHoardDropMultiplier : 1.0`
+   — a documented performance trade (scaling every participant needs a mastery read per participant
+   inside the advisory-lock tx, the cost System 22 deferred). Its consequence, measured in
+   `docs/eval/DROP_CURVE_COVERAGE_AUDIT.md` §4: a MAXED, PLEDGED Hoard is worth 8% relative to one
+   player per kill, so 0.32% in expectation across a 25-player raid — and **exactly 0.000% on both
+   World raids**, because they ship `baseHp: 0`, end only on their timer, and settle with
+   `callerPlayerId = Guid.Empty`, which no participant can match. Those are the two raids that grant
+   132 unassigned SP against a Standard raid's 20 and are the game's only source of
+   Attack/Defense/Discernment points. Either the per-participant read gets paid for, or Hoard's raid
+   lane is accepted as decorative. Not the agent's call: it is a performance/design trade, not a bug.
 
 0h. **The 15,000,000-100,000,000 endgame Discernment anchor is not reachable — what replaces it?**
    Measured in `docs/eval/DISCERNMENT_SINK_OPTIONS.md` §2 from shipped content: a full World-raid clear
@@ -262,6 +244,16 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- `R7b` — **audited; both halves came back differently than the item assumed**
+  (`docs/eval/DROP_CURVE_COVERAGE_AUDIT.md`, guard in `DropCurveCoverageTests`). Quest side: there are
+  no unflagged entries to move — all 832 quest chance/gear drops carry `rareScaling`, so the capped
+  multiplier `Scale()` is unreachable on the quest path with shipped content. Raid side: the twin is
+  NOT the same shape. Discernment multiplies by `1 + 0.03D` (unbounded); Hoard multiplies by at most
+  **1.08** (4.0% at level 5 x PledgeMultiplier 2.0), so the 0.95 clamp is inert — 93.3% of the 1,424
+  raid entries get Hoard in full, and of the 96 clipped, 80 have base >= 0.95 where Hoard does nothing
+  anyway. Three tests pin the quest coverage at 100% going forward (it was NOT protected, and one
+  unflagged future drop lands on a curve finished at 30 Discernment for a 50% base); neutering one
+  entry fails the guard, and the content file restored byte-identical. Raised Owner decision 0j.
 - `R6b` — **answered, and its premise was wrong** (`docs/eval/DISCERNMENT_SINK_OPTIONS.md`). The item
   asked for a scaling sink because the fixed ones "saturate inside the first 0.5% of a 15M-100M
   endgame". Measured against shipped grant rates, that endgame is **30 to 400 years of daily play** —
