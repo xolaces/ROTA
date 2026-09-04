@@ -118,13 +118,20 @@ GRADE_REAGENT = {
     "Deadly": "mat_stag_tendon",
     "Mythic": "mat_wrathslag",
 }
-# Raid-only gear. A raid is where the Blue and Orange kit comes from, so a stamina build
-# has its own ladder rather than borrowing the quest one.
+# Raid-only gear. ONE piece, on the TOP rung only, and never Orange.
+#
+# RaidService grants threshold gear UNCONDITIONALLY -- "no chance roll ... a GUARANTEED drop" --
+# and threshold rewards are CUMULATIVE, so a player banks every rung they passed. Gear spread over
+# four rungs with a chance field attached is therefore four guaranteed copies per clear, and the
+# chance is not read at all. The two raid tables that shipped before this file carry no gear for
+# exactly that reason. One piece on the last rung is the most this semantic can express honestly:
+# top the raid, get the piece, once. Whether raid gear SHOULD roll against its chance is an owner
+# decision, not a content one -- see docs/AGENT_BACKLOG.md.
 GRADE_GEAR = {
-    "Common": [("gear_weir_courser", 0.020)],
-    "Elite":  [("gear_relay_charger", 0.016), ("gear_lamp_seal", 0.030)],
-    "Deadly": [("gear_sable_courser", 0.012), ("gear_sable_band", 0.024)],
-    "Mythic": [("gear_sable_courser", 0.016), ("gear_sovereign_tithe", 0.0004)],
+    "Common": [("gear_weir_courser", 1.0)],       # Green
+    "Elite":  [("gear_relay_treads", 1.0)],       # Blue
+    "Deadly": [("gear_relay_charger", 1.0)],      # Blue mount
+    "Mythic": [("gear_sable_courser", 1.0)],      # Purple mount; nothing Orange comes off a raid
 }
 # The one Orange reagent the Field line ends on, and the only place it comes from.
 MYTHIC_TAIL = [("mat_colossus_filament", 0.0008), ("mat_leviathan_baleen", 0.0015)]
@@ -209,10 +216,10 @@ def raid_table(table_id, grade, base_hp):
             rung["magicDrops"] = []
             rung["unitDrops"] = []
             rung["legionDrops"] = []
-            # Gear rides the upper half only: showing up is not the same as fighting.
+            # TOP RUNG ONLY. Cumulative + unconditional means any earlier rung would multiply.
             rung["gearDrops"] = [{
-                "gearDefinitionId": gid, "quantity": 1, "chance": chance(c, diff),
-            } for gid, c in gear] if i >= len(fractions) // 2 else []
+                "gearDefinitionId": gid, "quantity": 1, "chance": 1.0,
+            } for gid, _c in gear] if i == len(fractions) - 1 else []
             rungs.append(rung)
         difficulties[diff] = collections.OrderedDict([
             ("minContributionPercent", 0.0),
