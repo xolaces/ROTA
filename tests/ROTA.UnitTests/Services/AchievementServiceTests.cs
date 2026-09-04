@@ -32,6 +32,8 @@ public class AchievementServiceTests
 
         progress.Setup(p => p.GetForPlayerAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<AchievementProgress>());
+        progress.Setup(p => p.GetIncompleteForPlayerAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<AchievementProgress>());
         // Default: the progress-event ledger has no prior row, so a referenced increment proceeds.
         progressEvents.Setup(e => e.ExistsAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
@@ -197,6 +199,8 @@ public class AchievementServiceTests
         var row = ProgressRow(pid, "ach_raids_10", 10);
         progress.Setup(p => p.GetForPlayerAsync(pid, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<AchievementProgress> { row });
+        progress.Setup(p => p.GetIncompleteForPlayerAsync(pid, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<AchievementProgress> { row });
 
         await svc.EvaluateCompletionsAsync(pid);
 
@@ -215,6 +219,8 @@ public class AchievementServiceTests
         var pid = Guid.NewGuid();
         progress.Setup(p => p.GetForPlayerAsync(pid, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<AchievementProgress> { ProgressRow(pid, "ach_raids_10", 9) });
+        progress.Setup(p => p.GetIncompleteForPlayerAsync(pid, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<AchievementProgress> { ProgressRow(pid, "ach_raids_10", 9) });
 
         await svc.EvaluateCompletionsAsync(pid);
 
@@ -227,6 +233,8 @@ public class AchievementServiceTests
         var (svc, progress, _, awards, _, _, _) = Build();
         var pid = Guid.NewGuid();
         progress.Setup(p => p.GetForPlayerAsync(pid, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<AchievementProgress> { ProgressRow(pid, "ach_raids_10", 50, completed: true) });
+        progress.Setup(p => p.GetIncompleteForPlayerAsync(pid, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<AchievementProgress> { ProgressRow(pid, "ach_raids_10", 50, completed: true) });
 
         await svc.EvaluateCompletionsAsync(pid);
@@ -241,6 +249,8 @@ public class AchievementServiceTests
         var pid = Guid.NewGuid();
         var row = ProgressRow(pid, "ach_raids_10", 10);
         progress.Setup(p => p.GetForPlayerAsync(pid, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<AchievementProgress> { row });
+        progress.Setup(p => p.GetIncompleteForPlayerAsync(pid, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<AchievementProgress> { row });
         // The award ledger already has this row (crash after ledger write before latch).
         awards.Setup(a => a.ReferenceExistsAsync(pid, $"achievement:{pid}:ach_raids_10", It.IsAny<CancellationToken>()))
@@ -259,6 +269,12 @@ public class AchievementServiceTests
         var pid = Guid.NewGuid();
         // Crossed the 100 threshold → both ach_raids_10 (10) and ach_raids_100 (100) are met.
         progress.Setup(p => p.GetForPlayerAsync(pid, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<AchievementProgress>
+            {
+                ProgressRow(pid, "ach_raids_10", 120),
+                ProgressRow(pid, "ach_raids_100", 120),
+            });
+        progress.Setup(p => p.GetIncompleteForPlayerAsync(pid, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<AchievementProgress>
             {
                 ProgressRow(pid, "ach_raids_10", 120),
@@ -331,6 +347,8 @@ public class AchievementServiceTests
         var pid = Guid.NewGuid();
         progress.Setup(p => p.GetForPlayerAsync(pid, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<AchievementProgress> { ProgressRow(pid, "ach_raids_10", 7) });
+        progress.Setup(p => p.GetIncompleteForPlayerAsync(pid, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<AchievementProgress> { ProgressRow(pid, "ach_raids_10", 7) });
         awards.Setup(a => a.GetTotalPointsAsync(pid, It.IsAny<CancellationToken>())).ReturnsAsync(45);
 
         var overview = await svc.GetForPlayerAsync(pid);
@@ -349,6 +367,8 @@ public class AchievementServiceTests
         var (svc, progress, _, _, _, _, _) = Build();
         var pid = Guid.NewGuid();
         progress.Setup(p => p.GetForPlayerAsync(pid, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<AchievementProgress> { ProgressRow(pid, "ach_raids_10", 999, completed: true) });
+        progress.Setup(p => p.GetIncompleteForPlayerAsync(pid, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<AchievementProgress> { ProgressRow(pid, "ach_raids_10", 999, completed: true) });
 
         var overview = await svc.GetForPlayerAsync(pid);

@@ -141,14 +141,25 @@ public sealed class AchievementService : IAchievementService
 
     public async Task EvaluateCompletionsAsync(Guid playerId, CancellationToken ct = default)
     {
-        var progressById = (await _progress.GetForPlayerAsync(playerId, ct))
-            .ToDictionary(p => p.AchievementId, p => p);
+        // Driven by the player's INCOMPLETE rows, not by the definition roster. Both directions select
+        // the same set — a definition with no progress row can never complete, and a completed row is
+        // skipped either way — but the row-driven form is bounded by what the player is actually part
+        // way through rather than by how much content exists.
+        //
+        // This runs on every quest attempt (QuestService), plus login, equipment grants and profile
+        // reads, so it is the most frequently executed query in the game. The roster grew from 163
+        // definitions to 466 when the clear ladders were extended, and the old form paid that growth
+        // twice: it fetched every completed row only to skip it, and it looped every definition to find
+        // the few with progress. Neither cost shrinks as a player finishes achievements — it only ever
+        // rises. Measured in AchievementCompletionSweepTests.
+        var incomplete = await _progress.GetIncompleteForPlayerAsync(playerId, ct);
 
-        foreach (var def in _defs.GetAll())
+        foreach (var row in incomplete)
         {
-            if (!progressById.TryGetValue(def.Id, out var row)) continue;
+            var def = _defs.GetById(row.AchievementId);
+            if (def is null) continue;                       // content removed under a live row
             if (row.ProgressValue < def.Threshold) continue;
-            if (row.IsCompleted) continue;
+            if (row.IsCompleted) continue;                   // redundant with the query, kept free
 
             await AwardAsync(playerId, def, row, ct);
         }

@@ -22,6 +22,12 @@ public sealed class AchievementProgressRepository : IAchievementProgressReposito
             .Where(p => p.PlayerId == playerId && !p.IsDeleted)
             .ToListAsync(ct);
 
+    public async Task<IReadOnlyList<AchievementProgress>> GetIncompleteForPlayerAsync(
+        Guid playerId, CancellationToken ct = default)
+        => await _db.AchievementProgress.AsNoTracking()
+            .Where(p => p.PlayerId == playerId && !p.IsDeleted && !p.IsCompleted)
+            .ToListAsync(ct);
+
     public Task<AchievementProgress?> FindAsync(Guid playerId, string achievementId, CancellationToken ct = default)
         => _db.AchievementProgress
             .FirstOrDefaultAsync(p => p.PlayerId == playerId && p.AchievementId == achievementId && !p.IsDeleted, ct);
