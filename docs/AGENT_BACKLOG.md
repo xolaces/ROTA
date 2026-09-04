@@ -75,20 +75,6 @@ The zone ladder went 6 → 9 rungs and raids gained a 9-rung per-raid ladder
 a rarity-keyed achievement id, or a fixed-height achievement list. The ids changed shape:
 `ach_zonererun_c1z0_grey` → `ach_zonererun_c1z0_t10`.
 
-### R6b. Discernment still has no SCALING sink — the retune deferred the problem
-`f59e481` moved the crit and rare-drop caps out 100x. That is "extend the fixed sink", not "make the
-sink scale", so the same value erosion recurs at 100x the Discernment: crit saturates at 500,000
-against an endgame of 15,000,000–100,000,000.
-
-The genre answer (Cook) is a sink that scales with the source rather than a larger fixed one. ROTA has
-exactly one textbook-correct example to copy: the Gauntlet HP curve,
-`H(n) = StageHpBase x StageHpGrowth^(n-1)` at 1.0493 — which is in the same band as the 1.07 the
-literature quotes for AdVenture Capitalist.
-
-This is a DESIGN question, not a defect, and it interacts with Owner decision 6 (whether the
-early-game crit nerf stands). Do not invent a new sink autonomously — write up options with numbers
-and let the owner choose. Evidence in `docs/research/ECONOMY_VS_GENRE_STANDARDS.md`.
-
 ### R7b. Which drops should use the asymptotic curve rather than the capped multiplier
 The generic Discernment drop multiplier — `base x (1 + D x 0.03)` capped at 0.95 — saturates at 3,133
 Discernment for a 1% drop and at 30 for a 50% drop, against an endgame of 15M–100M. Rare-scaling drops
@@ -104,6 +90,21 @@ This is a content + balance decision, not a pure defect: some drops may be *inte
 ceiling early. Bring numbers, do not re-flag content autonomously. Evidence in
 `docs/eval/SATURATING_SINKS_SWEEP.md`, Finding 2.
 
+**Numbers now exist for the first half of this** (`docs/eval/DISCERNMENT_SINK_OPTIONS.md` §4). The
+generic multiplier saturates as a function of the drop's OWN base rate, which is the part that makes
+it urgent — the common drops die first:
+
+    base 0.5     saturates at D =      30
+    base 0.1     saturates at D =     283
+    base 0.01    saturates at D =   3,133
+    base 0.005   saturates at D =   6,300
+    base 0.0005  saturates at D =  63,300
+
+A 50%-base drop stops responding to Discernment at THIRTY points. Every guaranteed and near-guaranteed
+drop in the game is therefore already at its ceiling for every player. Still needs the Hoard twin
+quantified and still a content call, not a defect — but it is now the highest-value unanswered
+balance question in the queue.
+
 ### R10. Is 2,000,000 Discernment reachable near level 7,500?
 Open tuning question left by the pacing eval. If quest cost tracks the pool, R depends only on
 Discernment (0.366 floor -> 1.025 ceiling), which matches the owner's stated intent — autolevelling
@@ -113,6 +114,13 @@ whether ~2M Discernment is realistically held around level 7,500.
 At 300 SP/raid that is ~6,667 raids. Nothing in this repo maps raids to level, so this needs either a
 play-rate assumption from the owner or telemetry from the beta. If 2M lands far past 7,500 the anchor
 moves down; the SHAPE is right either way, which is the good position to tune from.
+
+**Partly answered, and the premise moved** (`docs/eval/DISCERNMENT_SINK_OPTIONS.md` §2). Measured from
+`loot_tables.json`, a full World-raid clear grants 132 unassigned SP + 16 A/D/Disc, so a pure
+Discernment build banks about 137 per clear — not the 300 this item assumed. 2,000,000 Discernment is
+therefore ~14,600 World-raid clears: eight years at 5/day, four at 10. The anchor is reachable by a
+dedicated player on a long horizon, and NOT by a typical one near level 7,500. The shape is still
+right; the anchor is high.
 
 ### R11. The tutorial's "four passes" line is exact and nothing pins it
 `docs/design/TUTORIAL_OPENING.md` beat 2 tells the player four attempts of `q001` will level them.
@@ -133,6 +141,22 @@ catches it at build rather than in a player's first minute.
 ---
 
 ## Owner decisions — the agent must not decide these
+
+0h. **The 15,000,000-100,000,000 endgame Discernment anchor is not reachable — what replaces it?**
+   Measured in `docs/eval/DISCERNMENT_SINK_OPTIONS.md` §2 from shipped content: a full World-raid clear
+   grants 137 Discernment to a pure build, so 15,000,000 is **109,223 clears — thirty years at ten a
+   day** and 100,000,000 is four hundred. This figure is load-bearing: it is the stated rationale for
+   the `f59e481` retune and the frame for R6b, R7b and R10. Either the anchor comes down to something
+   like 1,000,000-10,000,000 (which is what the current caps already fit), or SP grants go up by two
+   orders of magnitude. Both are fundamentals; neither is the agent's to pick.
+
+0i. **Crit chance caps after 728 raid clears. Is that intended?**
+   `MaxCritChanceBonus / CritChancePerDiscernment = 0.10 / 1e-6 = 100,000` Discernment, which at 137
+   per clear is **73 days at ten clears a day, a year at two**. Crit damage caps at 500,000 (one to
+   five years) and rare drops reach 90% of their bonus at 1,000,000 (two to ten years) — those are
+   fixed sinks reached after a long time, which is allowed. Crit chance is the outlier by roughly 10x
+   and is the one genuine saturation defect the sweep found. Options in §5 of the same doc; it also
+   interacts with Owner decision 6 (whether the early-game crit nerf stands).
 
 0f. **Should the market be switched on, and what must be settled first?**
    System 27 ships in `5cdc3c1` with `MarketConfig.Enabled = false`. Three calls belong to the owner:
@@ -238,6 +262,15 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- `R6b` — **answered, and its premise was wrong** (`docs/eval/DISCERNMENT_SINK_OPTIONS.md`). The item
+  asked for a scaling sink because the fixed ones "saturate inside the first 0.5% of a 15M-100M
+  endgame". Measured against shipped grant rates, that endgame is **30 to 400 years of daily play** —
+  so the sinks are not badly placed, the anchor is fiction. What IS broken is narrower: crit chance
+  caps after 728 clears (73 days at ten a day), crit damage after 3,641, while rare drops are
+  correctly placed at four to ten years and the 10M hard clamp is simply unreachable. Four scaling
+  shapes are priced anyway (log / multiplier-lane / rank ladder / clamp removal, with the arithmetic)
+  in case the rate ceiling is ever lifted. Raised Owner decisions 0h and 0i, and gave R7b and R10 the
+  numbers they were missing.
 - `643b926` — **R5d: the partial index, as a migration.** `ix_ap_player_incomplete` on
   `achievement_progress (player_id) WHERE NOT is_completed AND NOT is_deleted`, added to the EF model
   and generated with `dotnet ef migrations add` so the snapshot stays in step (MigrationSnapshotTests
