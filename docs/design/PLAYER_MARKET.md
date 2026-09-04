@@ -16,7 +16,7 @@ Everything below is arithmetic from the shipped constants, shown inline.
 
 ---
 
-## 1. Gold today: a linear faucet with almost no sinks
+## 1. Gold today: a linear faucet, and one sink nobody can afford to use
 
 Faucets: quest gold (`quest.GoldReward × difficulty × Hoard`) and raid gold (`stamina × Uniform[3,8]`,
 mean 5.5/stamina).
@@ -113,8 +113,9 @@ A percentage fee on purchase and sale is:
 - **A scaling sink.** It grows with whatever the market bears, so it never decays like a fixed price.
 - **Self-tuning against inflation.** More gold chasing goods raises prices, which raises the absolute
   tax take, which drains faster. It is a negative feedback loop rather than a fixed drain.
-- **The only large repeatable gold sink the game would have.** Guild creation is one-off and crafting
-  is small.
+- **The only repeatable gold sink anyone would actually use.** Guild creation is one-off, crafting is
+  small, and the consumable shop — the one genuinely repeatable sink that exists — is priced at 57.6
+  stamina-drains per energy-pool refill, so it drains nothing because nobody buys from it.
 
 Rates worth considering, given there is nothing else draining gold: a combined **10–20%** across both
 sides is normal for this genre and would be doing real work here. Splitting it (e.g. 5% listing fee
