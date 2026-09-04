@@ -444,11 +444,21 @@ public sealed class QuestService : IQuestService
             }
         }
 
-        // 13. Sigil drop — ONLY from the zone's FINAL boss node (owner 2026-06-12). Every zone's
-        //     boss is its last node by content convention; the explicit max-NodeIndex check
-        //     guarantees a future mid-zone boss can never leak sigils.
-        bool isZoneFinalBoss = quest.IsBoss;
-        if (quest.IsBoss)
+        // 13. Sigil drop — ONLY from the zone's FINAL boss node (owner 2026-06-12), and ONLY on the
+        //     attempt that CLEARS it (owner 2026-09-04). Every zone's boss is its last node by content
+        //     convention; the explicit max-NodeIndex check guarantees a future mid-zone boss can never
+        //     leak sigils.
+        //
+        //     PER CLEAR, NOT PER ATTEMPT. A boss node depletes 2.5 per attempt from 100, so clearing it
+        //     takes 40 attempts. This block used to run on every successful attempt, which turned the
+        //     15% rerun chance into 40 rolls: 6.00 sigils expected per clear, and at least one 99.85%
+        //     of the time. The first-clear guarantee was worse than merely early — it fired on the
+        //     first ATTEMPT, contradicting the rule System 25 states in its own comment below.
+        //
+        //     This is the same defect the quest-boss gem grant had ("~40 grants per clear", fixed
+        //     2026-06-22 immediately above), left behind in the block beside it.
+        bool isZoneFinalBoss = quest.IsBoss && nodeJustCleared;
+        if (isZoneFinalBoss)
         {
             foreach (var n in _definitions.GetAll())
                 if (n.Chapter == quest.Chapter && n.ZoneIndex == quest.ZoneIndex && n.NodeIndex > quest.NodeIndex)

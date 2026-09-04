@@ -143,6 +143,31 @@ public class QuestServiceTests
     private static QuestConfig PinnedXp(double perEnergy)
         => new() { XpPerEnergyRollMin = perEnergy, XpPerEnergyRollMax = perEnergy };
 
+    /// <summary>
+    /// Puts a boss node ON its clearing attempt: progress sits at exactly one boss-depletion tick, so
+    /// the attempt under test drives it to 0 and `nodeJustCleared` is true.
+    ///
+    /// Needed because the sigil grant is PER CLEAR, not per attempt (owner 2026-09-04). A boss depletes
+    /// 2.5 from 100, so a default fresh node is 39 attempts away from clearing and grants nothing —
+    /// which is the whole point of the gate.
+    /// </summary>
+    private static void SetupBossOnClearingAttempt(
+        ServiceBundle b, Guid playerId, string questId,
+        QuestDifficulty difficulty = QuestDifficulty.Normal, double bossDepletion = 2.5)
+    {
+        var progress = PlayerQuestProgress.Create(playerId, questId, difficulty);
+        progress.Deplete(QuestConfigDefaults.NodeStartProgress - bossDepletion);
+        b.QuestProgress.Setup(r => r.GetAsync(playerId, questId, difficulty, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(progress);
+        b.QuestProgress.Setup(r => r.UpdateAsync(It.IsAny<PlayerQuestProgress>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+    }
+
+    private static class QuestConfigDefaults
+    {
+        public const double NodeStartProgress = 100.0;
+    }
+
     private static void SetupPlayerAndEnergy(ServiceBundle b, Player player, bool energySuccess = true)
     {
         b.Players.Setup(p => p.FindByIdAsync(player.Id, It.IsAny<CancellationToken>()))
@@ -799,6 +824,9 @@ public class QuestServiceTests
 
         b.Definitions.Setup(d => d.GetById("q_boss")).Returns(boss);
         SetupPlayerAndEnergy(b, player);
+        // The guarantee is on the first CLEAR, which is what System 25 says and what the code now does
+        // — it used to fire on the first ATTEMPT, 39 attempts early.
+        SetupBossOnClearingAttempt(b, player.Id, "q_boss");
 
         // No prior difficulty progress → first completion
         b.DifficultyProgress.Setup(r => r.GetAsync(player.Id, "q_boss", QuestDifficulty.Normal, It.IsAny<CancellationToken>()))
@@ -819,6 +847,89 @@ public class QuestServiceTests
         b.Inventory.Verify(r => r.CreateAsync(
             It.Is<PlayerInventoryItem>(i => i.ItemDefinitionId == "sigil_ironcolossus_normal"),
             It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_BossNode_GrantsNoSigil_OnAnAttemptThatDoesNotClear()
+    {
+        // THE DEFECT, PINNED (owner 2026-09-04). The sigil block used to run on every successful boss
+        // attempt. A boss depletes 2.5 from 100, so a clear takes 40 attempts, and a 15% rerun chance
+        // became 40 rolls per clear:
+        //
+        //     expected sigils per rerun clear   40 x 0.15 = 6.00
+        //     P(at least one)                   1 - 0.85^40 = 99.85%
+        //
+        // against an intended 15%. A 40x oversupply of the item that summons raids. The first-clear
+        // guarantee was worse than early — it fired on attempt one, contradicting the rule System 25
+        // states in its own comment.
+        //
+        // Rerun chance is pinned to 1.0 so the ONLY thing that can withhold the sigil here is the
+        // clear gate.
+        var b = BuildService(questConfig: new QuestConfig { SigilRerunDropChance = 1.0 });
+        var player = MakePlayer();
+        var boss = new QuestDefinition
+        {
+            Id = "q_boss", Name = "Boss Quest", Chapter = 1, BaseEnergyCost = 8,
+            NodeType = "Boss", GoldReward = 200, ExperienceReward = 100,
+            Sigils = new Dictionary<string, string> { ["Normal"] = "sigil_ironcolossus_normal" },
+        };
+        b.Definitions.Setup(d => d.GetById("q_boss")).Returns(boss);
+        SetupPlayerAndEnergy(b, player);
+
+        // A FRESH boss node: 100 progress, 2.5 depleted by this attempt, 97.5 left. Not a clear.
+        var fresh = PlayerQuestProgress.Create(player.Id, "q_boss", QuestDifficulty.Normal);
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q_boss", QuestDifficulty.Normal, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(fresh);
+        b.QuestProgress.Setup(r => r.UpdateAsync(It.IsAny<PlayerQuestProgress>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var priorDiff = PlayerQuestDifficultyProgress.Create(player.Id, "q_boss", QuestDifficulty.Normal);
+        priorDiff.RecordCompletion();
+        priorDiff.MarkSigilDropped();
+        b.DifficultyProgress.Setup(r => r.GetAsync(player.Id, "q_boss", QuestDifficulty.Normal, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(priorDiff);
+        b.ItemDefs.Setup(d => d.GetById("sigil_ironcolossus_normal")).Returns(new ItemDefinition
+        {
+            Id = "sigil_ironcolossus_normal", Name = "Iron Sigil", Rarity = ItemRarity.Green, Type = ItemType.Sigil,
+        });
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q_boss", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue("the attempt itself is fine — it simply did not finish the node");
+        result.ItemsGranted.Should().NotContain(i => i.ItemId == "sigil_ironcolossus_normal",
+            "a sigil is a CLEAR reward; an attempt that leaves the node at 97.5 progress has not earned one");
+        b.Inventory.Verify(r => r.CreateAsync(It.IsAny<PlayerInventoryItem>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_BossNode_GrantsNoFirstSigil_UntilTheNodeIsActuallyCleared()
+    {
+        // The same gate on the FIRST-clear guarantee, which is the half that used to fire on attempt
+        // one. System 25's own wording is "the FIRST clear of this boss at this difficulty", and the
+        // code did not say that.
+        var b = BuildService();
+        var player = MakePlayer();
+        var boss = BossQuest();
+        b.Definitions.Setup(d => d.GetById("q_boss")).Returns(boss);
+        SetupPlayerAndEnergy(b, player);
+
+        var fresh = PlayerQuestProgress.Create(player.Id, "q_boss", QuestDifficulty.Normal);
+        b.QuestProgress.Setup(r => r.GetAsync(player.Id, "q_boss", QuestDifficulty.Normal, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(fresh);
+        b.QuestProgress.Setup(r => r.UpdateAsync(It.IsAny<PlayerQuestProgress>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        b.DifficultyProgress.Setup(r => r.GetAsync(player.Id, "q_boss", QuestDifficulty.Normal, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerQuestDifficultyProgress?)null);
+        b.ItemDefs.Setup(d => d.GetById("sigil_ironcolossus_normal")).Returns(new ItemDefinition
+        {
+            Id = "sigil_ironcolossus_normal", Name = "Iron Sigil (Normal)",
+            Rarity = ItemRarity.Green, Type = ItemType.Sigil, ArtKey = "sigil_ironcolossus",
+        });
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q_boss", QuestDifficulty.Normal);
+
+        result.ItemsGranted.Should().NotContain(i => i.ItemId == "sigil_ironcolossus_normal",
+            "the guarantee is on the first CLEAR, not the first swing at the boss");
     }
 
     // System 22 Phase A Slice 7 — Discernment drop-quality (rarity-upgrade)
@@ -978,6 +1089,7 @@ public class QuestServiceTests
 
         b.Definitions.Setup(d => d.GetById("q_boss")).Returns(boss);
         SetupPlayerAndEnergy(b, player);
+        SetupBossOnClearingAttempt(b, player.Id, "q_boss");
 
         // First sigil already dropped → exercises the rerun path
         var priorDiff = PlayerQuestDifficultyProgress.Create(player.Id, "q_boss", QuestDifficulty.Normal);
