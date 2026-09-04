@@ -30,6 +30,24 @@ public class AchievementProgressConfiguration : IEntityTypeConfiguration<Achieve
         builder.HasIndex(p => new { p.PlayerId, p.AchievementId })
             .IsUnique()
             .HasDatabaseName("ix_achievement_progress_player_achievement");
+
+        // R5d — the sweep index, PARTIAL on the two flags the hot-path query filters by.
+        //
+        // GetIncompleteForPlayerAsync runs on every quest click and every profile read. The unique
+        // index above cannot serve it: it leads on player_id but carries every row that player has,
+        // and the rows that matter are a shrinking minority as an account completes its ladder.
+        //
+        // Measured rather than argued, in docs/eval/PARTIAL_INDEX_BENCHMARK.md against a 932,000-row
+        // table: reads 1.662 ms -> 0.096 ms (about 14 to 1), writes +10.9 us per incremented row, and
+        // the index is 432 kB against 56 MB for the composite it sits beside — because it indexes only
+        // the incomplete rows, and "incomplete" is the small side of the split.
+        //
+        // The predicate must stay EXACTLY the query's predicate. PostgreSQL only uses a partial index
+        // when it can prove the query's WHERE implies the index's, so widening either one silently
+        // drops back to the sequential scan this exists to remove.
+        builder.HasIndex(p => p.PlayerId)
+            .HasDatabaseName("ix_ap_player_incomplete")
+            .HasFilter("NOT is_completed AND NOT is_deleted");
     }
 }
 
