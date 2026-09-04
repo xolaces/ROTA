@@ -142,6 +142,22 @@ catches it at build rather than in a player's first minute.
 
 ## Owner decisions — the agent must not decide these
 
+0f. **Should the market be switched on, and what must be settled first?**
+   System 27 ships in `5cdc3c1` with `MarketConfig.Enabled = false`. Three calls belong to the owner:
+   **(i)** the Gauntlet gem bundle (Owner decision 2) is a STATED PREREQUISITE in
+   `docs/design/PLAYER_MARKET.md` §4 and is still open — its idempotency reference is constant per
+   account, so a second purchase charges nothing and returns SUCCESS. Behind a market that is a money
+   printer. **(ii)** the combined fee is 2% + 8% = 10%, the bottom of the band the design doc calls
+   normal; raising it is easy, lowering it and needing it back is not. **(iii)** consumables and gems
+   are NOT tradeable, which sidesteps the pacing interaction and declines to build the whale/F2P
+   bridge. Both are config, both are reversible, and both change what the market is for.
+
+0g. **Is there a bind-on-pickup concept?**
+   Nothing in the item model marks an item untradeable, so every Orange in the game — the Armory
+   relics, Pano's set — is listable the moment the market opens. `MarketConfig.Untradeable` is a
+   by-id stand-in. The question `PLAYER_MARKET.md` open question 5 raised is now live rather than
+   theoretical: a chase item that can be bought changes what the rare-drop curve means.
+
 0e. **Should raid threshold gear roll against its chance, or stay unconditional?**
    `RaidService.DistributeKillRewardsAsync` grants threshold gear with **no chance roll** — the
    comment states it deliberately: *"a GUARANTEED drop, so it is intentionally NOT Hoard-scaled."*
@@ -230,6 +246,13 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- `5cdc3c1` — **System 27, the player market**, off by default. Consignment only: no endpoint moves
+  an object between two named players. Escrow at listing, a status latch before any gold moves, an
+  atomic seller credit (new `IPlayerRepository.AddGoldAsync`), daily gold caps read from an
+  append-only ledger, and an expiry sweep so a lapsed listing gives the stack back. 22 unit tests
+  plus a 33-case live pen suite (`tools/pentest/market_pentest.py`): 8 concurrent buys -> 1 winner
+  and 1 debit; 6 concurrent cancels -> 1 success and the stack back once; gold conserved with the
+  fee destroyed. Raised Owner decisions 0f and 0g.
 - `d40dc84` — **Raid gear was four guaranteed copies a clear.** My own defect from `66808bf`: I put
   gear on the top four of eight cumulative rungs with a `chance` field the raid path never reads, so
   a Mythic clear paid 4x a Purple mount and 4x an ORANGE relic, every time. Now one piece on the last

@@ -201,3 +201,55 @@ not a reason against it.
 No schema, no endpoints, no pricing formula beyond the shape argument. It is an analysis of whether
 the proposal fits the economy it would sit in, and the answer is: the tax does, the fixed price does
 not, and the prerequisites are real but small.
+
+---
+
+## 6. What was built (2026-09-04) — and what it costs to run
+
+System 27 ships as `5cdc3c1`, **disabled by default**. The shape is consignment, not trade: no
+endpoint moves an object between two named players. Everything below is the honest list of what
+turning `MarketConfig.Enabled = true` actually commits the operator to.
+
+### The prerequisites from §4, and their status
+
+| Prerequisite | Status |
+|---|---|
+| Append-only trade ledger with both sides, price and tax | **Built.** `market_transactions`, unique on `listing_id`. |
+| Per-account trade rate limits, separate from the HTTP limiter | **Built as daily gold caps**, read from the ledger. Not a request-rate limit — the abuse is economic, and 50 requests that move 50M gold matter more than 5,000 that move none. |
+| Minimum account age or level to trade | **Built.** Level 20, 48 hours. Verified live: a fresh account is refused. |
+| Trade caps for new accounts | **Partially.** The caps are global, not tiered by account age. A tiered ramp is the obvious next step and is NOT built. |
+| Settle the Gauntlet gem bundle first | **NOT DONE. Still open.** See below. |
+
+### The three things that get worse the moment this is switched on
+
+**1. The Gauntlet gem bundle becomes a money printer, and it is still open.** §4 named this a
+prerequisite, not a parallel task, and it remains Owner decision 2. Its idempotency reference is
+constant per account, so a second purchase charges nothing, grants nothing and returns SUCCESS.
+Untested and unresolved it is a curiosity; behind a market it is the exact shape of bug that ends
+game economies. **Do not enable the market before this is settled.**
+
+**2. Every duplication bug becomes economy-wide within hours.** The market itself was pen-tested for
+duplication (33/33, including eight concurrent buys and six concurrent cancels), but it launders
+*other* systems' bugs. The four seams proven in `216c985`, `a9ad926`, `3adb93a` and the gem ledger
+stop being hygiene and become load-bearing.
+
+**3. Gold acquires real-money value, so botting becomes rational.** ROTA is async clicking, the most
+automatable shape there is. Nothing in this prototype detects automation; the daily caps bound the
+damage per account per day, which is a ceiling on the *rate*, not a defence. Budget for the
+support load, not just the code.
+
+### What the prototype deliberately does not answer
+
+- **Consumables are not tradeable**, which sidesteps §5's pacing interaction entirely rather than
+  pricing around it. That is a choice made *for* the owner and is trivially reversible in config —
+  but reversing it re-opens "the autolevelling threshold becomes purchasable".
+- **Gems are not tradeable at all**, so the whale-to-F2P bridge the original proposal described is
+  NOT built. This market moves goods for gold between players. It does not bridge money to time.
+- **Nothing is bind-on-pickup.** §5's open question 5 stands; `MarketConfig.Untradeable` is a
+  by-id stand-in, not a model concept. Chase items reaching a market changes what the rare-drop
+  curve means, and every Orange in the game is currently listable.
+- **Fees are flat percentages, not a curve.** §2's argument that a flat gold price is the wrong
+  shape does not apply to a percentage — but it does mean the *sink* scales with prices the market
+  sets, which is the intended behaviour and also means the sink's size is not something the owner
+  controls directly.
+
