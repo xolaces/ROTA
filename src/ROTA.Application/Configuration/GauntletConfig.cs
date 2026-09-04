@@ -108,6 +108,53 @@ public static class GauntletStageCurve
         return (long)Math.Round(hp, MidpointRounding.AwayFromZero);
     }
 
+    /// <summary>
+    /// Whether the top of the configured ladder still fits in a <see cref="long"/>. Boot-checked,
+    /// because the overflow is silent: StageHp accumulates in <c>double</c> and casts to
+    /// <c>long</c>, and a double outside long's range has no defined conversion in an unchecked
+    /// context — the result is a garbage MaxHp, not an exception.
+    ///
+    /// The ramp interpolates across LateRampStartStage..MaxLadderStage, so widening that span adds
+    /// near-doubling stages and multiplies the top HP rather than stretching the same curve further.
+    /// Shipped 250 tops out at 6.22e16 (148x under the ceiling); 300 tops out at 3.89e25, over it.
+    ///
+    /// NOTE the curve already exceeds 2^53 from about stage 248, so the top few stages are not
+    /// exactly representable as doubles — HP(250) is precise only to the nearest 8. That is
+    /// 1.3e-14% of the value and irrelevant to balance, which is why the check is against long's
+    /// range and not against exact integer precision.
+    /// </summary>
+    public static bool StageHpIsRepresentable(GauntletConfig c)
+    {
+        // MaxLadderStage <= 0 means "use the ladder as authored in JSON" — there is no generated top
+        // stage to check, so there is nothing here that can overflow.
+        if (c.MaxLadderStage <= 0) return true;
+
+        double hp = StageHpAsDouble(c, c.MaxLadderStage);
+        return double.IsFinite(hp) && hp > 0 && hp <= long.MaxValue;
+    }
+
+    // The same accumulation as StageHp, stopping before the narrowing cast so the check can see the
+    // value that would overflow rather than the garbage it would turn into.
+    private static double StageHpAsDouble(GauntletConfig c, int stage)
+    {
+        if (stage < 1) return 0;
+        bool rampOn = c.LateRampStartStage > 0 && c.MaxLadderStage > c.LateRampStartStage;
+        if (!rampOn || stage <= c.LateRampStartStage)
+            return c.StageHpBase * Math.Pow(c.StageHpGrowth, stage - 1);
+
+        double hp = c.StageHpBase * Math.Pow(c.StageHpGrowth, c.LateRampStartStage - 1);
+        int rampSpan = c.MaxLadderStage - c.LateRampStartStage;
+        int top = Math.Min(stage, c.MaxLadderStage);
+        for (int n = c.LateRampStartStage + 1; n <= top; n++)
+        {
+            double t = (double)(n - c.LateRampStartStage) / rampSpan;
+            hp *= c.StageHpGrowth + (c.LateRampFinalGrowth - c.StageHpGrowth) * t;
+        }
+        for (int n = c.MaxLadderStage + 1; n <= stage; n++)
+            hp *= c.LateRampFinalGrowth;
+        return hp;
+    }
+
     public static long Gold(int stage, GauntletConfig c)
         => (long)Math.Round(c.StageBaseGoldReward * Math.Pow(c.StageRewardGrowth, stage - 1), MidpointRounding.AwayFromZero);
 

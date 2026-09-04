@@ -152,4 +152,75 @@ public class GauntletCurveTests
         }
         return gems;
     }
+
+    // ── Ladder-ceiling overflow guard ──────────────────────────────────────────
+
+    // The HP curve is exponential AND its late ramp interpolates across
+    // LateRampStartStage..MaxLadderStage. Widening that span therefore does NOT stretch the same
+    // curve over more stages — it adds near-doubling stages and multiplies the top HP. Shipped 250
+    // tops out at 6.22e16, comfortably inside long; 300 tops out at 3.89e25, four thousand times
+    // over it.
+    //
+    // The overflow is silent: StageHp accumulates in double and casts to long, and a double outside
+    // long's range has no defined conversion in an unchecked context. The stage would get a garbage
+    // MaxHp, and a raid with a non-positive MaxHp is treated as timer-only — so it would quietly
+    // become unkillable rather than throwing.
+
+    private static GauntletConfig Shipped() => new()
+    {
+        MaxLadderStage      = 250,
+        StageHpBase         = 5000,
+        StageHpGrowth       = 1.0493,
+        LateRampStartStage  = 200,
+        LateRampFinalGrowth = 2.0,
+    };
+
+    [Fact]
+    public void TheShippedLadder_FitsInLong_WithRoomToSpare()
+    {
+        var cfg = Shipped();
+        GauntletStageCurve.StageHpIsRepresentable(cfg).Should().BeTrue();
+
+        long top = GauntletStageCurve.Hp(cfg.MaxLadderStage, cfg);
+        top.Should().BePositive("a negative top-stage HP is the signature of the overflow");
+        top.Should().BeLessThan(long.MaxValue / 100,
+            "the shipped ceiling should keep at least two orders of magnitude of headroom");
+    }
+
+    [Theory]
+    [InlineData(300)]
+    [InlineData(400)]
+    [InlineData(500)]
+    public void WideningTheLadder_IsRejected_BecauseItOverflows(int maxLadderStage)
+    {
+        var cfg = Shipped();
+        cfg.MaxLadderStage = maxLadderStage;
+
+        GauntletStageCurve.StageHpIsRepresentable(cfg).Should().BeFalse(
+            "raising MaxLadderStage widens the ramp span and multiplies the top HP rather than "
+            + "stretching the curve, so it overflows long well before it looks like it should");
+    }
+
+    [Fact]
+    public void RaisingTheRampStart_KeepsAWiderLadderRepresentable()
+    {
+        // The guard must reject the overflow, not the intent. A longer ladder is fine as long as the
+        // near-doubling tail stays short — which is the fix the error message points at.
+        var cfg = Shipped();
+        cfg.MaxLadderStage     = 300;
+        cfg.LateRampStartStage = 285;
+
+        GauntletStageCurve.StageHpIsRepresentable(cfg).Should().BeTrue(
+            "a 300-stage ladder is reachable by keeping the ramp span short");
+    }
+
+    [Fact]
+    public void AnUnsetLadderCeiling_IsNotRejected()
+    {
+        // MaxLadderStage 0 means "use the JSON ladder as authored" and must not trip the guard.
+        var cfg = Shipped();
+        cfg.MaxLadderStage = 0;
+
+        GauntletStageCurve.StageHpIsRepresentable(cfg).Should().BeTrue();
+    }
 }

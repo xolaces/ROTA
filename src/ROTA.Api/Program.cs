@@ -201,8 +201,23 @@ builder.Services.AddOptions<LevelingConfig>()
 builder.Services.Configure<LeaderboardConfig>(
     builder.Configuration.GetSection("LeaderboardConfig"));
 
-builder.Services.Configure<GauntletConfig>(
-    builder.Configuration.GetSection("GauntletConfig"));
+// The Gauntlet HP curve is exponential AND its late ramp interpolates over the span from
+// LateRampStartStage to MaxLadderStage — so raising MaxLadderStage does not extend the curve, it adds
+// near-doubling stages and re-scales the whole ramp. The shipped ceiling of 250 tops out at 6.22e16,
+// which is 148x under long.MaxValue; 300 tops out at 3.89e25, which is over it by four thousand times.
+//
+// The failure is silent. StageHp computes in double and casts to long, and a double outside long's
+// range has no defined conversion in an unchecked context — the result is a garbage MaxHp rather than
+// an exception, and a raid with a non-positive MaxHp is treated as timer-only, so the stage would
+// simply become unkillable instead of erroring. Boot instead.
+builder.Services.AddOptions<GauntletConfig>()
+    .Bind(builder.Configuration.GetSection("GauntletConfig"))
+    .Validate(c => c.MaxLadderStage <= 0 || GauntletStageCurve.StageHpIsRepresentable(c),
+        "GauntletConfig: the HP curve overflows long at MaxLadderStage. The late ramp interpolates "
+        + "across LateRampStartStage..MaxLadderStage, so widening that span multiplies the top stage's "
+        + "HP rather than stretching the curve. Lower MaxLadderStage, raise LateRampStartStage, or "
+        + "lower LateRampFinalGrowth.")
+    .ValidateOnStart();
 
 builder.Services.AddOptions<ClassConfig>()
     .Bind(builder.Configuration.GetSection("ClassConfig"))
