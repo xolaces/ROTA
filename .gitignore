@@ -136,3 +136,9 @@ docs/research/dotd-wiki/*_files/
 /Temp/
 /UserSettings/
 /ProjectSettings/
+# Unity also drops these on open. ROTA-Qwen.slnx is the dangerous one -- an EMPTY solution sitting
+# next to the real ROTA.slnx, which a build or a person could target by mistake.
+/ROTA-Qwen.slnx
+/.vsconfig
+# Unity Purchasing writes this into the TRACKED assets/ directory.
+/assets/Resources/
