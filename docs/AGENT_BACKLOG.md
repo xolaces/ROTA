@@ -112,17 +112,6 @@ This is a content + balance decision, not a pure defect: some drops may be *inte
 ceiling early. Bring numbers, do not re-flag content autonomously. Evidence in
 `docs/eval/SATURATING_SINKS_SWEEP.md`, Finding 2.
 
-### R9. Nothing tests that every E:S split levels at the same rate
-`AUTOLEVELLING_AND_PACING_EVAL.md` Finding 1: one LSI point buys 1 energy at 1.5 XP/energy, or 0.5
-stamina at 3.0 XP/stamina. Stamina's 2x LSI cost and 2x XP rate cancel EXACTLY, so XP per full drain
-is `1.5 x (E + 2S) = 11.175 x L` for every split. That is why no build levels faster than another,
-and it is almost certainly deliberate.
-
-It is also fragile in a way nothing catches: retuning `LevelingConfig`'s LSI weighting (2x) or either
-XP rate (`XpPerEnergyRoll*` 1.5, `XpPerStaminaRoll*` mean 3.0) WITHOUT the other silently makes one
-build strictly better. A unit test asserting XP-per-LSI-point is equal across splits would pin it in
-about ten lines. Cheap, and it protects a property the game's whole build diversity rests on.
-
 ### R10. Is 2,000,000 Discernment reachable near level 7,500?
 Open tuning question left by the pacing eval. If quest cost tracks the pool, R depends only on
 Discernment (0.366 floor -> 1.025 ceiling), which matches the owner's stated intent — autolevelling
@@ -232,6 +221,11 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- (R9) — **E/S parity pinned to all four constants that create it**, not the two the item named: the
+  LSI weight, stamina's skill-point price, and both XP rates. Tests read the config rather than
+  repeating it. Verified by retuning each constant alone — every one breaks parity. Also collapsed
+  the LSI stamina weight from a literal duplicated in `PlayerStats` and `StatService` into one
+  `PlayerStats.StaminaLsiWeight`.
 - `8e94cf4` — **R12: the pool-cap refusal now teaches.** Was a cap constant and a current value with
   nothing to act on; now states how many points fit at this level, that the ceiling rises, and — only
   when it is actually biting — that Stamina counts twice. Five tests assert the count against the cap
