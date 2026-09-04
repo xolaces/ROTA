@@ -40,6 +40,13 @@ up unattended work starts here and finishes here.
 
 ## Ready — ranked
 
+> **Note for an autonomous tick (2026-09-04): R0 and R4 live in `C:\Dev\ROTA.Client6`, not here.**
+> The tick protocol's gate is `dotnet build ROTA.slnx` + `dotnet test tests/ROTA.UnitTests`, and
+> neither compiles a line of Unity, so an agent cannot VERIFY either item under the rule it is given.
+> R0's actual fix is also an Inspector checkbox, which is not a code change at all. Both need the
+> owner, or a tick with a Unity headless-compile gate added to the protocol. They stay ranked because
+> they matter; they are simply not takeable here.
+
 ### R0. Client runs in MOCK mode — the playtest never touched the backend
 `AppBootstrap.useMock` defaults to `true` and the scene's serialized value wins over the code default,
 so `Assets/Scenes/Main.unity` starts on canned data. The console says `[ROTA] client started (MOCK).`
@@ -67,21 +74,6 @@ The zone ladder went 6 → 9 rungs and raids gained a 9-rung per-raid ladder
 (`AchievementCategory.RaidMastery`). Check `C:\Dev\ROTA.Client6` for anything that assumes six tiers,
 a rarity-keyed achievement id, or a fixed-height achievement list. The ids changed shape:
 `ach_zonererun_c1z0_grey` → `ach_zonererun_c1z0_t10`.
-
-### R5d. Write the partial-index migration — OWNER APPLIES
-R5c is answered: the index is worth roughly 14 to 1, measured in
-`docs/eval/PARTIAL_INDEX_BENCHMARK.md`. Reads 1.662 ms -> 0.096 ms on a 932,000-row table; writes
-+10.9 us per incremented row; index size 432 kB against 56 MB for the existing composite.
-
-    CREATE INDEX ix_ap_player_incomplete ON achievement_progress (player_id)
-        WHERE NOT is_completed AND NOT is_deleted;
-
-Add it via `dotnet ef migrations add` so the model snapshot stays in step — do NOT hand-write raw SQL
-into a migration here, the snapshot is what keeps future migrations honest. **The agent must not apply
-it.** Four migrations are already pending owner application; this would be the fifth.
-
-Worth pairing with a `CONCURRENTLY` build if it is ever applied to a live database with real traffic,
-since a plain CREATE INDEX takes a write lock for its duration.
 
 ### R6b. Discernment still has no SCALING sink — the retune deferred the problem
 `f59e481` moved the crit and rare-drop caps out 100x. That is "extend the fixed sink", not "make the
@@ -246,6 +238,13 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- `643b926` — **R5d: the partial index, as a migration.** `ix_ap_player_incomplete` on
+  `achievement_progress (player_id) WHERE NOT is_completed AND NOT is_deleted`, added to the EF model
+  and generated with `dotnet ef migrations add` so the snapshot stays in step (MigrationSnapshotTests
+  green is what proves it). The benchmark it implements: reads 1.662 ms -> 0.096 ms, writes +10.9 us
+  per incremented row, 432 kB against the 56 MB composite. NOT APPLIED — fifth pending. The migration
+  carries the live-database procedure in its doc comment, including that a re-run over an existing
+  index FAILS rather than no-ops, so the CONCURRENTLY route needs the history row written by hand.
 - `5cdc3c1` — **System 27, the player market**, off by default. Consignment only: no endpoint moves
   an object between two named players. Escrow at listing, a status latch before any gold moves, an
   atomic seller credit (new `IPlayerRepository.AddGoldAsync`), daily gold caps read from an
@@ -316,7 +315,7 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 - `bcaba3c` — **partial index benchmarked: worth ~14 to 1.** Reads 1.662 ms -> 0.096 ms (440 of 466
   heap fetches eliminated); writes +10.9 us/row. First write benchmark was invalid — compared arms
   against different table states — and was redone with identical state per arm. Migration deliberately
-  not written: that is R5d and the owner applies migrations.
+  not written: that is R5d, now written in `643b926` and still awaiting owner application.
 - `409a3f8` — **achievement sweep narrowed.** The completion sweep no longer fetches completed rows
   (new filtered repository method — `GetForPlayerAsync` untouched, the overview needs every row) and
   the loop is driven by the player's incomplete rows rather than all 466 definitions. Reduction
