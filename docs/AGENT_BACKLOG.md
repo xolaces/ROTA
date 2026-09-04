@@ -83,12 +83,19 @@ it.** Four migrations are already pending owner application; this would be the f
 Worth pairing with a `CONCURRENTLY` build if it is ever applied to a live database with real traffic,
 since a plain CREATE INDEX takes a write lock for its duration.
 
-### R6. Cross-check the economy against comparable games
-Genuine research, written up as `docs/research/`. The useful comparison set is async/idle RPGs with
-energy economies and long ladders. What to extract: how they pace a sink that must stay alive across
-several orders of magnitude of stat growth, and how they avoid the linear-vs-capped crossover. ROTA's
-specific problem — every Discernment sink saturating inside 0.5% of the endgame — is a known genre
-failure mode and is worth naming properly. Cite sources; do not invent numbers for other games.
+### R6b. Discernment still has no SCALING sink — the retune deferred the problem
+`f59e481` moved the crit and rare-drop caps out 100x. That is "extend the fixed sink", not "make the
+sink scale", so the same value erosion recurs at 100x the Discernment: crit saturates at 500,000
+against an endgame of 15,000,000–100,000,000.
+
+The genre answer (Cook) is a sink that scales with the source rather than a larger fixed one. ROTA has
+exactly one textbook-correct example to copy: the Gauntlet HP curve,
+`H(n) = StageHpBase x StageHpGrowth^(n-1)` at 1.0493 — which is in the same band as the 1.07 the
+literature quotes for AdVenture Capitalist.
+
+This is a DESIGN question, not a defect, and it interacts with Owner decision 6 (whether the
+early-game crit nerf stands). Do not invent a new sink autonomously — write up options with numbers
+and let the owner choose. Evidence in `docs/research/ECONOMY_VS_GENRE_STANDARDS.md`.
 
 ### R7. Sweep for other saturating sinks
 The crit/rare-drop retune fixed two. Find the rest: any `Math.Min(cap, stat × rate)` or `d / (d + H)`
@@ -116,6 +123,13 @@ validator — a real defect in unreviewed Copilot content, which must be fixed b
 ---
 
 ## Owner decisions — the agent must not decide these
+
+0b. **There is no prestige mechanic, and the literature treats one as the standard release valve.**
+   ROTA has mastery (additive, permanent) and one-way stat allocation with no respec — nothing that
+   resets any curve. The idle-game literature treats prestige as the normal answer once late-game
+   costs make progression prohibitively long, which is the exact shape ROTA's late game has. A
+   Dawn-faithful async RPG may deliberately not want one; the point is that its absence should be a
+   decision rather than an omission. See `docs/research/ECONOMY_VS_GENRE_STANDARDS.md`.
 
 0. **The potion design ends the energy economy at level 13,092 — decide before it is built.**
    `QuestConfig.ChapterScalingCap = 16` caps quest energy cost at chapter 16 while the pool grows
@@ -151,6 +165,12 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- `9fbfab8` — **economy cross-checked against published genre standards.** The potion design is the
+  worst shape the literature names (constant sink vs linear source); the Discernment retune is
+  "extend the fixed sink" rather than "make it scale" (now R6b); no prestige mechanic exists (now
+  Owner decision 0b). Corrected my own error mid-write: the Gauntlet health ramp is piecewise LINEAR,
+  not exponential — the exponential is the HP curve at 1.0493, which sits in the same band as the
+  1.07 the literature quotes.
 - `bcaba3c` — **partial index benchmarked: worth ~14 to 1.** Reads 1.662 ms -> 0.096 ms (440 of 466
   heap fetches eliminated); writes +10.9 us/row. First write benchmark was invalid — compared arms
   against different table states — and was redone with identical state per arm. Migration deliberately
