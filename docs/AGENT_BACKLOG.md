@@ -112,12 +112,6 @@ This is a content + balance decision, not a pure defect: some drops may be *inte
 ceiling early. Bring numbers, do not re-flag content autonomously. Evidence in
 `docs/eval/SATURATING_SINKS_SWEEP.md`, Finding 2.
 
-### R8. Numeric-headroom sweep
-`GetCritProfile` is now `long`, which removed the thinnest margin. Repeat the sweep across every
-narrowing cast and every accumulator that endgame values feed: raid damage totals, lifetime ledgers,
-leaderboard scores, AP totals. Report margin as a multiple of the stated endgame value, not as
-"fits in an int".
-
 ---
 
 ## Blocked
@@ -186,6 +180,11 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- `2d7ae80` — **R8 numeric-headroom sweep, and the one real find fixed.** All the big accumulators are
+  already `long` (TotalDamageDealt, GauntletEntry.Score, gem ledger) and the narrowing casts are safe
+  by construction. The exception: `GauntletConfig` had NO validation, and raising `MaxLadderStage` from
+  250 to 300 overflows `long` by ~4,000x — silently, because the double→long cast is undefined and
+  yields a garbage MaxHp that reads as a timer-only raid. Now a boot guard with tests.
 - `a55a226` — **saturating-sinks sweep.** Found that Defense is strictly dominated by Attack
   everywhere: 1x vs 4x in damage, its only unique role (Gauntlet mitigation) capped at 800 Defense,
   and the health it protects gates nothing. Now Owner decision 0c. Also found the generic Discernment
