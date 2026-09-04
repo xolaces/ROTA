@@ -11,9 +11,11 @@ Owner question: at what point can players autolevel, and which E:S builds level 
 
 **Three answers, and the second one is the good news:**
 
-1. **No E:S split levels faster than any other.** They are exactly equal, by construction — the LSI
-   cap's 2× stamina weighting precisely cancels stamina's 2× XP rate. This looks deliberate and it is
-   correct.
+1. **No E:S split levels faster than any other — PER LSI POINT.** The cap's 2× stamina weighting
+   precisely cancels stamina's 2× XP rate. **CORRECTED 2026-09-03: this is NOT true per SKILL POINT,
+   which is the constraint that actually binds.** Stamina costs 1 SP but counts 2× toward the cap, so
+   it reaches the same ceiling for half the skill points and is strictly better. See
+   `SP_COST_CURVE_EVAL.md` Finding 1.
 2. **Autolevelling is impossible from pool drains alone.** A full drain of both pools is 79.8% of a
    level in the linear regime, and less where a milestone floor bites. It never reaches 1.0.
 3. **The only autolevelling vector in the game is the potion economy crossing R = 1.0.** Past that,
@@ -50,9 +52,19 @@ both pools is:
 
     XP = 1.5 x (E + 2S) = 1.5 x 7.45 x L = 11.175 x L        for EVERY split
 
-There is no heavy-E or heavy-S levelling advantage to find, because there is not one. A player
-choosing their split is trading **what they do**, not **how fast they level** — energy buys quest
-content and potion drops, stamina buys raids, SP and loot.
+There is no heavy-E or heavy-S levelling advantage to find **in XP per LSI point**. A player choosing
+their split is trading what they do — energy buys quest content and potion drops, stamina buys raids,
+SP and loot.
+
+> **CORRECTION (2026-09-03).** This section originally concluded that no build is better, full stop.
+> That was wrong, and the error was in which resource is scarce. XP per LSI point is equal; XP per
+> SKILL POINT is not, because allocation charges 1 SP per point for both stats while stamina counts
+> DOUBLE toward the cap. Pure stamina therefore reaches the same ceiling for half the SP — 93,125
+> instead of 186,250 at level 25,000 — and banks the difference in Attack, Defense and Discernment.
+>
+> The LSI cap is a ceiling; skill points are what is actually earned and spent, so the SP price is
+> the binding constraint and the one that decides build strength. Charging 2 SP per stamina point
+> restores exact parity. Full arithmetic in `SP_COST_CURVE_EVAL.md`.
 
 This is worth protecting. It is the kind of property that breaks silently if either the LSI weighting
 (2×) or the XP rates (1.5 / 3.0) is retuned without the other. **Nothing currently tests it.** →
