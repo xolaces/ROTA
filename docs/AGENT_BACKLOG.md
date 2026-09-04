@@ -97,11 +97,20 @@ This is a DESIGN question, not a defect, and it interacts with Owner decision 6 
 early-game crit nerf stands). Do not invent a new sink autonomously — write up options with numbers
 and let the owner choose. Evidence in `docs/research/ECONOMY_VS_GENRE_STANDARDS.md`.
 
-### R7. Sweep for other saturating sinks
-The crit/rare-drop retune fixed two. Find the rest: any `Math.Min(cap, stat × rate)` or `d / (d + H)`
-in the codebase, tabulate its saturation point, and compare against the endgame range for the stat
-that feeds it. Output a table in `docs/eval/`. This is the same audit shape that found the crit
-problem and it is cheap to repeat.
+### R7b. Which drops should use the asymptotic curve rather than the capped multiplier
+The generic Discernment drop multiplier — `base x (1 + D x 0.03)` capped at 0.95 — saturates at 3,133
+Discernment for a 1% drop and at 30 for a 50% drop, against an endgame of 15M–100M. Rare-scaling drops
+deliberately skip it for the asymptotic curve, so the chase set is handled; everything unflagged is
+not.
+
+Audit which loot entries carry `rareScaling` today, and decide whether the unflagged ones should move
+to the asymptotic curve as well. Include the raid-side twin, `MaxThresholdDropChance` (0.95), which is
+the same shape driven by Hoard mastery rather than Discernment — Hoard's percentage curve was not read
+during the sweep and needs quantifying the same way.
+
+This is a content + balance decision, not a pure defect: some drops may be *intended* to reach their
+ceiling early. Bring numbers, do not re-flag content autonomously. Evidence in
+`docs/eval/SATURATING_SINKS_SWEEP.md`, Finding 2.
 
 ### R8. Numeric-headroom sweep
 `GetCritProfile` is now `long`, which removed the thinnest margin. Repeat the sweep across every
@@ -123,6 +132,18 @@ validator — a real defect in unreviewed Copilot content, which must be fixed b
 ---
 
 ## Owner decisions — the agent must not decide these
+
+0c. **Defense is a dominated stat — there is no build where it is the right allocation.**
+   It is weighted 1x against Attack's 4x in both raid damage (`RaidService.cs:918`) and Gauntlet
+   battalion power (`GauntletBattalionService.cs:140`). Its only unique role, Gauntlet damage
+   mitigation, saturates at **800 Defense** and protects a resource that gates nothing —
+   `RaidService.cs:899` clamps health at 0 and never blocks a hit. Ordinary and guild raids have no
+   Defense mitigation at all.
+
+   This matters more than an ordinary balance number because stat allocation is the stated point of
+   the game, and this makes the Attack/Defense half of it not a choice. Four options with trade-offs
+   are in `docs/eval/SATURATING_SINKS_SWEEP.md`; only enabling the 0-health gate AND giving mitigation
+   a scaling curve makes Defense real, and the gate means a third pool starts rationing play.
 
 0b. **There is no prestige mechanic, and the literature treats one as the standard release valve.**
    ROTA has mastery (additive, permanent) and one-way stat allocation with no respec — nothing that
@@ -165,6 +186,11 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- `a55a226` — **saturating-sinks sweep.** Found that Defense is strictly dominated by Attack
+  everywhere: 1x vs 4x in damage, its only unique role (Gauntlet mitigation) capped at 800 Defense,
+  and the health it protects gates nothing. Now Owner decision 0c. Also found the generic Discernment
+  drop multiplier saturating between 30 and 3,133 Discernment (now R7b). Full inventory of every
+  capped sink in the document.
 - `9fbfab8` — **economy cross-checked against published genre standards.** The potion design is the
   worst shape the literature names (constant sink vs linear source); the Discernment retune is
   "extend the fixed sink" rather than "make it scale" (now R6b); no prestige mechanic exists (now
