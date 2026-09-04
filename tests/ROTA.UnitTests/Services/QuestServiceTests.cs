@@ -1699,4 +1699,109 @@ public class QuestServiceTests
         boss.IsBossNode.Should().BeTrue();
         boss.IsUnlocked.Should().BeFalse("the zone still has an uncleared node (zn1), so the boss is greyed");
     }
+
+    // ---------------------------------------------------------------------------------------------
+    // ITEM chance drops and the chase curve (2026-09-04).
+    //
+    // RareScaling existed on GearDropChance and NOT on ItemDropChance, so every item chance-drop went
+    // through the generic multiplier whether it was a common reagent or a one-of-a-kind relic:
+    //
+    //     generic:     chance = base x (1 + Discernment x 0.03), clamped at MaxDropChance 0.95
+    //     asymptotic:  chance = base + 0.045 x d / (d + 111,111), capped at base + 0.045
+    //
+    // The arithmetic that makes this a defect rather than a preference: a relic seeded at 0.0005
+    // reaches the 0.95 clamp when 0.0005 x (1 + 0.03d) >= 0.95, i.e. d >= (1900 - 1) / 0.03 = 63,300
+    // Discernment. That is a mid-game number, and past it the rarest objects in the world drop from
+    // 19 attempts in 20. On the asymptotic curve the same relic is 0.0005 at zero Discernment, 0.0295
+    // at 63,300, and can never exceed 0.0455 however far the account goes.
+    private static (ServiceBundle b, Player player) ItemDropFixture(
+        double roll, long discernment, bool rare, double baseChance)
+    {
+        var b = BuildService(new FixedRandom(roll));
+        var player = MakePlayer();
+
+        var quest = new QuestDefinition
+        {
+            Id = "q_disc", Name = "Discernment Quest", Chapter = 1, BaseEnergyCost = 5,
+            GoldReward = 0, ExperienceReward = 0, LootTableId = "lt_disc",
+        };
+        b.Definitions.Setup(d => d.GetById("q_disc")).Returns(quest);
+        SetupPlayerAndEnergy(b, player);
+
+        var lootTable = new LootTableDefinition
+        {
+            Id = "lt_disc", Type = "Quest",
+            Difficulties = new Dictionary<string, LootTableDifficulty>
+            {
+                ["Normal"] = new()
+                {
+                    ChanceDrops = new List<ItemDropChance>
+                    {
+                        new() { ItemId = "mat_relic", Quantity = 1, Chance = baseChance, RareScaling = rare },
+                    },
+                },
+            },
+        };
+        b.LootTables.Setup(l => l.GetById("lt_disc")).Returns(lootTable);
+        b.Stats.Setup(s => s.GetStatsAsync(player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PlayerStatsResponse { DiscernmentInvestment = discernment });
+
+        return (b, player);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_RelicItem_OnTheGenericCurve_BecomesNearCertain()
+    {
+        // THE DEFECT, STATED AS A TEST. Without RareScaling a 0.05% relic is clamped to 0.95 at
+        // 63,300 Discernment, so a roll of 0.90 -- which should miss by three orders of magnitude --
+        // lands. This asserts the OLD behaviour on purpose, to show what the flag is protecting
+        // against and to fail loudly if the generic curve is ever pointed at a relic again.
+        var (b, player) = ItemDropFixture(roll: 0.90, discernment: 100_000, rare: false, baseChance: 0.0005);
+
+        await b.Service.AttemptQuestAsync(player.Id, "q_disc", QuestDifficulty.Normal);
+
+        b.Inventory.Verify(i => i.CreateAsync(
+            It.Is<PlayerInventoryItem>(x => x.ItemDefinitionId == "mat_relic"),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_RelicItem_WithRareScaling_StaysRareAtTheSameDiscernment()
+    {
+        // Same relic, same 100,000 Discernment, same roll. On the asymptotic curve the rate is
+        // 0.0005 + 0.045 x (100,000 / 211,111) = 0.0218, so 0.90 misses by a wide margin.
+        var (b, player) = ItemDropFixture(roll: 0.90, discernment: 100_000, rare: true, baseChance: 0.0005);
+
+        await b.Service.AttemptQuestAsync(player.Id, "q_disc", QuestDifficulty.Normal);
+
+        b.Inventory.Verify(i => i.CreateAsync(
+            It.IsAny<PlayerInventoryItem>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_RelicItem_WithRareScaling_IsBoundedAtTheDiscernmentCap()
+    {
+        // The ceiling the curve promises. At the 10,000,000 hard cap the rate is
+        // 0.0005 + 0.045 x (10,000,000 / 10,111,111) = 0.0450, so a roll of 0.05 still misses.
+        // If this ever drops, RareDropMaxBonus or the cap has moved and the relics went with it.
+        var (b, player) = ItemDropFixture(roll: 0.05, discernment: 50_000_000, rare: true, baseChance: 0.0005);
+
+        await b.Service.AttemptQuestAsync(player.Id, "q_disc", QuestDifficulty.Normal);
+
+        b.Inventory.Verify(i => i.CreateAsync(
+            It.IsAny<PlayerInventoryItem>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_RelicItem_WithRareScaling_StillDropsInsideItsBand()
+    {
+        // And it is not simply switched off: a roll under the curve's value at the cap still lands.
+        var (b, player) = ItemDropFixture(roll: 0.04, discernment: 50_000_000, rare: true, baseChance: 0.0005);
+
+        await b.Service.AttemptQuestAsync(player.Id, "q_disc", QuestDifficulty.Normal);
+
+        b.Inventory.Verify(i => i.CreateAsync(
+            It.Is<PlayerInventoryItem>(x => x.ItemDefinitionId == "mat_relic"),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
 }

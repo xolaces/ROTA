@@ -53,6 +53,18 @@ public class ItemDropChance
     public string ItemId { get; set; } = string.Empty;
     public int Quantity { get; set; } = 1;
     public double Chance { get; set; } = 1.0;
+
+    /// <summary>
+    /// Use the asymptotic chase curve (QuestConfig.RareDrop*) instead of the generic per-point
+    /// Discernment multiplier, exactly as <see cref="GearDropChance.RareScaling"/> does.
+    ///
+    /// This flag existed on gear and not on items, and the asymmetry was a trap. The generic
+    /// multiplier is base x (1 + Discernment x 0.03) clamped at MaxDropChance 0.95, so a deliberately
+    /// vanishing 0.05% relic reaches the 95% clamp at 63,300 Discernment -- a mid-game number. Any
+    /// item meant to stay rare for the life of the account has to be on the asymptotic curve, which
+    /// tops out at base + RareDropMaxBonus and stops moving at RareDropDiscernmentCap.
+    /// </summary>
+    public bool RareScaling { get; set; }
 }
 
 public class MagicDropChance

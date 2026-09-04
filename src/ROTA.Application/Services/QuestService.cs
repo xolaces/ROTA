@@ -622,7 +622,11 @@ public sealed class QuestService : IQuestService
         {
             foreach (var drop in loot.ChanceDrops)
             {
-                if (_random.NextDouble() < Scale(drop.Chance))
+                // RareScaling picks the asymptotic chase curve over the generic multiplier, the same
+                // choice gear already had. A relic on the generic curve stops being a relic: 0.0005
+                // base hits the 0.95 clamp at 63,300 Discernment.
+                double rate = drop.RareScaling ? RareScale(drop.Chance) : Scale(drop.Chance);
+                if (_random.NextDouble() < rate)
                 {
                     // System 22 Phase A (Slice 7) — Discernment drop-quality: a successful roll upgrades a
                     // fired chance drop to its next-tier item (never a guaranteed drop).
