@@ -83,7 +83,8 @@ public sealed class StatService : IStatService
                 : 0;
 
             if (newLsi > LsiCap)
-                return Fail($"Allocation would exceed LSI cap of {LsiCap:F2}. Current LSI: {stats.ComputeLSI(player.Level):F2}");
+                return Fail(DescribeLsiRefusal(statType, player.Level,
+                                               stats.EnergyInvestment, stats.StaminaInvestment));
         }
 
         int charge = (int)totalCost;   // bounded: amount is validator-capped at 100,000,000 and cost is small
@@ -294,6 +295,42 @@ public sealed class StatService : IStatService
         return new CritProfile(
             Math.Clamp(chance, 0.0, cfg.BaseCritChance + cfg.MaxCritChanceBonus),
             Math.Clamp(multiplier, cfg.BaseCritMultiplier, cfg.BaseCritMultiplier + cfg.MaxCritDamageBonus));
+    }
+
+    /// <summary>
+    /// Why the pool cap refused, in terms the player can act on.
+    ///
+    /// This is the FIRST rule a player meets with no tutorial running — the opening sequence ends at
+    /// level 3 and the cap does not refuse a point until level 4 — so this message is the only
+    /// explanation they get. It previously read "Allocation would exceed LSI cap of 7.45. Current
+    /// LSI: 5.00": a number, a threshold, and nothing to do about either. It never said that Stamina
+    /// counts double, how many points WOULD fit, or that the ceiling rises with level, all of which
+    /// are known right here.
+    ///
+    /// House voice: say the fact, not the explanation. The actionable fact is how many fit.
+    /// </summary>
+    private static string DescribeLsiRefusal(StatType statType, int level, long energy, long stamina)
+    {
+        // Allowed iff  energy + 2 x stamina  <=  LsiCap x level.  So the room left, in cap units, is:
+        double headroom = LsiCap * level - (energy + stamina * 2.0);
+
+        // Stamina spends that room twice as fast, which is the part players do not guess.
+        long fits = (long)Math.Floor(statType == StatType.Stamina ? headroom / 2.0 : headroom);
+        if (fits < 0) fits = 0;
+
+        string room = fits == 0
+            ? $"No more {statType} will fit at level {level}."
+            : $"Only {fits:N0} more {statType} will fit at level {level}.";
+
+        // Only raise the shared-ceiling rule when it is actually what is biting. Telling a player
+        // with no Stamina that Stamina counts double is noise, and noise is what made the old
+        // message useless.
+        string why =
+            statType == StatType.Stamina ? " Stamina counts twice against the ceiling."
+            : stamina > 0                ? " Energy and Stamina share one ceiling, and Stamina counts twice."
+            : "";
+
+        return room + why + " The ceiling rises with every level.";
     }
 
     private static AllocateStatResponse Fail(string reason)

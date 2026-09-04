@@ -155,7 +155,9 @@ public class StatServiceTests
         var result = await b.Service.AllocateStatPointAsync(player.Id, StatType.Energy, 10);
 
         result.Success.Should().BeFalse();
-        result.FailureReason.Should().Contain("LSI cap");
+        // The refusal no longer names the cap constant — it states how many points fit, which is
+        // what a player can act on. See the "LSI refusal message has to teach" tests below.
+        result.FailureReason.Should().Contain("will fit at level");
         b.Players.Verify(p => p.UpdateStatsAsync(It.IsAny<PlayerStats>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -238,7 +240,9 @@ public class StatServiceTests
         var result = await b.Service.AllocateStatPointAsync(player.Id, StatType.Stamina, 5);
 
         result.Success.Should().BeFalse();
-        result.FailureReason.Should().Contain("LSI cap");
+        // The refusal no longer names the cap constant — it states how many points fit, which is
+        // what a player can act on. See the "LSI refusal message has to teach" tests below.
+        result.FailureReason.Should().Contain("will fit at level");
     }
 
     [Fact]
@@ -674,5 +678,100 @@ public class StatServiceTests
 
         spentOnStamina.Should().BeCloseTo(spentOnEnergy, 2,
             "reaching the same LSI ceiling must cost the same skill points whichever pool is used");
+    }
+
+    // ── The LSI refusal message has to teach ──────────────────────────────────
+
+    // WHY THIS MATTERS MORE THAN AN ORDINARY STRING. The opening tutorial ends at level 3 and the cap
+    // does not refuse a point until level 4, so this is the FIRST rule a player meets with nothing
+    // guiding them -- the message is the only explanation they get. It used to read "Allocation would
+    // exceed LSI cap of 7.45. Current LSI: 5.00": a number, a threshold, and nothing to do about
+    // either.
+    //
+    // The number it quotes must be RIGHT, not merely present. These assert the count against the
+    // cap arithmetic rather than against a hardcoded string.
+
+    [Fact]
+    public async Task LsiRefusal_SaysHowManyPointsActuallyFit()
+    {
+        // Level 4, 20 energy already in. Ceiling is 7.45 x 4 = 29.8, so 9 more energy fit.
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: 4, skillPoints: 500);
+        player.Stats!.AllocateToEnergy(20, 20);
+        SetupPlayer(b, player);
+
+        var result = await b.Service.AllocateStatPointAsync(player.Id, StatType.Energy, 10);
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("9 more Energy",
+            "the player needs the number that fits, not the cap constant");
+        result.FailureReason.Should().Contain("level 4");
+        result.FailureReason.Should().Contain("rises with every level",
+            "a ceiling with no stated way past it reads as a wall");
+    }
+
+    [Fact]
+    public async Task LsiRefusal_ForStamina_SaysItCountsTwice_AndHalvesTheCount()
+    {
+        // Same ceiling, but stamina spends it twice as fast: 9 units of room = 4 stamina points.
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: 4, skillPoints: 500);
+        player.Stats!.AllocateToEnergy(20, 20);
+        SetupPlayer(b, player);
+
+        var result = await b.Service.AllocateStatPointAsync(player.Id, StatType.Stamina, 10);
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("4 more Stamina",
+            "stamina consumes the ceiling at double rate, so half as many fit");
+        result.FailureReason.Should().Contain("counts twice");
+    }
+
+    [Fact]
+    public async Task LsiRefusal_DoesNotMentionStamina_WhenThePlayerHasNone()
+    {
+        // Noise is what made the old message useless. A pure-energy player is not told about a
+        // weighting that is not currently affecting them.
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: 4, skillPoints: 500);
+        player.Stats!.AllocateToEnergy(20, 20);
+        SetupPlayer(b, player);
+
+        var result = await b.Service.AllocateStatPointAsync(player.Id, StatType.Energy, 10);
+
+        result.FailureReason.Should().NotContain("share one ceiling");
+    }
+
+    [Fact]
+    public async Task LsiRefusal_MentionsTheSharedCeiling_WhenTheBuildIsMixed()
+    {
+        // Level 10, 40 energy + 10 stamina = 60 of a 74.5 ceiling. 14 energy fit, and the reason the
+        // number is lower than expected IS the stamina, so say so.
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: 10, skillPoints: 500);
+        player.Stats!.AllocateToEnergy(40, 40);
+        player.Stats!.AllocateToStamina(10, 20);
+        SetupPlayer(b, player);
+
+        var result = await b.Service.AllocateStatPointAsync(player.Id, StatType.Energy, 100);
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("14 more Energy");
+        result.FailureReason.Should().Contain("share one ceiling");
+    }
+
+    [Fact]
+    public async Task LsiRefusal_SaysNoneFit_WhenTheCeilingIsExactlyFull()
+    {
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: 4, skillPoints: 500);
+        player.Stats!.AllocateToEnergy(29, 29);   // 7.45 x 4 = 29.8, so 29 is full
+        SetupPlayer(b, player);
+
+        var result = await b.Service.AllocateStatPointAsync(player.Id, StatType.Energy, 1);
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("No more Energy",
+            "\"0 more\" reads as a bug; \"no more\" reads as a rule");
     }
 }
