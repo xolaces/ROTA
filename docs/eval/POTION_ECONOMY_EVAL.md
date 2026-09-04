@@ -3,9 +3,15 @@
 Companion to `docs/design/POTION_ECONOMY.md`. That document describes the intended model; this one
 checks it against the **code and content as they actually exist**, and the two disagree.
 
-**Headline: as designed, the energy economy ends at about level 13,100.** Potions are not implemented
-yet, which is the good news — this is a finding about a design, before it is built, which is the
-cheapest possible moment to have it.
+**Headline: as designed, the energy economy ends at about level 13,100 for a pure-energy build, and
+about 26,200 for a 50/50 one.** Potions are not implemented yet, which is the good news — this is a
+finding about a design, before it is built, which is the cheapest possible moment to have it.
+
+> **CORRECTION (owner, 2026-09-03).** The first version of this sheet quoted 13,092 flat. That is the
+> PURE-ENERGY case and it was not labelled as such. `pool(L) = 25 + 7.45 x L` spends the entire LSI
+> budget on energy; LSI is `(E + 2S)/L <= 7.45`, one budget shared with stamina, so any mixed build has
+> a smaller energy pool and crosses later. See "Finding 3b — the crossover moves with the E:S split".
+> 13,092 is the EARLIEST reachable crossover, not the typical one.
 
 Nothing here is a balance change. The numbers are the input to an owner decision, listed at the end.
 
@@ -89,6 +95,30 @@ Past that, every quest click returns more energy than it costs and the pool stop
 
 A floor-Discernment player — someone who has never invested in it — crosses at level **36,716**. So
 the runaway is not confined to optimised accounts; it is only delayed for everyone else.
+
+## Finding 3b — the crossover moves with the E:S split, and 13,092 is the best case
+
+Everything above assumes the whole LSI budget goes into energy. It is one budget:
+`(EnergyInvestment + StaminaInvestment x 2) / level <= 7.45`. Stamina costs double, so a player
+splitting the budget has proportionally less energy and crosses proportionally later.
+
+With `f` = the share of the LSI budget spent on energy, the crossover is `13,092 / f`:
+
+| E:S split of the LSI budget | f | crossover level (saturated Discernment) |
+|---|---|---|
+| pure energy | 1.00 | **13,092** |
+| 75 / 25 | 0.75 | 17,456 |
+| **50 / 50** | **0.50** | **26,184** |
+| 25 / 75 | 0.25 | 52,368 |
+| 10 / 90 | 0.10 | 130,921 |
+
+A floor-Discernment 50/50 player crosses at **73,431**.
+
+This materially softens the finding. Reaching 13,092 means spending every point on energy and taking
+**zero** stamina — abandoning raids, which are the SP and loot economy. It is a specialist exploit
+before it is a general one. The design question is still real, because the crossover exists for every
+build and the ratio keeps climbing past it, but the level at which a typical player meets it is
+roughly double what this sheet originally said.
 
 For contrast, at the *most expensive* node the game can currently produce (base 28, Nightmare, zone 4,
 chapter ≥16 → cost 493) the crossover is level 32,277. But no player is obliged to run that node, and
