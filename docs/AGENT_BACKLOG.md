@@ -92,16 +92,6 @@ therefore ~14,600 World-raid clears: eight years at 5/day, four at 10. The ancho
 dedicated player on a long horizon, and NOT by a typical one near level 7,500. The shape is still
 right; the anchor is high.
 
-### R11. The tutorial's "four passes" line is exact and nothing pins it
-`docs/design/TUTORIAL_OPENING.md` beat 2 tells the player four attempts of `q001` will level them.
-That is exact arithmetic — 4 x 7.5 XP = 30 = TNL(1) — not a rounded estimate. Retuning `q001`'s
-5-energy cost, `XpPerEnergyRoll*` (1.5), or the level-1 XP curve makes the line a lie, and it is the
-kind a player checks on their first four clicks.
-
-Either derive the number at runtime from the same config the server uses, or pin it with a unit test
-asserting `ceil(TNL(1) / (q001.BaseEnergyCost x XpPerEnergyRollMin)) == 4`. The test is cheaper and
-catches it at build rather than in a player's first minute.
-
 ---
 
 ## Blocked
@@ -244,6 +234,21 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- `712f327` — **R11: the tutorial's "four passes" is pinned, and its arithmetic was wrong.**
+  Four tests derive the number from the shipped `appsettings.json`, the shipped `q001` row, the real
+  `ResourceReward.RollSummed` and a real `StatService` — not from restated constants. The answer is
+  four, but the doc's "4 x 7.5 XP = 30 = TNL(1), exactly" was not: the roll rounds away from zero, so
+  an attempt pays **8**, three pay 24 and fall short, four pay 32 and overshoot 30 by 2. Doc corrected.
+  Neutering the XP rate to 2.0 fails the guard, and appsettings restored with zero diff.
+- **Owner-reported, outside the queue:** `5ababaa` **sigils dropped per ATTEMPT, not per clear** — a
+  boss depletes 2.5 from 100, so 40 rolls a clear turned a 15% rerun chance into 6.00 expected sigils
+  and 99.85% at-least-one, a 40x oversupply of the item that gates raid access; the first-clear
+  guarantee fired on attempt ONE, contradicting System 25's own comment. Same defect the quest-boss
+  gem grant had and was fixed for in 2026-06-22, left in the block beside it. `b723830` **raid health
+  retuned** to the owner's anchors, 4,000 -> 2,000,000 across the 23 campaign raids (+32.6% a step),
+  with the loot ladders regenerated because they are keyed to FRACTIONS of each raid's own pool —
+  retuning health alone would have stranded every rung silently, and `RaidLootLadders_StayKeyedToTheirRaidsOwnPool`
+  now catches exactly that.
 - `R7b` — **audited; both halves came back differently than the item assumed**
   (`docs/eval/DROP_CURVE_COVERAGE_AUDIT.md`, guard in `DropCurveCoverageTests`). Quest side: there are
   no unflagged entries to move — all 832 quest chance/gear drops carry `rareScaling`, so the capped

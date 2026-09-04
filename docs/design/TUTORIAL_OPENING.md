@@ -38,9 +38,17 @@ now; when the percentage tiers land it becomes the 7.5% one.
 
 ## What the numbers force
 
-**Level 1 → 2 is exactly four clicks.** `q001` costs 5 energy and pays 1.5 XP per energy = 7.5 XP.
-TNL(1) is 30. Four attempts, exactly, against a 25-energy pool that affords five — so the player
-levels one click before running dry, without being told to stop.
+**Level 1 → 2 is four clicks.** `q001` costs 5 energy and pays 1.5 XP per energy. The roll
+(`ResourceReward.RollSummed`) rounds away from zero, so 7.5 becomes **8 XP an attempt**, not 7.5.
+TNL(1) is 30 — three attempts pay 24 and fall short, four pay 32 and clear it. Four, against a
+25-energy pool that affords five, so the player levels one click before running dry without being
+told to stop.
+
+*(An earlier version of this line read "4 × 7.5 XP = 30 = TNL(1)" and called it exact. The answer
+was right and the derivation was not: the grant is 8, and four of them overshoot 30 by 2. Pinned in
+`TutorialFourPassesTests`, which derives the number from the same config and the same roll the
+server uses — retuning the energy cost, the XP rate or the level curve now fails the build rather
+than the player's first four clicks.)*
 
 **Each level grants exactly 10 skill points**, so "+10 into Energy" is one level's whole grant.
 
@@ -215,6 +223,7 @@ would make the tutorial wrong in a way a player can check inside an hour.
 ## Open questions
 
 1. **Is skipping permanent?** A player who skips at beat 1 sees no menus and meets the LSI cap cold.
-2. **Does beat 2's "four passes" survive a retune?** It is exact arithmetic, not an estimate — R11.
+2. ~~**Does beat 2's "four passes" survive a retune?**~~ **Answered.** `TutorialFourPassesTests`
+   derives the number from the shipped config and the real roll, so a retune fails the build.
 3. **Should beat 9 require actually spending the sigil?** Written as show-and-release. Forcing the
    summon costs the player their guaranteed sigil on a raid they cannot yet fight well.
