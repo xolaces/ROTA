@@ -112,6 +112,27 @@ This is a content + balance decision, not a pure defect: some drops may be *inte
 ceiling early. Bring numbers, do not re-flag content autonomously. Evidence in
 `docs/eval/SATURATING_SINKS_SWEEP.md`, Finding 2.
 
+### R9. Nothing tests that every E:S split levels at the same rate
+`AUTOLEVELLING_AND_PACING_EVAL.md` Finding 1: one LSI point buys 1 energy at 1.5 XP/energy, or 0.5
+stamina at 3.0 XP/stamina. Stamina's 2x LSI cost and 2x XP rate cancel EXACTLY, so XP per full drain
+is `1.5 x (E + 2S) = 11.175 x L` for every split. That is why no build levels faster than another,
+and it is almost certainly deliberate.
+
+It is also fragile in a way nothing catches: retuning `LevelingConfig`'s LSI weighting (2x) or either
+XP rate (`XpPerEnergyRoll*` 1.5, `XpPerStaminaRoll*` mean 3.0) WITHOUT the other silently makes one
+build strictly better. A unit test asserting XP-per-LSI-point is equal across splits would pin it in
+about ten lines. Cheap, and it protects a property the game's whole build diversity rests on.
+
+### R10. Is 2,000,000 Discernment reachable near level 7,500?
+Open tuning question left by the pacing eval. If quest cost tracks the pool, R depends only on
+Discernment (0.366 floor -> 1.025 ceiling), which matches the owner's stated intent — autolevelling
+available past 7,500, earned rather than reached. Whether the ceiling ANCHOR is right then depends on
+whether ~2M Discernment is realistically held around level 7,500.
+
+At 300 SP/raid that is ~6,667 raids. Nothing in this repo maps raids to level, so this needs either a
+play-rate assumption from the owner or telemetry from the beta. If 2M lands far past 7,500 the anchor
+moves down; the SHAPE is right either way, which is the good position to tune from.
+
 ---
 
 ## Blocked
@@ -126,6 +147,14 @@ validator — a real defect in unreviewed Copilot content, which must be fixed b
 ---
 
 ## Owner decisions — the agent must not decide these
+
+0d. **Regen is flat while pools grow linearly, so nothing paces play past low level.**
+   `RegenMinutesPerPoint` grants one point per interval regardless of level, so daily regen is a
+   constant 288 while the pool it fills is linear in level. A level costs 5.4 days at level 500 and
+   92.6 days at 7,500 on regen alone; the "little or no waiting" early game exists only below roughly
+   level 200. Potions are therefore not a supplement to the pacing curve past low level — they are
+   the whole curve. Four options (proportional regen, level-scaled interval, accept potions as the
+   lever, or target R at 0.6-0.8) are in `docs/eval/AUTOLEVELLING_AND_PACING_EVAL.md` Finding 4.
 
 0c. **Defense is a dominated stat — there is no build where it is the right allocation.**
    It is weighted 1x against Attack's 4x in both raid damage (`RaidService.cs:918`) and Gauntlet
@@ -146,7 +175,20 @@ validator — a real defect in unreviewed Copilot content, which must be fixed b
    Dawn-faithful async RPG may deliberately not want one; the point is that its absence should be a
    decision rather than an omission. See `docs/research/ECONOMY_VS_GENRE_STANDARDS.md`.
 
-0. **The potion design ends the energy economy at level 13,092 — decide before it is built.**
+0. **The potion refund ratio has the wrong SHAPE — decide before it is built.**
+   *(Reframed 2026-09-03 after the owner clarified that autolevelling is wanted past 7,500. The
+   original framing — "the design ends the energy economy" — was written assuming autolevelling was a
+   defect. It is not; the ratio is simply mis-sited.)*
+
+   Against the stated intent the design is too STINGY early and unbounded late: at level 7,500 a
+   50/50 player gets R = 0.287 where ~1.0 is wanted, then R climbs to 3.8 by level 50,000. Both halves
+   are one cause — R is proportional to level because the pool grows and quest cost caps at chapter
+   16. Letting cost track the pool removes the level term and leaves R depending only on Discernment
+   (0.366 -> 1.025), which matches the intent by construction and makes autolevelling earned through
+   raid SP. See `docs/eval/POTION_ECONOMY_EVAL.md` and `AUTOLEVELLING_AND_PACING_EVAL.md`.
+
+   ORIGINAL NOTE, still true: quest cost caps at chapter 16 while the pool grows forever, and below
+   the 200-energy gate the cost cancels out of the ratio entirely, so no choice of quest avoids it.
    `QuestConfig.ChapterScalingCap = 16` caps quest energy cost at chapter 16 while the pool grows
    linearly with level forever, so the refund ratio crosses 1.0 and keeps climbing. Below the
    200-energy gate the cost cancels out of the ratio entirely, so no choice of quest avoids it and a
