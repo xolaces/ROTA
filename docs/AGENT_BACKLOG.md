@@ -234,7 +234,7 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
-- `712f327` — **R11: the tutorial's "four passes" is pinned, and its arithmetic was wrong.**
+- `8f845a9` — **R11: the tutorial's "four passes" is pinned, and its arithmetic was wrong.**
   Four tests derive the number from the shipped `appsettings.json`, the shipped `q001` row, the real
   `ResourceReward.RollSummed` and a real `StatService` — not from restated constants. The answer is
   four, but the doc's "4 x 7.5 XP = 30 = TNL(1), exactly" was not: the roll rounds away from zero, so
