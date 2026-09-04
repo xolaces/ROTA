@@ -74,4 +74,14 @@ public interface IPlayerRepository
     /// transaction and commits or rolls back with the grant it pays for.
     /// </summary>
     Task<long?> TrySpendGoldAsync(Guid playerId, long amount, CancellationToken ct = default);
+
+    /// <summary>
+    /// Credits gold in ONE atomic statement, returning the committed balance. The mirror of
+    /// <see cref="TrySpendGoldAsync"/> and, like it, safe to call without holding the target player's
+    /// mutation lock — which is the whole reason it exists. The market credits a SELLER from inside
+    /// the BUYER's lock, so the seller is not serialised against their own concurrent activity; an
+    /// EF read-modify-write there would lose gold exactly the way skill-point grants were losing them
+    /// before 251fec1.
+    /// </summary>
+    Task<long> AddGoldAsync(Guid playerId, long amount, CancellationToken ct = default);
 }

@@ -129,6 +129,45 @@ public sealed class PlayerRepository : IPlayerRepository
         return (long)result;
     }
 
+    // Mirrors TrySpendGoldAsync in reverse. No affordability guard is possible or wanted — a credit
+    // only ever adds — but the arithmetic still happens in the DATABASE rather than in memory, because
+    // the market credits a seller from inside the BUYER's mutation lock. The seller is therefore not
+    // serialised against their own concurrent activity, and a read-modify-write would drop a credit
+    // under two simultaneous sales exactly the way skill-point grants were being dropped before
+    // 251fec1.
+    public async Task<long> AddGoldAsync(Guid playerId, long amount, CancellationToken ct = default)
+    {
+        if (amount < 0)
+            throw new ArgumentOutOfRangeException(nameof(amount), "Gold credit cannot be negative.");
+        if (amount == 0)
+            return (await FindByIdAsync(playerId, ct))?.Gold ?? 0;
+
+        var conn = (NpgsqlConnection)_db.Database.GetDbConnection();
+        if (conn.State != System.Data.ConnectionState.Open)
+            await conn.OpenAsync(ct);
+        var ntx = (NpgsqlTransaction?)_db.Database.CurrentTransaction?.GetDbTransaction();
+
+        const string sql = """
+            UPDATE players
+            SET gold = gold + @amount, updated_at = now()
+            WHERE id = @p AND NOT is_deleted
+            RETURNING gold
+            """;
+
+        await using var cmd = new NpgsqlCommand(sql, conn, ntx);
+        cmd.Parameters.AddWithValue("p", NpgsqlDbType.Uuid, playerId);
+        cmd.Parameters.AddWithValue("amount", NpgsqlDbType.Bigint, amount);
+
+        var result = await cmd.ExecuteScalarAsync(ct);
+        if (result is null || result is DBNull) return 0;   // no such player → nothing written
+
+        var tracked = _db.ChangeTracker.Entries<Player>()
+            .FirstOrDefault(e => e.Entity.Id == playerId);
+        if (tracked is not null) await tracked.ReloadAsync(ct);
+
+        return (long)result;
+    }
+
     // Mirrors TrySpendGoldAsync: raw parameterised SQL so the arithmetic happens in the database and
     // no concurrent grant can be lost. There is no affordability guard — a grant only ever adds.
     public async Task<long> IncrementSkillPointsAsync(

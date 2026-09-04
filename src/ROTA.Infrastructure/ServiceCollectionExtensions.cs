@@ -34,6 +34,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
         services.AddScoped<IPlayerEquipmentRepository, PlayerEquipmentRepository>();
         services.AddScoped<IPlayerGearRepository, PlayerGearRepository>();
+        // System 27 — player market.
+        services.AddScoped<IMarketListingRepository, MarketListingRepository>();
+        services.AddScoped<IMarketTransactionRepository, MarketTransactionRepository>();
         services.AddScoped<IPlayerMagicRepository, PlayerMagicRepository>();
         services.AddScoped<IRaidMagicRepository, RaidMagicRepository>();
         services.AddScoped<IPlayerUnitRepository, PlayerUnitRepository>();
@@ -168,6 +171,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IItemService, ItemService>();
         services.AddScoped<IConsumableService, ConsumableService>();   // D-008/D-013 gem instant refills
         services.AddScoped<ICraftingService, CraftingService>();       // System 26 crafting (D-018)
+        services.AddScoped<IMarketService, MarketService>();            // System 27 player market
         services.AddScoped<IEquipmentService, EquipmentService>();
         services.AddScoped<IMagicService, MagicService>();
         services.AddScoped<ILegionService, LegionService>();

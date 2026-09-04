@@ -51,6 +51,11 @@ public class RotaDbContext : DbContext
     // ----- System 18 — Gear Ownership -----
     public DbSet<PlayerGear> PlayerGear => Set<PlayerGear>();
 
+    // System 27 — the player market. The listing table holds escrowed goods; the transaction table is
+    // the append-only trade ledger the daily caps are read from.
+    public DbSet<MarketListing> MarketListings => Set<MarketListing>();
+    public DbSet<MarketTransaction> MarketTransactions => Set<MarketTransaction>();
+
     // ----- System 16 — Gauntlet (Slice 2) -----
     public DbSet<GauntletEvent> GauntletEvents => Set<GauntletEvent>();
     public DbSet<GauntletEntry> GauntletEntries => Set<GauntletEntry>();

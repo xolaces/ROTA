@@ -271,6 +271,22 @@ builder.Services.Configure<LegalConfig>(
 builder.Services.Configure<RaidConfig>(
     builder.Configuration.GetSection("RaidConfig"));
 
+// System 27 — player market. Validated at boot because a fee rate outside [0,1) is not a balance
+// choice, it is a bug that either mints gold (negative) or takes more than the buyer paid (>= 1).
+builder.Services.AddOptions<MarketConfig>()
+    .Bind(builder.Configuration.GetSection("MarketConfig"))
+    .Validate(c => c.ListingFeeRate >= 0 && c.ListingFeeRate < 1,
+        "MarketConfig.ListingFeeRate must be in [0, 1).")
+    .Validate(c => c.SaleFeeRate >= 0 && c.SaleFeeRate < 1,
+        "MarketConfig.SaleFeeRate must be in [0, 1).")
+    .Validate(c => c.MinUnitPrice >= 1 && c.MaxUnitPrice >= c.MinUnitPrice,
+        "MarketConfig price bounds must be positive and ordered.")
+    .Validate(c => c.MaxQuantityPerListing >= 1 && c.BrowsePageSize >= 1,
+        "MarketConfig.MaxQuantityPerListing and BrowsePageSize must be positive.")
+    .Validate(c => c.ListingDurationHours >= 1,
+        "MarketConfig.ListingDurationHours must be at least one hour, or nothing could ever be bought.")
+    .ValidateOnStart();
+
 builder.Services.AddRotaServices(builder.Environment.ContentRootPath);
 
 // Phase 2 (T39): out-of-band sender that drains the email queue without blocking requests.
@@ -286,6 +302,10 @@ builder.Services.AddHostedService<RaidExpirySettlementService>();
 // Closes and settles a Gauntlet event once it reaches EndsAt. Nothing else did: the window opened
 // automatically and never shut, stranding rank prizes and blocking every future event.
 builder.Services.AddHostedService<GauntletEventSettlementService>();
+
+// Returns the goods on market listings whose clock ran out. A listing HOLDS the seller's stack, so
+// an expiry with nothing behind it does not merely go stale — it eats the goods.
+builder.Services.AddHostedService<MarketExpirySettlementService>();
 
 // Redis — factory-based so the connection string is resolved from the fully-built
 // IConfiguration (after all sources, including test overrides, have been applied)
