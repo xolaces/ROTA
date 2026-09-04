@@ -350,24 +350,41 @@ public class ClassServiceTests
         rates.StaminaRegenMinutesPerPoint.Should().Be(6.0);
     }
 
+    // These two asserted that Legendary and Ascendant regenerate IDENTICALLY to the class they are
+    // built from -- which was true, and was the defect. Both are AUTO tiers, at levels 500 and 1,000,
+    // and granting nothing meant regen did not move once between level 100 and level 2,000. Nineteen
+    // hundred levels across two promotions that read as advancement.
+    //
+    // They now assert the intended contract: the tier makes the class FASTER without changing what
+    // it favours.
+
     [Fact]
-    public void GetRegenRates_LegendaryIronguard_SameAsIronguard()
+    public void GetRegenRates_LegendaryIronguard_IsFasterThanIronguard()
     {
         var svc = BuildService(out _);
         var legendary = svc.GetRegenRates(PlayerClass.LegendaryIronguard);
         var base_     = svc.GetRegenRates(PlayerClass.Ironguard);
-        legendary.EnergyRegenMinutesPerPoint.Should().Be(base_.EnergyRegenMinutesPerPoint);
-        legendary.StaminaRegenMinutesPerPoint.Should().Be(base_.StaminaRegenMinutesPerPoint);
+
+        legendary.EnergyRegenMinutesPerPoint.Should().BeLessThan(base_.EnergyRegenMinutesPerPoint,
+            "a lower interval is a faster regen, and Legendary must be a real step");
+        legendary.StaminaRegenMinutesPerPoint.Should().BeLessThan(base_.StaminaRegenMinutesPerPoint);
     }
 
     [Fact]
-    public void GetRegenRates_AscendantArcanist_SameAsArcanist()
+    public void GetRegenRates_AscendantArcanist_IsFasterThanArcanist_AndKeepsItsLean()
     {
         var svc = BuildService(out _);
         var ascendant = svc.GetRegenRates(PlayerClass.AscendantArcanist);
         var base_     = svc.GetRegenRates(PlayerClass.Arcanist);
-        ascendant.EnergyRegenMinutesPerPoint.Should().Be(base_.EnergyRegenMinutesPerPoint);
-        ascendant.StaminaRegenMinutesPerPoint.Should().Be(base_.StaminaRegenMinutesPerPoint);
+
+        ascendant.EnergyRegenMinutesPerPoint.Should().BeLessThan(base_.EnergyRegenMinutesPerPoint);
+        ascendant.StaminaRegenMinutesPerPoint.Should().BeLessThan(base_.StaminaRegenMinutesPerPoint);
+
+        // Both pools scale by the same factor, so an energy class stays an energy class.
+        double baseRatio = base_.StaminaRegenMinutesPerPoint / base_.EnergyRegenMinutesPerPoint;
+        double ascRatio  = ascendant.StaminaRegenMinutesPerPoint / ascendant.EnergyRegenMinutesPerPoint;
+        ascRatio.Should().BeApproximately(baseRatio, 0.15,
+            "Ascendant is Arcanist moving faster, not a different class");
     }
 
     [Fact]
