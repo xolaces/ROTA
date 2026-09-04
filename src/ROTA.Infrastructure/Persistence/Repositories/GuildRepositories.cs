@@ -5,6 +5,7 @@ using ROTA.Application.Interfaces;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
 using ROTA.Infrastructure.Persistence;
+using ROTA.Shared;
 
 namespace ROTA.Infrastructure.Persistence.Repositories;
 
@@ -77,7 +78,7 @@ public sealed class GuildRepository : IGuildRepository
             q = q.Where(g => g.NameNormalized.Contains(needle) || g.TagNormalized.Contains(needle));
         }
 
-        var offset = (page - 1) * pageSize;
+        var offset = Paging.Offset(page, pageSize);
 
         // Join leader for display name; ordered by member count desc (most active first), then name.
         var rows = await q

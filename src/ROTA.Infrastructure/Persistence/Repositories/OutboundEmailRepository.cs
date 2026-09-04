@@ -3,6 +3,7 @@ using ROTA.Application.Interfaces;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
 using ROTA.Infrastructure.Persistence;
+using ROTA.Shared;
 
 namespace ROTA.Infrastructure.Persistence.Repositories;
 
@@ -59,7 +60,7 @@ public sealed class OutboundEmailRepository : IOutboundEmailRepository
 
         var total = await q.CountAsync(ct);
         var items = await ordered
-            .Skip((page - 1) * pageSize)
+            .Skip(Paging.Offset(page, pageSize))
             .Take(pageSize)
             .ToListAsync(ct);
 

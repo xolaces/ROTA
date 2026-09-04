@@ -6,6 +6,7 @@ using ROTA.Application.Interfaces;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
 using ROTA.Infrastructure.Persistence;
+using ROTA.Shared;
 
 namespace ROTA.Infrastructure.Persistence.Repositories;
 
@@ -119,7 +120,7 @@ public sealed class LeaderboardEntryRepository : ILeaderboardEntryRepository
         int pageSize,
         CancellationToken ct = default)
     {
-        var offset = (page - 1) * pageSize;
+        var offset = Paging.Offset(page, pageSize);
 
         return await _db.LeaderboardEntries
             .AsNoTracking()
@@ -186,7 +187,7 @@ public sealed class LeaderboardEntryRepository : ILeaderboardEntryRepository
             LIMIT @pageSize OFFSET @offset
             """;
 
-        var offset = (page - 1) * pageSize;
+        var offset = Paging.Offset(page, pageSize);
         await using var cmd = new NpgsqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("board",          NpgsqlDbType.Integer,  (int)board);
         cmd.Parameters.AddWithValue("periodKey",      NpgsqlDbType.Varchar,  periodKey);

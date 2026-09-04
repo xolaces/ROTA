@@ -3,6 +3,7 @@ using ROTA.Application.Configuration;
 using ROTA.Application.Interfaces;
 using ROTA.Domain.Enums;
 using ROTA.Shared.DTOs;
+using ROTA.Shared;
 
 namespace ROTA.Application.Services;
 
@@ -111,7 +112,7 @@ public sealed class LeaderboardService : ILeaderboardService
             board, finalKey, minLevel, excludeAdm, ct);
 
         // Contiguous 1-based ranks, accounting for the page offset.
-        var offset  = (page - 1) * pageSize;
+        var offset  = Paging.Offset(page, pageSize);
         var dtoList = entries.Select((e, i) => new LeaderboardEntryDto
         {
             Rank        = offset + i + 1,
