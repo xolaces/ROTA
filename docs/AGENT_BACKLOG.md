@@ -143,20 +143,6 @@ Either derive the number at runtime from the same config the server uses, or pin
 asserting `ceil(TNL(1) / (q001.BaseEnergyCost x XpPerEnergyRollMin)) == 4`. The test is cheaper and
 catches it at build rather than in a player's first minute.
 
-### R12. The LSI cap refusal message tells the player nothing actionable
-Now that the tutorial ends at level 3, the LSI cap at level 4 is the first rule a player meets with no
-script running — so its message is the only teacher. It currently reads:
-
-    "Allocation would exceed LSI cap of 7.45. Current LSI: 5.00"
-
-A number, a threshold, and no advice. It does not say what LSI is, that stamina counts double, how
-many points WOULD fit, or that levelling raises the ceiling. All four are known at the call site in
-`StatService.AllocateStatPointCoreAsync`.
-
-Rewrite to the house voice (say the fact, not the explanation): state how many points fit right now,
-and that the ceiling rises with level. Small, self-contained, and it is the difference between a
-teaching moment and a bug report.
-
 ---
 
 ## Blocked
@@ -246,6 +232,11 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- `8e94cf4` — **R12: the pool-cap refusal now teaches.** Was a cap constant and a current value with
+  nothing to act on; now states how many points fit at this level, that the ceiling rises, and — only
+  when it is actually biting — that Stamina counts twice. Five tests assert the count against the cap
+  arithmetic rather than a fixed string, so retuning 7.45 does not falsify them. Verified by
+  restoring the old message: six tests fail.
 - `91c3980` — **stamina now costs 2 SP.** It counts double toward the LSI cap but charged 1, so a
   stamina build reached the same ceiling for half the skill points and banked the rest in
   Attack/Defense/Discernment — strictly better by exactly 2x. Price moved to
