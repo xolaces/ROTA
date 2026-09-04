@@ -252,7 +252,7 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
-- `<sha>` — **audit tick: what the sigil fix did to raid access.** Every Ready item was blocked or
+- `0025a1e` — **audit tick: what the sigil fix did to raid access.** Every Ready item was blocked or
   Unity-side, so this was R6/R7-style work. Started from the raid-HP retune (did cutting HP up to 280x
   inflate kill rewards? yes, 28x-313x per stamina — but the SHAPE improved, spread 123x -> 15.5x), which
   led to the real question: stamina is not the binding constraint on raid farming, sigils are. A
