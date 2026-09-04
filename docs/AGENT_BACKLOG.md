@@ -102,6 +102,24 @@ right; the anchor is high.
 
 ## Owner decisions — the agent must not decide these
 
+0k. **The sigil fix cut raid access by 40x. What should the rerun rate be?** *(highest-value open
+   call in the queue — it decides how often half the game happens.)*
+   `5ababaa` was right: sigils were dropping per boss ATTEMPT, and a boss is 40 attempts, so the 15%
+   rerun chance was firing 40 times a clear (6.00 expected, at-least-one 99.85%). But
+   `SigilRerunDropChance = 0.15` was the number that SURVIVED the fix, and it had been living inside a
+   40x multiplier nobody had priced. Measured in `docs/eval/SIGIL_SUPPLY_AFTER_THE_CLEAR_FIX.md`:
+
+       zone                    energy/sigil before   after    days (Conscript)
+       c1z1 Ashen Causeway                     127   5,067                  9d
+       c6z4 Throne of Ancients               1,040  41,600                 70d
+
+   A chapter-6 raid summon is now 34-70 days of banked energy depending on class. Nothing else supplies
+   a personal sigil: the 104 first-clear guarantees are one-off, guild `Sigil` is a separate ledger
+   currency for guild raids, no shop sells one and no loot table drops one. Four options priced in the
+   doc — raise the rate (one line: 0.30 -> 35 days, 0.50 -> 21, 1.00 -> 10), grant N instead of rolling
+   (removes a long geometric tail), cut the 40-attempt boss so a rerun costs less, or accept raids as a
+   monthly event. Raid cadence is core pacing, so this is the owner's.
+
 0j. **Hoard's raid drop bonus is killer-only, and both World raids have no killer.**
    `RaidService`: `hoardForThisPlayer = p.PlayerId == callerPlayerId ? callerHoardDropMultiplier : 1.0`
    — a documented performance trade (scaling every participant needs a mastery read per participant
@@ -234,6 +252,14 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- `<sha>` — **audit tick: what the sigil fix did to raid access.** Every Ready item was blocked or
+  Unity-side, so this was R6/R7-style work. Started from the raid-HP retune (did cutting HP up to 280x
+  inflate kill rewards? yes, 28x-313x per stamina — but the SHAPE improved, spread 123x -> 15.5x), which
+  led to the real question: stamina is not the binding constraint on raid farming, sigils are. A
+  chapter-6 sigil costs 41,600 energy in expectation, 70 days for a Conscript. Also measured en route:
+  gem rewards are banded flat per chapter while HP rises 32.6% a raid, so only **8 of 26** raids are ever
+  the best gem farm at any player power (gold and XP are fine at 24 of 26) — noted, but moot while
+  sigils bind. Raised Owner decision 0k.
 - `8f845a9` — **R11: the tutorial's "four passes" is pinned, and its arithmetic was wrong.**
   Four tests derive the number from the shipped `appsettings.json`, the shipped `q001` row, the real
   `ResourceReward.RollSummed` and a real `StatService` — not from restated constants. The answer is
