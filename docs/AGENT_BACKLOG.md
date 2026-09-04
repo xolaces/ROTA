@@ -133,6 +133,30 @@ At 300 SP/raid that is ~6,667 raids. Nothing in this repo maps raids to level, s
 play-rate assumption from the owner or telemetry from the beta. If 2M lands far past 7,500 the anchor
 moves down; the SHAPE is right either way, which is the good position to tune from.
 
+### R11. The tutorial's "four passes" line is exact and nothing pins it
+`docs/design/TUTORIAL_OPENING.md` beat 2 tells the player four attempts of `q001` will level them.
+That is exact arithmetic — 4 x 7.5 XP = 30 = TNL(1) — not a rounded estimate. Retuning `q001`'s
+5-energy cost, `XpPerEnergyRoll*` (1.5), or the level-1 XP curve makes the line a lie, and it is the
+kind a player checks on their first four clicks.
+
+Either derive the number at runtime from the same config the server uses, or pin it with a unit test
+asserting `ceil(TNL(1) / (q001.BaseEnergyCost x XpPerEnergyRollMin)) == 4`. The test is cheaper and
+catches it at build rather than in a player's first minute.
+
+### R12. The LSI cap refusal message tells the player nothing actionable
+Now that the tutorial ends at level 3, the LSI cap at level 4 is the first rule a player meets with no
+script running — so its message is the only teacher. It currently reads:
+
+    "Allocation would exceed LSI cap of 7.45. Current LSI: 5.00"
+
+A number, a threshold, and no advice. It does not say what LSI is, that stamina counts double, how
+many points WOULD fit, or that levelling raises the ceiling. All four are known at the call site in
+`StatService.AllocateStatPointCoreAsync`.
+
+Rewrite to the house voice (say the fact, not the explanation): state how many points fit right now,
+and that the ceiling rises with level. Small, self-contained, and it is the difference between a
+teaching moment and a bug report.
+
 ---
 
 ## Blocked
@@ -222,6 +246,14 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- `91c3980` — **stamina now costs 2 SP.** It counts double toward the LSI cap but charged 1, so a
+  stamina build reached the same ceiling for half the skill points and banked the rest in
+  Attack/Defense/Discernment — strictly better by exactly 2x. Price moved to
+  `LevelingConfig.SkillPointCostByStat`, every `AllocateToX` now takes the charge explicitly so a
+  future price cannot silently no-op, and Energy 1 / Stamina 2 is recorded as owner-locked. Verified
+  by reverting the price: the parity test reports 372 SP against 745.
+- `223dcd2` — SP cost-curve options, the tutorial opening design, and a correction: my earlier "all
+  E:S splits are equal" finding was true per LSI point and false per skill point.
 - `2d7ae80` — **R8 numeric-headroom sweep, and the one real find fixed.** All the big accumulators are
   already `long` (TotalDamageDealt, GauntletEntry.Score, gem ledger) and the narrowing casts are safe
   by construction. The exception: `GauntletConfig` had NO validation, and raising `MaxLadderStage` from
