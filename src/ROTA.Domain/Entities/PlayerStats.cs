@@ -53,9 +53,21 @@ public class PlayerStats
     public long ComputeMaxEnergy() => BaseMaxEnergy + EnergyInvestment;
     public long ComputeMaxStamina() => BaseMaxStamina + StaminaInvestment;
 
-    // LSI = (EnergyInvestment + StaminaInvestment x 2) / Level -- cap server-enforced in StatService.LsiCap (currently 7.45)
+    /// <summary>
+    /// How much of the LSI budget one point of Stamina consumes, against Energy's one.
+    ///
+    /// This 2 is load-bearing in three places and they must agree: this formula, the cap check in
+    /// StatService, and Stamina's skill-point price (LevelingConfig.SkillPointCostByStat). It was
+    /// duplicated as a literal in the first two, which is how they drift. The price matching the
+    /// weight is what makes Energy and Stamina cost the same per unit of XP -- see
+    /// StatParityTests.
+    /// </summary>
+    public const double StaminaLsiWeight = 2.0;
+
+    // LSI = (EnergyInvestment + StaminaInvestment x StaminaLsiWeight) / Level
+    // Cap server-enforced in StatService.LsiCap (currently 7.45).
     public double ComputeLSI(int level) =>
-        level > 0 ? (EnergyInvestment + StaminaInvestment * 2.0) / level : 0;
+        level > 0 ? (EnergyInvestment + StaminaInvestment * StaminaLsiWeight) / level : 0;
 
     public void AddSkillPoints(long amount)
     {

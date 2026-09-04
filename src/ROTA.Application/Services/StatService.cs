@@ -79,7 +79,7 @@ public sealed class StatService : IStatService
             long projectedEnergy  = stats.EnergyInvestment  + (statType == StatType.Energy  ? amount : 0);
             long projectedStamina = stats.StaminaInvestment + (statType == StatType.Stamina ? amount : 0);
             double newLsi = player.Level > 0
-                ? (projectedEnergy + projectedStamina * 2.0) / player.Level
+                ? (projectedEnergy + projectedStamina * PlayerStats.StaminaLsiWeight) / player.Level
                 : 0;
 
             if (newLsi > LsiCap)
@@ -312,10 +312,11 @@ public sealed class StatService : IStatService
     private static string DescribeLsiRefusal(StatType statType, int level, long energy, long stamina)
     {
         // Allowed iff  energy + 2 x stamina  <=  LsiCap x level.  So the room left, in cap units, is:
-        double headroom = LsiCap * level - (energy + stamina * 2.0);
+        double headroom = LsiCap * level - (energy + stamina * PlayerStats.StaminaLsiWeight);
 
         // Stamina spends that room twice as fast, which is the part players do not guess.
-        long fits = (long)Math.Floor(statType == StatType.Stamina ? headroom / 2.0 : headroom);
+        long fits = (long)Math.Floor(
+            statType == StatType.Stamina ? headroom / PlayerStats.StaminaLsiWeight : headroom);
         if (fits < 0) fits = 0;
 
         string room = fits == 0
