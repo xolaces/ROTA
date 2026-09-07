@@ -147,5 +147,252 @@
       "Shadow": 30.0,
       "Undead": 20.0
     }
+  },
+  {
+    "id": "legion_houndsmen",
+    "name": "The Houndsmen",
+    "description": "A hunting company, not an army. Built around beasts and the people who can stand near them, it goes where a formation cannot and arrives sooner.",
+    "rarity": "Blue",
+    "powerBonus": 110,
+    "generalSlots": [
+      {
+        "constraintType": "Race",
+        "constraintValue": "Beast"
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      }
+    ],
+    "troopSlots": [
+      {
+        "constraintType": "Attribute",
+        "constraintValue": "Agility"
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      }
+    ],
+    "iconPath": "icons/legion/houndsmen.png",
+    "acquisition": "Chapter 4 boss drops",
+    "gemPrice": 0,
+    "tagAffinities": {
+      "Beast": 28.0,
+      "Goblin": 18.0
+    }
+  },
+  {
+    "id": "legion_warrenguard",
+    "name": "The Warrenguard",
+    "description": "Iron Weir tunnel work. Short ranks, low ceilings, and a doctrine that assumes the enemy is already inside the line.",
+    "rarity": "Green",
+    "powerBonus": 70,
+    "generalSlots": [
+      {
+        "constraintType": "Role",
+        "constraintValue": "Tank"
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      }
+    ],
+    "troopSlots": [
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      }
+    ],
+    "iconPath": "icons/legion/warrenguard.png",
+    "acquisition": "Chapter 2 quest drops",
+    "gemPrice": 0,
+    "tagAffinities": {
+      "Goblin": 26.0
+    }
+  },
+  {
+    "id": "legion_anvilkeep",
+    "name": "The Anvilkeep Siege",
+    "description": "Dwarven engineers and the heaviest thing they could get to the site. It is slow, it is loud, and Wrought do not get back up.",
+    "rarity": "Purple",
+    "powerBonus": 240,
+    "generalSlots": [
+      {
+        "constraintType": "Race",
+        "constraintValue": "Dwarf"
+      },
+      {
+        "constraintType": "Role",
+        "constraintValue": "Tank"
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      }
+    ],
+    "troopSlots": [
+      {
+        "constraintType": "Attribute",
+        "constraintValue": "Strength"
+      },
+      {
+        "constraintType": "Attribute",
+        "constraintValue": "Strength"
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      }
+    ],
+    "iconPath": "icons/legion/anvilkeep.png",
+    "acquisition": "Chapter 5 raid threshold",
+    "gemPrice": 0,
+    "tagAffinities": {
+      "Construct": 32.0,
+      "Horror": 18.0
+    }
+  },
+  {
+    "id": "legion_bargained",
+    "name": "The Bargained Company",
+    "description": "Demons under written agreement, fielded by people who have read the agreement very carefully. It answers its own kind better than anything else will.",
+    "rarity": "Purple",
+    "powerBonus": 230,
+    "generalSlots": [
+      {
+        "constraintType": "Race",
+        "constraintValue": "Demon"
+      },
+      {
+        "constraintType": "Attribute",
+        "constraintValue": "Wisdom"
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      }
+    ],
+    "troopSlots": [
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      }
+    ],
+    "iconPath": "icons/legion/bargained.png",
+    "acquisition": "Chapter 5 boss drops",
+    "gemPrice": 0,
+    "tagAffinities": {
+      "Demon": 30.0,
+      "Shadow": 18.0
+    }
+  },
+  {
+    "id": "legion_deepwatch",
+    "name": "The Deepwatch",
+    "description": "The Last Watch's answer to the things that were here first. Everyone in it has seen one and elected to come back, which is the only entry requirement.",
+    "rarity": "Orange",
+    "powerBonus": 320,
+    "generalSlots": [
+      {
+        "constraintType": "Role",
+        "constraintValue": "Healer"
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      }
+    ],
+    "troopSlots": [
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      }
+    ],
+    "iconPath": "icons/legion/deepwatch.png",
+    "acquisition": "Black Archive",
+    "gemPrice": 0,
+    "tagAffinities": {
+      "Horror": 30.0,
+      "Undead": 22.0
+    }
+  },
+  {
+    "id": "legion_sovereigns_climb",
+    "name": "The Sovereign's Climb",
+    "description": "A Gauntlet formation, fielded under the founding pact. What it costs to raise is written in the inner registry, which fighters may not read.",
+    "rarity": "Orange",
+    "powerBonus": 340,
+    "generalSlots": [
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      }
+    ],
+    "troopSlots": [
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      },
+      {
+        "constraintType": "None",
+        "constraintValue": null
+      }
+    ],
+    "iconPath": "icons/legion/sovereigns_climb.png",
+    "acquisition": "Gauntlet rank prize",
+    "gemPrice": 0,
+    "tagAffinities": {
+      "Dragon": 30.0,
+      "Legion": 20.0
+    }
   }
 ]
