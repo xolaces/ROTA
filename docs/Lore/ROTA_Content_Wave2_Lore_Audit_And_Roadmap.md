@@ -29,11 +29,16 @@ the Sundering or Essence. **6%.** The canon's own example set runs three-in-ten.
 Iron Weir frontier issue, Last Watch grave-work, hunting gear and swamp reagents — the world being
 bigger than its heroes, which is what the principle asks for.
 
-**"Mundane drops are load-bearing." — PASSES, but thin.**
-The economy's floor is **5 Grey/White materials** against 43 materials total: Iron Shard, Arcane
-Dust, Causeway Ash, Hollow Reed, Mire-Ichor. That floor still exists and still works, but wave 2
-added almost nothing to it — every new reagent landed Green or above, because tag reagents are
-defined by having fought something. **This is the one real finding.** See the fix in Part 2.
+**"Mundane drops are load-bearing." — WAS THIN, NOW FIXED.**
+The economy's floor was **5 Grey/White materials** against 43 total: Iron Shard, Arcane Dust,
+Causeway Ash, Hollow Reed, Mire-Ichor. Wave 2 had added nothing to it, because a tag reagent is by
+definition something you had to fight, so every new reagent landed Green or above.
+
+This was the audit's one real finding and it was four items wide, so it is closed rather than
+scheduled: Bog Cotton, Road Flint, Rendered Tallow and Coarse Thread bring the floor to **9**. They
+are deliberately unglamorous and deliberately not tag-gated — you get them by being outdoors, not by
+winning. *"Every relay lamp in the Watch burns it, every boot in the Weir is greased with it, and
+nobody has ever written a sentence about it before this one."*
 
 **"Corruption is renewable; Heralds are not." — PASSES.**
 The Shadow tag is the Glutbound overlay and is on ten raids, which is correct: the amber-rot layer
@@ -88,7 +93,7 @@ orders, and the Broods have begun holding a line.
 | New sets | 2 — a Goblin-warlord set (Blue) and an Iron Weir counter-set (Purple) |
 | New raids | 3, all Goblin-tagged, one of them a **Goblin + Legion** dual-tag: the first time the Broods field a formation |
 | New tag | **none.** Deliberately — an update that adds a tag before the existing ten are exercised is spending headroom it has not earned |
-| Reagent work | **The mundane floor.** 4 new Grey/White materials, which is the Part 1 finding fixed rather than noted |
+| Reagent work | Recipes that consume the mundane floor. The floor itself was widened on the night (see Part 1) — what it still lacks is *demand*, and cheap recipes are what create it |
 
 **Why this one first.** Set bonuses are the largest piece of already-paid-for design sitting unused,
 and the Goblin tag is the one a player meets earliest and therefore the cheapest place to teach the
