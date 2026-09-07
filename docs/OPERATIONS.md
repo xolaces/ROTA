@@ -194,6 +194,56 @@ or re-login; demotion of Admin/Moderator revokes the target's refresh tokens imm
      duplicate-username/email failure).
 4. **Admin** elevates trusted players: `promote <username> Moderator`.
 
+### 9.1 Resetting between beta waves (`beta-reset`)
+
+Clears the world and leaves the logins standing. Returning testers log in with the credentials they
+already have and start again at level 1.
+
+```bash
+# 1. ALWAYS preview first. Writes nothing; prints exactly what the real run will do.
+dotnet run --project src/ROTA.Api -- beta-reset
+
+# 2. Apply. The confirmation phrase is required and is checked literally.
+dotnet run --project src/ROTA.Api -- beta-reset --confirm WIPE-BETA
+```
+
+| Flag | Effect |
+|---|---|
+| *(none)* | Dry run. The default is a preview because the opposite default is unrecoverable. |
+| `--confirm WIPE-BETA` | Actually apply. |
+| `--keep alice,bob` | Exempt these accounts. They keep their **character** (stats, gear, inventory, quest progress) and lose their **world** (guild, raids, market, friends) along with everyone else. |
+| `--purge-accounts` | DELETE accounts outright instead of resetting them. Nobody keeps a login. Use only for clearing out test accounts. |
+
+**What survives, and why**
+
+| Survives | Reason |
+|---|---|
+| Username, email, password | The point of the exercise — returning testers do not re-register. |
+| Roles | A wipe must not demote the admins who have to run the next wave. |
+| Bans and mutes | A wipe is not an amnesty. |
+| Accepted terms version | They accepted; asking again is friction with no gain. |
+| **Redeemed** beta keys | The record of who was admitted in the previous wave. |
+| `audit_log` | Append-only by architecture rule — including the record of the reset itself. |
+| `punishment_log`, `outbound_emails`, `gauntlet_events` | Moderation history, the ops dashboard's source of truth, and operator-created events. |
+
+**Unredeemed** beta keys are deleted, so keys handed out for the previous wave stop working.
+
+**Two safety properties worth knowing about**
+
+- **It fails closed.** Every table in the schema must be classified as keep, wipe or special. If a
+  migration adds a table nobody has classified, the command refuses to run and names it. An
+  unclassified table is a decision nobody has made, and guessing on a destructive operation is how a
+  reset leaves a level-1 account still owning the campaign.
+- **It checks its own work before committing.** The whole reset runs in one transaction, and before
+  the commit it asserts that every surviving account has exactly one stats row and four resource
+  pools. A violation rolls the entire wipe back rather than leaving a live server full of accounts
+  that cannot load. This is not hypothetical — the first version of `--keep` produced exactly that,
+  and the check is what caught it.
+
+> **Applies migrations.** Like every CLI command, `beta-reset` calls `Database.Migrate()` before it
+> runs. On a server with pending migrations that is a schema change, not just a data change. Check
+> `dotnet ef migrations list` first.
+
 ---
 
 ## 10. Release / versioning

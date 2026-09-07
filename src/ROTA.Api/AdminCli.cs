@@ -28,6 +28,7 @@ namespace ROTA.Api;
 ///   dotnet run --project src/ROTA.Api -- gauntlet-open {name} {startsAt} {endsAt}
 ///   dotnet run --project src/ROTA.Api -- gauntlet-close {eventId}
 ///   dotnet run --project src/ROTA.Api -- gauntlet-settle {eventId}
+///   dotnet run --project src/ROTA.Api -- beta-reset [--purge-accounts] [--keep name,name] [--confirm WIPE-BETA]
 /// </code>
 /// </remarks>
 public static class AdminCli
@@ -47,6 +48,7 @@ public static class AdminCli
             "gauntlet-open",
             "gauntlet-close",
             "gauntlet-settle",
+            "beta-reset",
         };
 
     /// <summary>Returns true if <paramref name="firstArg"/> is a recognised CLI command.</summary>
@@ -86,6 +88,7 @@ public static class AdminCli
                 "gauntlet-open"            => await RunGauntletOpen(app.Services, args),
                 "gauntlet-close"           => await RunGauntletClose(app.Services, args),
                 "gauntlet-settle"          => await RunGauntletSettle(app.Services, args),
+                "beta-reset"               => await RunBetaReset(app.Services, args),
                 _                          => UnknownCommand(command),
             };
         }
@@ -323,5 +326,63 @@ public static class AdminCli
     {
         Console.Error.WriteLine($"Unknown command '{command}'. Valid commands: seed-admin, gen-beta-key, promote, demote, flag-dev, unflag-dev, leaderboard-refresh-stat, mastery-refresh-rating, grant-gear, gauntlet-open, gauntlet-close, gauntlet-settle.");
         return 1;
+    }
+
+    /// <summary>
+    /// Between-wave beta reset: clears the world, keeps the logins.
+    /// </summary>
+    /// <remarks>
+    /// Runs a dry run unless <c>--confirm WIPE-BETA</c> is passed, because the failure mode of the
+    /// opposite default is unrecoverable. Prints the same report either way, so what you previewed
+    /// is what you get.
+    /// </remarks>
+    private static async Task<int> RunBetaReset(IServiceProvider services, string[] args)
+    {
+        const string Phrase = "WIPE-BETA";
+
+        bool purge = args.Contains("--purge-accounts", StringComparer.OrdinalIgnoreCase);
+        var keep = new List<string>();
+        for (int i = 1; i < args.Length - 1; i++)
+            if (string.Equals(args[i], "--keep", StringComparison.OrdinalIgnoreCase))
+                keep.AddRange(args[i + 1].Split(',', StringSplitOptions.RemoveEmptyEntries
+                                                   | StringSplitOptions.TrimEntries));
+
+        int ci = Array.FindIndex(args, a => string.Equals(a, "--confirm", StringComparison.OrdinalIgnoreCase));
+        bool confirmed = ci >= 0 && ci + 1 < args.Length && args[ci + 1] == Phrase;
+        if (ci >= 0 && !confirmed)
+        {
+            Console.Error.WriteLine($"beta-reset: --confirm must be followed by exactly {Phrase}.");
+            return 1;
+        }
+
+        using var scope = services.CreateScope();
+        var svc = scope.ServiceProvider.GetRequiredService<IBetaResetService>();
+        var report = await svc.RunAsync(dryRun: !confirmed, purgeAccounts: purge, keepUsernames: keep);
+
+        if (report.UnclassifiedTables.Count > 0)
+        {
+            Console.Error.WriteLine("beta-reset: REFUSED — these tables are not classified as keep or wipe:");
+            foreach (var t in report.UnclassifiedTables) Console.Error.WriteLine($"    {t}");
+            Console.Error.WriteLine("Classify them in BetaResetService before running a reset.");
+            return 1;
+        }
+
+        Console.WriteLine(report.DryRun
+            ? $"beta-reset DRY RUN — nothing was written. Re-run with --confirm {Phrase} to apply."
+            : "beta-reset APPLIED.");
+        Console.WriteLine($"  accounts reset  : {report.PlayersReset}");
+        Console.WriteLine($"  accounts purged : {report.PlayersPurged}");
+        if (keep.Count > 0)
+            Console.WriteLine($"  accounts kept   : {string.Join(", ", keep)}");
+        Console.WriteLine($"  beta keys       : {report.UnredeemedKeysDeleted} unredeemed deleted, "
+                          + $"{report.RedeemedKeysKept} redeemed kept");
+        Console.WriteLine($"  rows removed    : {report.TotalRowsDeleted} across "
+                          + $"{report.RowsDeletedByTable.Count} table(s)");
+        foreach (var kv in report.RowsDeletedByTable)
+            Console.WriteLine($"      {kv.Key,-36} {kv.Value,10}");
+        Console.WriteLine("  untouched       :");
+        foreach (var kv in report.TablesKept)
+            Console.WriteLine($"      {kv.Key,-36} {kv.Value}");
+        return 0;
     }
 }

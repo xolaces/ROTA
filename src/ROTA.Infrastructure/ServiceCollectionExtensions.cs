@@ -20,6 +20,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPlayerRepository, PlayerRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+        services.AddScoped<IBetaResetService, ROTA.Infrastructure.Maintenance.BetaResetService>();
         services.AddScoped<IPunishmentLogRepository, PunishmentLogRepository>();
         services.AddScoped<IPlayerResourceRepository, PlayerResourceRepository>();
         services.AddScoped<IGemTransactionRepository, GemTransactionRepository>();

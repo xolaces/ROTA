@@ -194,6 +194,38 @@ public class Player
     }
 
     /// <summary>
+    /// Resets this account's PROGRESS to a freshly-registered state, keeping the identity that lets
+    /// the player log back in. Used by the <c>beta-reset</c> maintenance command between beta waves.
+    /// </summary>
+    /// <remarks>
+    /// KEPT, and each for a reason:
+    /// <list type="bullet">
+    /// <item>Id / Username / Email / PasswordHash — the whole point is that the player keeps their login.</item>
+    /// <item>Roles — a wipe must not silently demote the admins who have to run the next wave.</item>
+    /// <item>Ban and mute state — a wipe is not an amnesty. Someone banned for cheating in wave 1
+    ///       does not get a clean record because the world was reset around them.</item>
+    /// <item>AcceptedTermsVersion — they accepted; making them accept again is friction with no gain.</item>
+    /// <item>CreatedAt — the account really was created then, and "joined in wave 1" is worth keeping.</item>
+    /// </list>
+    /// RESET to exactly what <see cref="CreateWithId"/> seeds, so a wiped player and a brand-new one
+    /// are indistinguishable. Owned rows (stats, resources, inventory, progress) are deleted and
+    /// re-seeded by the maintenance service — this method only covers columns on the player row.
+    /// </remarks>
+    public void ResetProgress()
+    {
+        Level = 1;
+        Experience = 0;
+        Gold = 0;
+        Class = PlayerClass.Conscript;
+        GuildId = null;
+        GuildRank = null;
+        ActivePledgeAncient = null;
+        LastLoginDate = null;
+        DaysPlayed = 0;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
     /// Issues a ban. <paramref name="until"/> null = permanent (Admin-only at the service layer);
     /// non-null = temporary, and the ban lifts on its own once that instant passes.
     /// </summary>
