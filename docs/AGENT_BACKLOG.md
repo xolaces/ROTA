@@ -47,6 +47,29 @@ up unattended work starts here and finishes here.
 > owner, or a tick with a Unity headless-compile gate added to the protocol. They stay ranked because
 > they matter; they are simply not takeable here.
 
+### RB1. Beta-tester acknowledgement — a badge on the profile  *(owner idea, 2026-09-07)*
+The people who play the beta should carry a mark of it afterwards. Owner's framing: "a banner or
+icon on their profile", explicitly a later feature — recorded now so the DATA it needs is captured
+while the wave is running, because the one thing that cannot be reconstructed afterwards is who was
+actually there.
+
+**Do the cheap half now, the visible half later.** The backend already knows: a redeemed `beta_keys`
+row names the player and the moment they were admitted, and `beta-reset` deliberately keeps redeemed
+keys for exactly this reason. So wave membership is already durable and nothing is at risk.
+
+What is NOT yet captured, and would be lost:
+- **Which wave.** `beta_keys` has no wave/cohort column, so keys minted for wave 1 and wave 2 are
+  indistinguishable after the fact. One nullable `cohort` column on `beta_keys`, set at generation
+  time, is the whole fix — and it has to exist BEFORE the keys are minted, not after.
+
+Later, when the badge itself is built:
+- Derive it rather than storing a flag: `PlayerProfileResponse.BetaCohorts` from the redeemed keys.
+  A stored bool drifts; a derived list cannot.
+- Client renders it next to the display name. Unity-side, so not verifiable by the backend gate.
+
+Ranked below the client items because it ships nothing a player sees this wave, but the `cohort`
+column is genuinely time-sensitive — it is free before the first key is minted and archaeology after.
+
 ### R0. Client runs in MOCK mode — the playtest never touched the backend
 `AppBootstrap.useMock` defaults to `true` and the scene's serialized value wins over the code default,
 so `Assets/Scenes/Main.unity` starts on canned data. The console says `[ROTA] client started (MOCK).`
