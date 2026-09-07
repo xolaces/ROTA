@@ -8,9 +8,21 @@
     "outputId": "gen_ironward_ii",
     "outputQuantity": 1,
     "ingredients": [
-      { "kind": "Unit", "id": "gen_ironward", "quantity": 1 },
-      { "kind": "Item", "id": "mat_oathsteel", "quantity": 2 },
-      { "kind": "Item", "id": "mat_iron_shard", "quantity": 10 }
+      {
+        "kind": "Unit",
+        "id": "gen_ironward",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_oathsteel",
+        "quantity": 2
+      },
+      {
+        "kind": "Item",
+        "id": "mat_iron_shard",
+        "quantity": 10
+      }
     ],
     "goldCost": 15000,
     "eventKey": null,
@@ -25,10 +37,26 @@
     "outputId": "gen_ashblade_ii",
     "outputQuantity": 1,
     "ingredients": [
-      { "kind": "Unit", "id": "gen_ashblade", "quantity": 1 },
-      { "kind": "Item", "id": "mat_wyrm_scale", "quantity": 1 },
-      { "kind": "Item", "id": "mat_oathsteel", "quantity": 3 },
-      { "kind": "Item", "id": "mat_arcane_dust", "quantity": 5 }
+      {
+        "kind": "Unit",
+        "id": "gen_ashblade",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_wyrm_scale",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_oathsteel",
+        "quantity": 3
+      },
+      {
+        "kind": "Item",
+        "id": "mat_arcane_dust",
+        "quantity": 5
+      }
     ],
     "goldCost": 40000,
     "eventKey": null,
@@ -43,9 +71,21 @@
     "outputId": "troop_pikemen_ii",
     "outputQuantity": 1,
     "ingredients": [
-      { "kind": "Unit", "id": "troop_pikemen", "quantity": 1 },
-      { "kind": "Item", "id": "mat_oathsteel", "quantity": 1 },
-      { "kind": "Item", "id": "mat_iron_shard", "quantity": 6 }
+      {
+        "kind": "Unit",
+        "id": "troop_pikemen",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_oathsteel",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_iron_shard",
+        "quantity": 6
+      }
     ],
     "goldCost": 8000,
     "eventKey": null,
@@ -60,9 +100,21 @@
     "outputId": "legion_vanguard_ii",
     "outputQuantity": 1,
     "ingredients": [
-      { "kind": "Legion", "id": "legion_vanguard", "quantity": 1 },
-      { "kind": "Item", "id": "mat_vanguard_banner", "quantity": 3 },
-      { "kind": "Item", "id": "mat_oathsteel", "quantity": 4 }
+      {
+        "kind": "Legion",
+        "id": "legion_vanguard",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_vanguard_banner",
+        "quantity": 3
+      },
+      {
+        "kind": "Item",
+        "id": "mat_oathsteel",
+        "quantity": 4
+      }
     ],
     "goldCost": 50000,
     "eventKey": null,
@@ -77,12 +129,566 @@
     "outputId": "gear_oathsteel_helm",
     "outputQuantity": 1,
     "ingredients": [
-      { "kind": "Gear", "id": "gear_conscript_helm", "quantity": 1 },
-      { "kind": "Item", "id": "mat_oathsteel", "quantity": 2 },
-      { "kind": "Item", "id": "mat_iron_shard", "quantity": 8 }
+      {
+        "kind": "Gear",
+        "id": "gear_conscript_helm",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_oathsteel",
+        "quantity": 2
+      },
+      {
+        "kind": "Item",
+        "id": "mat_iron_shard",
+        "quantity": 8
+      }
     ],
     "goldCost": 12000,
     "eventKey": null,
     "iconPath": ""
+  },
+  {
+    "id": "craft_warrens_helm",
+    "name": "Warrens Lamp-Hood",
+    "description": "A hood, a bracket, and a lamp. The Weir has never improved on it and has stopped trying.",
+    "category": "General",
+    "outputKind": "Gear",
+    "outputId": "gear_warrens_lamp_hood",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Item",
+        "id": "mat_causeway_ash",
+        "quantity": 6
+      },
+      {
+        "kind": "Item",
+        "id": "mat_warren_teeth",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 3000,
+    "eventKey": null,
+    "iconPath": "icons/craft/warrens_helm.png"
+  },
+  {
+    "id": "craft_marchwatch_coat",
+    "name": "Long Marchwatch Coat",
+    "description": "Cut to the knee and lined against the wind, because most of the job is weather.",
+    "category": "General",
+    "outputKind": "Gear",
+    "outputId": "gear_marchwatch_coat",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Item",
+        "id": "mat_hollow_reed",
+        "quantity": 8
+      },
+      {
+        "kind": "Item",
+        "id": "mat_vanguard_banner",
+        "quantity": 2
+      }
+    ],
+    "goldCost": 4000,
+    "eventKey": null,
+    "iconPath": "icons/craft/marchwatch_coat.png"
+  },
+  {
+    "id": "craft_gravesalt_batch",
+    "name": "A Warden's Measure of Gravesalt",
+    "description": "The Watch packs it around anything it has to move twice. Six jars is a season.",
+    "category": "General",
+    "outputKind": "Gear",
+    "outputId": "gear_gravewarden_wades",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Item",
+        "id": "mat_gravesalt",
+        "quantity": 6
+      },
+      {
+        "kind": "Item",
+        "id": "mat_pitch_seal",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 6500,
+    "eventKey": null,
+    "iconPath": "icons/craft/gravesalt_batch.png"
+  },
+  {
+    "id": "craft_gravewarden_coat",
+    "name": "Gravewarden's Coat",
+    "description": "Heavy canvas with iron at the forearms, because the thing you are moving sometimes moves back.",
+    "category": "General",
+    "outputKind": "Gear",
+    "outputId": "gear_gravewarden_coat",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Item",
+        "id": "mat_keepwall_mortar",
+        "quantity": 4
+      },
+      {
+        "kind": "Item",
+        "id": "mat_stag_tendon",
+        "quantity": 2
+      },
+      {
+        "kind": "Item",
+        "id": "mat_barrow_iron",
+        "quantity": 2
+      }
+    ],
+    "goldCost": 14000,
+    "eventKey": null,
+    "iconPath": "icons/craft/gravewarden_coat.png"
+  },
+  {
+    "id": "craft_drowned_helm",
+    "name": "Salvager's Helm",
+    "description": "Sealed at the collar with a glass plate. The Vaults are dark before they are deep.",
+    "category": "General",
+    "outputKind": "Gear",
+    "outputId": "gear_drowned_helm",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Item",
+        "id": "mat_rime_glass",
+        "quantity": 3
+      },
+      {
+        "kind": "Item",
+        "id": "mat_brood_chitin",
+        "quantity": 3
+      },
+      {
+        "kind": "Item",
+        "id": "mat_cork_iron",
+        "quantity": 2
+      }
+    ],
+    "goldCost": 15000,
+    "eventKey": null,
+    "iconPath": "icons/craft/drowned_helm.png"
+  },
+  {
+    "id": "craft_wrought_visor",
+    "name": "Breaker's Visor",
+    "description": "Slit-narrow and backed in lead. A Wrought does not aim, which makes it worse, not better.",
+    "category": "General",
+    "outputKind": "Gear",
+    "outputId": "gear_wrought_visor",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Item",
+        "id": "mat_cinder_salt",
+        "quantity": 4
+      },
+      {
+        "kind": "Item",
+        "id": "mat_siege_lead",
+        "quantity": 3
+      },
+      {
+        "kind": "Item",
+        "id": "mat_command_sigil",
+        "quantity": 2
+      }
+    ],
+    "goldCost": 38000,
+    "eventKey": null,
+    "iconPath": "icons/craft/wrought_visor.png"
+  },
+  {
+    "id": "craft_choir_stole",
+    "name": "Resonant Stole",
+    "description": "It hums a half-tone under any sung note. The Choir considers this agreement.",
+    "category": "General",
+    "outputKind": "Gear",
+    "outputId": "gear_choir_stole",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Item",
+        "id": "mat_starhollow_dust",
+        "quantity": 4
+      },
+      {
+        "kind": "Item",
+        "id": "mat_resonant_brass",
+        "quantity": 3
+      },
+      {
+        "kind": "Item",
+        "id": "mat_amber_rot",
+        "quantity": 2
+      }
+    ],
+    "goldCost": 40000,
+    "eventKey": null,
+    "iconPath": "icons/craft/choir_stole.png"
+  },
+  {
+    "id": "craft_wroughtbreaker_gauntlets",
+    "name": "Wroughtbreaker Gauntlets",
+    "description": "Built to hold a bar against a moving core until the order stops. Most pairs are used once.",
+    "category": "Special",
+    "outputKind": "Gear",
+    "outputId": "gear_wrought_gauntlets",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Item",
+        "id": "mat_cinder_salt",
+        "quantity": 6
+      },
+      {
+        "kind": "Item",
+        "id": "mat_wrathslag",
+        "quantity": 3
+      },
+      {
+        "kind": "Item",
+        "id": "mat_command_sigil",
+        "quantity": 4
+      },
+      {
+        "kind": "Item",
+        "id": "mat_siege_lead",
+        "quantity": 2
+      }
+    ],
+    "goldCost": 85000,
+    "eventKey": null,
+    "iconPath": "icons/craft/wroughtbreaker_gauntlets.png"
+  },
+  {
+    "id": "craft_deepwatch_gauntlets",
+    "name": "Gravewarden's Gauntlets",
+    "description": "Iron over leather over iron. Whatever is down there does not get to hold your hand.",
+    "category": "Special",
+    "outputKind": "Gear",
+    "outputId": "gear_gravewarden_gauntlets",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Item",
+        "id": "mat_rime_glass",
+        "quantity": 5
+      },
+      {
+        "kind": "Item",
+        "id": "mat_stag_tendon",
+        "quantity": 3
+      },
+      {
+        "kind": "Item",
+        "id": "mat_barrow_iron",
+        "quantity": 3
+      },
+      {
+        "kind": "Item",
+        "id": "mat_pitch_seal",
+        "quantity": 2
+      }
+    ],
+    "goldCost": 52000,
+    "eventKey": null,
+    "iconPath": "icons/craft/deepwatch_gauntlets.png"
+  },
+  {
+    "id": "craft_choir_crown",
+    "name": "Listener's Circlet",
+    "description": "Thin, and open at the ears by design. The Choir does not cover what it uses.",
+    "category": "Special",
+    "outputKind": "Gear",
+    "outputId": "gear_choir_crown",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Item",
+        "id": "mat_starhollow_dust",
+        "quantity": 6
+      },
+      {
+        "kind": "Item",
+        "id": "mat_leviathan_baleen",
+        "quantity": 2
+      },
+      {
+        "kind": "Item",
+        "id": "mat_glutbound_core",
+        "quantity": 3
+      },
+      {
+        "kind": "Item",
+        "id": "mat_resonant_brass",
+        "quantity": 2
+      }
+    ],
+    "goldCost": 95000,
+    "eventKey": null,
+    "iconPath": "icons/craft/choir_crown.png"
+  },
+  {
+    "id": "craft_warrens_pitpony",
+    "name": "Warrens Pit-Pony",
+    "description": "Small, foul-tempered, and unbothered by the dark. Nobody has ever bred one on purpose twice.",
+    "category": "General",
+    "outputKind": "Gear",
+    "outputId": "gear_warrens_pitpony",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Item",
+        "id": "mat_warren_teeth",
+        "quantity": 8
+      },
+      {
+        "kind": "Item",
+        "id": "mat_emberfall_slag",
+        "quantity": 6
+      },
+      {
+        "kind": "Item",
+        "id": "mat_mire_ichor",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 26000,
+    "eventKey": null,
+    "iconPath": "icons/craft/warrens_pitpony.png"
+  },
+  {
+    "id": "craft_gravewarden_dray",
+    "name": "Gravewarden's Dray",
+    "description": "Bred to stand still while unpleasant work happens behind it. The rarest quality a horse can have.",
+    "category": "General",
+    "outputKind": "Gear",
+    "outputId": "gear_gravewarden_dray",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Item",
+        "id": "mat_barrow_iron",
+        "quantity": 5
+      },
+      {
+        "kind": "Item",
+        "id": "mat_keepwall_mortar",
+        "quantity": 6
+      },
+      {
+        "kind": "Item",
+        "id": "mat_brood_chitin",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 64000,
+    "eventKey": null,
+    "iconPath": "icons/craft/gravewarden_dray.png"
+  },
+  {
+    "id": "craft_gorruk_oathbound",
+    "name": "Gorruk, Oathbound",
+    "description": "The Oroc agreed to hold a position. Oathsteel is how the Weir makes an agreement heavier.",
+    "category": "General",
+    "outputKind": "Unit",
+    "outputId": "gen_makh",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Unit",
+        "id": "gen_gorruk",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_oathsteel",
+        "quantity": 3
+      },
+      {
+        "kind": "Item",
+        "id": "mat_barrow_iron",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 45000,
+    "eventKey": null,
+    "iconPath": "icons/craft/gorruk_oathbound.png"
+  },
+  {
+    "id": "craft_durn_sigilwise",
+    "name": "Durn, Sigil-Wise",
+    "description": "He was wrong twice and kept both notes. This is what the notes were for.",
+    "category": "General",
+    "outputKind": "Unit",
+    "outputId": "gen_brannoc",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Unit",
+        "id": "gen_durn",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_command_sigil",
+        "quantity": 5
+      },
+      {
+        "kind": "Item",
+        "id": "mat_colossus_filament",
+        "quantity": 1
+      }
+    ],
+    "goldCost": 70000,
+    "eventKey": null,
+    "iconPath": "icons/craft/durn_sigilwise.png"
+  },
+  {
+    "id": "craft_sovereign_signet",
+    "name": "Sovereign's Signet",
+    "description": "Opens the Gauntlet's inner registry. What is written there is the pact's other half.",
+    "category": "Special",
+    "outputKind": "Gear",
+    "outputId": "gear_sovereign_signet",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Item",
+        "id": "mat_sovereign_scale",
+        "quantity": 2
+      },
+      {
+        "kind": "Item",
+        "id": "mat_starhollow_dust",
+        "quantity": 10
+      },
+      {
+        "kind": "Item",
+        "id": "mat_colossus_filament",
+        "quantity": 2
+      },
+      {
+        "kind": "Item",
+        "id": "mat_kronarch_seal",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 220000,
+    "eventKey": null,
+    "iconPath": "icons/craft/sovereign_signet.png"
+  },
+  {
+    "id": "craft_censer",
+    "name": "The Perpetual Censer",
+    "description": "Lit some time during the Age of Dawn and never once since. Whatever is in it, there is still some left. The Choir has a theory. He has never confirmed or denied it and appears to find the question restful.",
+    "category": "Special",
+    "outputKind": "Gear",
+    "outputId": "gear_stoned_censer",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Item",
+        "id": "mat_censer_resin",
+        "quantity": 3
+      },
+      {
+        "kind": "Item",
+        "id": "mat_brimstone_slag",
+        "quantity": 6
+      },
+      {
+        "kind": "Item",
+        "id": "mat_glutbound_core",
+        "quantity": 4
+      },
+      {
+        "kind": "Item",
+        "id": "mat_quiet_lamp_oil",
+        "quantity": 1
+      }
+    ],
+    "goldCost": 180000,
+    "eventKey": null,
+    "iconPath": "icons/craft/censer.png"
+  },
+  {
+    "id": "craft_stoned_slippers",
+    "name": "Slippers of the Unwalked Path",
+    "description": "Immaculate. Not a scuff on them. Making a pair requires leather that has never been walked on, which is harder to source than it sounds and much harder to explain.",
+    "category": "Special",
+    "outputKind": "Gear",
+    "outputId": "gear_stoned_slippers",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Item",
+        "id": "mat_unwalked_leather",
+        "quantity": 4
+      },
+      {
+        "kind": "Item",
+        "id": "mat_sable_thread",
+        "quantity": 5
+      },
+      {
+        "kind": "Item",
+        "id": "mat_deepwood_heart",
+        "quantity": 2
+      },
+      {
+        "kind": "Item",
+        "id": "mat_amber_rot",
+        "quantity": 6
+      }
+    ],
+    "goldCost": 160000,
+    "eventKey": null,
+    "iconPath": "icons/craft/stoned_slippers.png"
+  },
+  {
+    "id": "craft_hell_goat",
+    "name": "Extremely Relaxed Hell-Goat",
+    "description": "It will carry you anywhere at exactly one speed. Attempts to hurry it have never once succeeded and, by every account, have never once been forgiven.",
+    "category": "Special",
+    "outputKind": "Gear",
+    "outputId": "gear_stoned_goat",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Item",
+        "id": "mat_censer_resin",
+        "quantity": 2
+      },
+      {
+        "kind": "Item",
+        "id": "mat_brimstone_slag",
+        "quantity": 10
+      },
+      {
+        "kind": "Item",
+        "id": "mat_deepwood_heart",
+        "quantity": 3
+      },
+      {
+        "kind": "Item",
+        "id": "mat_leviathan_tooth",
+        "quantity": 2
+      }
+    ],
+    "goldCost": 260000,
+    "eventKey": null,
+    "iconPath": "icons/craft/hell_goat.png"
   }
 ]
