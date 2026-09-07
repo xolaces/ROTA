@@ -30,14 +30,25 @@ public class MagicDefinitionProviderTests : IDisposable
         var provider = new MagicDefinitionProvider(apiContentRoot);
 
         var all = provider.GetAll();
-        // 10 starter magics + 5 inert pinnacle placeholders (T33)
-        // + 2 Gauntlet rank magics (System 16 Slice 1: Wrath + Blessing of the Ancients).
-        all.Should().HaveCount(17);
+
+        // Was `HaveCount(17)`. An exact count is not a property of the loader — it is a property of
+        // whatever content happened to exist the day the test was written, so every content addition
+        // broke a test that had found no bug. A floor still catches the failure that matters (the
+        // file did not load, or loaded empty); the named rows below carry the real assertions.
+        all.Should().HaveCountGreaterThanOrEqualTo(17, "the shipped catalogue never shrinks");
         all.Should().Contain(m => m.Id == "magic_smite", "starter magics still load");
 
-        var pinnacle = provider.GetById("magic_pinnacle_5000");
-        pinnacle.Should().NotBeNull("a pinnacle placeholder magic was added");
-        pinnacle!.ProcChance.Should().Be(0.0, "pinnacle placeholders are inert until designed by the first-claimant");
+        // All five pinnacle placeholders are present AND inert. They are gated on pinnacle levels the
+        // owner has not sized yet, so a non-zero value here means someone decided that by accident.
+        foreach (var level in new[] { 5000, 7500, 10000, 15000, 25000 })
+        {
+            var placeholder = provider.GetById($"magic_pinnacle_{level}");
+            placeholder.Should().NotBeNull($"the pinnacle-{level} placeholder should load");
+            placeholder!.ProcChance.Should().Be(0.0,
+                "pinnacle placeholders stay inert until the first-claimant designs them");
+            placeholder.ProcAmount.Should().Be(0.0,
+                "an inert placeholder has no amount either — a live amount at zero chance is a trap");
+        }
     }
 
     [Fact]
