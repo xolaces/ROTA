@@ -234,6 +234,11 @@
                 "itemId": "statbag_minor",
                 "quantity": 1,
                 "chance": 0.27
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 1,
+                "chance": 0.22
               }
             ]
           },
@@ -798,6 +803,11 @@
                 "itemId": "statbag_minor",
                 "quantity": 1,
                 "chance": 0.27
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 2,
+                "chance": 0.253
               }
             ]
           },
@@ -1362,6 +1372,11 @@
                 "itemId": "statbag_minor",
                 "quantity": 1,
                 "chance": 0.27
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 2,
+                "chance": 0.286
               }
             ]
           },
@@ -1926,6 +1941,11 @@
                 "itemId": "statbag_minor",
                 "quantity": 1,
                 "chance": 0.27
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 3,
+                "chance": 0.33
               }
             ]
           },
@@ -2496,6 +2516,21 @@
                 "itemId": "statbag_minor",
                 "quantity": 1,
                 "chance": 0.27
+              },
+              {
+                "itemId": "mat_brimstone_slag",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_kronarch_seal",
+                "quantity": 1,
+                "chance": 0.22
               }
             ]
           },
@@ -3060,6 +3095,21 @@
                 "itemId": "statbag_minor",
                 "quantity": 1,
                 "chance": 0.27
+              },
+              {
+                "itemId": "mat_brimstone_slag",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_kronarch_seal",
+                "quantity": 2,
+                "chance": 0.253
               }
             ]
           },
@@ -3624,6 +3674,21 @@
                 "itemId": "statbag_minor",
                 "quantity": 1,
                 "chance": 0.27
+              },
+              {
+                "itemId": "mat_brimstone_slag",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_kronarch_seal",
+                "quantity": 2,
+                "chance": 0.286
               }
             ]
           },
@@ -4188,6 +4253,21 @@
                 "itemId": "statbag_minor",
                 "quantity": 1,
                 "chance": 0.27
+              },
+              {
+                "itemId": "mat_brimstone_slag",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_kronarch_seal",
+                "quantity": 3,
+                "chance": 0.33
               }
             ]
           },
@@ -5001,6 +5081,12 @@
             "quantity": 1,
             "chance": 0.03,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_coat",
+            "quantity": 1,
+            "chance": 0.028,
+            "rareScaling": true
           }
         ]
       },
@@ -5035,6 +5121,12 @@
             "gearDefinitionId": "gear_weir_marchboots",
             "quantity": 1,
             "chance": 0.0345,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_coat",
+            "quantity": 1,
+            "chance": 0.0322,
             "rareScaling": true
           }
         ]
@@ -5071,6 +5163,12 @@
             "quantity": 1,
             "chance": 0.039,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_coat",
+            "quantity": 1,
+            "chance": 0.0364,
+            "rareScaling": true
           }
         ]
       },
@@ -5105,6 +5203,12 @@
             "gearDefinitionId": "gear_weir_marchboots",
             "quantity": 1,
             "chance": 0.045,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_coat",
+            "quantity": 1,
+            "chance": 0.042,
             "rareScaling": true
           }
         ]
@@ -5147,6 +5251,12 @@
             "quantity": 1,
             "chance": 0.06,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_coat",
+            "quantity": 1,
+            "chance": 0.056,
+            "rareScaling": true
           }
         ]
       },
@@ -5181,6 +5291,12 @@
             "gearDefinitionId": "gear_weir_marchboots",
             "quantity": 1,
             "chance": 0.069,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_coat",
+            "quantity": 1,
+            "chance": 0.0644,
             "rareScaling": true
           }
         ]
@@ -5217,6 +5333,12 @@
             "quantity": 1,
             "chance": 0.078,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_coat",
+            "quantity": 1,
+            "chance": 0.0728,
+            "rareScaling": true
           }
         ]
       },
@@ -5251,6 +5373,12 @@
             "gearDefinitionId": "gear_weir_marchboots",
             "quantity": 1,
             "chance": 0.09,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_coat",
+            "quantity": 1,
+            "chance": 0.084,
             "rareScaling": true
           }
         ]
@@ -5293,6 +5421,12 @@
             "quantity": 1,
             "chance": 0.03,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_gorget",
+            "quantity": 1,
+            "chance": 0.028,
+            "rareScaling": true
           }
         ]
       },
@@ -5327,6 +5461,12 @@
             "gearDefinitionId": "gear_weir_marchboots",
             "quantity": 1,
             "chance": 0.0345,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_gorget",
+            "quantity": 1,
+            "chance": 0.0322,
             "rareScaling": true
           }
         ]
@@ -5363,6 +5503,12 @@
             "quantity": 1,
             "chance": 0.039,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_gorget",
+            "quantity": 1,
+            "chance": 0.0364,
+            "rareScaling": true
           }
         ]
       },
@@ -5397,6 +5543,12 @@
             "gearDefinitionId": "gear_weir_marchboots",
             "quantity": 1,
             "chance": 0.045,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_gorget",
+            "quantity": 1,
+            "chance": 0.042,
             "rareScaling": true
           }
         ]
@@ -5438,6 +5590,12 @@
             "gearDefinitionId": "gear_weir_marchboots",
             "quantity": 1,
             "chance": 0.06,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_gorget",
+            "quantity": 1,
+            "chance": 0.056,
             "rareScaling": true
           }
         ],
@@ -5482,6 +5640,12 @@
             "quantity": 1,
             "chance": 0.069,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_gorget",
+            "quantity": 1,
+            "chance": 0.0644,
+            "rareScaling": true
           }
         ],
         "chanceDrops": [
@@ -5525,6 +5689,12 @@
             "quantity": 1,
             "chance": 0.078,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_gorget",
+            "quantity": 1,
+            "chance": 0.0728,
+            "rareScaling": true
           }
         ],
         "chanceDrops": [
@@ -5567,6 +5737,12 @@
             "gearDefinitionId": "gear_weir_marchboots",
             "quantity": 1,
             "chance": 0.09,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_gorget",
+            "quantity": 1,
+            "chance": 0.084,
             "rareScaling": true
           }
         ],
@@ -5617,6 +5793,24 @@
             "quantity": 1,
             "chance": 0.008,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_choker",
+            "quantity": 1,
+            "chance": 0.028,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_lamp_hood",
+            "quantity": 1,
+            "chance": 0.028,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_helm",
+            "quantity": 1,
+            "chance": 0.028,
+            "rareScaling": true
           }
         ]
       },
@@ -5651,6 +5845,24 @@
             "gearDefinitionId": "gear_weir_courser",
             "quantity": 1,
             "chance": 0.0092,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_choker",
+            "quantity": 1,
+            "chance": 0.0322,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_lamp_hood",
+            "quantity": 1,
+            "chance": 0.0322,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_helm",
+            "quantity": 1,
+            "chance": 0.0322,
             "rareScaling": true
           }
         ]
@@ -5687,6 +5899,24 @@
             "quantity": 1,
             "chance": 0.0104,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_choker",
+            "quantity": 1,
+            "chance": 0.0364,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_lamp_hood",
+            "quantity": 1,
+            "chance": 0.0364,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_helm",
+            "quantity": 1,
+            "chance": 0.0364,
+            "rareScaling": true
           }
         ]
       },
@@ -5721,6 +5951,24 @@
             "gearDefinitionId": "gear_weir_courser",
             "quantity": 1,
             "chance": 0.012,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_choker",
+            "quantity": 1,
+            "chance": 0.042,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_lamp_hood",
+            "quantity": 1,
+            "chance": 0.042,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_helm",
+            "quantity": 1,
+            "chance": 0.042,
             "rareScaling": true
           }
         ]
@@ -5763,6 +6011,24 @@
             "quantity": 1,
             "chance": 0.008,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_grips",
+            "quantity": 1,
+            "chance": 0.028,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_pitpony",
+            "quantity": 1,
+            "chance": 0.028,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_mitts",
+            "quantity": 1,
+            "chance": 0.028,
+            "rareScaling": true
           }
         ]
       },
@@ -5797,6 +6063,24 @@
             "gearDefinitionId": "gear_weir_courser",
             "quantity": 1,
             "chance": 0.0092,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_grips",
+            "quantity": 1,
+            "chance": 0.0322,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_pitpony",
+            "quantity": 1,
+            "chance": 0.0322,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_mitts",
+            "quantity": 1,
+            "chance": 0.0322,
             "rareScaling": true
           }
         ]
@@ -5833,6 +6117,24 @@
             "quantity": 1,
             "chance": 0.0104,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_grips",
+            "quantity": 1,
+            "chance": 0.0364,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_pitpony",
+            "quantity": 1,
+            "chance": 0.0364,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_mitts",
+            "quantity": 1,
+            "chance": 0.0364,
+            "rareScaling": true
           }
         ]
       },
@@ -5867,6 +6169,24 @@
             "gearDefinitionId": "gear_weir_courser",
             "quantity": 1,
             "chance": 0.012,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_grips",
+            "quantity": 1,
+            "chance": 0.042,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_pitpony",
+            "quantity": 1,
+            "chance": 0.042,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_mitts",
+            "quantity": 1,
+            "chance": 0.042,
             "rareScaling": true
           }
         ]
@@ -5909,6 +6229,24 @@
             "quantity": 1,
             "chance": 0.016,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_grips",
+            "quantity": 1,
+            "chance": 0.056,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_pitpony",
+            "quantity": 1,
+            "chance": 0.056,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_mitts",
+            "quantity": 1,
+            "chance": 0.056,
+            "rareScaling": true
           }
         ]
       },
@@ -5943,6 +6281,24 @@
             "gearDefinitionId": "gear_weir_courser",
             "quantity": 1,
             "chance": 0.0184,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_grips",
+            "quantity": 1,
+            "chance": 0.0644,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_pitpony",
+            "quantity": 1,
+            "chance": 0.0644,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_mitts",
+            "quantity": 1,
+            "chance": 0.0644,
             "rareScaling": true
           }
         ]
@@ -5979,6 +6335,24 @@
             "quantity": 1,
             "chance": 0.0208,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_grips",
+            "quantity": 1,
+            "chance": 0.0728,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_pitpony",
+            "quantity": 1,
+            "chance": 0.0728,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_mitts",
+            "quantity": 1,
+            "chance": 0.0728,
+            "rareScaling": true
           }
         ]
       },
@@ -6013,6 +6387,24 @@
             "gearDefinitionId": "gear_weir_courser",
             "quantity": 1,
             "chance": 0.024,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_grips",
+            "quantity": 1,
+            "chance": 0.084,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_pitpony",
+            "quantity": 1,
+            "chance": 0.084,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_mitts",
+            "quantity": 1,
+            "chance": 0.084,
             "rareScaling": true
           }
         ]
@@ -6055,6 +6447,24 @@
             "quantity": 1,
             "chance": 0.008,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_jack",
+            "quantity": 1,
+            "chance": 0.028,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_seal",
+            "quantity": 1,
+            "chance": 0.028,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_ring",
+            "quantity": 1,
+            "chance": 0.028,
+            "rareScaling": true
           }
         ]
       },
@@ -6089,6 +6499,24 @@
             "gearDefinitionId": "gear_weir_courser",
             "quantity": 1,
             "chance": 0.0092,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_jack",
+            "quantity": 1,
+            "chance": 0.0322,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_seal",
+            "quantity": 1,
+            "chance": 0.0322,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_ring",
+            "quantity": 1,
+            "chance": 0.0322,
             "rareScaling": true
           }
         ]
@@ -6125,6 +6553,24 @@
             "quantity": 1,
             "chance": 0.0104,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_jack",
+            "quantity": 1,
+            "chance": 0.0364,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_seal",
+            "quantity": 1,
+            "chance": 0.0364,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_ring",
+            "quantity": 1,
+            "chance": 0.0364,
+            "rareScaling": true
           }
         ]
       },
@@ -6159,6 +6605,24 @@
             "gearDefinitionId": "gear_weir_courser",
             "quantity": 1,
             "chance": 0.012,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_jack",
+            "quantity": 1,
+            "chance": 0.042,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_seal",
+            "quantity": 1,
+            "chance": 0.042,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_ring",
+            "quantity": 1,
+            "chance": 0.042,
             "rareScaling": true
           }
         ]
@@ -6201,6 +6665,24 @@
             "quantity": 1,
             "chance": 0.016,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_jack",
+            "quantity": 1,
+            "chance": 0.056,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_seal",
+            "quantity": 1,
+            "chance": 0.056,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_ring",
+            "quantity": 1,
+            "chance": 0.056,
+            "rareScaling": true
           }
         ]
       },
@@ -6235,6 +6717,24 @@
             "gearDefinitionId": "gear_weir_courser",
             "quantity": 1,
             "chance": 0.0184,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_jack",
+            "quantity": 1,
+            "chance": 0.0644,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_seal",
+            "quantity": 1,
+            "chance": 0.0644,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_ring",
+            "quantity": 1,
+            "chance": 0.0644,
             "rareScaling": true
           }
         ]
@@ -6271,6 +6771,24 @@
             "quantity": 1,
             "chance": 0.0208,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_jack",
+            "quantity": 1,
+            "chance": 0.0728,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_seal",
+            "quantity": 1,
+            "chance": 0.0728,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_ring",
+            "quantity": 1,
+            "chance": 0.0728,
+            "rareScaling": true
           }
         ]
       },
@@ -6305,6 +6823,24 @@
             "gearDefinitionId": "gear_weir_courser",
             "quantity": 1,
             "chance": 0.024,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_jack",
+            "quantity": 1,
+            "chance": 0.084,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_seal",
+            "quantity": 1,
+            "chance": 0.084,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_ring",
+            "quantity": 1,
+            "chance": 0.084,
             "rareScaling": true
           }
         ]
@@ -6347,6 +6883,24 @@
             "quantity": 1,
             "chance": 0.008,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_knuckle",
+            "quantity": 1,
+            "chance": 0.028,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_treads",
+            "quantity": 1,
+            "chance": 0.028,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_rounder",
+            "quantity": 1,
+            "chance": 0.028,
+            "rareScaling": true
           }
         ]
       },
@@ -6381,6 +6935,24 @@
             "gearDefinitionId": "gear_weir_courser",
             "quantity": 1,
             "chance": 0.0092,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_knuckle",
+            "quantity": 1,
+            "chance": 0.0322,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_treads",
+            "quantity": 1,
+            "chance": 0.0322,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_rounder",
+            "quantity": 1,
+            "chance": 0.0322,
             "rareScaling": true
           }
         ]
@@ -6417,6 +6989,24 @@
             "quantity": 1,
             "chance": 0.0104,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_knuckle",
+            "quantity": 1,
+            "chance": 0.0364,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_treads",
+            "quantity": 1,
+            "chance": 0.0364,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_rounder",
+            "quantity": 1,
+            "chance": 0.0364,
+            "rareScaling": true
           }
         ]
       },
@@ -6451,6 +7041,24 @@
             "gearDefinitionId": "gear_weir_courser",
             "quantity": 1,
             "chance": 0.012,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_knuckle",
+            "quantity": 1,
+            "chance": 0.042,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_treads",
+            "quantity": 1,
+            "chance": 0.042,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_rounder",
+            "quantity": 1,
+            "chance": 0.042,
             "rareScaling": true
           }
         ]
@@ -6493,6 +7101,24 @@
             "quantity": 1,
             "chance": 0.016,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_knuckle",
+            "quantity": 1,
+            "chance": 0.056,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_treads",
+            "quantity": 1,
+            "chance": 0.056,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_rounder",
+            "quantity": 1,
+            "chance": 0.056,
+            "rareScaling": true
           }
         ]
       },
@@ -6527,6 +7153,24 @@
             "gearDefinitionId": "gear_weir_courser",
             "quantity": 1,
             "chance": 0.0184,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_knuckle",
+            "quantity": 1,
+            "chance": 0.0644,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_treads",
+            "quantity": 1,
+            "chance": 0.0644,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_rounder",
+            "quantity": 1,
+            "chance": 0.0644,
             "rareScaling": true
           }
         ]
@@ -6563,6 +7207,24 @@
             "quantity": 1,
             "chance": 0.0208,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_knuckle",
+            "quantity": 1,
+            "chance": 0.0728,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_treads",
+            "quantity": 1,
+            "chance": 0.0728,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_rounder",
+            "quantity": 1,
+            "chance": 0.0728,
+            "rareScaling": true
           }
         ]
       },
@@ -6597,6 +7259,24 @@
             "gearDefinitionId": "gear_weir_courser",
             "quantity": 1,
             "chance": 0.024,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_knuckle",
+            "quantity": 1,
+            "chance": 0.084,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_warrens_treads",
+            "quantity": 1,
+            "chance": 0.084,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_marchwatch_rounder",
+            "quantity": 1,
+            "chance": 0.084,
             "rareScaling": true
           }
         ]
@@ -6639,6 +7319,24 @@
             "quantity": 1,
             "chance": 0.022,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_band",
+            "quantity": 1,
+            "chance": 0.02,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_band",
+            "quantity": 1,
+            "chance": 0.022,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_harness",
+            "quantity": 1,
+            "chance": 0.022,
+            "rareScaling": true
           }
         ]
       },
@@ -6671,6 +7369,24 @@
           },
           {
             "gearDefinitionId": "gear_relay_treads",
+            "quantity": 1,
+            "chance": 0.0253,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_band",
+            "quantity": 1,
+            "chance": 0.023,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_band",
+            "quantity": 1,
+            "chance": 0.0253,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_harness",
             "quantity": 1,
             "chance": 0.0253,
             "rareScaling": true
@@ -6709,6 +7425,24 @@
             "quantity": 1,
             "chance": 0.0286,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_band",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_band",
+            "quantity": 1,
+            "chance": 0.0286,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_harness",
+            "quantity": 1,
+            "chance": 0.0286,
+            "rareScaling": true
           }
         ]
       },
@@ -6741,6 +7475,24 @@
           },
           {
             "gearDefinitionId": "gear_relay_treads",
+            "quantity": 1,
+            "chance": 0.033,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_band",
+            "quantity": 1,
+            "chance": 0.03,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_band",
+            "quantity": 1,
+            "chance": 0.033,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_harness",
             "quantity": 1,
             "chance": 0.033,
             "rareScaling": true
@@ -6785,6 +7537,24 @@
             "quantity": 1,
             "chance": 0.044,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_band",
+            "quantity": 1,
+            "chance": 0.04,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_band",
+            "quantity": 1,
+            "chance": 0.044,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_harness",
+            "quantity": 1,
+            "chance": 0.044,
+            "rareScaling": true
           }
         ]
       },
@@ -6817,6 +7587,24 @@
           },
           {
             "gearDefinitionId": "gear_relay_treads",
+            "quantity": 1,
+            "chance": 0.0506,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_band",
+            "quantity": 1,
+            "chance": 0.046,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_band",
+            "quantity": 1,
+            "chance": 0.0506,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_harness",
             "quantity": 1,
             "chance": 0.0506,
             "rareScaling": true
@@ -6855,6 +7643,24 @@
             "quantity": 1,
             "chance": 0.0572,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_band",
+            "quantity": 1,
+            "chance": 0.052,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_band",
+            "quantity": 1,
+            "chance": 0.0572,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_harness",
+            "quantity": 1,
+            "chance": 0.0572,
+            "rareScaling": true
           }
         ]
       },
@@ -6887,6 +7693,24 @@
           },
           {
             "gearDefinitionId": "gear_relay_treads",
+            "quantity": 1,
+            "chance": 0.066,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_band",
+            "quantity": 1,
+            "chance": 0.06,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_band",
+            "quantity": 1,
+            "chance": 0.066,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_harness",
             "quantity": 1,
             "chance": 0.066,
             "rareScaling": true
@@ -6931,6 +7755,24 @@
             "quantity": 1,
             "chance": 0.022,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_coat",
+            "quantity": 1,
+            "chance": 0.02,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_boots",
+            "quantity": 1,
+            "chance": 0.022,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_helm",
+            "quantity": 1,
+            "chance": 0.022,
+            "rareScaling": true
           }
         ]
       },
@@ -6963,6 +7805,24 @@
           },
           {
             "gearDefinitionId": "gear_relay_treads",
+            "quantity": 1,
+            "chance": 0.0253,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_coat",
+            "quantity": 1,
+            "chance": 0.023,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_boots",
+            "quantity": 1,
+            "chance": 0.0253,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_helm",
             "quantity": 1,
             "chance": 0.0253,
             "rareScaling": true
@@ -7001,6 +7861,24 @@
             "quantity": 1,
             "chance": 0.0286,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_coat",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_boots",
+            "quantity": 1,
+            "chance": 0.0286,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_helm",
+            "quantity": 1,
+            "chance": 0.0286,
+            "rareScaling": true
           }
         ]
       },
@@ -7033,6 +7911,24 @@
           },
           {
             "gearDefinitionId": "gear_relay_treads",
+            "quantity": 1,
+            "chance": 0.033,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_coat",
+            "quantity": 1,
+            "chance": 0.03,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_boots",
+            "quantity": 1,
+            "chance": 0.033,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_helm",
             "quantity": 1,
             "chance": 0.033,
             "rareScaling": true
@@ -7083,6 +7979,24 @@
             "quantity": 1,
             "chance": 0.0003,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_coat",
+            "quantity": 1,
+            "chance": 0.04,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_boots",
+            "quantity": 1,
+            "chance": 0.044,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_helm",
+            "quantity": 1,
+            "chance": 0.044,
+            "rareScaling": true
           }
         ],
         "chanceDrops": [
@@ -7131,6 +8045,24 @@
             "gearDefinitionId": "gear_sealwright_stylus",
             "quantity": 1,
             "chance": 0.000345,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_coat",
+            "quantity": 1,
+            "chance": 0.046,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_boots",
+            "quantity": 1,
+            "chance": 0.0506,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_helm",
+            "quantity": 1,
+            "chance": 0.0506,
             "rareScaling": true
           }
         ],
@@ -7181,6 +8113,24 @@
             "quantity": 1,
             "chance": 0.00039,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_coat",
+            "quantity": 1,
+            "chance": 0.052,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_boots",
+            "quantity": 1,
+            "chance": 0.0572,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_helm",
+            "quantity": 1,
+            "chance": 0.0572,
+            "rareScaling": true
           }
         ],
         "chanceDrops": [
@@ -7229,6 +8179,24 @@
             "gearDefinitionId": "gear_sealwright_stylus",
             "quantity": 1,
             "chance": 0.00045,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_coat",
+            "quantity": 1,
+            "chance": 0.06,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_boots",
+            "quantity": 1,
+            "chance": 0.066,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_helm",
+            "quantity": 1,
+            "chance": 0.066,
             "rareScaling": true
           }
         ],
@@ -7279,6 +8247,24 @@
             "quantity": 1,
             "chance": 0.022,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_dray",
+            "quantity": 1,
+            "chance": 0.02,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_courser",
+            "quantity": 1,
+            "chance": 0.022,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_seal",
+            "quantity": 1,
+            "chance": 0.022,
+            "rareScaling": true
           }
         ]
       },
@@ -7311,6 +8297,24 @@
           },
           {
             "gearDefinitionId": "gear_relay_treads",
+            "quantity": 1,
+            "chance": 0.0253,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_dray",
+            "quantity": 1,
+            "chance": 0.023,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_courser",
+            "quantity": 1,
+            "chance": 0.0253,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_seal",
             "quantity": 1,
             "chance": 0.0253,
             "rareScaling": true
@@ -7349,6 +8353,24 @@
             "quantity": 1,
             "chance": 0.0286,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_dray",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_courser",
+            "quantity": 1,
+            "chance": 0.0286,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_seal",
+            "quantity": 1,
+            "chance": 0.0286,
+            "rareScaling": true
           }
         ]
       },
@@ -7381,6 +8403,24 @@
           },
           {
             "gearDefinitionId": "gear_relay_treads",
+            "quantity": 1,
+            "chance": 0.033,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_dray",
+            "quantity": 1,
+            "chance": 0.03,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_courser",
+            "quantity": 1,
+            "chance": 0.033,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_seal",
             "quantity": 1,
             "chance": 0.033,
             "rareScaling": true
@@ -7425,6 +8465,24 @@
             "quantity": 1,
             "chance": 0.044,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_dray",
+            "quantity": 1,
+            "chance": 0.04,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_courser",
+            "quantity": 1,
+            "chance": 0.044,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_seal",
+            "quantity": 1,
+            "chance": 0.044,
+            "rareScaling": true
           }
         ]
       },
@@ -7457,6 +8515,24 @@
           },
           {
             "gearDefinitionId": "gear_relay_treads",
+            "quantity": 1,
+            "chance": 0.0506,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_dray",
+            "quantity": 1,
+            "chance": 0.046,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_courser",
+            "quantity": 1,
+            "chance": 0.0506,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_seal",
             "quantity": 1,
             "chance": 0.0506,
             "rareScaling": true
@@ -7495,6 +8571,24 @@
             "quantity": 1,
             "chance": 0.0572,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_dray",
+            "quantity": 1,
+            "chance": 0.052,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_courser",
+            "quantity": 1,
+            "chance": 0.0572,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_seal",
+            "quantity": 1,
+            "chance": 0.0572,
+            "rareScaling": true
           }
         ]
       },
@@ -7527,6 +8621,24 @@
           },
           {
             "gearDefinitionId": "gear_relay_treads",
+            "quantity": 1,
+            "chance": 0.066,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_dray",
+            "quantity": 1,
+            "chance": 0.06,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_courser",
+            "quantity": 1,
+            "chance": 0.066,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_seal",
             "quantity": 1,
             "chance": 0.066,
             "rareScaling": true
@@ -7571,6 +8683,24 @@
             "quantity": 1,
             "chance": 0.022,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_gauntlets",
+            "quantity": 1,
+            "chance": 0.02,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_grips",
+            "quantity": 1,
+            "chance": 0.022,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_torc",
+            "quantity": 1,
+            "chance": 0.022,
+            "rareScaling": true
           }
         ]
       },
@@ -7603,6 +8733,24 @@
           },
           {
             "gearDefinitionId": "gear_relay_treads",
+            "quantity": 1,
+            "chance": 0.0253,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_gauntlets",
+            "quantity": 1,
+            "chance": 0.023,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_grips",
+            "quantity": 1,
+            "chance": 0.0253,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_torc",
             "quantity": 1,
             "chance": 0.0253,
             "rareScaling": true
@@ -7641,6 +8789,24 @@
             "quantity": 1,
             "chance": 0.0286,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_gauntlets",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_grips",
+            "quantity": 1,
+            "chance": 0.0286,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_torc",
+            "quantity": 1,
+            "chance": 0.0286,
+            "rareScaling": true
           }
         ]
       },
@@ -7673,6 +8839,24 @@
           },
           {
             "gearDefinitionId": "gear_relay_treads",
+            "quantity": 1,
+            "chance": 0.033,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_gauntlets",
+            "quantity": 1,
+            "chance": 0.03,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_grips",
+            "quantity": 1,
+            "chance": 0.033,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_torc",
             "quantity": 1,
             "chance": 0.033,
             "rareScaling": true
@@ -7714,6 +8898,24 @@
           },
           {
             "gearDefinitionId": "gear_relay_treads",
+            "quantity": 1,
+            "chance": 0.044,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_gauntlets",
+            "quantity": 1,
+            "chance": 0.04,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_grips",
+            "quantity": 1,
+            "chance": 0.044,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_torc",
             "quantity": 1,
             "chance": 0.044,
             "rareScaling": true
@@ -7760,6 +8962,24 @@
             "quantity": 1,
             "chance": 0.0506,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_gauntlets",
+            "quantity": 1,
+            "chance": 0.046,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_grips",
+            "quantity": 1,
+            "chance": 0.0506,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_torc",
+            "quantity": 1,
+            "chance": 0.0506,
+            "rareScaling": true
           }
         ],
         "chanceDrops": [
@@ -7803,6 +9023,24 @@
             "quantity": 1,
             "chance": 0.0572,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_gauntlets",
+            "quantity": 1,
+            "chance": 0.052,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_grips",
+            "quantity": 1,
+            "chance": 0.0572,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_torc",
+            "quantity": 1,
+            "chance": 0.0572,
+            "rareScaling": true
           }
         ],
         "chanceDrops": [
@@ -7843,6 +9081,24 @@
           },
           {
             "gearDefinitionId": "gear_relay_treads",
+            "quantity": 1,
+            "chance": 0.066,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_gauntlets",
+            "quantity": 1,
+            "chance": 0.06,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_grips",
+            "quantity": 1,
+            "chance": 0.066,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_drowned_torc",
             "quantity": 1,
             "chance": 0.066,
             "rareScaling": true
@@ -7895,6 +9151,12 @@
             "quantity": 1,
             "chance": 0.006,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_hood",
+            "quantity": 1,
+            "chance": 0.02,
+            "rareScaling": true
           }
         ]
       },
@@ -7929,6 +9191,12 @@
             "gearDefinitionId": "gear_relay_charger",
             "quantity": 1,
             "chance": 0.0069,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_hood",
+            "quantity": 1,
+            "chance": 0.023,
             "rareScaling": true
           }
         ]
@@ -7965,6 +9233,12 @@
             "quantity": 1,
             "chance": 0.0078,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_hood",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
           }
         ]
       },
@@ -7999,6 +9273,12 @@
             "gearDefinitionId": "gear_relay_charger",
             "quantity": 1,
             "chance": 0.009,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_hood",
+            "quantity": 1,
+            "chance": 0.03,
             "rareScaling": true
           }
         ]
@@ -8041,6 +9321,12 @@
             "quantity": 1,
             "chance": 0.012,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_hood",
+            "quantity": 1,
+            "chance": 0.04,
+            "rareScaling": true
           }
         ]
       },
@@ -8075,6 +9361,12 @@
             "gearDefinitionId": "gear_relay_charger",
             "quantity": 1,
             "chance": 0.0138,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_hood",
+            "quantity": 1,
+            "chance": 0.046,
             "rareScaling": true
           }
         ]
@@ -8111,6 +9403,12 @@
             "quantity": 1,
             "chance": 0.0156,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_hood",
+            "quantity": 1,
+            "chance": 0.052,
+            "rareScaling": true
           }
         ]
       },
@@ -8145,6 +9443,12 @@
             "gearDefinitionId": "gear_relay_charger",
             "quantity": 1,
             "chance": 0.018,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_hood",
+            "quantity": 1,
+            "chance": 0.06,
             "rareScaling": true
           }
         ]
@@ -8187,6 +9491,12 @@
             "quantity": 1,
             "chance": 0.006,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_seal",
+            "quantity": 1,
+            "chance": 0.02,
+            "rareScaling": true
           }
         ]
       },
@@ -8221,6 +9531,12 @@
             "gearDefinitionId": "gear_relay_charger",
             "quantity": 1,
             "chance": 0.0069,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_seal",
+            "quantity": 1,
+            "chance": 0.023,
             "rareScaling": true
           }
         ]
@@ -8257,6 +9573,12 @@
             "quantity": 1,
             "chance": 0.0078,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_seal",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
           }
         ]
       },
@@ -8291,6 +9613,12 @@
             "gearDefinitionId": "gear_relay_charger",
             "quantity": 1,
             "chance": 0.009,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_seal",
+            "quantity": 1,
+            "chance": 0.03,
             "rareScaling": true
           }
         ]
@@ -8333,6 +9661,12 @@
             "quantity": 1,
             "chance": 0.012,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_seal",
+            "quantity": 1,
+            "chance": 0.04,
+            "rareScaling": true
           }
         ]
       },
@@ -8367,6 +9701,12 @@
             "gearDefinitionId": "gear_relay_charger",
             "quantity": 1,
             "chance": 0.0138,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_seal",
+            "quantity": 1,
+            "chance": 0.046,
             "rareScaling": true
           }
         ]
@@ -8403,6 +9743,12 @@
             "quantity": 1,
             "chance": 0.0156,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_seal",
+            "quantity": 1,
+            "chance": 0.052,
+            "rareScaling": true
           }
         ]
       },
@@ -8437,6 +9783,12 @@
             "gearDefinitionId": "gear_relay_charger",
             "quantity": 1,
             "chance": 0.018,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_seal",
+            "quantity": 1,
+            "chance": 0.06,
             "rareScaling": true
           }
         ]
@@ -8479,6 +9831,12 @@
             "quantity": 1,
             "chance": 0.006,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_signet",
+            "quantity": 1,
+            "chance": 0.02,
+            "rareScaling": true
           }
         ]
       },
@@ -8513,6 +9871,12 @@
             "gearDefinitionId": "gear_relay_charger",
             "quantity": 1,
             "chance": 0.0069,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_signet",
+            "quantity": 1,
+            "chance": 0.023,
             "rareScaling": true
           }
         ]
@@ -8549,6 +9913,12 @@
             "quantity": 1,
             "chance": 0.0078,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_signet",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
           }
         ]
       },
@@ -8583,6 +9953,12 @@
             "gearDefinitionId": "gear_relay_charger",
             "quantity": 1,
             "chance": 0.009,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_signet",
+            "quantity": 1,
+            "chance": 0.03,
             "rareScaling": true
           }
         ]
@@ -8625,6 +10001,12 @@
             "quantity": 1,
             "chance": 0.012,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_signet",
+            "quantity": 1,
+            "chance": 0.04,
+            "rareScaling": true
           }
         ]
       },
@@ -8659,6 +10041,12 @@
             "gearDefinitionId": "gear_relay_charger",
             "quantity": 1,
             "chance": 0.0138,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_signet",
+            "quantity": 1,
+            "chance": 0.046,
             "rareScaling": true
           }
         ]
@@ -8695,6 +10083,12 @@
             "quantity": 1,
             "chance": 0.0156,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_signet",
+            "quantity": 1,
+            "chance": 0.052,
+            "rareScaling": true
           }
         ]
       },
@@ -8729,6 +10123,12 @@
             "gearDefinitionId": "gear_relay_charger",
             "quantity": 1,
             "chance": 0.018,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_signet",
+            "quantity": 1,
+            "chance": 0.06,
             "rareScaling": true
           }
         ]
@@ -8771,6 +10171,12 @@
             "quantity": 1,
             "chance": 0.006,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_wades",
+            "quantity": 1,
+            "chance": 0.02,
+            "rareScaling": true
           }
         ]
       },
@@ -8805,6 +10211,12 @@
             "gearDefinitionId": "gear_relay_charger",
             "quantity": 1,
             "chance": 0.0069,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_wades",
+            "quantity": 1,
+            "chance": 0.023,
             "rareScaling": true
           }
         ]
@@ -8841,6 +10253,12 @@
             "quantity": 1,
             "chance": 0.0078,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_wades",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
           }
         ]
       },
@@ -8875,6 +10293,12 @@
             "gearDefinitionId": "gear_relay_charger",
             "quantity": 1,
             "chance": 0.009,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_wades",
+            "quantity": 1,
+            "chance": 0.03,
             "rareScaling": true
           }
         ]
@@ -8917,6 +10341,12 @@
             "quantity": 1,
             "chance": 0.012,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_wades",
+            "quantity": 1,
+            "chance": 0.04,
+            "rareScaling": true
           }
         ]
       },
@@ -8951,6 +10381,12 @@
             "gearDefinitionId": "gear_relay_charger",
             "quantity": 1,
             "chance": 0.0138,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_wades",
+            "quantity": 1,
+            "chance": 0.046,
             "rareScaling": true
           }
         ]
@@ -8987,6 +10423,12 @@
             "quantity": 1,
             "chance": 0.0156,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_wades",
+            "quantity": 1,
+            "chance": 0.052,
+            "rareScaling": true
           }
         ]
       },
@@ -9021,6 +10463,12 @@
             "gearDefinitionId": "gear_relay_charger",
             "quantity": 1,
             "chance": 0.018,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_gravewarden_wades",
+            "quantity": 1,
+            "chance": 0.06,
             "rareScaling": true
           }
         ]
@@ -9063,6 +10511,24 @@
             "quantity": 1,
             "chance": 0.014,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_band",
+            "quantity": 1,
+            "chance": 0.013,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_plate",
+            "quantity": 1,
+            "chance": 0.013,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_band",
+            "quantity": 1,
+            "chance": 0.001,
+            "rareScaling": true
           }
         ]
       },
@@ -9097,6 +10563,24 @@
             "gearDefinitionId": "gear_sable_treads",
             "quantity": 1,
             "chance": 0.0161,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_band",
+            "quantity": 1,
+            "chance": 0.01495,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_plate",
+            "quantity": 1,
+            "chance": 0.01495,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_band",
+            "quantity": 1,
+            "chance": 0.00115,
             "rareScaling": true
           }
         ]
@@ -9133,6 +10617,24 @@
             "quantity": 1,
             "chance": 0.0182,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_band",
+            "quantity": 1,
+            "chance": 0.0169,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_plate",
+            "quantity": 1,
+            "chance": 0.0169,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_band",
+            "quantity": 1,
+            "chance": 0.0013,
+            "rareScaling": true
           }
         ]
       },
@@ -9167,6 +10669,24 @@
             "gearDefinitionId": "gear_sable_treads",
             "quantity": 1,
             "chance": 0.021,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_band",
+            "quantity": 1,
+            "chance": 0.0195,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_plate",
+            "quantity": 1,
+            "chance": 0.0195,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_band",
+            "quantity": 1,
+            "chance": 0.0015,
             "rareScaling": true
           }
         ]
@@ -9209,6 +10729,24 @@
             "quantity": 1,
             "chance": 0.028,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_band",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_plate",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_band",
+            "quantity": 1,
+            "chance": 0.002,
+            "rareScaling": true
           }
         ]
       },
@@ -9243,6 +10781,24 @@
             "gearDefinitionId": "gear_sable_treads",
             "quantity": 1,
             "chance": 0.0322,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_band",
+            "quantity": 1,
+            "chance": 0.0299,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_plate",
+            "quantity": 1,
+            "chance": 0.0299,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_band",
+            "quantity": 1,
+            "chance": 0.0023,
             "rareScaling": true
           }
         ]
@@ -9279,6 +10835,24 @@
             "quantity": 1,
             "chance": 0.0364,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_band",
+            "quantity": 1,
+            "chance": 0.0338,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_plate",
+            "quantity": 1,
+            "chance": 0.0338,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_band",
+            "quantity": 1,
+            "chance": 0.0026,
+            "rareScaling": true
           }
         ]
       },
@@ -9313,6 +10887,24 @@
             "gearDefinitionId": "gear_sable_treads",
             "quantity": 1,
             "chance": 0.042,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_band",
+            "quantity": 1,
+            "chance": 0.039,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_plate",
+            "quantity": 1,
+            "chance": 0.039,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_band",
+            "quantity": 1,
+            "chance": 0.003,
             "rareScaling": true
           }
         ]
@@ -9355,6 +10947,24 @@
             "quantity": 1,
             "chance": 0.014,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_collar",
+            "quantity": 1,
+            "chance": 0.013,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_sabatons",
+            "quantity": 1,
+            "chance": 0.013,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_censer",
+            "quantity": 1,
+            "chance": 0.001,
+            "rareScaling": true
           }
         ]
       },
@@ -9389,6 +10999,24 @@
             "gearDefinitionId": "gear_sable_treads",
             "quantity": 1,
             "chance": 0.0161,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_collar",
+            "quantity": 1,
+            "chance": 0.01495,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_sabatons",
+            "quantity": 1,
+            "chance": 0.01495,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_censer",
+            "quantity": 1,
+            "chance": 0.00115,
             "rareScaling": true
           }
         ]
@@ -9425,6 +11053,24 @@
             "quantity": 1,
             "chance": 0.0182,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_collar",
+            "quantity": 1,
+            "chance": 0.0169,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_sabatons",
+            "quantity": 1,
+            "chance": 0.0169,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_censer",
+            "quantity": 1,
+            "chance": 0.0013,
+            "rareScaling": true
           }
         ]
       },
@@ -9459,6 +11105,24 @@
             "gearDefinitionId": "gear_sable_treads",
             "quantity": 1,
             "chance": 0.021,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_collar",
+            "quantity": 1,
+            "chance": 0.0195,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_sabatons",
+            "quantity": 1,
+            "chance": 0.0195,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_censer",
+            "quantity": 1,
+            "chance": 0.0015,
             "rareScaling": true
           }
         ]
@@ -9501,6 +11165,24 @@
             "quantity": 1,
             "chance": 0.028,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_collar",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_sabatons",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_censer",
+            "quantity": 1,
+            "chance": 0.002,
+            "rareScaling": true
           }
         ]
       },
@@ -9535,6 +11217,24 @@
             "gearDefinitionId": "gear_sable_treads",
             "quantity": 1,
             "chance": 0.0322,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_collar",
+            "quantity": 1,
+            "chance": 0.0299,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_sabatons",
+            "quantity": 1,
+            "chance": 0.0299,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_censer",
+            "quantity": 1,
+            "chance": 0.0023,
             "rareScaling": true
           }
         ]
@@ -9571,6 +11271,24 @@
             "quantity": 1,
             "chance": 0.0364,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_collar",
+            "quantity": 1,
+            "chance": 0.0338,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_sabatons",
+            "quantity": 1,
+            "chance": 0.0338,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_censer",
+            "quantity": 1,
+            "chance": 0.0026,
+            "rareScaling": true
           }
         ]
       },
@@ -9605,6 +11323,24 @@
             "gearDefinitionId": "gear_sable_treads",
             "quantity": 1,
             "chance": 0.042,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_collar",
+            "quantity": 1,
+            "chance": 0.039,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_sabatons",
+            "quantity": 1,
+            "chance": 0.039,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_censer",
+            "quantity": 1,
+            "chance": 0.003,
             "rareScaling": true
           }
         ]
@@ -9647,6 +11383,24 @@
             "quantity": 1,
             "chance": 0.014,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_destrier",
+            "quantity": 1,
+            "chance": 0.013,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_visor",
+            "quantity": 1,
+            "chance": 0.013,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_goat",
+            "quantity": 1,
+            "chance": 0.001,
+            "rareScaling": true
           }
         ]
       },
@@ -9681,6 +11435,24 @@
             "gearDefinitionId": "gear_sable_treads",
             "quantity": 1,
             "chance": 0.0161,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_destrier",
+            "quantity": 1,
+            "chance": 0.01495,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_visor",
+            "quantity": 1,
+            "chance": 0.01495,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_goat",
+            "quantity": 1,
+            "chance": 0.00115,
             "rareScaling": true
           }
         ]
@@ -9717,6 +11489,24 @@
             "quantity": 1,
             "chance": 0.0182,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_destrier",
+            "quantity": 1,
+            "chance": 0.0169,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_visor",
+            "quantity": 1,
+            "chance": 0.0169,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_goat",
+            "quantity": 1,
+            "chance": 0.0013,
+            "rareScaling": true
           }
         ]
       },
@@ -9751,6 +11541,24 @@
             "gearDefinitionId": "gear_sable_treads",
             "quantity": 1,
             "chance": 0.021,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_destrier",
+            "quantity": 1,
+            "chance": 0.0195,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_visor",
+            "quantity": 1,
+            "chance": 0.0195,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_goat",
+            "quantity": 1,
+            "chance": 0.0015,
             "rareScaling": true
           }
         ]
@@ -9793,6 +11601,24 @@
             "quantity": 1,
             "chance": 0.028,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_destrier",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_visor",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_goat",
+            "quantity": 1,
+            "chance": 0.002,
+            "rareScaling": true
           }
         ]
       },
@@ -9827,6 +11653,24 @@
             "gearDefinitionId": "gear_sable_treads",
             "quantity": 1,
             "chance": 0.0322,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_destrier",
+            "quantity": 1,
+            "chance": 0.0299,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_visor",
+            "quantity": 1,
+            "chance": 0.0299,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_goat",
+            "quantity": 1,
+            "chance": 0.0023,
             "rareScaling": true
           }
         ]
@@ -9863,6 +11707,24 @@
             "quantity": 1,
             "chance": 0.0364,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_destrier",
+            "quantity": 1,
+            "chance": 0.0338,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_visor",
+            "quantity": 1,
+            "chance": 0.0338,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_goat",
+            "quantity": 1,
+            "chance": 0.0026,
+            "rareScaling": true
           }
         ]
       },
@@ -9897,6 +11759,24 @@
             "gearDefinitionId": "gear_sable_treads",
             "quantity": 1,
             "chance": 0.042,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_destrier",
+            "quantity": 1,
+            "chance": 0.039,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_visor",
+            "quantity": 1,
+            "chance": 0.039,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_goat",
+            "quantity": 1,
+            "chance": 0.003,
             "rareScaling": true
           }
         ]
@@ -9939,6 +11819,18 @@
             "quantity": 1,
             "chance": 0.014,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_gauntlets",
+            "quantity": 1,
+            "chance": 0.013,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_horns",
+            "quantity": 1,
+            "chance": 0.001,
+            "rareScaling": true
           }
         ]
       },
@@ -9973,6 +11865,18 @@
             "gearDefinitionId": "gear_sable_treads",
             "quantity": 1,
             "chance": 0.0161,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_gauntlets",
+            "quantity": 1,
+            "chance": 0.01495,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_horns",
+            "quantity": 1,
+            "chance": 0.00115,
             "rareScaling": true
           }
         ]
@@ -10009,6 +11913,18 @@
             "quantity": 1,
             "chance": 0.0182,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_gauntlets",
+            "quantity": 1,
+            "chance": 0.0169,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_horns",
+            "quantity": 1,
+            "chance": 0.0013,
+            "rareScaling": true
           }
         ]
       },
@@ -10043,6 +11959,18 @@
             "gearDefinitionId": "gear_sable_treads",
             "quantity": 1,
             "chance": 0.021,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_gauntlets",
+            "quantity": 1,
+            "chance": 0.0195,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_horns",
+            "quantity": 1,
+            "chance": 0.0015,
             "rareScaling": true
           }
         ]
@@ -10085,6 +12013,18 @@
             "quantity": 1,
             "chance": 0.028,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_gauntlets",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_horns",
+            "quantity": 1,
+            "chance": 0.002,
+            "rareScaling": true
           }
         ]
       },
@@ -10119,6 +12059,18 @@
             "gearDefinitionId": "gear_sable_treads",
             "quantity": 1,
             "chance": 0.0322,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_gauntlets",
+            "quantity": 1,
+            "chance": 0.0299,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_horns",
+            "quantity": 1,
+            "chance": 0.0023,
             "rareScaling": true
           }
         ]
@@ -10155,6 +12107,18 @@
             "quantity": 1,
             "chance": 0.0364,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_gauntlets",
+            "quantity": 1,
+            "chance": 0.0338,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_horns",
+            "quantity": 1,
+            "chance": 0.0026,
+            "rareScaling": true
           }
         ]
       },
@@ -10189,6 +12153,18 @@
             "gearDefinitionId": "gear_sable_treads",
             "quantity": 1,
             "chance": 0.042,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_gauntlets",
+            "quantity": 1,
+            "chance": 0.039,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_horns",
+            "quantity": 1,
+            "chance": 0.003,
             "rareScaling": true
           }
         ]
@@ -10231,6 +12207,18 @@
             "quantity": 1,
             "chance": 0.014,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_keyring",
+            "quantity": 1,
+            "chance": 0.013,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_mitts",
+            "quantity": 1,
+            "chance": 0.001,
+            "rareScaling": true
           }
         ]
       },
@@ -10265,6 +12253,18 @@
             "gearDefinitionId": "gear_sable_treads",
             "quantity": 1,
             "chance": 0.0161,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_keyring",
+            "quantity": 1,
+            "chance": 0.01495,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_mitts",
+            "quantity": 1,
+            "chance": 0.00115,
             "rareScaling": true
           }
         ]
@@ -10301,6 +12301,18 @@
             "quantity": 1,
             "chance": 0.0182,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_keyring",
+            "quantity": 1,
+            "chance": 0.0169,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_mitts",
+            "quantity": 1,
+            "chance": 0.0013,
+            "rareScaling": true
           }
         ]
       },
@@ -10335,6 +12347,18 @@
             "gearDefinitionId": "gear_sable_treads",
             "quantity": 1,
             "chance": 0.021,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_keyring",
+            "quantity": 1,
+            "chance": 0.0195,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_mitts",
+            "quantity": 1,
+            "chance": 0.0015,
             "rareScaling": true
           }
         ]
@@ -10383,6 +12407,18 @@
             "quantity": 1,
             "chance": 0.0005,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_keyring",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_mitts",
+            "quantity": 1,
+            "chance": 0.002,
+            "rareScaling": true
           }
         ]
       },
@@ -10423,6 +12459,18 @@
             "gearDefinitionId": "gear_cinder_cuff",
             "quantity": 1,
             "chance": 0.000575,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_keyring",
+            "quantity": 1,
+            "chance": 0.0299,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_mitts",
+            "quantity": 1,
+            "chance": 0.0023,
             "rareScaling": true
           }
         ]
@@ -10465,6 +12513,18 @@
             "quantity": 1,
             "chance": 0.00065,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_keyring",
+            "quantity": 1,
+            "chance": 0.0338,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_mitts",
+            "quantity": 1,
+            "chance": 0.0026,
+            "rareScaling": true
           }
         ]
       },
@@ -10505,6 +12565,18 @@
             "gearDefinitionId": "gear_cinder_cuff",
             "quantity": 1,
             "chance": 0.00075,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_wrought_keyring",
+            "quantity": 1,
+            "chance": 0.039,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_mitts",
+            "quantity": 1,
+            "chance": 0.003,
             "rareScaling": true
           }
         ]
@@ -10547,6 +12619,36 @@
             "quantity": 1,
             "chance": 0.004,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_band",
+            "quantity": 1,
+            "chance": 0.013,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_stole",
+            "quantity": 1,
+            "chance": 0.013,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_band",
+            "quantity": 1,
+            "chance": 0.0012,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_signet",
+            "quantity": 1,
+            "chance": 0.0012,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_robe",
+            "quantity": 1,
+            "chance": 0.001,
+            "rareScaling": true
           }
         ]
       },
@@ -10581,6 +12683,36 @@
             "gearDefinitionId": "gear_sable_courser",
             "quantity": 1,
             "chance": 0.0046,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_band",
+            "quantity": 1,
+            "chance": 0.01495,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_stole",
+            "quantity": 1,
+            "chance": 0.01495,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_band",
+            "quantity": 1,
+            "chance": 0.00138,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_signet",
+            "quantity": 1,
+            "chance": 0.00138,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_robe",
+            "quantity": 1,
+            "chance": 0.00115,
             "rareScaling": true
           }
         ]
@@ -10617,6 +12749,36 @@
             "quantity": 1,
             "chance": 0.0052,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_band",
+            "quantity": 1,
+            "chance": 0.0169,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_stole",
+            "quantity": 1,
+            "chance": 0.0169,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_band",
+            "quantity": 1,
+            "chance": 0.00156,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_signet",
+            "quantity": 1,
+            "chance": 0.00156,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_robe",
+            "quantity": 1,
+            "chance": 0.0013,
+            "rareScaling": true
           }
         ]
       },
@@ -10651,6 +12813,36 @@
             "gearDefinitionId": "gear_sable_courser",
             "quantity": 1,
             "chance": 0.006,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_band",
+            "quantity": 1,
+            "chance": 0.0195,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_stole",
+            "quantity": 1,
+            "chance": 0.0195,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_band",
+            "quantity": 1,
+            "chance": 0.0018,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_signet",
+            "quantity": 1,
+            "chance": 0.0018,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_robe",
+            "quantity": 1,
+            "chance": 0.0015,
             "rareScaling": true
           }
         ]
@@ -10693,6 +12885,36 @@
             "quantity": 1,
             "chance": 0.008,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_band",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_stole",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_band",
+            "quantity": 1,
+            "chance": 0.0024,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_signet",
+            "quantity": 1,
+            "chance": 0.0024,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_robe",
+            "quantity": 1,
+            "chance": 0.002,
+            "rareScaling": true
           }
         ]
       },
@@ -10727,6 +12949,36 @@
             "gearDefinitionId": "gear_sable_courser",
             "quantity": 1,
             "chance": 0.0092,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_band",
+            "quantity": 1,
+            "chance": 0.0299,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_stole",
+            "quantity": 1,
+            "chance": 0.0299,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_band",
+            "quantity": 1,
+            "chance": 0.00276,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_signet",
+            "quantity": 1,
+            "chance": 0.00276,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_robe",
+            "quantity": 1,
+            "chance": 0.0023,
             "rareScaling": true
           }
         ]
@@ -10763,6 +13015,36 @@
             "quantity": 1,
             "chance": 0.0104,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_band",
+            "quantity": 1,
+            "chance": 0.0338,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_stole",
+            "quantity": 1,
+            "chance": 0.0338,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_band",
+            "quantity": 1,
+            "chance": 0.00312,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_signet",
+            "quantity": 1,
+            "chance": 0.00312,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_robe",
+            "quantity": 1,
+            "chance": 0.0026,
+            "rareScaling": true
           }
         ]
       },
@@ -10797,6 +13079,36 @@
             "gearDefinitionId": "gear_sable_courser",
             "quantity": 1,
             "chance": 0.012,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_band",
+            "quantity": 1,
+            "chance": 0.039,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_stole",
+            "quantity": 1,
+            "chance": 0.039,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_band",
+            "quantity": 1,
+            "chance": 0.0036,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_signet",
+            "quantity": 1,
+            "chance": 0.0036,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_robe",
+            "quantity": 1,
+            "chance": 0.003,
             "rareScaling": true
           }
         ]
@@ -10839,6 +13151,36 @@
             "quantity": 1,
             "chance": 0.004,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_crown",
+            "quantity": 1,
+            "chance": 0.013,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_vestment",
+            "quantity": 1,
+            "chance": 0.013,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_collar",
+            "quantity": 1,
+            "chance": 0.0012,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_wyrm",
+            "quantity": 1,
+            "chance": 0.0012,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_signet",
+            "quantity": 1,
+            "chance": 0.001,
+            "rareScaling": true
           }
         ]
       },
@@ -10873,6 +13215,36 @@
             "gearDefinitionId": "gear_sable_courser",
             "quantity": 1,
             "chance": 0.0046,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_crown",
+            "quantity": 1,
+            "chance": 0.01495,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_vestment",
+            "quantity": 1,
+            "chance": 0.01495,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_collar",
+            "quantity": 1,
+            "chance": 0.00138,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_wyrm",
+            "quantity": 1,
+            "chance": 0.00138,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_signet",
+            "quantity": 1,
+            "chance": 0.00115,
             "rareScaling": true
           }
         ]
@@ -10909,6 +13281,36 @@
             "quantity": 1,
             "chance": 0.0052,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_crown",
+            "quantity": 1,
+            "chance": 0.0169,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_vestment",
+            "quantity": 1,
+            "chance": 0.0169,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_collar",
+            "quantity": 1,
+            "chance": 0.00156,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_wyrm",
+            "quantity": 1,
+            "chance": 0.00156,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_signet",
+            "quantity": 1,
+            "chance": 0.0013,
+            "rareScaling": true
           }
         ]
       },
@@ -10943,6 +13345,36 @@
             "gearDefinitionId": "gear_sable_courser",
             "quantity": 1,
             "chance": 0.006,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_crown",
+            "quantity": 1,
+            "chance": 0.0195,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_vestment",
+            "quantity": 1,
+            "chance": 0.0195,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_collar",
+            "quantity": 1,
+            "chance": 0.0018,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_wyrm",
+            "quantity": 1,
+            "chance": 0.0018,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_signet",
+            "quantity": 1,
+            "chance": 0.0015,
             "rareScaling": true
           }
         ]
@@ -10985,6 +13417,36 @@
             "quantity": 1,
             "chance": 0.008,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_crown",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_vestment",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_collar",
+            "quantity": 1,
+            "chance": 0.0024,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_wyrm",
+            "quantity": 1,
+            "chance": 0.0024,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_signet",
+            "quantity": 1,
+            "chance": 0.002,
+            "rareScaling": true
           }
         ]
       },
@@ -11019,6 +13481,36 @@
             "gearDefinitionId": "gear_sable_courser",
             "quantity": 1,
             "chance": 0.0092,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_crown",
+            "quantity": 1,
+            "chance": 0.0299,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_vestment",
+            "quantity": 1,
+            "chance": 0.0299,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_collar",
+            "quantity": 1,
+            "chance": 0.00276,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_wyrm",
+            "quantity": 1,
+            "chance": 0.00276,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_signet",
+            "quantity": 1,
+            "chance": 0.0023,
             "rareScaling": true
           }
         ]
@@ -11055,6 +13547,36 @@
             "quantity": 1,
             "chance": 0.0104,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_crown",
+            "quantity": 1,
+            "chance": 0.0338,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_vestment",
+            "quantity": 1,
+            "chance": 0.0338,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_collar",
+            "quantity": 1,
+            "chance": 0.00312,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_wyrm",
+            "quantity": 1,
+            "chance": 0.00312,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_signet",
+            "quantity": 1,
+            "chance": 0.0026,
+            "rareScaling": true
           }
         ]
       },
@@ -11089,6 +13611,36 @@
             "gearDefinitionId": "gear_sable_courser",
             "quantity": 1,
             "chance": 0.012,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_crown",
+            "quantity": 1,
+            "chance": 0.039,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_vestment",
+            "quantity": 1,
+            "chance": 0.039,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_collar",
+            "quantity": 1,
+            "chance": 0.0036,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_wyrm",
+            "quantity": 1,
+            "chance": 0.0036,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_signet",
+            "quantity": 1,
+            "chance": 0.003,
             "rareScaling": true
           }
         ]
@@ -11131,6 +13683,30 @@
             "quantity": 1,
             "chance": 0.004,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_palfrey",
+            "quantity": 1,
+            "chance": 0.013,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_wraps",
+            "quantity": 1,
+            "chance": 0.013,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_cuirass",
+            "quantity": 1,
+            "chance": 0.0012,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_slippers",
+            "quantity": 1,
+            "chance": 0.001,
+            "rareScaling": true
           }
         ]
       },
@@ -11165,6 +13741,30 @@
             "gearDefinitionId": "gear_sable_courser",
             "quantity": 1,
             "chance": 0.0046,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_palfrey",
+            "quantity": 1,
+            "chance": 0.01495,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_wraps",
+            "quantity": 1,
+            "chance": 0.01495,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_cuirass",
+            "quantity": 1,
+            "chance": 0.00138,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_slippers",
+            "quantity": 1,
+            "chance": 0.00115,
             "rareScaling": true
           }
         ]
@@ -11201,6 +13801,30 @@
             "quantity": 1,
             "chance": 0.0052,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_palfrey",
+            "quantity": 1,
+            "chance": 0.0169,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_wraps",
+            "quantity": 1,
+            "chance": 0.0169,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_cuirass",
+            "quantity": 1,
+            "chance": 0.00156,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_slippers",
+            "quantity": 1,
+            "chance": 0.0013,
+            "rareScaling": true
           }
         ]
       },
@@ -11235,6 +13859,30 @@
             "gearDefinitionId": "gear_sable_courser",
             "quantity": 1,
             "chance": 0.006,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_palfrey",
+            "quantity": 1,
+            "chance": 0.0195,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_wraps",
+            "quantity": 1,
+            "chance": 0.0195,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_cuirass",
+            "quantity": 1,
+            "chance": 0.0018,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_slippers",
+            "quantity": 1,
+            "chance": 0.0015,
             "rareScaling": true
           }
         ]
@@ -11277,6 +13925,30 @@
             "quantity": 1,
             "chance": 0.008,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_palfrey",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_wraps",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_cuirass",
+            "quantity": 1,
+            "chance": 0.0024,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_slippers",
+            "quantity": 1,
+            "chance": 0.002,
+            "rareScaling": true
           }
         ]
       },
@@ -11311,6 +13983,30 @@
             "gearDefinitionId": "gear_sable_courser",
             "quantity": 1,
             "chance": 0.0092,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_palfrey",
+            "quantity": 1,
+            "chance": 0.0299,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_wraps",
+            "quantity": 1,
+            "chance": 0.0299,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_cuirass",
+            "quantity": 1,
+            "chance": 0.00276,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_slippers",
+            "quantity": 1,
+            "chance": 0.0023,
             "rareScaling": true
           }
         ]
@@ -11347,6 +14043,30 @@
             "quantity": 1,
             "chance": 0.0104,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_palfrey",
+            "quantity": 1,
+            "chance": 0.0338,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_wraps",
+            "quantity": 1,
+            "chance": 0.0338,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_cuirass",
+            "quantity": 1,
+            "chance": 0.00312,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_slippers",
+            "quantity": 1,
+            "chance": 0.0026,
+            "rareScaling": true
           }
         ]
       },
@@ -11381,6 +14101,30 @@
             "gearDefinitionId": "gear_sable_courser",
             "quantity": 1,
             "chance": 0.012,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_palfrey",
+            "quantity": 1,
+            "chance": 0.039,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_wraps",
+            "quantity": 1,
+            "chance": 0.039,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_cuirass",
+            "quantity": 1,
+            "chance": 0.0036,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_stoned_slippers",
+            "quantity": 1,
+            "chance": 0.003,
             "rareScaling": true
           }
         ]
@@ -11423,6 +14167,18 @@
             "quantity": 1,
             "chance": 0.004,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_ring",
+            "quantity": 1,
+            "chance": 0.013,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_diadem",
+            "quantity": 1,
+            "chance": 0.0012,
+            "rareScaling": true
           }
         ]
       },
@@ -11457,6 +14213,18 @@
             "gearDefinitionId": "gear_sable_courser",
             "quantity": 1,
             "chance": 0.0046,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_ring",
+            "quantity": 1,
+            "chance": 0.01495,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_diadem",
+            "quantity": 1,
+            "chance": 0.00138,
             "rareScaling": true
           }
         ]
@@ -11493,6 +14261,18 @@
             "quantity": 1,
             "chance": 0.0052,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_ring",
+            "quantity": 1,
+            "chance": 0.0169,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_diadem",
+            "quantity": 1,
+            "chance": 0.00156,
+            "rareScaling": true
           }
         ]
       },
@@ -11527,6 +14307,18 @@
             "gearDefinitionId": "gear_sable_courser",
             "quantity": 1,
             "chance": 0.006,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_ring",
+            "quantity": 1,
+            "chance": 0.0195,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_diadem",
+            "quantity": 1,
+            "chance": 0.0018,
             "rareScaling": true
           }
         ]
@@ -11569,6 +14361,18 @@
             "quantity": 1,
             "chance": 0.008,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_ring",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_diadem",
+            "quantity": 1,
+            "chance": 0.0024,
+            "rareScaling": true
           }
         ]
       },
@@ -11603,6 +14407,18 @@
             "gearDefinitionId": "gear_sable_courser",
             "quantity": 1,
             "chance": 0.0092,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_ring",
+            "quantity": 1,
+            "chance": 0.0299,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_diadem",
+            "quantity": 1,
+            "chance": 0.00276,
             "rareScaling": true
           }
         ]
@@ -11639,6 +14455,18 @@
             "quantity": 1,
             "chance": 0.0104,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_ring",
+            "quantity": 1,
+            "chance": 0.0338,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_diadem",
+            "quantity": 1,
+            "chance": 0.00312,
+            "rareScaling": true
           }
         ]
       },
@@ -11673,6 +14501,18 @@
             "gearDefinitionId": "gear_sable_courser",
             "quantity": 1,
             "chance": 0.012,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_ring",
+            "quantity": 1,
+            "chance": 0.039,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_diadem",
+            "quantity": 1,
+            "chance": 0.0036,
             "rareScaling": true
           }
         ]
@@ -11715,6 +14555,18 @@
             "quantity": 1,
             "chance": 0.004,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_slippers",
+            "quantity": 1,
+            "chance": 0.013,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_gauntlets",
+            "quantity": 1,
+            "chance": 0.0012,
+            "rareScaling": true
           }
         ]
       },
@@ -11749,6 +14601,18 @@
             "gearDefinitionId": "gear_sable_courser",
             "quantity": 1,
             "chance": 0.0046,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_slippers",
+            "quantity": 1,
+            "chance": 0.01495,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_gauntlets",
+            "quantity": 1,
+            "chance": 0.00138,
             "rareScaling": true
           }
         ]
@@ -11785,6 +14649,18 @@
             "quantity": 1,
             "chance": 0.0052,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_slippers",
+            "quantity": 1,
+            "chance": 0.0169,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_gauntlets",
+            "quantity": 1,
+            "chance": 0.00156,
+            "rareScaling": true
           }
         ]
       },
@@ -11819,6 +14695,18 @@
             "gearDefinitionId": "gear_sable_courser",
             "quantity": 1,
             "chance": 0.006,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_slippers",
+            "quantity": 1,
+            "chance": 0.0195,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_gauntlets",
+            "quantity": 1,
+            "chance": 0.0018,
             "rareScaling": true
           }
         ]
@@ -11867,6 +14755,18 @@
             "quantity": 1,
             "chance": 0.0002,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_slippers",
+            "quantity": 1,
+            "chance": 0.026,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_gauntlets",
+            "quantity": 1,
+            "chance": 0.0024,
+            "rareScaling": true
           }
         ]
       },
@@ -11907,6 +14807,18 @@
             "gearDefinitionId": "gear_unworn_crown",
             "quantity": 1,
             "chance": 0.00023,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_slippers",
+            "quantity": 1,
+            "chance": 0.0299,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_gauntlets",
+            "quantity": 1,
+            "chance": 0.00276,
             "rareScaling": true
           }
         ]
@@ -11949,6 +14861,18 @@
             "quantity": 1,
             "chance": 0.00026,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_slippers",
+            "quantity": 1,
+            "chance": 0.0338,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_gauntlets",
+            "quantity": 1,
+            "chance": 0.00312,
+            "rareScaling": true
           }
         ]
       },
@@ -11990,6 +14914,18 @@
             "quantity": 1,
             "chance": 0.0003,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_choir_slippers",
+            "quantity": 1,
+            "chance": 0.039,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_gauntlets",
+            "quantity": 1,
+            "chance": 0.0036,
+            "rareScaling": true
           }
         ]
       }
@@ -12019,6 +14955,12 @@
             "quantity": 1,
             "chance": 0.008,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_greaves",
+            "quantity": 1,
+            "chance": 0.0012,
+            "rareScaling": true
           }
         ]
       },
@@ -12041,6 +14983,12 @@
             "gearDefinitionId": "gear_sable_courser",
             "quantity": 1,
             "chance": 0.0092,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_greaves",
+            "quantity": 1,
+            "chance": 0.00138,
             "rareScaling": true
           }
         ]
@@ -12065,6 +15013,12 @@
             "quantity": 1,
             "chance": 0.0104,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_greaves",
+            "quantity": 1,
+            "chance": 0.00156,
+            "rareScaling": true
           }
         ]
       },
@@ -12087,6 +15041,12 @@
             "gearDefinitionId": "gear_sable_courser",
             "quantity": 1,
             "chance": 0.012,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_greaves",
+            "quantity": 1,
+            "chance": 0.0018,
             "rareScaling": true
           }
         ]
@@ -12116,6 +15076,12 @@
             "gearDefinitionId": "gear_sable_courser",
             "quantity": 1,
             "chance": 0.016,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_greaves",
+            "quantity": 1,
+            "chance": 0.0024,
             "rareScaling": true
           }
         ],
@@ -12154,6 +15120,12 @@
             "quantity": 1,
             "chance": 0.0184,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_greaves",
+            "quantity": 1,
+            "chance": 0.00276,
+            "rareScaling": true
           }
         ],
         "chanceDrops": [
@@ -12191,6 +15163,12 @@
             "quantity": 1,
             "chance": 0.0208,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_greaves",
+            "quantity": 1,
+            "chance": 0.00312,
+            "rareScaling": true
           }
         ],
         "chanceDrops": [
@@ -12227,6 +15205,12 @@
             "gearDefinitionId": "gear_sable_courser",
             "quantity": 1,
             "chance": 0.024,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_sovereign_greaves",
+            "quantity": 1,
+            "chance": 0.0036,
             "rareScaling": true
           }
         ],
@@ -12343,6 +15327,11 @@
                 "itemId": "mat_mire_ichor",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -12507,6 +15496,11 @@
                 "itemId": "mat_mire_ichor",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -12671,6 +15665,11 @@
                 "itemId": "mat_mire_ichor",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -12835,6 +15834,11 @@
                 "itemId": "mat_mire_ichor",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -13005,6 +16009,31 @@
                 "itemId": "mat_mire_ichor",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_barrow_iron",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_brood_carapace",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_deepwood_heart",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_gravesalt",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_stag_ash",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -13169,6 +16198,31 @@
                 "itemId": "mat_mire_ichor",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_barrow_iron",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_brood_carapace",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_deepwood_heart",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_gravesalt",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_stag_ash",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -13333,6 +16387,31 @@
                 "itemId": "mat_mire_ichor",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_barrow_iron",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_brood_carapace",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_deepwood_heart",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_gravesalt",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_stag_ash",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -13497,6 +16576,31 @@
                 "itemId": "mat_mire_ichor",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_barrow_iron",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_brood_carapace",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_deepwood_heart",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_gravesalt",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_stag_ash",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -13667,6 +16771,16 @@
                 "itemId": "mat_mire_ichor",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brood_carapace",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_warren_teeth",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -13831,6 +16945,16 @@
                 "itemId": "mat_mire_ichor",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brood_carapace",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_warren_teeth",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -13995,6 +17119,16 @@
                 "itemId": "mat_mire_ichor",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brood_carapace",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_warren_teeth",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -14159,6 +17293,16 @@
                 "itemId": "mat_mire_ichor",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brood_carapace",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_warren_teeth",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -14329,6 +17473,26 @@
                 "itemId": "mat_mire_ichor",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brood_carapace",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_deepwood_heart",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_stag_ash",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_warren_teeth",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -14493,6 +17657,26 @@
                 "itemId": "mat_mire_ichor",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brood_carapace",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_deepwood_heart",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_stag_ash",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_warren_teeth",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -14657,6 +17841,26 @@
                 "itemId": "mat_mire_ichor",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brood_carapace",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_deepwood_heart",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_stag_ash",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_warren_teeth",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -14821,6 +18025,26 @@
                 "itemId": "mat_mire_ichor",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brood_carapace",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_deepwood_heart",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_stag_ash",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_warren_teeth",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -14991,6 +18215,21 @@
                 "itemId": "mat_stag_tendon",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -15155,6 +18394,21 @@
                 "itemId": "mat_stag_tendon",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -15319,6 +18573,21 @@
                 "itemId": "mat_stag_tendon",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -15483,6 +18752,21 @@
                 "itemId": "mat_stag_tendon",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -15653,6 +18937,16 @@
                 "itemId": "mat_stag_tendon",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_kronarch_seal",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -15817,6 +19111,16 @@
                 "itemId": "mat_stag_tendon",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_kronarch_seal",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -15981,6 +19285,16 @@
                 "itemId": "mat_stag_tendon",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_kronarch_seal",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -16145,6 +19459,16 @@
                 "itemId": "mat_stag_tendon",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_kronarch_seal",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -16315,6 +19639,21 @@
                 "itemId": "mat_stag_tendon",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_barrow_iron",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_gravesalt",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -16479,6 +19818,21 @@
                 "itemId": "mat_stag_tendon",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_barrow_iron",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_gravesalt",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -16643,6 +19997,21 @@
                 "itemId": "mat_stag_tendon",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_barrow_iron",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_gravesalt",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -16807,6 +20176,21 @@
                 "itemId": "mat_stag_tendon",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_barrow_iron",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_gravesalt",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -16977,6 +20361,21 @@
                 "itemId": "mat_stag_tendon",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_brimstone_slag",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -17141,6 +20540,21 @@
                 "itemId": "mat_stag_tendon",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_brimstone_slag",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -17305,6 +20719,21 @@
                 "itemId": "mat_stag_tendon",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_brimstone_slag",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -17469,6 +20898,21 @@
                 "itemId": "mat_stag_tendon",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_brimstone_slag",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -17639,6 +21083,21 @@
                 "itemId": "mat_stag_tendon",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -17803,6 +21262,21 @@
                 "itemId": "mat_stag_tendon",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -17967,6 +21441,21 @@
                 "itemId": "mat_stag_tendon",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -18131,6 +21620,21 @@
                 "itemId": "mat_stag_tendon",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -18301,6 +21805,21 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brood_carapace",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_deepwood_heart",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_stag_ash",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -18465,6 +21984,21 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brood_carapace",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_deepwood_heart",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_stag_ash",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -18629,6 +22163,21 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brood_carapace",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_deepwood_heart",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_stag_ash",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -18793,6 +22342,21 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brood_carapace",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_deepwood_heart",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_stag_ash",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -18963,6 +22527,21 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_barrow_iron",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_gravesalt",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -19127,6 +22706,21 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_barrow_iron",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_gravesalt",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -19291,6 +22885,21 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_barrow_iron",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_gravesalt",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -19455,6 +23064,21 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_barrow_iron",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_gravesalt",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -19625,6 +23249,11 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -19789,6 +23418,11 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -19953,6 +23587,11 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -20117,6 +23756,11 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -20287,6 +23931,21 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_barrow_iron",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_gravesalt",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_kronarch_seal",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -20451,6 +24110,21 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_barrow_iron",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_gravesalt",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_kronarch_seal",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -20615,6 +24289,21 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_barrow_iron",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_gravesalt",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_kronarch_seal",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -20779,6 +24468,21 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_barrow_iron",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_gravesalt",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_kronarch_seal",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -20949,6 +24653,26 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brood_carapace",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_deepwood_heart",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_stag_ash",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -21113,6 +24837,26 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brood_carapace",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_deepwood_heart",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_stag_ash",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -21277,6 +25021,26 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brood_carapace",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_deepwood_heart",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_stag_ash",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -21441,6 +25205,26 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brood_carapace",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_deepwood_heart",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_stag_ash",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -21611,6 +25395,16 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brimstone_slag",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -21775,6 +25569,16 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brimstone_slag",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -21939,6 +25743,16 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brimstone_slag",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -22103,6 +25917,16 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brimstone_slag",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -22273,6 +26097,21 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_brimstone_slag",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -22437,6 +26276,21 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_brimstone_slag",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -22601,6 +26455,21 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_brimstone_slag",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -22765,6 +26634,21 @@
                 "itemId": "mat_brood_chitin",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_brimstone_slag",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -24419,6 +28303,21 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -24603,6 +28502,21 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -24787,6 +28701,21 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -24971,6 +28900,21 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -25161,6 +29105,21 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -25345,6 +29304,21 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -25529,6 +29503,21 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -25713,6 +29702,21 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -25903,6 +29907,16 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -26087,6 +30101,16 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -26271,6 +30295,16 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -26455,6 +30489,16 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -26645,6 +30689,16 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_sovereign_scale",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -26829,6 +30883,16 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_sovereign_scale",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -27013,6 +31077,16 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_sovereign_scale",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -27197,6 +31271,16 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_sovereign_scale",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -27387,6 +31471,21 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brimstone_slag",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_sovereign_scale",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -27571,6 +31670,21 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brimstone_slag",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_sovereign_scale",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -27755,6 +31869,21 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brimstone_slag",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_sovereign_scale",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -27939,6 +32068,21 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_brimstone_slag",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_sovereign_scale",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -28129,6 +32273,21 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -28313,6 +32472,21 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -28497,6 +32671,21 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -28681,6 +32870,21 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_command_sigil",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -28871,6 +33075,26 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_barrow_iron",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_gravesalt",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -29055,6 +33279,26 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_barrow_iron",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_gravesalt",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -29239,6 +33483,26 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_barrow_iron",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_gravesalt",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -29423,6 +33687,26 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_barrow_iron",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_gravesalt",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
@@ -29613,6 +33897,21 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 2,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 1,
+                "chance": 0.22
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 1,
+                "chance": 0.22
               }
             ],
             "magicDrops": [],
@@ -29797,6 +34096,21 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 3,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.253
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 2,
+                "chance": 0.253
               }
             ],
             "magicDrops": [],
@@ -29981,6 +34295,21 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 4,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 2,
+                "chance": 0.286
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 2,
+                "chance": 0.286
               }
             ],
             "magicDrops": [],
@@ -30165,6 +34494,21 @@
                 "itemId": "mat_wrathslag",
                 "quantity": 6,
                 "chance": 0.59
+              },
+              {
+                "itemId": "mat_amber_rot",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_glutbound_core",
+                "quantity": 3,
+                "chance": 0.33
+              },
+              {
+                "itemId": "mat_leviathan_tooth",
+                "quantity": 3,
+                "chance": 0.33
               }
             ],
             "magicDrops": [],
