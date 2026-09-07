@@ -9,7 +9,8 @@
     "bonusDefense": 1,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/conscript_helm.png"
+    "iconPath": "icons/gear/conscript_helm.png",
+    "setId": "set_conscript"
   },
   {
     "id": "gear_conscript_collar",
@@ -21,7 +22,8 @@
     "bonusDefense": 1,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/conscript_collar.png"
+    "iconPath": "icons/gear/conscript_collar.png",
+    "setId": "set_conscript"
   },
   {
     "id": "gear_conscript_chest",
@@ -33,7 +35,8 @@
     "bonusDefense": 1,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/conscript_chest.png"
+    "iconPath": "icons/gear/conscript_chest.png",
+    "setId": "set_conscript"
   },
   {
     "id": "gear_iron_ring",
@@ -45,7 +48,8 @@
     "bonusDefense": 0,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/iron_ring.png"
+    "iconPath": "icons/gear/iron_ring.png",
+    "setId": "set_conscript"
   },
   {
     "id": "gear_worn_band",
@@ -57,7 +61,8 @@
     "bonusDefense": 0,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/worn_band.png"
+    "iconPath": "icons/gear/worn_band.png",
+    "setId": "set_conscript"
   },
   {
     "id": "gear_draft_horse",
@@ -69,7 +74,8 @@
     "bonusDefense": 0,
     "procChance": 0.05,
     "procPercent": 2.0,
-    "iconPath": "icons/gear/draft_horse.png"
+    "iconPath": "icons/gear/draft_horse.png",
+    "setId": "set_conscript"
   },
   {
     "id": "gear_conscript_boots",
@@ -81,7 +87,8 @@
     "bonusDefense": 0,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/conscript_boots.png"
+    "iconPath": "icons/gear/conscript_boots.png",
+    "setId": "set_conscript"
   },
   {
     "id": "gear_conscript_gloves",
@@ -93,7 +100,8 @@
     "bonusDefense": 0,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/conscript_gloves.png"
+    "iconPath": "icons/gear/conscript_gloves.png",
+    "setId": "set_conscript"
   },
   {
     "id": "gear_pano_helm",
@@ -105,7 +113,8 @@
     "bonusDefense": 15,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/pano_helm.png"
+    "iconPath": "icons/gear/pano_helm.png",
+    "setId": "set_pano"
   },
   {
     "id": "gear_pano_amulet",
@@ -117,7 +126,8 @@
     "bonusDefense": 15,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/pano_amulet.png"
+    "iconPath": "icons/gear/pano_amulet.png",
+    "setId": "set_pano"
   },
   {
     "id": "gear_pano_cuirass",
@@ -129,7 +139,8 @@
     "bonusDefense": 15,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/pano_cuirass.png"
+    "iconPath": "icons/gear/pano_cuirass.png",
+    "setId": "set_pano"
   },
   {
     "id": "gear_pano_signet",
@@ -141,7 +152,8 @@
     "bonusDefense": 15,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/pano_signet.png"
+    "iconPath": "icons/gear/pano_signet.png",
+    "setId": "set_pano"
   },
   {
     "id": "gear_pano_band",
@@ -153,7 +165,8 @@
     "bonusDefense": 15,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/pano_band.png"
+    "iconPath": "icons/gear/pano_band.png",
+    "setId": "set_pano"
   },
   {
     "id": "gear_pano_steed",
@@ -165,7 +178,8 @@
     "bonusDefense": 45,
     "procChance": 0.07,
     "procPercent": 1.2,
-    "iconPath": "icons/gear/pano_steed.png"
+    "iconPath": "icons/gear/pano_steed.png",
+    "setId": "set_pano"
   },
   {
     "id": "gear_pano_greaves",
@@ -177,7 +191,8 @@
     "bonusDefense": 15,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/pano_greaves.png"
+    "iconPath": "icons/gear/pano_greaves.png",
+    "setId": "set_pano"
   },
   {
     "id": "gear_pano_gauntlets",
@@ -189,7 +204,8 @@
     "bonusDefense": 15,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/pano_gauntlets.png"
+    "iconPath": "icons/gear/pano_gauntlets.png",
+    "setId": "set_pano"
   },
   {
     "id": "gear_oathsteel_helm",
@@ -201,7 +217,8 @@
     "bonusDefense": 8,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/oathsteel_helm.png"
+    "iconPath": "icons/gear/oathsteel_helm.png",
+    "setId": null
   },
   {
     "id": "gear_weir_kettle_helm",
@@ -214,7 +231,8 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/weir_kettle_helm.png",
-    "upgradesTo": "gear_relay_hood"
+    "upgradesTo": "gear_relay_hood",
+    "setId": "set_weir"
   },
   {
     "id": "gear_weir_gorget",
@@ -227,7 +245,8 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/weir_gorget.png",
-    "upgradesTo": "gear_relay_torc"
+    "upgradesTo": "gear_relay_torc",
+    "setId": "set_weir"
   },
   {
     "id": "gear_weir_brigandine",
@@ -240,7 +259,8 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/weir_brigandine.png",
-    "upgradesTo": "gear_relay_coat"
+    "upgradesTo": "gear_relay_coat",
+    "setId": "set_weir"
   },
   {
     "id": "gear_causeway_seal",
@@ -253,7 +273,8 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/causeway_seal.png",
-    "upgradesTo": "gear_lamp_seal"
+    "upgradesTo": "gear_lamp_seal",
+    "setId": "set_weir"
   },
   {
     "id": "gear_marchwarden_band",
@@ -266,7 +287,8 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/marchwarden_band.png",
-    "upgradesTo": "gear_vaultkeeper_band"
+    "upgradesTo": "gear_vaultkeeper_band",
+    "setId": "set_weir"
   },
   {
     "id": "gear_weir_courser",
@@ -279,7 +301,8 @@
     "procChance": 0.05,
     "procPercent": 2.5,
     "iconPath": "icons/gear/weir_courser.png",
-    "upgradesTo": "gear_relay_charger"
+    "upgradesTo": "gear_relay_charger",
+    "setId": "set_weir"
   },
   {
     "id": "gear_weir_marchboots",
@@ -292,7 +315,8 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/weir_marchboots.png",
-    "upgradesTo": "gear_relay_treads"
+    "upgradesTo": "gear_relay_treads",
+    "setId": "set_weir"
   },
   {
     "id": "gear_weir_handguards",
@@ -305,7 +329,8 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/weir_handguards.png",
-    "upgradesTo": "gear_relay_grips"
+    "upgradesTo": "gear_relay_grips",
+    "setId": "set_weir"
   },
   {
     "id": "gear_relay_hood",
@@ -318,7 +343,8 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/relay_hood.png",
-    "upgradesTo": "gear_sable_circlet"
+    "upgradesTo": "gear_sable_circlet",
+    "setId": "set_relay"
   },
   {
     "id": "gear_relay_torc",
@@ -331,7 +357,8 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/relay_torc.png",
-    "upgradesTo": "gear_sable_collar"
+    "upgradesTo": "gear_sable_collar",
+    "setId": "set_relay"
   },
   {
     "id": "gear_relay_coat",
@@ -344,7 +371,8 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/relay_coat.png",
-    "upgradesTo": "gear_sable_mantle"
+    "upgradesTo": "gear_sable_mantle",
+    "setId": "set_relay"
   },
   {
     "id": "gear_lamp_seal",
@@ -357,7 +385,8 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/lamp_seal.png",
-    "upgradesTo": "gear_sable_seal"
+    "upgradesTo": "gear_sable_seal",
+    "setId": "set_relay"
   },
   {
     "id": "gear_vaultkeeper_band",
@@ -370,7 +399,8 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/vaultkeeper_band.png",
-    "upgradesTo": "gear_sable_band"
+    "upgradesTo": "gear_sable_band",
+    "setId": "set_relay"
   },
   {
     "id": "gear_relay_charger",
@@ -383,7 +413,8 @@
     "procChance": 0.06,
     "procPercent": 2.0,
     "iconPath": "icons/gear/relay_charger.png",
-    "upgradesTo": "gear_sable_courser"
+    "upgradesTo": "gear_sable_courser",
+    "setId": "set_relay"
   },
   {
     "id": "gear_relay_treads",
@@ -396,7 +427,8 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/relay_treads.png",
-    "upgradesTo": "gear_sable_treads"
+    "upgradesTo": "gear_sable_treads",
+    "setId": "set_relay"
   },
   {
     "id": "gear_relay_grips",
@@ -409,7 +441,8 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/relay_grips.png",
-    "upgradesTo": "gear_sable_grips"
+    "upgradesTo": "gear_sable_grips",
+    "setId": "set_relay"
   },
   {
     "id": "gear_sable_circlet",
@@ -421,7 +454,8 @@
     "bonusDefense": 11,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/sable_circlet.png"
+    "iconPath": "icons/gear/sable_circlet.png",
+    "setId": "set_sable_vein"
   },
   {
     "id": "gear_sable_collar",
@@ -433,7 +467,8 @@
     "bonusDefense": 9,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/sable_collar.png"
+    "iconPath": "icons/gear/sable_collar.png",
+    "setId": "set_sable_vein"
   },
   {
     "id": "gear_sable_mantle",
@@ -445,7 +480,8 @@
     "bonusDefense": 11,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/sable_mantle.png"
+    "iconPath": "icons/gear/sable_mantle.png",
+    "setId": "set_sable_vein"
   },
   {
     "id": "gear_sable_seal",
@@ -457,7 +493,8 @@
     "bonusDefense": 6,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/sable_seal.png"
+    "iconPath": "icons/gear/sable_seal.png",
+    "setId": "set_sable_vein"
   },
   {
     "id": "gear_sable_band",
@@ -469,7 +506,8 @@
     "bonusDefense": 7,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/sable_band.png"
+    "iconPath": "icons/gear/sable_band.png",
+    "setId": "set_sable_vein"
   },
   {
     "id": "gear_sable_courser",
@@ -481,7 +519,8 @@
     "bonusDefense": 27,
     "procChance": 0.065,
     "procPercent": 1.6,
-    "iconPath": "icons/gear/sable_courser.png"
+    "iconPath": "icons/gear/sable_courser.png",
+    "setId": "set_sable_vein"
   },
   {
     "id": "gear_sable_treads",
@@ -493,7 +532,8 @@
     "bonusDefense": 10,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/sable_treads.png"
+    "iconPath": "icons/gear/sable_treads.png",
+    "setId": "set_sable_vein"
   },
   {
     "id": "gear_sable_grips",
@@ -505,7 +545,8 @@
     "bonusDefense": 8,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/sable_grips.png"
+    "iconPath": "icons/gear/sable_grips.png",
+    "setId": "set_sable_vein"
   },
   {
     "id": "gear_cinder_cuff",
@@ -517,7 +558,8 @@
     "bonusDefense": 4,
     "procChance": 0.09,
     "procPercent": 1.8,
-    "iconPath": "icons/gear/cinder_cuff.png"
+    "iconPath": "icons/gear/cinder_cuff.png",
+    "setId": null
   },
   {
     "id": "gear_unworn_crown",
@@ -529,7 +571,8 @@
     "bonusDefense": 15,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/unworn_crown.png"
+    "iconPath": "icons/gear/unworn_crown.png",
+    "setId": null
   },
   {
     "id": "gear_cold_token",
@@ -541,7 +584,8 @@
     "bonusDefense": 18,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/cold_token.png"
+    "iconPath": "icons/gear/cold_token.png",
+    "setId": null
   },
   {
     "id": "gear_colossus_core",
@@ -553,7 +597,8 @@
     "bonusDefense": 34,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/colossus_core.png"
+    "iconPath": "icons/gear/colossus_core.png",
+    "setId": null
   },
   {
     "id": "gear_sovereign_tithe",
@@ -565,7 +610,8 @@
     "bonusDefense": 10,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/sovereign_tithe.png"
+    "iconPath": "icons/gear/sovereign_tithe.png",
+    "setId": null
   },
   {
     "id": "gear_sealwright_stylus",
@@ -577,6 +623,839 @@
     "bonusDefense": 20,
     "procChance": null,
     "procPercent": null,
-    "iconPath": "icons/gear/sealwright_stylus.png"
+    "iconPath": "icons/gear/sealwright_stylus.png",
+    "setId": null
+  },
+  {
+    "id": "gear_warrens_lamp_hood",
+    "name": "Warrens Lamp-Hood",
+    "description": "A hood with a lamp bracket sewn at the temple. Both hands stay free, which in a warren is the whole argument.",
+    "rarity": "Green",
+    "slot": "Head",
+    "bonusAttack": 1,
+    "bonusDefense": 3,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/warrens_lamp_hood.png",
+    "setId": "set_warrens"
+  },
+  {
+    "id": "gear_warrens_choker",
+    "name": "Ratter's Choker",
+    "description": "Leather, doubled. Goblins go for the throat because it works, so the Weir stopped leaving it bare.",
+    "rarity": "Green",
+    "slot": "Neck",
+    "bonusAttack": 2,
+    "bonusDefense": 2,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/warrens_choker.png",
+    "setId": "set_warrens"
+  },
+  {
+    "id": "gear_warrens_jack",
+    "name": "Warrens Jack",
+    "description": "Quilted and short-cut. Long coats catch on everything down there, and everything down there catches back.",
+    "rarity": "Green",
+    "slot": "Torso",
+    "bonusAttack": 1,
+    "bonusDefense": 3,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/warrens_jack.png",
+    "setId": "set_warrens"
+  },
+  {
+    "id": "gear_warrens_seal",
+    "name": "Tunnel-Warden's Seal",
+    "description": "Marks the bearer as the one who counts everyone back out. It is not a promotion.",
+    "rarity": "Green",
+    "slot": "Ring1",
+    "bonusAttack": 4,
+    "bonusDefense": 0,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/warrens_seal.png",
+    "setId": "set_warrens"
+  },
+  {
+    "id": "gear_warrens_knuckle",
+    "name": "Knuckle-Ring of the Weir",
+    "description": "Worn on the outside of the glove. Frontier smiths call this an ornament and frontier wardens do not.",
+    "rarity": "Green",
+    "slot": "Ring2",
+    "bonusAttack": 4,
+    "bonusDefense": 0,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/warrens_knuckle.png",
+    "setId": "set_warrens"
+  },
+  {
+    "id": "gear_warrens_pitpony",
+    "name": "Warrens Pit-Pony",
+    "description": "Small, foul-tempered, and unbothered by the dark. It has walked out of places its riders did not.",
+    "rarity": "Green",
+    "slot": "Mount",
+    "bonusAttack": 6,
+    "bonusDefense": 6,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/warrens_pitpony.png",
+    "setId": "set_warrens"
+  },
+  {
+    "id": "gear_warrens_treads",
+    "name": "Warrens Treads",
+    "description": "Nailed flat for wet stone. A warren floor is never dry and never once been level.",
+    "rarity": "Green",
+    "slot": "Boots",
+    "bonusAttack": 2,
+    "bonusDefense": 2,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/warrens_treads.png",
+    "setId": "set_warrens"
+  },
+  {
+    "id": "gear_warrens_grips",
+    "name": "Ratter's Grips",
+    "description": "Reinforced across the back of the hand. You will be hitting things that are already biting you.",
+    "rarity": "Green",
+    "slot": "Gloves",
+    "bonusAttack": 3,
+    "bonusDefense": 1,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/warrens_grips.png",
+    "setId": "set_warrens"
+  },
+  {
+    "id": "gear_marchwatch_helm",
+    "name": "Marchwatch Helm",
+    "description": "Open-faced, because a watch that cannot see is a wall with a man behind it.",
+    "rarity": "Green",
+    "slot": "Head",
+    "bonusAttack": 3,
+    "bonusDefense": 1,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/marchwatch_helm.png",
+    "setId": "set_marchwatch"
+  },
+  {
+    "id": "gear_marchwatch_gorget",
+    "name": "Watchman's Gorget",
+    "description": "Plain steel, no device. A marchwatch is not a house and does not want to be mistaken for one.",
+    "rarity": "Green",
+    "slot": "Neck",
+    "bonusAttack": 1,
+    "bonusDefense": 3,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/marchwatch_gorget.png",
+    "setId": "set_marchwatch"
+  },
+  {
+    "id": "gear_marchwatch_coat",
+    "name": "Long Marchwatch Coat",
+    "description": "Cut to the knee and lined against the wind. Most of the job is weather.",
+    "rarity": "Green",
+    "slot": "Torso",
+    "bonusAttack": 0,
+    "bonusDefense": 4,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/marchwatch_coat.png",
+    "setId": "set_marchwatch"
+  },
+  {
+    "id": "gear_marchwatch_ring",
+    "name": "Ring of the Standing Watch",
+    "description": "Given at the end of a first full winter on the line. Most are given posthumously; this one was not.",
+    "rarity": "Green",
+    "slot": "Ring1",
+    "bonusAttack": 3,
+    "bonusDefense": 1,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/marchwatch_ring.png",
+    "setId": "set_marchwatch"
+  },
+  {
+    "id": "gear_marchwatch_tally",
+    "name": "Tally-Ring",
+    "description": "Notched once a season. A warden with a smooth ring is new; one with a worn ring is rare.",
+    "rarity": "Green",
+    "slot": "Ring2",
+    "bonusAttack": 2,
+    "bonusDefense": 2,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/marchwatch_tally.png",
+    "setId": "set_marchwatch"
+  },
+  {
+    "id": "gear_marchwatch_rounder",
+    "name": "Marchwatch Rounder",
+    "description": "Trained to walk a circuit and stop at every marker without being asked. It knows the route better than the rider.",
+    "rarity": "Green",
+    "slot": "Mount",
+    "bonusAttack": 6,
+    "bonusDefense": 6,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/marchwatch_rounder.png",
+    "setId": "set_marchwatch"
+  },
+  {
+    "id": "gear_marchwatch_boots",
+    "name": "Marchwatch Boots",
+    "description": "Heavy, and worn through at the heel rather than the toe — the wear pattern of a man who stands.",
+    "rarity": "Green",
+    "slot": "Boots",
+    "bonusAttack": 1,
+    "bonusDefense": 3,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/marchwatch_boots.png",
+    "setId": "set_marchwatch"
+  },
+  {
+    "id": "gear_marchwatch_mitts",
+    "name": "Watch Mitts",
+    "description": "Split at the fingertips so a bowstring can still be felt. Frostbite is a slower enemy but it is patient.",
+    "rarity": "Green",
+    "slot": "Gloves",
+    "bonusAttack": 2,
+    "bonusDefense": 2,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/marchwatch_mitts.png",
+    "setId": "set_marchwatch"
+  },
+  {
+    "id": "gear_gravewarden_hood",
+    "name": "Gravewarden's Hood",
+    "description": "Waxed against the smell. The Watch is direct about what the job involves.",
+    "rarity": "Blue",
+    "slot": "Head",
+    "bonusAttack": 4,
+    "bonusDefense": 6,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/gravewarden_hood.png",
+    "setId": "set_gravewarden"
+  },
+  {
+    "id": "gear_gravewarden_seal",
+    "name": "Seal of the Quiet Ground",
+    "description": "Worn so a warden can be identified if they do not come back up. It has been needed.",
+    "rarity": "Blue",
+    "slot": "Neck",
+    "bonusAttack": 6,
+    "bonusDefense": 4,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/gravewarden_seal.png",
+    "setId": "set_gravewarden"
+  },
+  {
+    "id": "gear_gravewarden_coat",
+    "name": "Gravewarden's Coat",
+    "description": "Heavy canvas with iron at the forearms, because the thing you are moving sometimes moves back.",
+    "rarity": "Blue",
+    "slot": "Torso",
+    "bonusAttack": 3,
+    "bonusDefense": 7,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/gravewarden_coat.png",
+    "setId": "set_gravewarden"
+  },
+  {
+    "id": "gear_gravewarden_band",
+    "name": "Binding Band",
+    "description": "Old sigil-work, worn smooth. It does not hold anything closed any more. The Watch wears it anyway.",
+    "rarity": "Blue",
+    "slot": "Ring1",
+    "bonusAttack": 8,
+    "bonusDefense": 2,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/gravewarden_band.png",
+    "setId": "set_gravewarden"
+  },
+  {
+    "id": "gear_gravewarden_signet",
+    "name": "Warden's Signet",
+    "description": "Authorises the bearer to open a marked grave. There is no ring that authorises closing one.",
+    "rarity": "Blue",
+    "slot": "Ring2",
+    "bonusAttack": 7,
+    "bonusDefense": 3,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/gravewarden_signet.png",
+    "setId": "set_gravewarden"
+  },
+  {
+    "id": "gear_gravewarden_dray",
+    "name": "Gravewarden's Dray",
+    "description": "Bred to stand still while unpleasant work happens behind it. The rarest quality a horse can have.",
+    "rarity": "Blue",
+    "slot": "Mount",
+    "bonusAttack": 15,
+    "bonusDefense": 15,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/gravewarden_dray.png",
+    "setId": "set_gravewarden"
+  },
+  {
+    "id": "gear_gravewarden_wades",
+    "name": "Marsh Wades",
+    "description": "Thigh-high and pitch-sealed. The Hollow Marches are where the Watch does most of this.",
+    "rarity": "Blue",
+    "slot": "Boots",
+    "bonusAttack": 5,
+    "bonusDefense": 5,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/gravewarden_wades.png",
+    "setId": "set_gravewarden"
+  },
+  {
+    "id": "gear_gravewarden_gauntlets",
+    "name": "Gravewarden's Gauntlets",
+    "description": "Iron over leather over iron. Whatever is down there does not get to hold your hand.",
+    "rarity": "Blue",
+    "slot": "Gloves",
+    "bonusAttack": 7,
+    "bonusDefense": 3,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/gravewarden_gauntlets.png",
+    "setId": "set_gravewarden"
+  },
+  {
+    "id": "gear_drowned_helm",
+    "name": "Salvager's Helm",
+    "description": "Sealed at the collar with a glass plate. The Vaults are dark before they are deep.",
+    "rarity": "Blue",
+    "slot": "Head",
+    "bonusAttack": 7,
+    "bonusDefense": 3,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/drowned_helm.png",
+    "setId": "set_drowned"
+  },
+  {
+    "id": "gear_drowned_torc",
+    "name": "Tidewatch Torc",
+    "description": "Cold in cold water, warm in water that is not. Salvagers do not agree on what the warm kind means.",
+    "rarity": "Blue",
+    "slot": "Neck",
+    "bonusAttack": 7,
+    "bonusDefense": 3,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/drowned_torc.png",
+    "setId": "set_drowned"
+  },
+  {
+    "id": "gear_drowned_harness",
+    "name": "Salvage Harness",
+    "description": "Rings and line, no plate. Down there weight is not protection, it is a decision.",
+    "rarity": "Blue",
+    "slot": "Torso",
+    "bonusAttack": 3,
+    "bonusDefense": 7,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/drowned_harness.png",
+    "setId": "set_drowned"
+  },
+  {
+    "id": "gear_drowned_seal",
+    "name": "Vault-Seal Ring",
+    "description": "Old Guard work. It opens one door in the Sunken Vaults and nobody has found which.",
+    "rarity": "Blue",
+    "slot": "Ring1",
+    "bonusAttack": 6,
+    "bonusDefense": 4,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/drowned_seal.png",
+    "setId": "set_drowned"
+  },
+  {
+    "id": "gear_drowned_band",
+    "name": "Barnacle Band",
+    "description": "Recovered encrusted and left that way. Coast salvagers say a clean ring means a short career.",
+    "rarity": "Blue",
+    "slot": "Ring2",
+    "bonusAttack": 5,
+    "bonusDefense": 5,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/drowned_band.png",
+    "setId": "set_drowned"
+  },
+  {
+    "id": "gear_drowned_courser",
+    "name": "Coastwise Courser",
+    "description": "Sure-footed on wet shale and entirely unwilling to enter water above the knee. It has its reasons.",
+    "rarity": "Blue",
+    "slot": "Mount",
+    "bonusAttack": 15,
+    "bonusDefense": 15,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/drowned_courser.png",
+    "setId": "set_drowned"
+  },
+  {
+    "id": "gear_drowned_boots",
+    "name": "Shalewalkers",
+    "description": "Soled in cork and iron. The Drowned Coast is loose all the way down.",
+    "rarity": "Blue",
+    "slot": "Boots",
+    "bonusAttack": 3,
+    "bonusDefense": 7,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/drowned_boots.png",
+    "setId": "set_drowned"
+  },
+  {
+    "id": "gear_drowned_grips",
+    "name": "Salvager's Grips",
+    "description": "Webbed, tarred, and cut short at the thumb so a knot can still be tied blind.",
+    "rarity": "Blue",
+    "slot": "Gloves",
+    "bonusAttack": 6,
+    "bonusDefense": 4,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/drowned_grips.png",
+    "setId": "set_drowned"
+  },
+  {
+    "id": "gear_wrought_visor",
+    "name": "Breaker's Visor",
+    "description": "Slit-narrow and backed in lead. A Wrought does not aim, which makes it worse, not better.",
+    "rarity": "Purple",
+    "slot": "Head",
+    "bonusAttack": 7,
+    "bonusDefense": 11,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/wrought_visor.png",
+    "setId": "set_wroughtbreaker"
+  },
+  {
+    "id": "gear_wrought_collar",
+    "name": "Siege Collar",
+    "description": "Braced to the shoulders. It exists so the head stays on when the arm stops something heavy.",
+    "rarity": "Purple",
+    "slot": "Neck",
+    "bonusAttack": 7,
+    "bonusDefense": 11,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/wrought_collar.png",
+    "setId": "set_wroughtbreaker"
+  },
+  {
+    "id": "gear_wrought_plate",
+    "name": "Wroughtbreaker Plate",
+    "description": "Layered against impact rather than edge. Nothing made by the Old Guard bothers with edges.",
+    "rarity": "Purple",
+    "slot": "Torso",
+    "bonusAttack": 6,
+    "bonusDefense": 12,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/wrought_plate.png",
+    "setId": "set_wroughtbreaker"
+  },
+  {
+    "id": "gear_wrought_keyring",
+    "name": "Sigil-Key Ring",
+    "description": "Reads a commanding sigil well enough to guess at its order. Guessing is the whole trade.",
+    "rarity": "Purple",
+    "slot": "Ring1",
+    "bonusAttack": 13,
+    "bonusDefense": 5,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/wrought_keyring.png",
+    "setId": "set_wroughtbreaker"
+  },
+  {
+    "id": "gear_wrought_band",
+    "name": "Breaker's Band",
+    "description": "Cast from the melt of a construct that finally stopped. The Weir keeps the melt and the tally.",
+    "rarity": "Purple",
+    "slot": "Ring2",
+    "bonusAttack": 12,
+    "bonusDefense": 6,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/wrought_band.png",
+    "setId": "set_wroughtbreaker"
+  },
+  {
+    "id": "gear_wrought_destrier",
+    "name": "Siege Destrier",
+    "description": "Trained to stand under a falling thing. Horses are not built for this and it is taught anyway.",
+    "rarity": "Purple",
+    "slot": "Mount",
+    "bonusAttack": 27,
+    "bonusDefense": 27,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/wrought_destrier.png",
+    "setId": "set_wroughtbreaker"
+  },
+  {
+    "id": "gear_wrought_sabatons",
+    "name": "Breaker's Sabatons",
+    "description": "Weighted so a shove does not become a fall. A Wrought's first move is almost always a shove.",
+    "rarity": "Purple",
+    "slot": "Boots",
+    "bonusAttack": 9,
+    "bonusDefense": 9,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/wrought_sabatons.png",
+    "setId": "set_wroughtbreaker"
+  },
+  {
+    "id": "gear_wrought_gauntlets",
+    "name": "Wroughtbreaker Gauntlets",
+    "description": "Built to hold a bar against a moving core until the order stops. Most pairs are used once.",
+    "rarity": "Purple",
+    "slot": "Gloves",
+    "bonusAttack": 13,
+    "bonusDefense": 5,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/wrought_gauntlets.png",
+    "setId": "set_wroughtbreaker"
+  },
+  {
+    "id": "gear_choir_crown",
+    "name": "Listener's Circlet",
+    "description": "Thin, and open at the ears by design. The Choir does not cover what it uses.",
+    "rarity": "Purple",
+    "slot": "Head",
+    "bonusAttack": 12,
+    "bonusDefense": 6,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/choir_crown.png",
+    "setId": "set_choir"
+  },
+  {
+    "id": "gear_choir_stole",
+    "name": "Resonant Stole",
+    "description": "It hums a half-tone under any sung note. The Choir considers this agreement.",
+    "rarity": "Purple",
+    "slot": "Neck",
+    "bonusAttack": 12,
+    "bonusDefense": 6,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/choir_stole.png",
+    "setId": "set_choir"
+  },
+  {
+    "id": "gear_choir_vestment",
+    "name": "Dawnward Vestment",
+    "description": "Undyed, unadorned, and cut so it hangs still in wind. Movement is noise and noise is interference.",
+    "rarity": "Purple",
+    "slot": "Torso",
+    "bonusAttack": 6,
+    "bonusDefense": 12,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/choir_vestment.png",
+    "setId": "set_choir"
+  },
+  {
+    "id": "gear_choir_ring",
+    "name": "Ring of the First Answer",
+    "description": "Worn by whoever spoke when something answered. The Choir has four. It will not say to what.",
+    "rarity": "Purple",
+    "slot": "Ring1",
+    "bonusAttack": 11,
+    "bonusDefense": 7,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/choir_ring.png",
+    "setId": "set_choir"
+  },
+  {
+    "id": "gear_choir_band",
+    "name": "Attendant's Band",
+    "description": "Given to those who stand and do not sing. Somebody has to be listening to the listeners.",
+    "rarity": "Purple",
+    "slot": "Ring2",
+    "bonusAttack": 11,
+    "bonusDefense": 7,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/choir_band.png",
+    "setId": "set_choir"
+  },
+  {
+    "id": "gear_choir_palfrey",
+    "name": "Choir Palfrey",
+    "description": "Trained to a whisper and unshod, so a procession arrives without announcing itself.",
+    "rarity": "Purple",
+    "slot": "Mount",
+    "bonusAttack": 27,
+    "bonusDefense": 27,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/choir_palfrey.png",
+    "setId": "set_choir"
+  },
+  {
+    "id": "gear_choir_slippers",
+    "name": "Vigil Slippers",
+    "description": "Soft-soled. The Choir keeps its vigils barefoot where the ground permits and these where it does not.",
+    "rarity": "Purple",
+    "slot": "Boots",
+    "bonusAttack": 5,
+    "bonusDefense": 13,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/choir_slippers.png",
+    "setId": "set_choir"
+  },
+  {
+    "id": "gear_choir_wraps",
+    "name": "Cantor's Wraps",
+    "description": "Linen, wound to the second knuckle. A Cantor's hands are for counting time, not for holding.",
+    "rarity": "Purple",
+    "slot": "Gloves",
+    "bonusAttack": 6,
+    "bonusDefense": 12,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/choir_wraps.png",
+    "setId": "set_choir"
+  },
+  {
+    "id": "gear_sovereign_diadem",
+    "name": "Sovereign's Diadem",
+    "description": "Worn by whoever currently holds the Dragon bracket. It is returned, always, and never willingly.",
+    "rarity": "Orange",
+    "slot": "Head",
+    "bonusAttack": 17,
+    "bonusDefense": 13,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/sovereign_diadem.png",
+    "setId": "set_sovereign"
+  },
+  {
+    "id": "gear_sovereign_collar",
+    "name": "Collar of the Founding Pact",
+    "description": "Names the Gauntlet's first tithe in a script the tournament no longer teaches.",
+    "rarity": "Orange",
+    "slot": "Neck",
+    "bonusAttack": 13,
+    "bonusDefense": 17,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/sovereign_collar.png",
+    "setId": "set_sovereign"
+  },
+  {
+    "id": "gear_sovereign_cuirass",
+    "name": "Regalia Cuirass",
+    "description": "Ceremonial in cut and emphatically not in construction. The Gauntlet has always been honest about that.",
+    "rarity": "Orange",
+    "slot": "Torso",
+    "bonusAttack": 11,
+    "bonusDefense": 19,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/sovereign_cuirass.png",
+    "setId": "set_sovereign"
+  },
+  {
+    "id": "gear_sovereign_signet",
+    "name": "Sovereign's Signet",
+    "description": "Opens the Gauntlet's inner registry. What is written there is the pact's other half.",
+    "rarity": "Orange",
+    "slot": "Ring1",
+    "bonusAttack": 19,
+    "bonusDefense": 11,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/sovereign_signet.png",
+    "setId": "set_sovereign"
+  },
+  {
+    "id": "gear_sovereign_band",
+    "name": "Tithe-Band",
+    "description": "One notch per climb paid. Nobody has found the ring where the notches run out.",
+    "rarity": "Orange",
+    "slot": "Ring2",
+    "bonusAttack": 18,
+    "bonusDefense": 12,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/sovereign_band.png",
+    "setId": "set_sovereign"
+  },
+  {
+    "id": "gear_sovereign_wyrm",
+    "name": "Sovereign's Wyrm",
+    "description": "Not a gift. A loan, from an institution that has never once explained its terms.",
+    "rarity": "Orange",
+    "slot": "Mount",
+    "bonusAttack": 45,
+    "bonusDefense": 45,
+    "procChance": 0.08,
+    "procPercent": 1.4,
+    "iconPath": "icons/gear/sovereign_wyrm.png",
+    "setId": "set_sovereign"
+  },
+  {
+    "id": "gear_sovereign_greaves",
+    "name": "Regalia Greaves",
+    "description": "Made to be seen on a stair. The Eternal Stair, specifically, and the Gauntlet knows it.",
+    "rarity": "Orange",
+    "slot": "Boots",
+    "bonusAttack": 12,
+    "bonusDefense": 18,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/sovereign_greaves.png",
+    "setId": "set_sovereign"
+  },
+  {
+    "id": "gear_sovereign_gauntlets",
+    "name": "Sovereign's Gauntlets",
+    "description": "The Gauntlet's namesake, and the only pair the tournament has ever formally issued.",
+    "rarity": "Orange",
+    "slot": "Gloves",
+    "bonusAttack": 18,
+    "bonusDefense": 12,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/sovereign_gauntlets.png",
+    "setId": "set_sovereign"
+  },
+  {
+    "id": "gear_stoned_horns",
+    "name": "Horns of Considered Inaction",
+    "description": "Filed blunt by their owner, on purpose, over a long afternoon. He says they kept catching on doorframes. The Choir has written four papers on what else he might have meant.",
+    "rarity": "Orange",
+    "slot": "Head",
+    "bonusAttack": 11,
+    "bonusDefense": 19,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/stoned_horns.png",
+    "setId": "set_stoned_devil"
+  },
+  {
+    "id": "gear_stoned_censer",
+    "name": "The Perpetual Censer",
+    "description": "Lit some time during the Age of Dawn and never once since. Whatever is in it, there is still some left.",
+    "rarity": "Orange",
+    "slot": "Neck",
+    "bonusAttack": 18,
+    "bonusDefense": 12,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/stoned_censer.png",
+    "setId": "set_stoned_devil"
+  },
+  {
+    "id": "gear_stoned_robe",
+    "name": "Robe of the Long Sabbatical",
+    "description": "Cut for a being who intended to sit down and has now been sitting down for an Age. Remarkably comfortable. Alarmingly hard to damage.",
+    "rarity": "Orange",
+    "slot": "Torso",
+    "bonusAttack": 12,
+    "bonusDefense": 18,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/stoned_robe.png",
+    "setId": "set_stoned_devil"
+  },
+  {
+    "id": "gear_stoned_signet",
+    "name": "Signet of Declined Ascendancy",
+    "description": "He was offered a throne. He read the terms, asked two questions nobody could answer, and went back inside.",
+    "rarity": "Orange",
+    "slot": "Ring1",
+    "bonusAttack": 20,
+    "bonusDefense": 10,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/stoned_signet.png",
+    "setId": "set_stoned_devil"
+  },
+  {
+    "id": "gear_stoned_band",
+    "name": "Band of the Fourth Reconsideration",
+    "description": "There were three earlier ones. He is not looking for them.",
+    "rarity": "Orange",
+    "slot": "Ring2",
+    "bonusAttack": 19,
+    "bonusDefense": 11,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/stoned_band.png",
+    "setId": "set_stoned_devil"
+  },
+  {
+    "id": "gear_stoned_goat",
+    "name": "Extremely Relaxed Hell-Goat",
+    "description": "It will carry you anywhere at exactly one speed. Attempts to hurry it have never once succeeded and, by every account, have never once been forgiven.",
+    "rarity": "Orange",
+    "slot": "Mount",
+    "bonusAttack": 45,
+    "bonusDefense": 45,
+    "procChance": 0.11,
+    "procPercent": 1.1,
+    "iconPath": "icons/gear/stoned_goat.png",
+    "setId": "set_stoned_devil"
+  },
+  {
+    "id": "gear_stoned_slippers",
+    "name": "Slippers of the Unwalked Path",
+    "description": "Immaculate. Not a scuff on them. That is the joke and it is also the point.",
+    "rarity": "Orange",
+    "slot": "Boots",
+    "bonusAttack": 11,
+    "bonusDefense": 19,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/stoned_slippers.png",
+    "setId": "set_stoned_devil"
+  },
+  {
+    "id": "gear_stoned_mitts",
+    "name": "Mitts of Amiable Menace",
+    "description": "He shakes hands. It is worse than the alternative and takes considerably longer.",
+    "rarity": "Orange",
+    "slot": "Gloves",
+    "bonusAttack": 17,
+    "bonusDefense": 13,
+    "procChance": null,
+    "procPercent": null,
+    "iconPath": "icons/gear/stoned_mitts.png",
+    "setId": "set_stoned_devil"
   }
 ]

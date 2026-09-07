@@ -46,6 +46,27 @@ public sealed class GearDefinitionProvider : IGearDefinitionProvider
                 throw new InvalidOperationException(
                     $"gear.json: '{g.Id}' ({g.Rarity}) upgradesTo '{g.UpgradesTo}' ({target.Rarity}) must be strictly higher rarity.");
         }
+
+        // Sets. Nothing reads SetId in combat yet (set bonuses are PHASE-2), so these catch the two
+        // mistakes that would make a set impossible to WEAR long before any bonus depends on it:
+        // a set that claims one slot twice can never be completed, and a set of mixed rarity is not
+        // a set, it is a naming accident.
+        foreach (var grp in list.Where(g => !string.IsNullOrWhiteSpace(g.SetId))
+                                .GroupBy(g => g.SetId!, StringComparer.Ordinal))
+        {
+            var slots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var piece in grp)
+                if (!slots.Add(piece.Slot))
+                    throw new InvalidOperationException(
+                        $"gear.json: set '{grp.Key}' has two pieces in the '{piece.Slot}' slot "
+                        + $"('{piece.Id}' is the second) — the set could never be completed.");
+
+            var rarities = grp.Select(p => p.Rarity).Distinct().ToList();
+            if (rarities.Count > 1)
+                throw new InvalidOperationException(
+                    $"gear.json: set '{grp.Key}' mixes rarities ({string.Join(", ", rarities)}). "
+                    + "A set is one tier; a mixed one is a naming accident.");
+        }
     }
 
     public GearDefinition? GetById(string id)
