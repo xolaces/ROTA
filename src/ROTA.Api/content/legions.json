@@ -26,7 +26,8 @@
       }
     ],
     "iconPath": "",
-    "acquisition": "Starting legion"
+    "acquisition": "Starting legion",
+    "tagAffinities": {}
   },
   {
     "id": "legion_vanguard",
@@ -63,7 +64,11 @@
       }
     ],
     "iconPath": "",
-    "acquisition": "Gem shop"
+    "acquisition": "Gem shop",
+    "tagAffinities": {
+      "Legion": 15.0,
+      "Goblin": 10.0
+    }
   },
   {
     "id": "legion_ironlegion",
@@ -96,7 +101,11 @@
       }
     ],
     "iconPath": "",
-    "acquisition": "Raid drop"
+    "acquisition": "Raid drop",
+    "tagAffinities": {
+      "Construct": 30.0,
+      "Legion": 18.0
+    }
   },
   {
     "id": "legion_vanguard_ii",
@@ -133,6 +142,10 @@
       }
     ],
     "iconPath": "",
-    "acquisition": "Crafting (General)"
+    "acquisition": "Crafting (General)",
+    "tagAffinities": {
+      "Shadow": 30.0,
+      "Undead": 20.0
+    }
   }
 ]

@@ -48,6 +48,24 @@ public sealed class LegionDefinitionProvider : ILegionDefinitionProvider
                 throw new InvalidOperationException(
                     $"legions.json: duplicate id '{l.Id}'.");
 
+            // Affinity keys are RaidTag names. A typo here is silent in the worst way — the legion
+            // reads as a specialist, costs a specialist's build, and counters nothing.
+            foreach (var (tag, pct) in l.TagAffinities)
+            {
+                if (!Enum.TryParse<RaidTag>(tag, ignoreCase: false, out var parsed))
+                    throw new InvalidOperationException(
+                        $"legions.json: legion '{l.Id}' has an affinity for '{tag}', which is not a "
+                        + "RaidTag. Valid: " + string.Join(", ", Enum.GetNames<RaidTag>()) + ".");
+                if (parsed == RaidTag.None)
+                    throw new InvalidOperationException(
+                        $"legions.json: legion '{l.Id}' has an affinity for 'None'. That is a flat "
+                        + "power bonus wearing a counter-play costume — use powerBonus instead.");
+                if (pct <= 0)
+                    throw new InvalidOperationException(
+                        $"legions.json: legion '{l.Id}' has affinity {pct} for '{tag}'. An affinity "
+                        + "is a bonus; zero says nothing and negative is a trap the UI cannot show.");
+            }
+
             // Validate slot constraint values parse to the correct enum type
             foreach (var (slots, family) in new[] {
                 (l.GeneralSlots, "generalSlots"),

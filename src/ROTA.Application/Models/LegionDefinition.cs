@@ -16,4 +16,18 @@ public class LegionDefinition
     public string         Acquisition  { get; set; } = string.Empty;
     // 0 = not for sale in the gem shop; >0 = gem cost to purchase.
     public int            GemPrice     { get; set; }
+
+    /// <summary>
+    /// What this legion is BUILT to fight. Keyed by <c>RaidTag</c> name, valued as a PERCENT bonus to
+    /// the legion's raw power against a raid carrying that tag — so 25.0 is +25%.
+    ///
+    /// HIGHEST-ONLY, never summed. A raid can carry several tags (a Glutbound goblin warband is both
+    /// Goblin and Shadow) and a legion can answer several, but only the best match applies. Summing
+    /// would make a broad legion beat a specialised one at its own specialty, which is backwards, and
+    /// it is the same rule the Gauntlet trophies already use for the same reason.
+    ///
+    /// Keys are validated at boot against the RaidTag enum. An affinity for <c>None</c> is refused:
+    /// it would be a flat power bonus wearing a counter-play costume, and PowerBonus already exists.
+    /// </summary>
+    public Dictionary<string, double> TagAffinities { get; set; } = new();
 }

@@ -14,7 +14,10 @@
     "baseGemReward": 2,
     "hasOnHitDrops": false,
     "artKey": "raid_ironcolossus",
-    "grade": "Mythic"
+    "grade": "Mythic",
+    "tags": [
+      "Construct"
+    ]
   },
   {
     "id": "raid_malachar",
@@ -31,7 +34,11 @@
     "baseGemReward": 4,
     "hasOnHitDrops": false,
     "artKey": "raid_malachar",
-    "grade": "Mythic"
+    "grade": "Mythic",
+    "tags": [
+      "Legion",
+      "Demon"
+    ]
   },
   {
     "id": "raid_c1z1b",
@@ -48,7 +55,10 @@
     "baseGemReward": 2,
     "hasOnHitDrops": false,
     "artKey": "raid_c1z1b",
-    "grade": "Common"
+    "grade": "Common",
+    "tags": [
+      "Construct"
+    ]
   },
   {
     "id": "raid_c1z2b",
@@ -65,7 +75,11 @@
     "baseGemReward": 2,
     "hasOnHitDrops": false,
     "artKey": "raid_c1z2b",
-    "grade": "Common"
+    "grade": "Common",
+    "tags": [
+      "Undead",
+      "Beast"
+    ]
   },
   {
     "id": "raid_c2z1b",
@@ -82,7 +96,10 @@
     "baseGemReward": 5,
     "hasOnHitDrops": false,
     "artKey": "raid_c2z1b",
-    "grade": "Common"
+    "grade": "Common",
+    "tags": [
+      "Goblin"
+    ]
   },
   {
     "id": "raid_c2z2b",
@@ -99,7 +116,11 @@
     "baseGemReward": 5,
     "hasOnHitDrops": false,
     "artKey": "raid_c2z2b",
-    "grade": "Common"
+    "grade": "Common",
+    "tags": [
+      "Beast",
+      "Goblin"
+    ]
   },
   {
     "id": "raid_c2z3b",
@@ -116,7 +137,11 @@
     "baseGemReward": 5,
     "hasOnHitDrops": false,
     "artKey": "raid_c2z3b",
-    "grade": "Deadly"
+    "grade": "Deadly",
+    "tags": [
+      "Shadow",
+      "Construct"
+    ]
   },
   {
     "id": "raid_c3z0b",
@@ -133,7 +158,11 @@
     "baseGemReward": 12,
     "hasOnHitDrops": false,
     "artKey": "raid_c3z0b",
-    "grade": "Deadly"
+    "grade": "Deadly",
+    "tags": [
+      "Legion",
+      "Construct"
+    ]
   },
   {
     "id": "raid_c3z1b",
@@ -150,7 +179,11 @@
     "baseGemReward": 12,
     "hasOnHitDrops": false,
     "artKey": "raid_c3z1b",
-    "grade": "Deadly"
+    "grade": "Deadly",
+    "tags": [
+      "Horror",
+      "Undead"
+    ]
   },
   {
     "id": "raid_c3z2b",
@@ -167,7 +200,11 @@
     "baseGemReward": 12,
     "hasOnHitDrops": false,
     "artKey": "raid_c3z2b",
-    "grade": "Deadly"
+    "grade": "Deadly",
+    "tags": [
+      "Demon",
+      "Shadow"
+    ]
   },
   {
     "id": "raid_c3z3b",
@@ -184,7 +221,11 @@
     "baseGemReward": 12,
     "hasOnHitDrops": false,
     "artKey": "raid_c3z3b",
-    "grade": "Deadly"
+    "grade": "Deadly",
+    "tags": [
+      "Construct",
+      "Shadow"
+    ]
   },
   {
     "id": "raid_c4z0b",
@@ -201,7 +242,10 @@
     "baseGemReward": 28,
     "hasOnHitDrops": false,
     "artKey": "raid_c4z0b",
-    "grade": "Elite"
+    "grade": "Elite",
+    "tags": [
+      "Beast"
+    ]
   },
   {
     "id": "raid_c4z1b",
@@ -218,7 +262,11 @@
     "baseGemReward": 28,
     "hasOnHitDrops": false,
     "artKey": "raid_c4z1b",
-    "grade": "Elite"
+    "grade": "Elite",
+    "tags": [
+      "Undead",
+      "Horror"
+    ]
   },
   {
     "id": "raid_c4z2b",
@@ -235,7 +283,10 @@
     "baseGemReward": 28,
     "hasOnHitDrops": false,
     "artKey": "raid_c4z2b",
-    "grade": "Elite"
+    "grade": "Elite",
+    "tags": [
+      "Horror"
+    ]
   },
   {
     "id": "raid_c4z3b",
@@ -252,7 +303,11 @@
     "baseGemReward": 28,
     "hasOnHitDrops": false,
     "artKey": "raid_c4z3b",
-    "grade": "Elite"
+    "grade": "Elite",
+    "tags": [
+      "Legion",
+      "Undead"
+    ]
   },
   {
     "id": "raid_c5z0b",
@@ -269,7 +324,11 @@
     "baseGemReward": 64,
     "hasOnHitDrops": false,
     "artKey": "raid_c5z0b",
-    "grade": "Elite"
+    "grade": "Elite",
+    "tags": [
+      "Construct",
+      "Beast"
+    ]
   },
   {
     "id": "raid_c5z1b",
@@ -286,7 +345,10 @@
     "baseGemReward": 64,
     "hasOnHitDrops": false,
     "artKey": "raid_c5z1b",
-    "grade": "Elite"
+    "grade": "Elite",
+    "tags": [
+      "Demon"
+    ]
   },
   {
     "id": "raid_c5z2b",
@@ -303,7 +365,11 @@
     "baseGemReward": 64,
     "hasOnHitDrops": false,
     "artKey": "raid_c5z2b",
-    "grade": "Elite"
+    "grade": "Elite",
+    "tags": [
+      "Demon",
+      "Shadow"
+    ]
   },
   {
     "id": "raid_c5z3b",
@@ -320,7 +386,8 @@
     "baseGemReward": 64,
     "hasOnHitDrops": false,
     "artKey": "raid_c5z3b",
-    "grade": "Mythic"
+    "grade": "Mythic",
+    "tags": []
   },
   {
     "id": "raid_c5z4b",
@@ -337,7 +404,8 @@
     "baseGemReward": 64,
     "hasOnHitDrops": false,
     "artKey": "raid_c5z4b",
-    "grade": "Mythic"
+    "grade": "Mythic",
+    "tags": []
   },
   {
     "id": "raid_c6z0b",
@@ -354,7 +422,11 @@
     "baseGemReward": 140,
     "hasOnHitDrops": false,
     "artKey": "raid_c6z0b",
-    "grade": "Mythic"
+    "grade": "Mythic",
+    "tags": [
+      "Shadow",
+      "Construct"
+    ]
   },
   {
     "id": "raid_c6z1b",
@@ -371,7 +443,11 @@
     "baseGemReward": 140,
     "hasOnHitDrops": false,
     "artKey": "raid_c6z1b",
-    "grade": "Mythic"
+    "grade": "Mythic",
+    "tags": [
+      "Horror",
+      "Shadow"
+    ]
   },
   {
     "id": "raid_c6z2b",
@@ -388,7 +464,10 @@
     "baseGemReward": 140,
     "hasOnHitDrops": false,
     "artKey": "raid_c6z2b",
-    "grade": "Mythic"
+    "grade": "Mythic",
+    "tags": [
+      "Shadow"
+    ]
   },
   {
     "id": "raid_c6z3b",
@@ -405,7 +484,11 @@
     "baseGemReward": 140,
     "hasOnHitDrops": false,
     "artKey": "raid_c6z3b",
-    "grade": "Mythic"
+    "grade": "Mythic",
+    "tags": [
+      "Dragon",
+      "Horror"
+    ]
   },
   {
     "id": "raid_c6z4b",
@@ -422,7 +505,11 @@
     "baseGemReward": 140,
     "hasOnHitDrops": false,
     "artKey": "raid_c6z4b",
-    "grade": "Mythic"
+    "grade": "Mythic",
+    "tags": [
+      "Dragon",
+      "Demon"
+    ]
   },
   {
     "id": "raid_lastwatch_relay",
@@ -439,7 +526,11 @@
     "baseGemReward": 160,
     "hasOnHitDrops": false,
     "artKey": "raid_lastwatch_relay",
-    "grade": "Mythic"
+    "grade": "Mythic",
+    "tags": [
+      "Construct",
+      "Shadow"
+    ]
   },
   {
     "id": "raid_lastwatch_vault",
@@ -456,7 +547,11 @@
     "baseGemReward": 180,
     "hasOnHitDrops": false,
     "artKey": "raid_lastwatch_vault",
-    "grade": "Mythic"
+    "grade": "Mythic",
+    "tags": [
+      "Undead",
+      "Shadow"
+    ]
   },
   {
     "id": "raid_lastwatch_lamp",
@@ -473,6 +568,10 @@
     "baseGemReward": 220,
     "hasOnHitDrops": false,
     "artKey": "raid_lastwatch_lamp",
-    "grade": "Mythic"
+    "grade": "Mythic",
+    "tags": [
+      "Shadow",
+      "Horror"
+    ]
   }
 ]

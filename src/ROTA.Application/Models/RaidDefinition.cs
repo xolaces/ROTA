@@ -26,4 +26,14 @@ public class RaidDefinition
     public string ArtKey { get; set; } = string.Empty;
     // Gold granted per stamina spent on every hit (on-hit reward, not kill reward)
     public long GoldPerStamina { get; set; } = 1;
+
+    /// <summary>
+    /// What this raid IS, for legion affinity. Stored as strings and parsed to <c>RaidTag</c> at boot
+    /// (the same string-in-content pattern as SummonDifficulty), so content can add a tag without a
+    /// C# change and a typo fails the server rather than silently matching nothing.
+    ///
+    /// EMPTY IS THE DEFAULT AND IT MEANS SOMETHING: an untagged raid is one no legion counters. That
+    /// is what keeps affinity a reward for building deliberately rather than a penalty for not.
+    /// </summary>
+    public List<string> Tags { get; set; } = new();
 }

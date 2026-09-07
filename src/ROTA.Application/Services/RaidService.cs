@@ -823,6 +823,8 @@ public sealed class RaidService : IRaidService
         double magicCritBonus    = 0.0; // flat crit-chance addition from CritChanceFlat magics
         long legionPowerTerm        = 0;   // scaled legion contribution added to preProc
         long wrathLegionBonus       = 0;   // System 22 — Wrath mastery's marginal legion power (display)
+        double legionTagAffinityPercent = 0;   // best matching legion-vs-raid-tag bonus, % (display)
+        string? legionTagAffinityMatch  = null; // which tag it matched on, for the combat log
         long bulwarkBonus           = 0;   // System 22 — Bulwark mastery's marginal guild-raid damage (display)
         long unitProcBonus          = 0;   // capped total unit-ability proc bonus
         var  unitProcs              = new List<MagicProcDTO>();
@@ -975,6 +977,34 @@ public sealed class RaidService : IRaidService
                         maxTrophyFraction = trophyDef.LegionPowerBonusFraction;
                 }
                 rawLegionPower *= 1.0 + maxTrophyFraction;
+
+                // (B) Legion tag affinity — a legion built to fight this KIND of thing fights it better.
+                // Resolved HIGHEST-ONLY across the raid's tags, never summed: a raid can carry several
+                // (a Glutbound goblin warband is both Goblin and Shadow) and a legion can answer
+                // several, but summing would let a broad legion beat a specialist at its own specialty.
+                // Same rule, and the same reason, as the trophy stage directly above.
+                //
+                // An untagged raid matches nothing and multiplies by 1.0, so the byte-for-byte
+                // unchanged hit is the DEFAULT rather than a special case.
+                double tagAffinityPercent = 0.0;
+                string? matchedTag = null;
+                if (legionContentDef is not null
+                    && legionContentDef.TagAffinities.Count > 0
+                    && definition.Tags.Count > 0)
+                {
+                    foreach (var tag in definition.Tags)
+                    {
+                        if (legionContentDef.TagAffinities.TryGetValue(tag, out var pct)
+                            && pct > tagAffinityPercent)
+                        {
+                            tagAffinityPercent = pct;
+                            matchedTag = tag;
+                        }
+                    }
+                }
+                legionTagAffinityPercent = tagAffinityPercent;
+                legionTagAffinityMatch   = matchedTag;
+                rawLegionPower *= 1.0 + tagAffinityPercent / 100.0;
 
                 // Apply PowerScaling (combat-only dial); multiply by same hitSize and multiplier.
                 legionPowerTerm = Math.Max(0,
@@ -1472,6 +1502,8 @@ public sealed class RaidService : IRaidService
             NewStrikeBalance     = newStrikeBalance,
             // System 22 Phase A — mastery combat surfacing (0 when no Wrath legion bonus / non-guild raid).
             WrathLegionBonus     = wrathLegionBonus,
+            LegionTagAffinityPercent = legionTagAffinityPercent,
+            LegionTagAffinityMatch   = legionTagAffinityMatch,
             BulwarkBonus         = bulwarkBonus,
         };
 

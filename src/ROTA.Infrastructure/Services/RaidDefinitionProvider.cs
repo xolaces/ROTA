@@ -1,6 +1,7 @@
 using System.Text.Json;
 using ROTA.Application.Interfaces;
 using ROTA.Application.Models;
+using ROTA.Domain.Enums;
 
 namespace ROTA.Infrastructure.Services;
 
@@ -130,6 +131,25 @@ public sealed class RaidDefinitionProvider : IRaidDefinitionProvider
                 throw new InvalidOperationException(
                     $"raids.json: raid '{r.Id}' has grade '{r.Grade}'; expected one of "
                     + string.Join(", ", KnownGrades) + ".");
+
+            // Tags drive legion affinity, and a mistyped tag is the worst kind of content bug: the
+            // raid still works, the counter-build the tag was for silently does nothing, and nobody
+            // finds out until someone reads the JSON. Parse-or-throw at boot instead.
+            var seenTags = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var tag in r.Tags)
+            {
+                if (!Enum.TryParse<RaidTag>(tag, ignoreCase: false, out var parsed))
+                    throw new InvalidOperationException(
+                        $"raids.json: raid '{r.Id}' has tag '{tag}', which is not a RaidTag. Valid: "
+                        + string.Join(", ", Enum.GetNames<RaidTag>()) + ".");
+                if (parsed == RaidTag.None)
+                    throw new InvalidOperationException(
+                        $"raids.json: raid '{r.Id}' lists the tag 'None'. An untagged raid is "
+                        + "expressed by an EMPTY tag list, not by naming None.");
+                if (!seenTags.Add(tag))
+                    throw new InvalidOperationException(
+                        $"raids.json: raid '{r.Id}' lists tag '{tag}' twice.");
+            }
 
             // A World raid is TIMER-ONLY (owner 2026-08-29): no collective health, rewards come from
             // a damage ladder. Zero health is therefore meaningful there and a mistake anywhere else,

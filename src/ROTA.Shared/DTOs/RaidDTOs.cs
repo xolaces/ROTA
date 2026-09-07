@@ -94,6 +94,12 @@ public class RaidHitResponse
     // the Wrath mastery this hit (0 with no active legion / no Wrath level). BulwarkBonus = marginal
     // damage added by the Bulwark mastery (0 on non-guild raids; hard-capped).
     public long WrathLegionBonus { get; set; }
+
+    // Legion tag affinity — the best match between this legion's TagAffinities and the raid's Tags,
+    // as a PERCENT (25.0 means +25% legion power). 0 with a null tag means no match, which is the
+    // ordinary case: most raids are untagged and most legions specialise in nothing.
+    public double  LegionTagAffinityPercent { get; set; }
+    public string? LegionTagAffinityMatch   { get; set; }
     public long BulwarkBonus     { get; set; }
 }
 
