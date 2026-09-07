@@ -649,7 +649,7 @@ Tests:
 - Every state change writes to `audit_log` (event open/close/settle, join, prize grants, shop buys,
   strike spends).
 - **Do NOT run `dotnet ef database update`.** Build **0 warnings**; **all tests green** before committing a
-  slice. Update `docs/PROJECT_STATE.md` count + `docs/ROTA_Function_Reference.md` as you go.
+  slice. Update `docs/STATE.md` count + `docs/ROTA_Function_Reference.md` as you go.
 - **No co-author trailer.** **One branch + one merge + one tag per slice; never bundle.** Do **not** push
   until the owner says so. Auditor reviews after a batch (DEEP review mandatory on Slice 4; settlement
   idempotency on Slice 5; shop idempotency on Slice 6).

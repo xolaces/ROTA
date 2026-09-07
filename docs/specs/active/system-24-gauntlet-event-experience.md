@@ -180,7 +180,7 @@ content from T77 + a PlayerEventGear-style ledger); token-bonus table parity che
   only magics (current)? **Recommend: full parity — removal is what makes rank 1 mean something.**
 - **D4 — Per-run unique hooks (G9):** in scope for first rebuild or content-wave item?
 - **D5 — Names/lore:** each run needs a named location → feed from the lore project
-  (docs/LORE_HANDOFF.md; Gauntlet is "gladiatorial and prestigious" per tone guide).
+  (docs/Lore/ROTA_Master_Canon.md; Gauntlet is "gladiatorial and prestigious" per tone guide).
 
 ## 5. Constraints
 

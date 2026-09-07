@@ -54,7 +54,7 @@ Chat cluster (shares a real-time-delivery decision — see Open Decision #3):
 - **MOCK SEED:** `MockRotaApi._mockProfile.Level = 2498` (so milestones fire in playtest). Revert for
   normal mock testing if needed.
 
-### Discipline (carry over — see SESSION_HANDOFF.md for the full list)
+### Discipline (carry over — see STATE.md for the full list)
 - Backend: branch off `main`; commit, **no co-author**; JWT `MSB3277` warnings are pre-existing →
   ignore; `dotnet test` green with Docker up. Stop any running `ROTA.Api` before building (DLL lock).
 - Unity: branch off `master`; **Editor must be CLOSED** to headless-compile

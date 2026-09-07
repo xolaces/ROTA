@@ -227,5 +227,5 @@ Single-player loadout state — no shared-resource race, so **no advisory lock n
 - Content providers singletons; throw at startup on invalid data.
 - Controllers thin; `PlayerId` from JWT `sub`; server-authoritative.
 - Do NOT run `dotnet ef database update`. Build 0 warnings; all tests green before committing a slice.
-  Update `PROJECT_STATE.md` count + Function Reference as you go.
+  Update `STATE.md` count + Function Reference as you go.
 - No co-author trailer. One branch + one merge per slice; never bundle.

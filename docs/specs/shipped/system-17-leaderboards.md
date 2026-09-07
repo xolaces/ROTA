@@ -459,7 +459,7 @@ energy/combat behavior.**
 - Every state change writes to `audit_log` (admin Stat-refresh at minimum). The audit log is **not** a
   leaderboard data source.
 - **Do NOT run `dotnet ef database update`.** Build **0 warnings**; **all tests green** before committing a
-  slice. Update `docs/PROJECT_STATE.md` count + `docs/ROTA_Function_Reference.md` as you go. Cover DB-layer
+  slice. Update `docs/STATE.md` count + `docs/ROTA_Function_Reference.md` as you go. Cover DB-layer
   behavior (the increment/max upsert under concurrency) with **integration tests**, per the architecture
   caveat that mock-only unit tests miss store-default / persistence bugs.
 - **No co-author trailer.** **One branch + one merge + one tag per slice; never bundle.** Do **not** push

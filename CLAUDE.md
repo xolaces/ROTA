@@ -331,7 +331,8 @@ report rate-limit consumed before checks (anti-abuse); Email:Enabled defaults tr
   **world/raid chat SEND** (send box is present-but-disabled "Live chat coming soon"). Private messaging
   is unaffected — it rides REST. Wiring a SignalR client lights up real-time world/raid chat + live PM
   push in one follow-up.
-- **OPEN PLAYTEST BUGS (client/mock fidelity, 2026-06-06)** — see `docs/SESSION_HANDOFF.md` §A for
+- **OPEN PLAYTEST BUGS (client/mock fidelity, 2026-06-06)** — the detail doc was consolidated into
+  `docs/STATE.md` on 2026-09-07; the original root-cause notes are in the 2026-06-06 commits. For
   root-cause + fix locations: (1) alloc doesn't credit current bar (MockRotaApi.AllocateStatAsync omits
   the LiveValue bump T30 does live); (2) HeaderBar bars drift from server truth (ticker reconcile);
   (3) Hit ×20 allowed with 10 stamina (RaidCombatView gates on defeated-only, not stamina; mock doesn't
@@ -557,7 +558,7 @@ API + ProfileScreen AP label) is a SEPARATE later step; only the Shared DTO fiel
 Build: 0 errors / 0 warnings. **991 tests pass (889 unit + 102 integration).** 2 new migrations (NOT applied):
 `20260609043452_AddHealthResource` (T56, empty schema diff + data backfill) + `20260609131852_AddRaidParticipantPendingDrops`
 (T57, adds `pending_drops_json` text column). Unity client not compiled here. Build order T53→T55→T58→T54→T56→T57.
-Detail in docs/SESSION_HANDOFF.md.
+Detail in the 2026-06-09 commits (the handoff doc that held it was consolidated 2026-09-07).
 - **T53** (client) — `MockRotaApi.AttemptQuestAsync` now deducts energy (was the real HUD↔profile desync that
   looked like a backend bug in mock playtest). Backend resource-sync + level-up refill confirmed correct.
 - **T55** (backend+client) — Chapter/Zone quest navigator + **co-scaled XP & energy**. `QuestConfig.ChapterScaling`
@@ -616,7 +617,7 @@ Migrations applied to dev DB: **AddPasswordResetTokens** (T65) + **AddTermsAccep
 
 ## UX wave T72–T75 + T76 Gauntlet foundation (2026-06-10) — COMPLETE (uncommitted)
 Build: 0 errors. Tests: **947 unit + 111 integration = 1058 green.** Client compile clean.
-Migration **AddGauntletEventIdentity** applied. Detail: docs/SESSION_HANDOFF.md (canonical).
+Migration **AddGauntletEventIdentity** applied. Detail: the 2026-06-10 commits.
 - **T72:** Theme.uss root-cause fix — `.btn-link` was referenced but NEVER defined + no base
   `Button` type rule → Unity-grey buttons. Base Button rule (gold-on-dark, readable :disabled),
   .btn-link, themed Toggle. Grey buttons now impossible by construction.
@@ -639,9 +640,11 @@ Migration **AddGauntletEventIdentity** applied. Detail: docs/SESSION_HANDOFF.md 
   `gauntlet-open ... [neck|ring]`); client event-identity header (kind badge, run #, lore,
   live countdown) + "Stg N" leaderboard. REMAINING: seasonal rank-GEAR mechanism (needs T77
   gear), settlement screen, CTA states, prize table UI.
-- Staleness sweep: CURRENT_TASK.md rewritten (pointer+snapshot), PROJECT_STATE.md banner'd
-  historical, specs 16/22/ops-social/23 → shipped/ + 24 → active/, changelog noted. NEW pre-beta
-  items: client TokenStore plaintext tokens (encrypt before beta); magic-shop catalogue endpoint
+- Staleness sweep: the CURRENT_TASK/PROJECT_STATE pair was rewritten and banner'd historical (both
+  were later consolidated into docs/STATE.md on 2026-09-07); specs 16/22/ops-social/23 → shipped/ + 24 → active/, changelog noted. NEW pre-beta
+  items: ~~client TokenStore plaintext tokens~~ **DONE** (AES-encrypted at rest under a
+  device-derived key, with a migration that deletes the old plaintext file — verified
+  2026-09-07; a platform keystore is still the final hardening); magic-shop catalogue endpoint
   missing (Bazaar shows owned-only).
 
 ## System 25 — Sigil boss-reward, Zone re-lock & Zone-rerun achievements (2026-06-16) — BACKEND COMPLETE
@@ -793,6 +796,11 @@ Orange is the permanent ceiling. Never add above it.
 
 ## Documentation Index
 - [Docs index](docs/README.md) — what every `.md` in the repo is for (start here)
+- [Project state](docs/STATE.md) — where things actually are: build numbers, the live-server gap,
+  beta blockers, locked decisions. The single state snapshot (replaced CURRENT_TASK/PROJECT_STATE/
+  SESSION_HANDOFF, which had drifted into a chain of stale pointers)
+- [Owner manual](docs/OWNER_MANUAL.md) — hands-on control manual: what the owner can change
+  directly (raid HP, drop rates, new raids/items, energy costs, XP curves) without touching C#
 - [Game Design & Unity UI Reference](docs/ui/ROTA_GameDesign_UI_Reference.md) — DotD mechanics analysis, screen-by-screen UI blueprints, Unity implementation prompt, content pipeline guide
 - [Operations & Tooling Runbook](docs/OPERATIONS.md) — every dotnet command, the admin CLI, admin REST API, config flags, secrets, migrations, deployment order, beta onboarding
 - [Design North Star](docs/DESIGN_NORTHSTAR.md) — durable design vision; research-paper divergences recorded as amendments (no resets, capped scaling, Gauntlet as core spine)

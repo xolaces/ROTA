@@ -5,7 +5,7 @@
 > **⚠ Status: ASPIRATIONAL / UNVERIFIED — not current truth.** A vision + UI blueprint, not a record of
 > behavior. It describes screens that do not exist yet (there is no client) and Dawn of the Dragons
 > mechanics from the designer's recollection; some claims about both DotD and ROTA are inaccurate. For
-> what the backend actually does, see `docs/PROJECT_STATE.md` and `docs/ROTA_Function_Reference.md`.
+> what the backend actually does, see `docs/STATE.md` and `docs/ROTA_Function_Reference.md`.
 > Treat everything below as direction to pursue, not behavior to rely on.
 
 ---

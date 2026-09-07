@@ -255,6 +255,6 @@ effect yet — that's slice 4).
 - Controllers thin; `PlayerId` from JWT `sub` only; server-authoritative.
 - Concurrency-critical slot allocation uses the raid advisory-lock pattern.
 - Do NOT run `dotnet ef database update` (owner applies migrations).
-- Build 0 warnings; all tests green before committing a slice. Update `PROJECT_STATE.md` test count and the
+- Build 0 warnings; all tests green before committing a slice. Update `STATE.md` test count and the
   Function Reference as you go.
 - No co-author trailer on commits. One branch + one merge per slice; never bundle slices.

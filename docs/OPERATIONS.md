@@ -76,7 +76,7 @@ dotnet ef migrations list --project src/ROTA.Infrastructure --startup-project sr
 There is deliberately **no hand-maintained list of applied migrations here**. One used to live at this
 spot, naming five migrations when the repository had over fifty, and a list like that is worse than no
 list: it reads as authoritative while being wrong. It is also, in miniature, how a triage note and
-`PROJECT_STATE.md` ended up disagreeing for two months about whether three migrations had shipped.
+`STATE.md` ended up disagreeing for two months about whether three migrations had shipped.
 
 Ask a source that cannot go stale instead:
 

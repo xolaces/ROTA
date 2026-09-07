@@ -474,7 +474,7 @@ Admin/CLI: `POST /api/admin/masteries/rating/refresh` `[AdminOnly + DB actor re-
   Hoard/Discernment via the quest-loot `Scale` + gold sites; activity counters via the leaderboard-hook pattern;
   gem spend via `IGemService`; weekly cap via the Redis INCR+TTL idiom. No new combat path.
 - Do NOT run `dotnet ef database update`. Build 0 warnings; all tests green before committing a slice. Update
-  `PROJECT_STATE.md` count + `docs/ROTA_Function_Reference.md` as you go. No co-author trailer. One branch + one
+  `STATE.md` count + `docs/ROTA_Function_Reference.md` as you go. No co-author trailer. One branch + one
   merge per slice; never bundle.
 
 ---
