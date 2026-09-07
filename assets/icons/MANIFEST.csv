@@ -1,0 +1,436 @@
+id,family,kind,rarity,set,name,description,icon
+gear_conscript_helm,gear,Head,Grey,set_conscript,Conscript Helm,A battered iron helm worn by new recruits.,gear/gear_conscript_helm.png
+gear_conscript_collar,gear,Neck,Grey,set_conscript,Conscript Collar,A crude neck guard offering minimal protection.,gear/gear_conscript_collar.png
+gear_conscript_chest,gear,Torso,Grey,set_conscript,Conscript Chest,Padded leather chest armour. Stops the smallest of blows.,gear/gear_conscript_chest.png
+gear_iron_ring,gear,Ring1,Grey,set_conscript,Iron Ring,A plain iron ring. Somehow sharpens the wearer's strikes.,gear/gear_iron_ring.png
+gear_worn_band,gear,Ring2,Grey,set_conscript,Worn Band,A scratched metal band. No discernible power remains.,gear/gear_worn_band.png
+gear_draft_horse,gear,Mount,Grey,set_conscript,Draft Horse,A sturdy workhorse. Occasionally charges into the fray with surprising force.,gear/gear_draft_horse.png
+gear_conscript_boots,gear,Boots,Grey,set_conscript,Conscript Boots,Worn leather boots. Better than bare feet.,gear/gear_conscript_boots.png
+gear_conscript_gloves,gear,Gloves,Grey,set_conscript,Conscript Gloves,Rough cloth gloves. Barely break-in.,gear/gear_conscript_gloves.png
+gear_pano_helm,gear,Head,Orange,set_pano,Pano's War Helm,Legendary questing helm of the lost vanguard Pano. Hums with old power.,gear/gear_pano_helm.png
+gear_pano_amulet,gear,Neck,Orange,set_pano,Pano's Amulet,"An amulet warm to the touch, part of Pano's questing regalia.",gear/gear_pano_amulet.png
+gear_pano_cuirass,gear,Torso,Orange,set_pano,Pano's Cuirass,The famed breastplate of Pano. Turns aside blows that would fell a lesser fighter.,gear/gear_pano_cuirass.png
+gear_pano_signet,gear,Ring1,Orange,set_pano,Pano's Signet,A signet ring that sharpens the wearer's strikes.,gear/gear_pano_signet.png
+gear_pano_band,gear,Ring2,Orange,set_pano,Pano's Band,The companion band to Pano's signet. Steadies the hand in battle.,gear/gear_pano_band.png
+gear_pano_steed,gear,Mount,Orange,set_pano,Pano's Steed,Pano's tireless warhorse. Charges with devastating force.,gear/gear_pano_steed.png
+gear_pano_greaves,gear,Boots,Orange,set_pano,Pano's Greaves,Greaves that carry the wearer surefooted across any field.,gear/gear_pano_greaves.png
+gear_pano_gauntlets,gear,Gloves,Orange,set_pano,Pano's Gauntlets,Gauntlets that lend crushing strength to every strike.,gear/gear_pano_gauntlets.png
+gear_oathsteel_helm,gear,Head,Blue,,Oathsteel Helm,Forged from oathsteel and the shards of a hundred conscript helms.,gear/gear_oathsteel_helm.png
+gear_weir_kettle_helm,gear,Head,Green,set_weir,Weir Kettle Helm,Frontier issue. The brim is wide because rain ruins a bowstring faster than an enemy does.,gear/gear_weir_kettle_helm.png
+gear_weir_gorget,gear,Neck,Green,set_weir,Weir Gorget,Plate at the throat and nowhere else. The Weir learned which wounds end a watch.,gear/gear_weir_gorget.png
+gear_weir_brigandine,gear,Torso,Green,set_weir,Weir Brigandine,Riveted from the scrap of three older coats. Every plate in it has already survived something.,gear/gear_weir_brigandine.png
+gear_causeway_seal,gear,Ring1,Green,set_weir,Causeway Seal Ring,Ash-pitted signet of a road warden. The Ashen Causeway still has wardens. They are just not paid.,gear/gear_causeway_seal.png
+gear_marchwarden_band,gear,Ring2,Green,set_weir,Marchwarden's Band,"Worn thin at one edge, where a thumb rubbed through forty years of standing still.",gear/gear_marchwarden_band.png
+gear_weir_courser,gear,Mount,Green,set_weir,Weir Courser,"Bred for the courier roads. Not fast. Tireless, which on the frontier is the same as fast.",gear/gear_weir_courser.png
+gear_weir_marchboots,gear,Boots,Green,set_weir,Weir Marchboots,"Resoled more times than made. The Weir counts a boot's age in roads, not years.",gear/gear_weir_marchboots.png
+gear_weir_handguards,gear,Gloves,Green,set_weir,Weir Handguards,Cut long at the wrist. A frontier warden reaches into places they cannot see.,gear/gear_weir_handguards.png
+gear_relay_hood,gear,Head,Blue,set_relay,Relaykeeper's Hood,"Oiled against frost, hemmed in lamp-black. Worn by the ones who kept the dead lamps burning.",gear/gear_relay_hood.png
+gear_relay_torc,gear,Neck,Blue,set_relay,Torc of the Quiet Wind,"Cold iron, warm at the throat. The Watch says it hums a half-beat before a relay fails.",gear/gear_relay_torc.png
+gear_relay_coat,gear,Torso,Blue,set_relay,Relay Coat,"Long, grey, unremarkable, which is the point. A courier who is looked at twice is a dead courier.",gear/gear_relay_coat.png
+gear_lamp_seal,gear,Ring1,Blue,set_relay,Lamplighter's Seal,Proof the bearer may enter a sealed relay. Nine in ten of those relays no longer answer.,gear/gear_lamp_seal.png
+gear_vaultkeeper_band,gear,Ring2,Blue,set_relay,Vaultkeeper's Band,"Taken from the Sunken Vaults, which the Watch marked as sealed and the water did not.",gear/gear_vaultkeeper_band.png
+gear_relay_charger,gear,Mount,Blue,set_relay,Relay Charger,"Trained to run a route with no rider. Several still do, on roads no one has walked in an Age.",gear/gear_relay_charger.png
+gear_relay_treads,gear,Boots,Blue,set_relay,Frostmere Treads,Nailed for ice. Frostmere takes a careless step and keeps it.,gear/gear_relay_treads.png
+gear_relay_grips,gear,Gloves,Blue,set_relay,Lampwright's Grips,Scorched across the palms. The lamps of the Watch were never meant to be handled cold.,gear/gear_relay_grips.png
+gear_sable_circlet,gear,Head,Purple,set_sable_vein,Sable Vein Circlet,"Archive work. The script around the band is a catalogue number, and the thing catalogued is you.",gear/gear_sable_circlet.png
+gear_sable_collar,gear,Neck,Purple,set_sable_vein,Threnody Collar,Worn by a scribe who recorded a Manifestation from close enough to be corrected by it.,gear/gear_sable_collar.png
+gear_sable_mantle,gear,Torso,Purple,set_sable_vein,Mantle of the Sable Vein,"Black on black, and the inner black is older. The Houses do not explain their dyes.",gear/gear_sable_mantle.png
+gear_sable_seal,gear,Ring1,Purple,set_sable_vein,House Sable Seal,Opens an archive hall that appears on no map the Houses admit to holding.,gear/gear_sable_seal.png
+gear_sable_band,gear,Ring2,Purple,set_sable_vein,Vein-Cut Band,Split by a hairline fracture that has not widened in two hundred years of being watched.,gear/gear_sable_band.png
+gear_sable_courser,gear,Mount,Purple,set_sable_vein,Sable Courser,"Archive stock. It will not cross running water, and the Houses have never said why.",gear/gear_sable_courser.png
+gear_sable_treads,gear,Boots,Purple,set_sable_vein,Stair-Worn Boots,"Taken off the Eternal Stair. The wear is at the toe, not the heel. Whoever wore them was climbing.",gear/gear_sable_treads.png
+gear_sable_grips,gear,Gloves,Purple,set_sable_vein,Archivist's Grips,"Thin, precise, reinforced at the fingertips. Some things in an archive must be held down.",gear/gear_sable_grips.png
+gear_cinder_cuff,gear,Gloves,Orange,,The Cinder-Cuff,"Wrath-slag, cooled and cuffed. It makes the wearer stronger and angrier in the same motion, and does not distinguish between the two.",gear/gear_cinder_cuff.png
+gear_unworn_crown,gear,Head,Orange,,The Unworn Crown,"A circlet of a dark metal no living smith can name, made for a head no carving depicts. It has never, in any account, been worn. The Old Guard kept it because they were afraid to be the ones who found out why.",gear/gear_unworn_crown.png
+gear_cold_token,gear,Neck,Orange,,The Vanguard's Cold Token,"Kin to the lost signet: the same unknown script worn nearly smooth, the same cold that does not warm in the hand. Nobody alive can read it. That is the whole of what is known.",gear/gear_cold_token.png
+gear_colossus_core,gear,Torso,Orange,,Colossus-Core Shard,"Pried from a war-construct that never stood down. It still pulses with the last order it was given, and there is no one left to amend it: hold.",gear/gear_colossus_core.png
+gear_sovereign_tithe,gear,Ring1,Orange,,Sovereign's Tithe-Mark,Granted by the Gauntlet in the name of the founding pact. It marks a fighter as having paid the tithe. What the Sovereign was promised is recorded nowhere a fighter may read.,gear/gear_sovereign_tithe.png
+gear_sealwright_stylus,gear,Ring2,Orange,,The Sealwright's Stylus,"The instrument that inscribed null-sigil bindings, the script that holds a thing closed. The Old Guard made few and accounted for every one. This one is not on the ledger.",gear/gear_sealwright_stylus.png
+gear_warrens_lamp_hood,gear,Head,Green,set_warrens,Warrens Lamp-Hood,"A hood with a lamp bracket sewn at the temple. Both hands stay free, which in a warren is the whole argument.",gear/gear_warrens_lamp_hood.png
+gear_warrens_choker,gear,Neck,Green,set_warrens,Ratter's Choker,"Leather, doubled. Goblins go for the throat because it works, so the Weir stopped leaving it bare.",gear/gear_warrens_choker.png
+gear_warrens_jack,gear,Torso,Green,set_warrens,Warrens Jack,"Quilted and short-cut. Long coats catch on everything down there, and everything down there catches back.",gear/gear_warrens_jack.png
+gear_warrens_seal,gear,Ring1,Green,set_warrens,Tunnel-Warden's Seal,Marks the bearer as the one who counts everyone back out. It is not a promotion.,gear/gear_warrens_seal.png
+gear_warrens_knuckle,gear,Ring2,Green,set_warrens,Knuckle-Ring of the Weir,Worn on the outside of the glove. Frontier smiths call this an ornament and frontier wardens do not.,gear/gear_warrens_knuckle.png
+gear_warrens_pitpony,gear,Mount,Green,set_warrens,Warrens Pit-Pony,"Small, foul-tempered, and unbothered by the dark. It has walked out of places its riders did not.",gear/gear_warrens_pitpony.png
+gear_warrens_treads,gear,Boots,Green,set_warrens,Warrens Treads,Nailed flat for wet stone. A warren floor is never dry and never once been level.,gear/gear_warrens_treads.png
+gear_warrens_grips,gear,Gloves,Green,set_warrens,Ratter's Grips,Reinforced across the back of the hand. You will be hitting things that are already biting you.,gear/gear_warrens_grips.png
+gear_marchwatch_helm,gear,Head,Green,set_marchwatch,Marchwatch Helm,"Open-faced, because a watch that cannot see is a wall with a man behind it.",gear/gear_marchwatch_helm.png
+gear_marchwatch_gorget,gear,Neck,Green,set_marchwatch,Watchman's Gorget,"Plain steel, no device. A marchwatch is not a house and does not want to be mistaken for one.",gear/gear_marchwatch_gorget.png
+gear_marchwatch_coat,gear,Torso,Green,set_marchwatch,Long Marchwatch Coat,Cut to the knee and lined against the wind. Most of the job is weather.,gear/gear_marchwatch_coat.png
+gear_marchwatch_ring,gear,Ring1,Green,set_marchwatch,Ring of the Standing Watch,Given at the end of a first full winter on the line. Most are given posthumously; this one was not.,gear/gear_marchwatch_ring.png
+gear_marchwatch_tally,gear,Ring2,Green,set_marchwatch,Tally-Ring,Notched once a season. A warden with a smooth ring is new; one with a worn ring is rare.,gear/gear_marchwatch_tally.png
+gear_marchwatch_rounder,gear,Mount,Green,set_marchwatch,Marchwatch Rounder,Trained to walk a circuit and stop at every marker without being asked. It knows the route better than the rider.,gear/gear_marchwatch_rounder.png
+gear_marchwatch_boots,gear,Boots,Green,set_marchwatch,Marchwatch Boots,"Heavy, and worn through at the heel rather than the toe — the wear pattern of a man who stands.",gear/gear_marchwatch_boots.png
+gear_marchwatch_mitts,gear,Gloves,Green,set_marchwatch,Watch Mitts,Split at the fingertips so a bowstring can still be felt. Frostbite is a slower enemy but it is patient.,gear/gear_marchwatch_mitts.png
+gear_gravewarden_hood,gear,Head,Blue,set_gravewarden,Gravewarden's Hood,Waxed against the smell. The Watch is direct about what the job involves.,gear/gear_gravewarden_hood.png
+gear_gravewarden_seal,gear,Neck,Blue,set_gravewarden,Seal of the Quiet Ground,Worn so a warden can be identified if they do not come back up. It has been needed.,gear/gear_gravewarden_seal.png
+gear_gravewarden_coat,gear,Torso,Blue,set_gravewarden,Gravewarden's Coat,"Heavy canvas with iron at the forearms, because the thing you are moving sometimes moves back.",gear/gear_gravewarden_coat.png
+gear_gravewarden_band,gear,Ring1,Blue,set_gravewarden,Binding Band,"Old sigil-work, worn smooth. It does not hold anything closed any more. The Watch wears it anyway.",gear/gear_gravewarden_band.png
+gear_gravewarden_signet,gear,Ring2,Blue,set_gravewarden,Warden's Signet,Authorises the bearer to open a marked grave. There is no ring that authorises closing one.,gear/gear_gravewarden_signet.png
+gear_gravewarden_dray,gear,Mount,Blue,set_gravewarden,Gravewarden's Dray,Bred to stand still while unpleasant work happens behind it. The rarest quality a horse can have.,gear/gear_gravewarden_dray.png
+gear_gravewarden_wades,gear,Boots,Blue,set_gravewarden,Marsh Wades,Thigh-high and pitch-sealed. The Hollow Marches are where the Watch does most of this.,gear/gear_gravewarden_wades.png
+gear_gravewarden_gauntlets,gear,Gloves,Blue,set_gravewarden,Gravewarden's Gauntlets,Iron over leather over iron. Whatever is down there does not get to hold your hand.,gear/gear_gravewarden_gauntlets.png
+gear_drowned_helm,gear,Head,Blue,set_drowned,Salvager's Helm,Sealed at the collar with a glass plate. The Vaults are dark before they are deep.,gear/gear_drowned_helm.png
+gear_drowned_torc,gear,Neck,Blue,set_drowned,Tidewatch Torc,"Cold in cold water, warm in water that is not. Salvagers do not agree on what the warm kind means.",gear/gear_drowned_torc.png
+gear_drowned_harness,gear,Torso,Blue,set_drowned,Salvage Harness,"Rings and line, no plate. Down there weight is not protection, it is a decision.",gear/gear_drowned_harness.png
+gear_drowned_seal,gear,Ring1,Blue,set_drowned,Vault-Seal Ring,Old Guard work. It opens one door in the Sunken Vaults and nobody has found which.,gear/gear_drowned_seal.png
+gear_drowned_band,gear,Ring2,Blue,set_drowned,Barnacle Band,Recovered encrusted and left that way. Coast salvagers say a clean ring means a short career.,gear/gear_drowned_band.png
+gear_drowned_courser,gear,Mount,Blue,set_drowned,Coastwise Courser,Sure-footed on wet shale and entirely unwilling to enter water above the knee. It has its reasons.,gear/gear_drowned_courser.png
+gear_drowned_boots,gear,Boots,Blue,set_drowned,Shalewalkers,Soled in cork and iron. The Drowned Coast is loose all the way down.,gear/gear_drowned_boots.png
+gear_drowned_grips,gear,Gloves,Blue,set_drowned,Salvager's Grips,"Webbed, tarred, and cut short at the thumb so a knot can still be tied blind.",gear/gear_drowned_grips.png
+gear_wrought_visor,gear,Head,Purple,set_wroughtbreaker,Breaker's Visor,"Slit-narrow and backed in lead. A Wrought does not aim, which makes it worse, not better.",gear/gear_wrought_visor.png
+gear_wrought_collar,gear,Neck,Purple,set_wroughtbreaker,Siege Collar,Braced to the shoulders. It exists so the head stays on when the arm stops something heavy.,gear/gear_wrought_collar.png
+gear_wrought_plate,gear,Torso,Purple,set_wroughtbreaker,Wroughtbreaker Plate,Layered against impact rather than edge. Nothing made by the Old Guard bothers with edges.,gear/gear_wrought_plate.png
+gear_wrought_keyring,gear,Ring1,Purple,set_wroughtbreaker,Sigil-Key Ring,Reads a commanding sigil well enough to guess at its order. Guessing is the whole trade.,gear/gear_wrought_keyring.png
+gear_wrought_band,gear,Ring2,Purple,set_wroughtbreaker,Breaker's Band,Cast from the melt of a construct that finally stopped. The Weir keeps the melt and the tally.,gear/gear_wrought_band.png
+gear_wrought_destrier,gear,Mount,Purple,set_wroughtbreaker,Siege Destrier,Trained to stand under a falling thing. Horses are not built for this and it is taught anyway.,gear/gear_wrought_destrier.png
+gear_wrought_sabatons,gear,Boots,Purple,set_wroughtbreaker,Breaker's Sabatons,Weighted so a shove does not become a fall. A Wrought's first move is almost always a shove.,gear/gear_wrought_sabatons.png
+gear_wrought_gauntlets,gear,Gloves,Purple,set_wroughtbreaker,Wroughtbreaker Gauntlets,Built to hold a bar against a moving core until the order stops. Most pairs are used once.,gear/gear_wrought_gauntlets.png
+gear_choir_crown,gear,Head,Purple,set_choir,Listener's Circlet,"Thin, and open at the ears by design. The Choir does not cover what it uses.",gear/gear_choir_crown.png
+gear_choir_stole,gear,Neck,Purple,set_choir,Resonant Stole,It hums a half-tone under any sung note. The Choir considers this agreement.,gear/gear_choir_stole.png
+gear_choir_vestment,gear,Torso,Purple,set_choir,Dawnward Vestment,"Undyed, unadorned, and cut so it hangs still in wind. Movement is noise and noise is interference.",gear/gear_choir_vestment.png
+gear_choir_ring,gear,Ring1,Purple,set_choir,Ring of the First Answer,Worn by whoever spoke when something answered. The Choir has four. It will not say to what.,gear/gear_choir_ring.png
+gear_choir_band,gear,Ring2,Purple,set_choir,Attendant's Band,Given to those who stand and do not sing. Somebody has to be listening to the listeners.,gear/gear_choir_band.png
+gear_choir_palfrey,gear,Mount,Purple,set_choir,Choir Palfrey,"Trained to a whisper and unshod, so a procession arrives without announcing itself.",gear/gear_choir_palfrey.png
+gear_choir_slippers,gear,Boots,Purple,set_choir,Vigil Slippers,Soft-soled. The Choir keeps its vigils barefoot where the ground permits and these where it does not.,gear/gear_choir_slippers.png
+gear_choir_wraps,gear,Gloves,Purple,set_choir,Cantor's Wraps,"Linen, wound to the second knuckle. A Cantor's hands are for counting time, not for holding.",gear/gear_choir_wraps.png
+gear_sovereign_diadem,gear,Head,Orange,set_sovereign,Sovereign's Diadem,"Worn by whoever currently holds the Dragon bracket. It is returned, always, and never willingly.",gear/gear_sovereign_diadem.png
+gear_sovereign_collar,gear,Neck,Orange,set_sovereign,Collar of the Founding Pact,Names the Gauntlet's first tithe in a script the tournament no longer teaches.,gear/gear_sovereign_collar.png
+gear_sovereign_cuirass,gear,Torso,Orange,set_sovereign,Regalia Cuirass,Ceremonial in cut and emphatically not in construction. The Gauntlet has always been honest about that.,gear/gear_sovereign_cuirass.png
+gear_sovereign_signet,gear,Ring1,Orange,set_sovereign,Sovereign's Signet,Opens the Gauntlet's inner registry. What is written there is the pact's other half.,gear/gear_sovereign_signet.png
+gear_sovereign_band,gear,Ring2,Orange,set_sovereign,Tithe-Band,One notch per climb paid. Nobody has found the ring where the notches run out.,gear/gear_sovereign_band.png
+gear_sovereign_wyrm,gear,Mount,Orange,set_sovereign,Sovereign's Wyrm,"Not a gift. A loan, from an institution that has never once explained its terms.",gear/gear_sovereign_wyrm.png
+gear_sovereign_greaves,gear,Boots,Orange,set_sovereign,Regalia Greaves,"Made to be seen on a stair. The Eternal Stair, specifically, and the Gauntlet knows it.",gear/gear_sovereign_greaves.png
+gear_sovereign_gauntlets,gear,Gloves,Orange,set_sovereign,Sovereign's Gauntlets,"The Gauntlet's namesake, and the only pair the tournament has ever formally issued.",gear/gear_sovereign_gauntlets.png
+gear_stoned_horns,gear,Head,Orange,set_stoned_devil,Horns of Considered Inaction,"Filed blunt by their owner, on purpose, over a long afternoon. He says they kept catching on doorframes. The Choir has written four papers on what else he might have meant.",gear/gear_stoned_horns.png
+gear_stoned_censer,gear,Neck,Orange,set_stoned_devil,The Perpetual Censer,"Lit some time during the Age of Dawn and never once since. Whatever is in it, there is still some left.",gear/gear_stoned_censer.png
+gear_stoned_robe,gear,Torso,Orange,set_stoned_devil,Robe of the Long Sabbatical,Cut for a being who intended to sit down and has now been sitting down for an Age. Remarkably comfortable. Alarmingly hard to damage.,gear/gear_stoned_robe.png
+gear_stoned_signet,gear,Ring1,Orange,set_stoned_devil,Signet of Declined Ascendancy,"He was offered a throne. He read the terms, asked two questions nobody could answer, and went back inside.",gear/gear_stoned_signet.png
+gear_stoned_band,gear,Ring2,Orange,set_stoned_devil,Band of the Fourth Reconsideration,There were three earlier ones. He is not looking for them.,gear/gear_stoned_band.png
+gear_stoned_goat,gear,Mount,Orange,set_stoned_devil,Extremely Relaxed Hell-Goat,"It will carry you anywhere at exactly one speed. Attempts to hurry it have never once succeeded and, by every account, have never once been forgiven.",gear/gear_stoned_goat.png
+gear_stoned_slippers,gear,Boots,Orange,set_stoned_devil,Slippers of the Unwalked Path,Immaculate. Not a scuff on them. That is the joke and it is also the point.,gear/gear_stoned_slippers.png
+gear_stoned_mitts,gear,Gloves,Orange,set_stoned_devil,Mitts of Amiable Menace,He shakes hands. It is worse than the alternative and takes considerably longer.,gear/gear_stoned_mitts.png
+mat_iron_shard,item,Material,Grey,,Iron Shard,A fragment of the Iron Colossus. Used in crafting.,item/mat_iron_shard.png
+mat_arcane_dust,item,Material,White,,Arcane Dust,Residual arcane energy left behind by Malachar's servants.,item/mat_arcane_dust.png
+statbag_minor,item,StatBag,Green,,Minor Stat Bag,Contains 5 unassigned skill points. Use to add to your stat pool.,item/statbag_minor.png
+statbag_major,item,StatBag,Blue,,Major Stat Bag,Contains 15 unassigned skill points. Use to add to your stat pool.,item/statbag_major.png
+sigil_ironcolossus_normal,item,Sigil,Green,,Iron Sigil (Normal),A binding sigil used to summon the Iron Colossus on Normal difficulty.,item/sigil_ironcolossus_normal.png
+sigil_ironcolossus_hard,item,Sigil,Blue,,Iron Sigil (Hard),A binding sigil used to summon the Iron Colossus on Hard difficulty.,item/sigil_ironcolossus_hard.png
+sigil_ironcolossus_legendary,item,Sigil,Purple,,Iron Sigil (Legendary),A binding sigil used to summon the Iron Colossus on Legendary difficulty.,item/sigil_ironcolossus_legendary.png
+sigil_ironcolossus_nightmare,item,Sigil,Orange,,Iron Sigil (Nightmare),A binding sigil used to summon the Iron Colossus on Nightmare difficulty.,item/sigil_ironcolossus_nightmare.png
+sigil_malachar_normal,item,Sigil,Green,,Malachar's Sigil (Normal),A dark sigil bound to Malachar's essence. Summons him on Normal difficulty.,item/sigil_malachar_normal.png
+sigil_malachar_hard,item,Sigil,Blue,,Malachar's Sigil (Hard),A dark sigil bound to Malachar's essence. Summons him on Hard difficulty.,item/sigil_malachar_hard.png
+sigil_malachar_legendary,item,Sigil,Purple,,Malachar's Sigil (Legendary),A dark sigil bound to Malachar's essence. Summons him on Legendary difficulty.,item/sigil_malachar_legendary.png
+sigil_malachar_nightmare,item,Sigil,Orange,,Malachar's Sigil (Nightmare),A dark sigil bound to Malachar's essence. Summons him on Nightmare difficulty.,item/sigil_malachar_nightmare.png
+sigil_c1z1b_normal,item,Sigil,Green,,Ashen Causeway Sigil (Normal),A binding sigil used to summon Guardian of Ashen Causeway on Normal difficulty.,item/sigil_c1z1b_normal.png
+sigil_c1z1b_hard,item,Sigil,Blue,,Ashen Causeway Sigil (Hard),A binding sigil used to summon Guardian of Ashen Causeway on Hard difficulty.,item/sigil_c1z1b_hard.png
+sigil_c1z1b_legendary,item,Sigil,Purple,,Ashen Causeway Sigil (Legendary),A binding sigil used to summon Guardian of Ashen Causeway on Legendary difficulty.,item/sigil_c1z1b_legendary.png
+sigil_c1z1b_nightmare,item,Sigil,Orange,,Ashen Causeway Sigil (Nightmare),A binding sigil used to summon Guardian of Ashen Causeway on Nightmare difficulty.,item/sigil_c1z1b_nightmare.png
+sigil_c1z2b_normal,item,Sigil,Green,,Hollow Marches Sigil (Normal),A binding sigil used to summon Guardian of Hollow Marches on Normal difficulty.,item/sigil_c1z2b_normal.png
+sigil_c1z2b_hard,item,Sigil,Blue,,Hollow Marches Sigil (Hard),A binding sigil used to summon Guardian of Hollow Marches on Hard difficulty.,item/sigil_c1z2b_hard.png
+sigil_c1z2b_legendary,item,Sigil,Purple,,Hollow Marches Sigil (Legendary),A binding sigil used to summon Guardian of Hollow Marches on Legendary difficulty.,item/sigil_c1z2b_legendary.png
+sigil_c1z2b_nightmare,item,Sigil,Orange,,Hollow Marches Sigil (Nightmare),A binding sigil used to summon Guardian of Hollow Marches on Nightmare difficulty.,item/sigil_c1z2b_nightmare.png
+sigil_c2z1b_normal,item,Sigil,Green,,Emberfall Reach Sigil (Normal),A binding sigil used to summon Guardian of Emberfall Reach on Normal difficulty.,item/sigil_c2z1b_normal.png
+sigil_c2z1b_hard,item,Sigil,Blue,,Emberfall Reach Sigil (Hard),A binding sigil used to summon Guardian of Emberfall Reach on Hard difficulty.,item/sigil_c2z1b_hard.png
+sigil_c2z1b_legendary,item,Sigil,Purple,,Emberfall Reach Sigil (Legendary),A binding sigil used to summon Guardian of Emberfall Reach on Legendary difficulty.,item/sigil_c2z1b_legendary.png
+sigil_c2z1b_nightmare,item,Sigil,Orange,,Emberfall Reach Sigil (Nightmare),A binding sigil used to summon Guardian of Emberfall Reach on Nightmare difficulty.,item/sigil_c2z1b_nightmare.png
+sigil_c2z2b_normal,item,Sigil,Green,,Cinderwood Sigil (Normal),A binding sigil used to summon Guardian of Cinderwood on Normal difficulty.,item/sigil_c2z2b_normal.png
+sigil_c2z2b_hard,item,Sigil,Blue,,Cinderwood Sigil (Hard),A binding sigil used to summon Guardian of Cinderwood on Hard difficulty.,item/sigil_c2z2b_hard.png
+sigil_c2z2b_legendary,item,Sigil,Purple,,Cinderwood Sigil (Legendary),A binding sigil used to summon Guardian of Cinderwood on Legendary difficulty.,item/sigil_c2z2b_legendary.png
+sigil_c2z2b_nightmare,item,Sigil,Orange,,Cinderwood Sigil (Nightmare),A binding sigil used to summon Guardian of Cinderwood on Nightmare difficulty.,item/sigil_c2z2b_nightmare.png
+sigil_c2z3b_normal,item,Sigil,Green,,Gloomspire Sigil (Normal),A binding sigil used to summon Guardian of Gloomspire on Normal difficulty.,item/sigil_c2z3b_normal.png
+sigil_c2z3b_hard,item,Sigil,Blue,,Gloomspire Sigil (Hard),A binding sigil used to summon Guardian of Gloomspire on Hard difficulty.,item/sigil_c2z3b_hard.png
+sigil_c2z3b_legendary,item,Sigil,Purple,,Gloomspire Sigil (Legendary),A binding sigil used to summon Guardian of Gloomspire on Legendary difficulty.,item/sigil_c2z3b_legendary.png
+sigil_c2z3b_nightmare,item,Sigil,Orange,,Gloomspire Sigil (Nightmare),A binding sigil used to summon Guardian of Gloomspire on Nightmare difficulty.,item/sigil_c2z3b_nightmare.png
+sigil_c3z0b_normal,item,Sigil,Green,,Keepwall Sigil (Normal),A binding sigil used to summon Guardian of Keepwall on Normal difficulty.,item/sigil_c3z0b_normal.png
+sigil_c3z0b_hard,item,Sigil,Blue,,Keepwall Sigil (Hard),A binding sigil used to summon Guardian of Keepwall on Hard difficulty.,item/sigil_c3z0b_hard.png
+sigil_c3z0b_legendary,item,Sigil,Purple,,Keepwall Sigil (Legendary),A binding sigil used to summon Guardian of Keepwall on Legendary difficulty.,item/sigil_c3z0b_legendary.png
+sigil_c3z0b_nightmare,item,Sigil,Orange,,Keepwall Sigil (Nightmare),A binding sigil used to summon Guardian of Keepwall on Nightmare difficulty.,item/sigil_c3z0b_nightmare.png
+sigil_c3z1b_normal,item,Sigil,Green,,Sunken Vaults Sigil (Normal),A binding sigil used to summon Guardian of Sunken Vaults on Normal difficulty.,item/sigil_c3z1b_normal.png
+sigil_c3z1b_hard,item,Sigil,Blue,,Sunken Vaults Sigil (Hard),A binding sigil used to summon Guardian of Sunken Vaults on Hard difficulty.,item/sigil_c3z1b_hard.png
+sigil_c3z1b_legendary,item,Sigil,Purple,,Sunken Vaults Sigil (Legendary),A binding sigil used to summon Guardian of Sunken Vaults on Legendary difficulty.,item/sigil_c3z1b_legendary.png
+sigil_c3z1b_nightmare,item,Sigil,Orange,,Sunken Vaults Sigil (Nightmare),A binding sigil used to summon Guardian of Sunken Vaults on Nightmare difficulty.,item/sigil_c3z1b_nightmare.png
+sigil_c3z2b_normal,item,Sigil,Green,,Throne Approach Sigil (Normal),A binding sigil used to summon Guardian of Throne Approach on Normal difficulty.,item/sigil_c3z2b_normal.png
+sigil_c3z2b_hard,item,Sigil,Blue,,Throne Approach Sigil (Hard),A binding sigil used to summon Guardian of Throne Approach on Hard difficulty.,item/sigil_c3z2b_hard.png
+sigil_c3z2b_legendary,item,Sigil,Purple,,Throne Approach Sigil (Legendary),A binding sigil used to summon Guardian of Throne Approach on Legendary difficulty.,item/sigil_c3z2b_legendary.png
+sigil_c3z2b_nightmare,item,Sigil,Orange,,Throne Approach Sigil (Nightmare),A binding sigil used to summon Guardian of Throne Approach on Nightmare difficulty.,item/sigil_c3z2b_nightmare.png
+sigil_c3z3b_normal,item,Sigil,Green,,Shattered Spire Sigil (Normal),A binding sigil used to summon Guardian of Shattered Spire on Normal difficulty.,item/sigil_c3z3b_normal.png
+sigil_c3z3b_hard,item,Sigil,Blue,,Shattered Spire Sigil (Hard),A binding sigil used to summon Guardian of Shattered Spire on Hard difficulty.,item/sigil_c3z3b_hard.png
+sigil_c3z3b_legendary,item,Sigil,Purple,,Shattered Spire Sigil (Legendary),A binding sigil used to summon Guardian of Shattered Spire on Legendary difficulty.,item/sigil_c3z3b_legendary.png
+sigil_c3z3b_nightmare,item,Sigil,Orange,,Shattered Spire Sigil (Nightmare),A binding sigil used to summon Guardian of Shattered Spire on Nightmare difficulty.,item/sigil_c3z3b_nightmare.png
+sigil_c4z0b_normal,item,Sigil,Green,,Rimewood Sigil (Normal),A binding sigil used to summon Guardian of Rimewood on Normal difficulty.,item/sigil_c4z0b_normal.png
+sigil_c4z0b_hard,item,Sigil,Blue,,Rimewood Sigil (Hard),A binding sigil used to summon Guardian of Rimewood on Hard difficulty.,item/sigil_c4z0b_hard.png
+sigil_c4z0b_legendary,item,Sigil,Purple,,Rimewood Sigil (Legendary),A binding sigil used to summon Guardian of Rimewood on Legendary difficulty.,item/sigil_c4z0b_legendary.png
+sigil_c4z0b_nightmare,item,Sigil,Orange,,Rimewood Sigil (Nightmare),A binding sigil used to summon Guardian of Rimewood on Nightmare difficulty.,item/sigil_c4z0b_nightmare.png
+sigil_c4z1b_normal,item,Sigil,Green,,Frostmere Sigil (Normal),A binding sigil used to summon Guardian of Frostmere on Normal difficulty.,item/sigil_c4z1b_normal.png
+sigil_c4z1b_hard,item,Sigil,Blue,,Frostmere Sigil (Hard),A binding sigil used to summon Guardian of Frostmere on Hard difficulty.,item/sigil_c4z1b_hard.png
+sigil_c4z1b_legendary,item,Sigil,Purple,,Frostmere Sigil (Legendary),A binding sigil used to summon Guardian of Frostmere on Legendary difficulty.,item/sigil_c4z1b_legendary.png
+sigil_c4z1b_nightmare,item,Sigil,Orange,,Frostmere Sigil (Nightmare),A binding sigil used to summon Guardian of Frostmere on Nightmare difficulty.,item/sigil_c4z1b_nightmare.png
+sigil_c4z2b_normal,item,Sigil,Green,,Glacier Maw Sigil (Normal),A binding sigil used to summon Guardian of Glacier Maw on Normal difficulty.,item/sigil_c4z2b_normal.png
+sigil_c4z2b_hard,item,Sigil,Blue,,Glacier Maw Sigil (Hard),A binding sigil used to summon Guardian of Glacier Maw on Hard difficulty.,item/sigil_c4z2b_hard.png
+sigil_c4z2b_legendary,item,Sigil,Purple,,Glacier Maw Sigil (Legendary),A binding sigil used to summon Guardian of Glacier Maw on Legendary difficulty.,item/sigil_c4z2b_legendary.png
+sigil_c4z2b_nightmare,item,Sigil,Orange,,Glacier Maw Sigil (Nightmare),A binding sigil used to summon Guardian of Glacier Maw on Nightmare difficulty.,item/sigil_c4z2b_nightmare.png
+sigil_c4z3b_normal,item,Sigil,Green,,Pale Citadel Sigil (Normal),A binding sigil used to summon Guardian of Pale Citadel on Normal difficulty.,item/sigil_c4z3b_normal.png
+sigil_c4z3b_hard,item,Sigil,Blue,,Pale Citadel Sigil (Hard),A binding sigil used to summon Guardian of Pale Citadel on Hard difficulty.,item/sigil_c4z3b_hard.png
+sigil_c4z3b_legendary,item,Sigil,Purple,,Pale Citadel Sigil (Legendary),A binding sigil used to summon Guardian of Pale Citadel on Legendary difficulty.,item/sigil_c4z3b_legendary.png
+sigil_c4z3b_nightmare,item,Sigil,Orange,,Pale Citadel Sigil (Nightmare),A binding sigil used to summon Guardian of Pale Citadel on Nightmare difficulty.,item/sigil_c4z3b_nightmare.png
+sigil_c5z0b_normal,item,Sigil,Green,,Dustfall Sigil (Normal),A binding sigil used to summon Guardian of Dustfall on Normal difficulty.,item/sigil_c5z0b_normal.png
+sigil_c5z0b_hard,item,Sigil,Blue,,Dustfall Sigil (Hard),A binding sigil used to summon Guardian of Dustfall on Hard difficulty.,item/sigil_c5z0b_hard.png
+sigil_c5z0b_legendary,item,Sigil,Purple,,Dustfall Sigil (Legendary),A binding sigil used to summon Guardian of Dustfall on Legendary difficulty.,item/sigil_c5z0b_legendary.png
+sigil_c5z0b_nightmare,item,Sigil,Orange,,Dustfall Sigil (Nightmare),A binding sigil used to summon Guardian of Dustfall on Nightmare difficulty.,item/sigil_c5z0b_nightmare.png
+sigil_c5z1b_normal,item,Sigil,Green,,Emberpan Sigil (Normal),A binding sigil used to summon Guardian of Emberpan on Normal difficulty.,item/sigil_c5z1b_normal.png
+sigil_c5z1b_hard,item,Sigil,Blue,,Emberpan Sigil (Hard),A binding sigil used to summon Guardian of Emberpan on Hard difficulty.,item/sigil_c5z1b_hard.png
+sigil_c5z1b_legendary,item,Sigil,Purple,,Emberpan Sigil (Legendary),A binding sigil used to summon Guardian of Emberpan on Legendary difficulty.,item/sigil_c5z1b_legendary.png
+sigil_c5z1b_nightmare,item,Sigil,Orange,,Emberpan Sigil (Nightmare),A binding sigil used to summon Guardian of Emberpan on Nightmare difficulty.,item/sigil_c5z1b_nightmare.png
+sigil_c5z2b_normal,item,Sigil,Green,,Magma Rift Sigil (Normal),A binding sigil used to summon Guardian of Magma Rift on Normal difficulty.,item/sigil_c5z2b_normal.png
+sigil_c5z2b_hard,item,Sigil,Blue,,Magma Rift Sigil (Hard),A binding sigil used to summon Guardian of Magma Rift on Hard difficulty.,item/sigil_c5z2b_hard.png
+sigil_c5z2b_legendary,item,Sigil,Purple,,Magma Rift Sigil (Legendary),A binding sigil used to summon Guardian of Magma Rift on Legendary difficulty.,item/sigil_c5z2b_legendary.png
+sigil_c5z2b_nightmare,item,Sigil,Orange,,Magma Rift Sigil (Nightmare),A binding sigil used to summon Guardian of Magma Rift on Nightmare difficulty.,item/sigil_c5z2b_nightmare.png
+sigil_c5z3b_normal,item,Sigil,Green,,Ashen Throne Sigil (Normal),A binding sigil used to summon Guardian of Ashen Throne on Normal difficulty.,item/sigil_c5z3b_normal.png
+sigil_c5z3b_hard,item,Sigil,Blue,,Ashen Throne Sigil (Hard),A binding sigil used to summon Guardian of Ashen Throne on Hard difficulty.,item/sigil_c5z3b_hard.png
+sigil_c5z3b_legendary,item,Sigil,Purple,,Ashen Throne Sigil (Legendary),A binding sigil used to summon Guardian of Ashen Throne on Legendary difficulty.,item/sigil_c5z3b_legendary.png
+sigil_c5z3b_nightmare,item,Sigil,Orange,,Ashen Throne Sigil (Nightmare),A binding sigil used to summon Guardian of Ashen Throne on Nightmare difficulty.,item/sigil_c5z3b_nightmare.png
+sigil_c5z4b_normal,item,Sigil,Green,,Cinder Crown Sigil (Normal),A binding sigil used to summon Guardian of Cinder Crown on Normal difficulty.,item/sigil_c5z4b_normal.png
+sigil_c5z4b_hard,item,Sigil,Blue,,Cinder Crown Sigil (Hard),A binding sigil used to summon Guardian of Cinder Crown on Hard difficulty.,item/sigil_c5z4b_hard.png
+sigil_c5z4b_legendary,item,Sigil,Purple,,Cinder Crown Sigil (Legendary),A binding sigil used to summon Guardian of Cinder Crown on Legendary difficulty.,item/sigil_c5z4b_legendary.png
+sigil_c5z4b_nightmare,item,Sigil,Orange,,Cinder Crown Sigil (Nightmare),A binding sigil used to summon Guardian of Cinder Crown on Nightmare difficulty.,item/sigil_c5z4b_nightmare.png
+sigil_c6z0b_normal,item,Sigil,Green,,Twilight Gate Sigil (Normal),A binding sigil used to summon Guardian of Twilight Gate on Normal difficulty.,item/sigil_c6z0b_normal.png
+sigil_c6z0b_hard,item,Sigil,Blue,,Twilight Gate Sigil (Hard),A binding sigil used to summon Guardian of Twilight Gate on Hard difficulty.,item/sigil_c6z0b_hard.png
+sigil_c6z0b_legendary,item,Sigil,Purple,,Twilight Gate Sigil (Legendary),A binding sigil used to summon Guardian of Twilight Gate on Legendary difficulty.,item/sigil_c6z0b_legendary.png
+sigil_c6z0b_nightmare,item,Sigil,Orange,,Twilight Gate Sigil (Nightmare),A binding sigil used to summon Guardian of Twilight Gate on Nightmare difficulty.,item/sigil_c6z0b_nightmare.png
+sigil_c6z1b_normal,item,Sigil,Green,,Star Hollow Sigil (Normal),A binding sigil used to summon Guardian of Star Hollow on Normal difficulty.,item/sigil_c6z1b_normal.png
+sigil_c6z1b_hard,item,Sigil,Blue,,Star Hollow Sigil (Hard),A binding sigil used to summon Guardian of Star Hollow on Hard difficulty.,item/sigil_c6z1b_hard.png
+sigil_c6z1b_legendary,item,Sigil,Purple,,Star Hollow Sigil (Legendary),A binding sigil used to summon Guardian of Star Hollow on Legendary difficulty.,item/sigil_c6z1b_legendary.png
+sigil_c6z1b_nightmare,item,Sigil,Orange,,Star Hollow Sigil (Nightmare),A binding sigil used to summon Guardian of Star Hollow on Nightmare difficulty.,item/sigil_c6z1b_nightmare.png
+sigil_c6z2b_normal,item,Sigil,Green,,Void Threshold Sigil (Normal),A binding sigil used to summon Guardian of Void Threshold on Normal difficulty.,item/sigil_c6z2b_normal.png
+sigil_c6z2b_hard,item,Sigil,Blue,,Void Threshold Sigil (Hard),A binding sigil used to summon Guardian of Void Threshold on Hard difficulty.,item/sigil_c6z2b_hard.png
+sigil_c6z2b_legendary,item,Sigil,Purple,,Void Threshold Sigil (Legendary),A binding sigil used to summon Guardian of Void Threshold on Legendary difficulty.,item/sigil_c6z2b_legendary.png
+sigil_c6z2b_nightmare,item,Sigil,Orange,,Void Threshold Sigil (Nightmare),A binding sigil used to summon Guardian of Void Threshold on Nightmare difficulty.,item/sigil_c6z2b_nightmare.png
+sigil_c6z3b_normal,item,Sigil,Green,,Eternal Stair Sigil (Normal),A binding sigil used to summon Guardian of Eternal Stair on Normal difficulty.,item/sigil_c6z3b_normal.png
+sigil_c6z3b_hard,item,Sigil,Blue,,Eternal Stair Sigil (Hard),A binding sigil used to summon Guardian of Eternal Stair on Hard difficulty.,item/sigil_c6z3b_hard.png
+sigil_c6z3b_legendary,item,Sigil,Purple,,Eternal Stair Sigil (Legendary),A binding sigil used to summon Guardian of Eternal Stair on Legendary difficulty.,item/sigil_c6z3b_legendary.png
+sigil_c6z3b_nightmare,item,Sigil,Orange,,Eternal Stair Sigil (Nightmare),A binding sigil used to summon Guardian of Eternal Stair on Nightmare difficulty.,item/sigil_c6z3b_nightmare.png
+sigil_c6z4b_normal,item,Sigil,Green,,Throne of Ancients Sigil (Normal),A binding sigil used to summon Guardian of Throne of Ancients on Normal difficulty.,item/sigil_c6z4b_normal.png
+sigil_c6z4b_hard,item,Sigil,Blue,,Throne of Ancients Sigil (Hard),A binding sigil used to summon Guardian of Throne of Ancients on Hard difficulty.,item/sigil_c6z4b_hard.png
+sigil_c6z4b_legendary,item,Sigil,Purple,,Throne of Ancients Sigil (Legendary),A binding sigil used to summon Guardian of Throne of Ancients on Legendary difficulty.,item/sigil_c6z4b_legendary.png
+sigil_c6z4b_nightmare,item,Sigil,Orange,,Throne of Ancients Sigil (Nightmare),A binding sigil used to summon Guardian of Throne of Ancients on Nightmare difficulty.,item/sigil_c6z4b_nightmare.png
+potion_energy_minor,item,Consumable,Green,,Minor Energy Draught,Restores 25 Energy. The road does not walk itself.,item/potion_energy_minor.png
+potion_energy_major,item,Consumable,Blue,,Energy Draught,Restores 60 Energy. Brewed for those who refuse to stop.,item/potion_energy_major.png
+potion_stamina_minor,item,Consumable,Green,,Minor Stamina Draught,Restores 25 Stamina. Steadies the arm for one more strike.,item/potion_stamina_minor.png
+potion_stamina_major,item,Consumable,Blue,,Stamina Draught,Restores 60 Stamina. The long fight favours the prepared.,item/potion_stamina_major.png
+potion_health_minor,item,Consumable,Green,,Minor Healing Poultice,"Restores 25 Health. Crude, bitter, and enough.",item/potion_health_minor.png
+potion_health_major,item,Consumable,Blue,,Healing Poultice,Restores 60 Health. Closes what the raid opened.,item/potion_health_major.png
+elixir_restoration,item,Consumable,Purple,,Ancient's Restorative,"Refills your Energy completely. Found, never sold.",item/elixir_restoration.png
+mat_oathsteel,item,Material,Blue,,Oathsteel Ingot,Steel quenched in a spoken oath. The forge remembers what was promised.,item/mat_oathsteel.png
+mat_vanguard_banner,item,Material,Green,,Vanguard Banner,Carried at the front until the front moved. Proof of a line that held.,item/mat_vanguard_banner.png
+mat_wyrm_scale,item,Material,Purple,,Wyrm Scale,Prised from a raid boss that did not part with it willingly.,item/mat_wyrm_scale.png
+mat_causeway_ash,item,Material,Grey,,Causeway Ash,"Grey, weightless, and everywhere on the Ashen Causeway. Smiths pack it around a quench because it takes heat without ever giving it back.",item/mat_causeway_ash.png
+mat_hollow_reed,item,Material,White,,Hollow Marches Reed,Grows only where the ground is too wet to bury anything. The Marches are full of them.,item/mat_hollow_reed.png
+mat_emberfall_slag,item,Material,Green,,Emberfall Slag,Run-off from a fire that burned in the Age of Dawn and has not entirely stopped. Warm at the core a thousand years after the fact.,item/mat_emberfall_slag.png
+mat_keepwall_mortar,item,Material,Blue,,Keepwall Mortar,Prised from a wall Malachar's masons raised in one night. Nobody has explained the speed.,item/mat_keepwall_mortar.png
+mat_rime_glass,item,Material,Blue,,Rime-Glass,"Frostmere water frozen so slowly it set clear. It does not melt in the hand. It does not melt in a forge either, which is the difficulty.",item/mat_rime_glass.png
+mat_cinder_salt,item,Material,Purple,,Cinder-Salt,"Scraped off the Ashen Throne, where the heat drove everything out of the stone but this. Tastes of iron. Nobody tastes it twice.",item/mat_cinder_salt.png
+mat_starhollow_dust,item,Material,Purple,,Star Hollow Dust,"Collected where the sky is closest and least reliable. It settles upward if left alone, so it is never left alone.",item/mat_starhollow_dust.png
+mat_mire_ichor,item,Material,White,,Mire-Ichor,"Pale, luminous, foul. Bled from the Brood-things of the drowned shallows. Useless alone; the basis of half the alchemy on the Drowned Coast.",item/mat_mire_ichor.png
+mat_brood_chitin,item,Material,Green,,Mire-Brood Chitin,Plate from a thing that grows a new one each season and abandons the old where it stood.,item/mat_brood_chitin.png
+mat_stag_tendon,item,Material,Blue,,Ashen Stag Heart-Tendon,The Heartmarch hunters string bows with it and say an arrow loosed from one arrives before the sound does.,item/mat_stag_tendon.png
+mat_wrathslag,item,Material,Purple,,Wrath-Slag,"The cooled residue of a Manifestation. Still faintly warm an Age later, and still, very slightly, trying to qualify whoever holds it.",item/mat_wrathslag.png
+mat_leviathan_baleen,item,Material,Purple,,Leviathan Baleen,"Cut from a Primordial that was never killed, only out-waited. It filters things out of air that air was not known to contain.",item/mat_leviathan_baleen.png
+mat_colossus_filament,item,Material,Orange,,Colossus Filament,Sigil-wire from the Iron Colossus's commanding core. Still carrying an order. Still trying to deliver it to a chain of command four hundred years dead.,item/mat_colossus_filament.png
+mat_sounding_horn,item,Material,Orange,,Sounding-Horn of the Sunken Leviathan,"It still holds one note. The Old Guard who took it never agreed on what the note does, only that the sea answered the one time it was sounded.",item/mat_sounding_horn.png
+mat_gravewend_haft,item,Material,Orange,,Haft of Gravewend,"A farm tool from a village whose name is not written down, carried by a man whose name is not written down, who used it to kill a thing that should have killed him. The village is gone. The pitchfork is not.",item/mat_gravewend_haft.png
+mat_null_sigil_ink,item,Material,Orange,,Null-Sigil Ink,The medium the Sealwrights wrote closure in. It does not dry so much as decide to stop.,item/mat_null_sigil_ink.png
+mat_quiet_lamp_oil,item,Material,Orange,,Quiet Lamp Oil,Drawn from a Last Watch relay lamp that has burned unattended since the fall. The Watch does not know what it burns and has stopped asking.,item/mat_quiet_lamp_oil.png
+potion_energy_greater,item,Consumable,Purple,,Greater Energy Draught,"Restores 150 Energy. Brewed at the relays, for a road that does not end at dusk.",item/potion_energy_greater.png
+potion_energy_grand,item,Consumable,Purple,,Grand Energy Draught,Restores 400 Energy. The Weir issues these to couriers who are not expected back soon.,item/potion_energy_grand.png
+potion_stamina_greater,item,Consumable,Purple,,Greater Stamina Draught,Restores 150 Stamina. The arm gives out before the will does. This is for the arm.,item/potion_stamina_greater.png
+potion_stamina_grand,item,Consumable,Purple,,Grand Stamina Draught,Restores 400 Stamina. Drunk before a company commits to something it cannot walk away from.,item/potion_stamina_grand.png
+potion_health_greater,item,Consumable,Purple,,Greater Healing Poultice,Restores 150 Health. Closes what a company opened.,item/potion_health_greater.png
+elixir_stamina_restoration,item,Consumable,Purple,,Ancient's Draught,"Refills your Stamina completely. Found, never sold.",item/elixir_stamina_restoration.png
+statbag_greater,item,StatBag,Purple,,Greater Stat Bag,"Contains 40 unassigned skill points. Old Guard requisition, unopened since the fall.",item/statbag_greater.png
+statbag_ancient,item,StatBag,Orange,,Ancient's Reliquary,Contains 100 unassigned skill points. What the Dawnward Choir calls an answer.,item/statbag_ancient.png
+sigil_lastwatch_lamp_normal,item,Sigil,Green,,Sigil of the Last Lamp,The name of a lamp that has not gone out. Speak it and the vigil resumes.,item/sigil_lastwatch_lamp_normal.png
+sigil_lastwatch_lamp_hard,item,Sigil,Blue,,Sigil of the Last Lamp (Hard),"The name of a lamp that has not gone out. Spoken harder, it answers harder.",item/sigil_lastwatch_lamp_hard.png
+sigil_lastwatch_lamp_legendary,item,Sigil,Purple,,Sigil of the Last Lamp (Legendary),"The name of a lamp that has not gone out, and of the thing that has been circling it.",item/sigil_lastwatch_lamp_legendary.png
+sigil_lastwatch_lamp_nightmare,item,Sigil,Orange,,Sigil of the Last Lamp (Nightmare),"The name of a lamp that has not gone out. At this pitch, something else uses the name too.",item/sigil_lastwatch_lamp_nightmare.png
+mat_warren_teeth,item,Material,Green,,Warren Teeth,Goblins replace them constantly and leave the old ones where they fall. A tunnel floor is half gravel and half this.,item/mat_warren_teeth.png
+mat_brood_carapace,item,Material,Blue,,Brood Carapace,Plate off something that outgrew three of these before anyone got close enough to measure.,item/mat_brood_carapace.png
+mat_stag_ash,item,Material,Blue,,Ashen Stag Ash,What is left where one lay down. The Heartmarch hunters do not collect it and will not say why.,item/mat_stag_ash.png
+mat_deepwood_heart,item,Material,Purple,,Deepwood Heart,Cut from an apex that had been growing since before the Sundering. Still warm four days out.,item/mat_deepwood_heart.png
+mat_gravesalt,item,Material,Green,,Gravesalt,"The Watch packs it around anything it has to move twice. It works, and nobody has asked how.",item/mat_gravesalt.png
+mat_barrow_iron,item,Material,Purple,,Barrow Iron,"Grave-goods iron, buried long enough to take on the habit. It does not rust and it does not hold an edge — the Watch considers the trade fair.",item/mat_barrow_iron.png
+mat_amber_rot,item,Material,Blue,,Amber Rot,"The Awakening's own residue. It is warm, it is slightly wrong, and it keeps indefinitely in a sealed jar that nobody wants in their pack.",item/mat_amber_rot.png
+mat_glutbound_core,item,Material,Purple,,Glutbound Core,The dense part of a thing that had nearly finished becoming something else.,item/mat_glutbound_core.png
+mat_command_sigil,item,Material,Blue,,Cracked Command Sigil,Prised off a Wrought mid-order. It is still trying to finish the sentence.,item/mat_command_sigil.png
+mat_brimstone_slag,item,Material,Blue,,Brimstone Slag,"Cools where a Swollen thing stood too long. Emberpan is paved in it, mostly.",item/mat_brimstone_slag.png
+mat_leviathan_tooth,item,Material,Purple,,Leviathan Tooth,"One of very many, and still the largest object most people will ever hold.",item/mat_leviathan_tooth.png
+mat_kronarch_seal,item,Material,Purple,,Kronarch's Broken Seal,From the muster-rolls of the army that won against nothing. Most of the names are legible.,item/mat_kronarch_seal.png
+mat_sovereign_scale,item,Material,Orange,,Sovereign's Shed Scale,The Gauntlet collects them. It has never said what for and has never been asked twice.,item/mat_sovereign_scale.png
+mat_lamp_black,item,Material,Green,,Lamp-Black,"Soot off a relay lamp, ground fine. The Watch hems its hoods with it so a courier does not shine in a doorway.",item/mat_lamp_black.png
+mat_sable_thread,item,Material,Purple,,Sable Vein Thread,The Houses dye it twice and will not discuss the second dye.,item/mat_sable_thread.png
+mat_pitch_seal,item,Material,Green,,Marsh Pitch,Boiled down over three days. Gravewardens seal their wades with it and their coffins too.,item/mat_pitch_seal.png
+mat_cork_iron,item,Material,Blue,,Cork-and-Iron Sole,Salvager's stock. Buoyant enough to float a boot and heavy enough to keep it down.,item/mat_cork_iron.png
+mat_resonant_brass,item,Material,Purple,,Resonant Brass,"Cast to hum at one note and no other. The Choir orders it by the tone, never the weight.",item/mat_resonant_brass.png
+mat_siege_lead,item,Material,Blue,,Siege Lead,"Backing for a breaker's visor. A Wrought does not aim, which makes shielding a guess everywhere at once.",item/mat_siege_lead.png
+potion_energy_relay,item,Consumable,Orange,,Relay Draught,Restores 900 Energy. Issued to a courier who is not expected to stop.,item/potion_energy_relay.png
+potion_stamina_relay,item,Consumable,Orange,,Warhorn Draught,Restores 900 Stamina. Drunk by a company that has decided the thing in front of it is going down today.,item/potion_stamina_relay.png
+potion_health_grand,item,Consumable,Purple,,Grand Healing Poultice,Restores 400 Health. Field-standard for anything the Weir calls a bad week.,item/potion_health_grand.png
+elixir_health_restoration,item,Consumable,Purple,,Ancient's Mending,"Refills your Health completely. Found, never sold.",item/elixir_health_restoration.png
+statbag_oathsworn,item,StatBag,Purple,,Oathsworn Cache,Contains 65 unassigned skill points. Left by a company that did not need them after all.,item/statbag_oathsworn.png
+potion_devils_tea,item,Consumable,Purple,,The Devil's Tea,Restores 260 Energy. He offers it to everyone who comes to kill him. Several have stayed for a second cup and one is reportedly still there.,item/potion_devils_tea.png
+potion_long_afternoon,item,Consumable,Purple,,The Long Afternoon,Restores 260 Stamina. Bottled from a nap of genuinely historic proportions.,item/potion_long_afternoon.png
+mat_censer_resin,item,Material,Orange,,Perpetual Censer Resin,Scraped from the inside of a censer lit during the Age of Dawn. There is still some left. There has always been some left.,item/mat_censer_resin.png
+mat_unwalked_leather,item,Material,Purple,,Unwalked Leather,"Cut for slippers that were never worn outdoors. Immaculate, and faintly reproachful.",item/mat_unwalked_leather.png
+statbag_reconsideration,item,StatBag,Blue,,A Moment's Reconsideration,Grants 25 unassigned skill points. He suggests you think about where you put them. He is not going to elaborate and he is not going to stop looking at you.,item/statbag_reconsideration.png
+mat_bog_cotton,item,Material,Grey,,Bog Cotton,"Grows in standing water and pulls out in handfuls. Wadding, tinder, bandage — a Weir pack carries it because it is the cheapest thing that is ever useful.",item/mat_bog_cotton.png
+mat_road_flint,item,Material,Grey,,Road Flint,Picked off any causeway by anyone who bothers to look down. It has started every fire the frontier has ever needed and it has never once been remarkable.,item/mat_road_flint.png
+mat_tallow,item,Material,White,,Rendered Tallow,"Every relay lamp in the Watch burns it, every boot in the Weir is greased with it, and nobody has ever written a sentence about it before this one.",item/mat_tallow.png
+mat_coarse_thread,item,Material,White,,Coarse Thread,"Spun thick enough to sew canvas and cheap enough to waste. The frontier repairs more than it replaces, and this is what it repairs with.",item/mat_coarse_thread.png
+magic_whetstone,magic,Damage,White,,Whetstone,Sharpens every blow; guaranteed small bonus on every hit.,magic/magic_whetstone.png
+magic_lesser_poison,magic,Damage,White,,Lesser Poison,A weak venom that occasionally laces attacks.,magic/magic_lesser_poison.png
+magic_poison,magic,Damage,Green,,Poison,A reliable venom that procs with moderate frequency.,magic/magic_poison.png
+magic_greater_poison,magic,Damage,Blue,,Greater Poison,A potent venom with meaningful proc damage.,magic/magic_greater_poison.png
+magic_smite,magic,Damage,Blue,,Smite,A divine strike that hits hard but rarely.,magic/magic_smite.png
+magic_blessing_of_might,magic,Damage,Blue,,Blessing of Might,An empowering boon that surges through each blow.,magic/magic_blessing_of_might.png
+magic_impending_doom,magic,Damage,Purple,,Impending Doom,A catastrophic curse that rarely fires but devastates when it does.,magic/magic_impending_doom.png
+magic_expose_weakness,magic,Crit,Green,,Expose Weakness,"Reveals a flaw in the target's defence, increasing crit chance.",magic/magic_expose_weakness.png
+magic_midas_touch,magic,Gold,Green,,Midas Touch,Every hit has a chance to yield bonus gold.,magic/magic_midas_touch.png
+magic_kindling,magic,Leveling,White,,Kindling,Occasionally doubles the experience earned from a hit.,magic/magic_kindling.png
+magic_pinnacle_5000,magic,Damage,Orange,,Luminary's Echo,PLACEHOLDER (T33). A pinnacle-tier magic awarded around level 5000; its effect is designed by the first player to reach this pinnacle. Inert until activated.,magic/magic_pinnacle_5000.png
+magic_pinnacle_7500,magic,Damage,Orange,,Archon's Decree,PLACEHOLDER (T33). A pinnacle-tier magic awarded around level 7500; its effect is designed by the first player to reach this pinnacle. Inert until activated.,magic/magic_pinnacle_7500.png
+magic_pinnacle_10000,magic,Damage,Orange,,Ancient's Wrath,PLACEHOLDER (T33). A pinnacle-tier magic awarded around level 10000; its effect is designed by the first player to reach this pinnacle. Inert until activated.,magic/magic_pinnacle_10000.png
+magic_pinnacle_15000,magic,Damage,Orange,,Elder Resonance,PLACEHOLDER (T33). A pinnacle-tier magic awarded around level 15000; its effect is designed by the first player to reach this pinnacle. Inert until activated.,magic/magic_pinnacle_15000.png
+magic_pinnacle_25000,magic,Damage,Orange,,Eternal Aspect,PLACEHOLDER (T33). A pinnacle-tier magic awarded around level 25000; its effect is designed by the first player to reach this pinnacle. Inert until activated.,magic/magic_pinnacle_25000.png
+magic_wrath_of_the_ancients,magic,Damage,Orange,,Wrath of the Ancients,"The Gauntlet rank-1 aura. An off-cap proc applied to the Gauntlet raid, outside the five-magic slot cap. Rank-acquired only (per-event consumable).",magic/magic_wrath_of_the_ancients.png
+magic_blessing_of_the_ancients,magic,Damage,Orange,,Blessing of the Ancients,"The Gauntlet ranks 2–10 aura. An off-cap proc applied to the Gauntlet raid, outside the five-magic slot cap. Rank-acquired only (per-event consumable).",magic/magic_blessing_of_the_ancients.png
+magic_hollowpoint,magic,Damage,Green,,Hollow Point,A round bored out and left empty. What fills it on the way in is the argument.,magic/magic_hollowpoint.png
+magic_rimefang,magic,Damage,Blue,,Rimefang,Frostmere ice that never gave up being water. It finds the gap in a thing and then widens it.,magic/magic_rimefang.png
+magic_sunder,magic,Damage,Purple,,Sunder,"Old Guard siege doctrine, reduced to one word and one motion.",magic/magic_sunder.png
+magic_wrathslag_ember,magic,Damage,Purple,,Wrathslag Ember,"A coal off a Manifestation. Still warm, still trying, still not quite a Herald.",magic/magic_wrathslag_ember.png
+magic_kronarchs_last_order,magic,Damage,Orange,,Kronarch's Last Order,The command he gave when the tide went out and nothing answered. It still lands.,magic/magic_kronarchs_last_order.png
+magic_keen_eye,magic,Crit,White,,Keen Eye,"The Watch teaches it before it teaches anything else: look at the seam, not the shield.",magic/magic_keen_eye.png
+magic_readers_mark,magic,Crit,Blue,,Reader's Mark,House Sable Vein trains a scribe to find the one line that matters. It transfers.,magic/magic_readers_mark.png
+magic_veiled_eye,magic,Crit,Purple,,The Veiled Eye,"Discernment's own nature, briefly lent. It does not see everything. It sees the thing that matters.",magic/magic_veiled_eye.png
+magic_sealwrights_measure,magic,Crit,Orange,,The Sealwright's Measure,Before you can close a thing you must know exactly where it opens.,magic/magic_sealwrights_measure.png
+magic_coinsense,magic,Gold,White,,Coin-Sense,"A caravan lord's habit, distilled. It notices what a room is worth on the way in.",magic/magic_coinsense.png
+magic_tithe_ledger,magic,Gold,Green,,Tithe Ledger,The Gauntlet has kept one since its founding. Nobody has audited it and nobody has offered.,magic/magic_tithe_ledger.png
+magic_hoarders_eye,magic,Gold,Blue,,Hoarder's Eye,"Hoard's dominion is not petty. It is the principle of accumulation itself, and it is contagious.",magic/magic_hoarders_eye.png
+magic_spoils_of_the_march,magic,Gold,Purple,,Spoils of the March,What an army leaves is worth more than what it carried. The Weir has always known this.,magic/magic_spoils_of_the_march.png
+magic_sovereigns_cut,magic,Gold,Orange,,The Sovereign's Cut,Every climb pays a tithe. This is the arrangement that decides which way it flows.,magic/magic_sovereigns_cut.png
+magic_drillmasters_cant,magic,Leveling,Green,,Drillmaster's Cant,The Weir's marching count. Nothing about it is magical and it works anyway.,magic/magic_drillmasters_cant.png
+magic_field_commission,magic,Leveling,Blue,,Field Commission,"Promotion granted where it was earned, by whoever was still standing to grant it.",magic/magic_field_commission.png
+magic_the_long_watch,magic,Leveling,Purple,,The Long Watch,"Four hundred years of standing somewhere, compressed into the part that teaches.",magic/magic_the_long_watch.png
+magic_age_of_dawn_fragment,magic,Leveling,Orange,,Fragment of the Age of Dawn,A piece of a lesson from before the Sundering. The rest of it is not recoverable.,magic/magic_age_of_dawn_fragment.png
+magic_steady_hand,magic,Utility,White,,Steady Hand,"Never misses, never surprises. The Weir issues it to anyone who has been startled once too often.",magic/magic_steady_hand.png
+magic_gamblers_sigil,magic,Utility,Green,,Gambler's Sigil,"Old Guard camp-work, technically forbidden. Enforcement was reportedly inconsistent.",magic/magic_gamblers_sigil.png
+magic_metronome,magic,Utility,Blue,,Wardens' Metronome,"It keeps the count whether or not anybody is listening, which is the Watch in one object.",magic/magic_metronome.png
+magic_last_lamp_wick,magic,Utility,Purple,,Wick of the Last Lamp,It burns very slowly and it has never gone out. Arveth's lamp is still lit on the same principle.,magic/magic_last_lamp_wick.png
+magic_one_true_swing,magic,Utility,Orange,,The One True Swing,Gravewend's peasant got exactly one. The pitchfork remembers the shape of it.,magic/magic_one_true_swing.png
+magic_considered_inaction,magic,Utility,Orange,,Considered Inaction,"The archdevil's contribution to the war effort. He thought about it for an Age and then, on balance, contributed this. It is genuinely quite good, which nobody has forgiven.",magic/magic_considered_inaction.png
+gen_ironward,unit,Human Tank,Green,,Ironward the Steadfast,A stalwart Human Tank general whose shield stance can deflect devastating strikes.,unit/gen_ironward.png
+gen_ashblade,unit,Human Melee,Blue,,Ashblade,A swift Human Melee general who strikes with burning precision.,unit/gen_ashblade.png
+gen_sylvaire,unit,Elf Ranged,Blue,,Sylvaire,An Elf Ranged general whose arrows seek vital points with unerring accuracy.,unit/gen_sylvaire.png
+gen_morvath,unit,Undead Special,Purple,,Morvath the Unliving,An Undead Special general whose cursed wisdom amplifies every strike of his legion.,unit/gen_morvath.png
+troop_militia,unit,Human Melee,White,,Conscript Militia,Untrained Human foot soldiers — numerous but unremarkable.,unit/troop_militia.png
+troop_archers,unit,Elf Ranged,Green,,Wood Archers,Elf Ranged troops who pepper enemies from a distance.,unit/troop_archers.png
+troop_pikemen,unit,Human Tank,Green,,Iron Pikemen,Stalwart Human Tank troops who hold the line against any charge.,unit/troop_pikemen.png
+troop_acolytes,unit,Undead Special,Blue,,Shadow Acolytes,Undead Special troops channeling dark wisdom into devastating blasts.,unit/troop_acolytes.png
+gen_ironward_ii,unit,Human Tank,Blue,,Ironward the Unbroken,Ironward reforged. The shield that deflected a wyrm now turns aside armies.,unit/gen_ironward_ii.png
+gen_ashblade_ii,unit,Human Melee,Purple,,"Ashblade, Emberborn",The blade drank the pyre and came back hungrier.,unit/gen_ashblade_ii.png
+troop_pikemen_ii,unit,Human Tank,Blue,,Oathsteel Pikemen,Iron pikes re-forged in oathsteel; the line does not break.,unit/troop_pikemen_ii.png
+gen_gorruk,unit,Oroc Tank,Blue,,Gorruk Stonejaw,An Oroc line-holder who has never once been moved off a position he agreed to hold. The agreeing is the hard part.,unit/gen_gorruk.png
+gen_makh,unit,Oroc Melee,Purple,,Makh the Unhurried,Fights at exactly one speed. Opponents consistently mistake this for an opening.,unit/gen_makh.png
+troop_oroc_shieldline,unit,Oroc Tank,Blue,,Oroc Shieldline,"They do not advance. That is not a limitation, it is the entire service being offered.",unit/troop_oroc_shieldline.png
+troop_oroc_maulers,unit,Oroc Melee,Purple,,Oroc Maulers,Recruited by the Weir at rates it does not put in writing.,unit/troop_oroc_maulers.png
+gen_durn,unit,Dwarf Special,Blue,,Durn Anvilkeep,Reads a construct's commanding sigil the way other people read weather. Wrong twice; he keeps both notes.,unit/gen_durn.png
+gen_brannoc,unit,Dwarf Tank,Purple,,Brannoc Deepvein,The Weir's siege-master. Has taken down four Wrought and will discuss none of them.,unit/gen_brannoc.png
+troop_dwarf_sappers,unit,Dwarf Special,Blue,,Weir Sappers,They go under the thing. Frontier doctrine has never improved on this.,unit/troop_dwarf_sappers.png
+troop_dwarf_hammers,unit,Dwarf Melee,Purple,,Anvilkeep Hammers,"Issued one hammer and one instruction, both heavy.",unit/troop_dwarf_hammers.png
+gen_ashen_stag,unit,Beast Special,Purple,,The Ashen Stag,Not tamed. Accompanying. The Heartmarch hunters are precise about the distinction and have been since the first one tried the other word.,unit/gen_ashen_stag.png
+troop_mire_brood,unit,Beast Melee,Green,,Mire-Brood Swarm,"Bled for reagent, herded for war. Neither use was the Brood's idea.",unit/troop_mire_brood.png
+troop_rime_wolves,unit,Beast Ranged,Blue,,Rimewood Wolves,"They hunt the cold better than anything the Watch has ever fielded, and they know it.",unit/troop_rime_wolves.png
+troop_glacier_bears,unit,Beast Tank,Purple,,Glacier-Maw Bears,Taken as cubs from a den nobody has found twice.,unit/troop_glacier_bears.png
+gen_sentinel_prime,unit,Construct Tank,Purple,,Sentinel Prime,"Given a new order by someone with no authority to give it. It has not noticed, or it has and does not care, and the Weir has stopped asking which.",unit/gen_sentinel_prime.png
+troop_wrought_automata,unit,Construct Melee,Blue,,Salvaged Automata,"Restarted, roughly. They execute the order and nothing else, including stopping.",unit/troop_wrought_automata.png
+troop_lamp_walkers,unit,Construct Ranged,Purple,,Lamp-Walkers,Relay-work that kept walking its route after the relay fell. The Watch marches beside them now.,unit/troop_lamp_walkers.png
+gen_vaskarr,unit,Demon Special,Purple,,Vaskarr the Bargained,Bound by an agreement the Choir drafted and the Threnody Houses will not read aloud.,unit/gen_vaskarr.png
+gen_the_reconsidered,unit,Demon Special,Orange,,The Reconsidered,"An archdevil's aide, sent along on the understanding that he would 'have a look'. He has had a look. He is still here. Nobody has raised it.",unit/gen_the_reconsidered.png
+troop_emberpan_imps,unit,Demon Ranged,Blue,,Emberpan Imps,"Malicious, tireless, and extremely literal about instructions.",unit/troop_emberpan_imps.png
+troop_slagborn,unit,Demon Melee,Purple,,Slagborn,"What cools where a Manifestation stood, if it cools into legs.",unit/troop_slagborn.png
+gen_sister_arveth,unit,Human Healer,Purple,,Sister Arveth of the Lamp,"The lamp is named for her, not the other way round. She would like that corrected and the Watch has declined for two hundred years.",unit/gen_sister_arveth.png
+gen_choirmaster,unit,Human Healer,Orange,,The Dawnward Choirmaster,Keeps a company standing by counting time at them. It should not work.,unit/gen_choirmaster.png
+troop_field_chirurgeons,unit,Human Healer,Green,,Field Chirurgeons,"Weir-trained, which means fast, unsentimental, and usually right.",unit/troop_field_chirurgeons.png
+troop_choir_attendants,unit,Human Healer,Blue,,Choir Attendants,They stand and do not sing. Somebody has to be listening to the listeners.,unit/troop_choir_attendants.png
+gen_pano,unit,Human Melee,Orange,,"Pano, the Lost Vanguard","The banner came back. Nobody has ever explained the rest of it, and the Watch has stopped asking in writing.",unit/gen_pano.png
+troop_vanguard_oathsworn,unit,Human Melee,Orange,,Vanguard Oathsworn,"They swore to a man who did not come back, and have not considered that a release.",unit/troop_vanguard_oathsworn.png
+troop_sable_witnesses,unit,Human Special,Orange,,Sable Vein Witnesses,House scribes who record a fight from inside it. Their accounts are the only ones that agree.,unit/troop_sable_witnesses.png
+legion_warband,legion,Legion,White,,Free Warband,An undisciplined but adaptable warband with no unit-type restrictions.,legion/legion_warband.png
+legion_vanguard,legion,Legion,Blue,,Dawn Vanguard,"A disciplined vanguard formation with three general and three troop slots, open to any unit.",legion/legion_vanguard.png
+legion_ironlegion,legion,Legion,Purple,,The Iron Legion,"A specialist formation demanding Tank, Melee, and Ranged generals alongside Strength troops — its type-locked slots carry higher power bonus.",legion/legion_ironlegion.png
+legion_vanguard_ii,legion,Legion,Purple,,Dawn Vanguard II,"The Vanguard rebuilt around a core of oathsteel — the same banner, twice the weight behind it.",legion/legion_vanguard_ii.png
+legion_houndsmen,legion,Legion,Blue,,The Houndsmen,"A hunting company, not an army. Built around beasts and the people who can stand near them, it goes where a formation cannot and arrives sooner.",legion/legion_houndsmen.png
+legion_warrenguard,legion,Legion,Green,,The Warrenguard,"Iron Weir tunnel work. Short ranks, low ceilings, and a doctrine that assumes the enemy is already inside the line.",legion/legion_warrenguard.png
+legion_anvilkeep,legion,Legion,Purple,,The Anvilkeep Siege,"Dwarven engineers and the heaviest thing they could get to the site. It is slow, it is loud, and Wrought do not get back up.",legion/legion_anvilkeep.png
+legion_bargained,legion,Legion,Purple,,The Bargained Company,"Demons under written agreement, fielded by people who have read the agreement very carefully. It answers its own kind better than anything else will.",legion/legion_bargained.png
+legion_deepwatch,legion,Legion,Orange,,The Deepwatch,"The Last Watch's answer to the things that were here first. Everyone in it has seen one and elected to come back, which is the only entry requirement.",legion/legion_deepwatch.png
+legion_sovereigns_climb,legion,Legion,Orange,,The Sovereign's Climb,"A Gauntlet formation, fielded under the founding pact. What it costs to raise is written in the inner registry, which fighters may not read.",legion/legion_sovereigns_climb.png
+craft_ironward_ii,recipe,General,Grey,,Ironward the Unbroken,Reforge Ironward around a core of oathsteel. The general is consumed; what walks out is not the same man.,recipe/craft_ironward_ii.png
+craft_ashblade_ii,recipe,General,Grey,,"Ashblade, Emberborn","Quench Ashblade in wyrm-fire. Costly, and there is no way back to the blade you had.",recipe/craft_ashblade_ii.png
+craft_pikemen_ii,recipe,General,Grey,,Oathsteel Pikemen,Re-forge the pikes. The men are the same; the line no longer bends.,recipe/craft_pikemen_ii.png
+craft_vanguard_ii,recipe,General,Grey,,Dawn Vanguard II,"Rebuild the Vanguard around a veteran core — the banner survives, the legion under it does not.",recipe/craft_vanguard_ii.png
+craft_oathsteel_helm,recipe,General,Grey,,Oathsteel Helm,"A hundred conscript helms, melted down and made to mean something.",recipe/craft_oathsteel_helm.png
+craft_warrens_helm,recipe,General,Grey,,Warrens Lamp-Hood,"A hood, a bracket, and a lamp. The Weir has never improved on it and has stopped trying.",recipe/craft_warrens_helm.png
+craft_marchwatch_coat,recipe,General,Grey,,Long Marchwatch Coat,"Cut to the knee and lined against the wind, because most of the job is weather.",recipe/craft_marchwatch_coat.png
+craft_gravesalt_batch,recipe,General,Grey,,A Warden's Measure of Gravesalt,The Watch packs it around anything it has to move twice. Six jars is a season.,recipe/craft_gravesalt_batch.png
+craft_gravewarden_coat,recipe,General,Grey,,Gravewarden's Coat,"Heavy canvas with iron at the forearms, because the thing you are moving sometimes moves back.",recipe/craft_gravewarden_coat.png
+craft_drowned_helm,recipe,General,Grey,,Salvager's Helm,Sealed at the collar with a glass plate. The Vaults are dark before they are deep.,recipe/craft_drowned_helm.png
+craft_wrought_visor,recipe,General,Grey,,Breaker's Visor,"Slit-narrow and backed in lead. A Wrought does not aim, which makes it worse, not better.",recipe/craft_wrought_visor.png
+craft_choir_stole,recipe,General,Grey,,Resonant Stole,It hums a half-tone under any sung note. The Choir considers this agreement.,recipe/craft_choir_stole.png
+craft_wroughtbreaker_gauntlets,recipe,Special,Grey,,Wroughtbreaker Gauntlets,Built to hold a bar against a moving core until the order stops. Most pairs are used once.,recipe/craft_wroughtbreaker_gauntlets.png
+craft_deepwatch_gauntlets,recipe,Special,Grey,,Gravewarden's Gauntlets,Iron over leather over iron. Whatever is down there does not get to hold your hand.,recipe/craft_deepwatch_gauntlets.png
+craft_choir_crown,recipe,Special,Grey,,Listener's Circlet,"Thin, and open at the ears by design. The Choir does not cover what it uses.",recipe/craft_choir_crown.png
+craft_warrens_pitpony,recipe,General,Grey,,Warrens Pit-Pony,"Small, foul-tempered, and unbothered by the dark. Nobody has ever bred one on purpose twice.",recipe/craft_warrens_pitpony.png
+craft_gravewarden_dray,recipe,General,Grey,,Gravewarden's Dray,Bred to stand still while unpleasant work happens behind it. The rarest quality a horse can have.,recipe/craft_gravewarden_dray.png
+craft_gorruk_oathbound,recipe,General,Grey,,"Gorruk, Oathbound",The Oroc agreed to hold a position. Oathsteel is how the Weir makes an agreement heavier.,recipe/craft_gorruk_oathbound.png
+craft_durn_sigilwise,recipe,General,Grey,,"Durn, Sigil-Wise",He was wrong twice and kept both notes. This is what the notes were for.,recipe/craft_durn_sigilwise.png
+craft_sovereign_signet,recipe,Special,Grey,,Sovereign's Signet,Opens the Gauntlet's inner registry. What is written there is the pact's other half.,recipe/craft_sovereign_signet.png
+craft_censer,recipe,Special,Grey,,The Perpetual Censer,"Lit some time during the Age of Dawn and never once since. Whatever is in it, there is still some left. The Choir has a theory. He has never confirmed or denied it and appears to find the question restful.",recipe/craft_censer.png
+craft_stoned_slippers,recipe,Special,Grey,,Slippers of the Unwalked Path,"Immaculate. Not a scuff on them. Making a pair requires leather that has never been walked on, which is harder to source than it sounds and much harder to explain.",recipe/craft_stoned_slippers.png
+craft_hell_goat,recipe,Special,Grey,,Extremely Relaxed Hell-Goat,"It will carry you anywhere at exactly one speed. Attempts to hurry it have never once succeeded and, by every account, have never once been forgiven.",recipe/craft_hell_goat.png
+raid_ironcolossus,raid,Construct,Purple,,The Iron Colossus,,raid/raid_ironcolossus.png
+raid_malachar,raid,"Legion,Demon",Purple,,Lord Malachar,,raid/raid_malachar.png
+raid_c1z1b,raid,Construct,Purple,,Guardian of Ashen Causeway,,raid/raid_c1z1b.png
+raid_c1z2b,raid,"Undead,Beast",Purple,,The Hollow Marcher,,raid/raid_c1z2b.png
+raid_c2z1b,raid,Goblin,Purple,,Warden of Emberfall,,raid/raid_c2z1b.png
+raid_c2z2b,raid,"Beast,Goblin",Purple,,Guardian of Cinderwood,,raid/raid_c2z2b.png
+raid_c2z3b,raid,"Shadow,Construct",Purple,,The Gloomspire Sentinel,,raid/raid_c2z3b.png
+raid_c3z0b,raid,"Legion,Construct",Purple,,Guardian of Keepwall,,raid/raid_c3z0b.png
+raid_c3z1b,raid,"Horror,Undead",Purple,,The Drowned Custodian,,raid/raid_c3z1b.png
+raid_c3z2b,raid,"Demon,Shadow",Purple,,Herald of the Approach,,raid/raid_c3z2b.png
+raid_c3z3b,raid,"Construct,Shadow",Purple,,Spirebreaker,,raid/raid_c3z3b.png
+raid_c4z0b,raid,Beast,Purple,,The Rimewood Stalker,,raid/raid_c4z0b.png
+raid_c4z1b,raid,"Undead,Horror",Purple,,Guardian of Frostmere,,raid/raid_c4z1b.png
+raid_c4z2b,raid,Horror,Purple,,Maw of the Glacier,,raid/raid_c4z2b.png
+raid_c4z3b,raid,"Legion,Undead",Purple,,Warden of the Pale Citadel,,raid/raid_c4z3b.png
+raid_c5z0b,raid,"Construct,Beast",Purple,,The Dustfall Colossus,,raid/raid_c5z0b.png
+raid_c5z1b,raid,Demon,Purple,,Tyrant of Emberpan,,raid/raid_c5z1b.png
+raid_c5z2b,raid,"Demon,Shadow",Purple,,Guardian of Magma Rift,,raid/raid_c5z2b.png
+raid_c5z3b,raid,Untagged,Purple,,The Ashen Throne,,raid/raid_c5z3b.png
+raid_c5z4b,raid,Untagged,Purple,,The Cinder Crown,,raid/raid_c5z4b.png
+raid_c6z0b,raid,"Shadow,Construct",Purple,,Guardian of Twilight Gate,,raid/raid_c6z0b.png
+raid_c6z1b,raid,"Horror,Shadow",Purple,,Devourer of Star Hollow,,raid/raid_c6z1b.png
+raid_c6z2b,raid,Shadow,Purple,,The Void Threshold,,raid/raid_c6z2b.png
+raid_c6z3b,raid,"Dragon,Horror",Purple,,Warden of the Eternal Stair,,raid/raid_c6z3b.png
+raid_c6z4b,raid,"Dragon,Demon",Purple,,Guardian of the Throne of Ancients,,raid/raid_c6z4b.png
+raid_lastwatch_relay,raid,"Construct,Shadow",Purple,,The Relay of Sable Glass,,raid/raid_lastwatch_relay.png
+raid_lastwatch_vault,raid,"Undead,Shadow",Purple,,The Quiet Wind Vault,,raid/raid_lastwatch_vault.png
+raid_lastwatch_lamp,raid,"Shadow,Horror",Purple,,The Last Lamp of Arveth,,raid/raid_lastwatch_lamp.png
+guild_raid_warlord,raid,Untagged,Purple,,Gorehowl the Warlord,,raid/guild_raid_warlord.png
+guild_raid_leviathan,raid,Untagged,Purple,,The Sunken Leviathan,,raid/guild_raid_leviathan.png
+guild_raid_titan,raid,Untagged,Purple,,"Kronarch, World-Ender",,raid/guild_raid_titan.png
+gauntlet_stage_1,raid,Untagged,Purple,,Gauntlet — Whelp Warden,,raid/gauntlet_stage_1.png
+gauntlet_stage_2,raid,Untagged,Purple,,Gauntlet — Drake Sentinel,,raid/gauntlet_stage_2.png
+gauntlet_stage_3,raid,Untagged,Purple,,Gauntlet — Wyrm Vanguard,,raid/gauntlet_stage_3.png
+gauntlet_stage_4,raid,Untagged,Purple,,Gauntlet — Elder Drake,,raid/gauntlet_stage_4.png
+gauntlet_stage_5,raid,Untagged,Purple,,Gauntlet — Ancient Wyrm,,raid/gauntlet_stage_5.png
+gauntlet_stage_6,raid,Untagged,Purple,,Gauntlet — Dragon Sovereign,,raid/gauntlet_stage_6.png
