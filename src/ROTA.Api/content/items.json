@@ -11,7 +11,8 @@
     "summonRaidId": null,
     "summonDifficulty": null,
     "summonSize": null,
-    "upgradesTo": "mat_arcane_dust"
+    "upgradesTo": "mat_arcane_dust",
+    "tags": []
   },
   {
     "id": "mat_arcane_dust",
@@ -24,7 +25,8 @@
     "isCraftingIngredient": true,
     "summonRaidId": null,
     "summonDifficulty": null,
-    "summonSize": null
+    "summonSize": null,
+    "tags": []
   },
   {
     "id": "statbag_minor",
@@ -38,7 +40,8 @@
     "summonRaidId": null,
     "summonDifficulty": null,
     "summonSize": null,
-    "upgradesTo": "statbag_major"
+    "upgradesTo": "statbag_major",
+    "tags": []
   },
   {
     "id": "statbag_major",
@@ -51,7 +54,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": null,
     "summonDifficulty": null,
-    "summonSize": null
+    "summonSize": null,
+    "tags": []
   },
   {
     "id": "sigil_ironcolossus_normal",
@@ -64,7 +68,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_ironcolossus",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_ironcolossus_hard",
@@ -77,7 +82,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_ironcolossus",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_ironcolossus_legendary",
@@ -90,7 +96,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_ironcolossus",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_ironcolossus_nightmare",
@@ -103,7 +110,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_ironcolossus",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_malachar_normal",
@@ -116,7 +124,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_malachar",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_malachar_hard",
@@ -129,7 +138,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_malachar",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_malachar_legendary",
@@ -142,7 +152,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_malachar",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_malachar_nightmare",
@@ -155,7 +166,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_malachar",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c1z1b_normal",
@@ -168,7 +180,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c1z1b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c1z1b_hard",
@@ -181,7 +194,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c1z1b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c1z1b_legendary",
@@ -194,7 +208,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c1z1b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c1z1b_nightmare",
@@ -207,7 +222,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c1z1b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c1z2b_normal",
@@ -220,7 +236,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c1z2b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c1z2b_hard",
@@ -233,7 +250,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c1z2b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c1z2b_legendary",
@@ -246,7 +264,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c1z2b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c1z2b_nightmare",
@@ -259,7 +278,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c1z2b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c2z1b_normal",
@@ -272,7 +292,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c2z1b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c2z1b_hard",
@@ -285,7 +306,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c2z1b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c2z1b_legendary",
@@ -298,7 +320,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c2z1b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c2z1b_nightmare",
@@ -311,7 +334,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c2z1b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c2z2b_normal",
@@ -324,7 +348,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c2z2b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c2z2b_hard",
@@ -337,7 +362,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c2z2b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c2z2b_legendary",
@@ -350,7 +376,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c2z2b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c2z2b_nightmare",
@@ -363,7 +390,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c2z2b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c2z3b_normal",
@@ -376,7 +404,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c2z3b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c2z3b_hard",
@@ -389,7 +418,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c2z3b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c2z3b_legendary",
@@ -402,7 +432,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c2z3b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c2z3b_nightmare",
@@ -415,7 +446,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c2z3b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c3z0b_normal",
@@ -428,7 +460,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c3z0b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c3z0b_hard",
@@ -441,7 +474,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c3z0b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c3z0b_legendary",
@@ -454,7 +488,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c3z0b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c3z0b_nightmare",
@@ -467,7 +502,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c3z0b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c3z1b_normal",
@@ -480,7 +516,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c3z1b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c3z1b_hard",
@@ -493,7 +530,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c3z1b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c3z1b_legendary",
@@ -506,7 +544,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c3z1b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c3z1b_nightmare",
@@ -519,7 +558,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c3z1b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c3z2b_normal",
@@ -532,7 +572,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c3z2b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c3z2b_hard",
@@ -545,7 +586,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c3z2b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c3z2b_legendary",
@@ -558,7 +600,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c3z2b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c3z2b_nightmare",
@@ -571,7 +614,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c3z2b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c3z3b_normal",
@@ -584,7 +628,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c3z3b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c3z3b_hard",
@@ -597,7 +642,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c3z3b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c3z3b_legendary",
@@ -610,7 +656,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c3z3b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c3z3b_nightmare",
@@ -623,7 +670,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c3z3b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c4z0b_normal",
@@ -636,7 +684,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c4z0b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c4z0b_hard",
@@ -649,7 +698,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c4z0b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c4z0b_legendary",
@@ -662,7 +712,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c4z0b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c4z0b_nightmare",
@@ -675,7 +726,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c4z0b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c4z1b_normal",
@@ -688,7 +740,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c4z1b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c4z1b_hard",
@@ -701,7 +754,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c4z1b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c4z1b_legendary",
@@ -714,7 +768,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c4z1b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c4z1b_nightmare",
@@ -727,7 +782,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c4z1b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c4z2b_normal",
@@ -740,7 +796,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c4z2b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c4z2b_hard",
@@ -753,7 +810,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c4z2b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c4z2b_legendary",
@@ -766,7 +824,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c4z2b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c4z2b_nightmare",
@@ -779,7 +838,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c4z2b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c4z3b_normal",
@@ -792,7 +852,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c4z3b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c4z3b_hard",
@@ -805,7 +866,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c4z3b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c4z3b_legendary",
@@ -818,7 +880,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c4z3b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c4z3b_nightmare",
@@ -831,7 +894,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c4z3b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c5z0b_normal",
@@ -844,7 +908,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c5z0b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c5z0b_hard",
@@ -857,7 +922,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c5z0b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c5z0b_legendary",
@@ -870,7 +936,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c5z0b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c5z0b_nightmare",
@@ -883,7 +950,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c5z0b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c5z1b_normal",
@@ -896,7 +964,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c5z1b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c5z1b_hard",
@@ -909,7 +978,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c5z1b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c5z1b_legendary",
@@ -922,7 +992,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c5z1b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c5z1b_nightmare",
@@ -935,7 +1006,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c5z1b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c5z2b_normal",
@@ -948,7 +1020,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c5z2b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c5z2b_hard",
@@ -961,7 +1034,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c5z2b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c5z2b_legendary",
@@ -974,7 +1048,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c5z2b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c5z2b_nightmare",
@@ -987,7 +1062,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c5z2b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c5z3b_normal",
@@ -1000,7 +1076,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c5z3b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c5z3b_hard",
@@ -1013,7 +1090,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c5z3b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c5z3b_legendary",
@@ -1026,7 +1104,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c5z3b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c5z3b_nightmare",
@@ -1039,7 +1118,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c5z3b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c5z4b_normal",
@@ -1052,7 +1132,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c5z4b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c5z4b_hard",
@@ -1065,7 +1146,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c5z4b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c5z4b_legendary",
@@ -1078,7 +1160,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c5z4b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c5z4b_nightmare",
@@ -1091,7 +1174,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c5z4b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c6z0b_normal",
@@ -1104,7 +1188,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c6z0b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c6z0b_hard",
@@ -1117,7 +1202,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c6z0b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c6z0b_legendary",
@@ -1130,7 +1216,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c6z0b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c6z0b_nightmare",
@@ -1143,7 +1230,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c6z0b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c6z1b_normal",
@@ -1156,7 +1244,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c6z1b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c6z1b_hard",
@@ -1169,7 +1258,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c6z1b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c6z1b_legendary",
@@ -1182,7 +1272,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c6z1b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c6z1b_nightmare",
@@ -1195,7 +1286,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c6z1b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c6z2b_normal",
@@ -1208,7 +1300,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c6z2b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c6z2b_hard",
@@ -1221,7 +1314,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c6z2b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c6z2b_legendary",
@@ -1234,7 +1328,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c6z2b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c6z2b_nightmare",
@@ -1247,7 +1342,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c6z2b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c6z3b_normal",
@@ -1260,7 +1356,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c6z3b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c6z3b_hard",
@@ -1273,7 +1370,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c6z3b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c6z3b_legendary",
@@ -1286,7 +1384,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c6z3b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c6z3b_nightmare",
@@ -1299,7 +1398,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c6z3b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c6z4b_normal",
@@ -1312,7 +1412,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c6z4b",
     "summonDifficulty": "Normal",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c6z4b_hard",
@@ -1325,7 +1426,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c6z4b",
     "summonDifficulty": "Hard",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c6z4b_legendary",
@@ -1338,7 +1440,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c6z4b",
     "summonDifficulty": "Legendary",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "sigil_c6z4b_nightmare",
@@ -1351,7 +1454,8 @@
     "isCraftingIngredient": false,
     "summonRaidId": "raid_c6z4b",
     "summonDifficulty": "Nightmare",
-    "summonSize": "Small"
+    "summonSize": "Small",
+    "tags": []
   },
   {
     "id": "potion_energy_minor",
@@ -1369,7 +1473,8 @@
     "restoreResourceType": "Energy",
     "restoreAmount": 25,
     "restoreToMax": false,
-    "goldPrice": 4000
+    "goldPrice": 4000,
+    "tags": []
   },
   {
     "id": "potion_energy_major",
@@ -1387,7 +1492,8 @@
     "restoreResourceType": "Energy",
     "restoreAmount": 60,
     "restoreToMax": false,
-    "goldPrice": 9500
+    "goldPrice": 9500,
+    "tags": []
   },
   {
     "id": "potion_stamina_minor",
@@ -1405,7 +1511,8 @@
     "restoreResourceType": "Stamina",
     "restoreAmount": 25,
     "restoreToMax": false,
-    "goldPrice": 4000
+    "goldPrice": 4000,
+    "tags": []
   },
   {
     "id": "potion_stamina_major",
@@ -1423,7 +1530,8 @@
     "restoreResourceType": "Stamina",
     "restoreAmount": 60,
     "restoreToMax": false,
-    "goldPrice": 9500
+    "goldPrice": 9500,
+    "tags": []
   },
   {
     "id": "potion_health_minor",
@@ -1441,7 +1549,8 @@
     "restoreResourceType": "Health",
     "restoreAmount": 25,
     "restoreToMax": false,
-    "goldPrice": 3000
+    "goldPrice": 3000,
+    "tags": []
   },
   {
     "id": "potion_health_major",
@@ -1459,7 +1568,8 @@
     "restoreResourceType": "Health",
     "restoreAmount": 60,
     "restoreToMax": false,
-    "goldPrice": 7000
+    "goldPrice": 7000,
+    "tags": []
   },
   {
     "id": "elixir_restoration",
@@ -1477,7 +1587,8 @@
     "restoreResourceType": "Energy",
     "restoreAmount": 0,
     "restoreToMax": true,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "mat_oathsteel",
@@ -1495,7 +1606,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "mat_vanguard_banner",
@@ -1513,7 +1625,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "mat_wyrm_scale",
@@ -1531,7 +1644,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "mat_causeway_ash",
@@ -1549,7 +1663,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "mat_hollow_reed",
@@ -1567,7 +1682,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "mat_emberfall_slag",
@@ -1585,7 +1701,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "mat_keepwall_mortar",
@@ -1603,7 +1720,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "mat_rime_glass",
@@ -1621,7 +1739,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "mat_cinder_salt",
@@ -1639,7 +1758,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "mat_starhollow_dust",
@@ -1657,7 +1777,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "mat_mire_ichor",
@@ -1675,7 +1796,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "mat_brood_chitin",
@@ -1693,7 +1815,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "mat_stag_tendon",
@@ -1711,7 +1834,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "mat_wrathslag",
@@ -1729,7 +1853,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "mat_leviathan_baleen",
@@ -1747,7 +1872,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "mat_colossus_filament",
@@ -1765,7 +1891,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "mat_sounding_horn",
@@ -1783,7 +1910,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "mat_gravewend_haft",
@@ -1801,7 +1929,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "mat_null_sigil_ink",
@@ -1819,7 +1948,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "mat_quiet_lamp_oil",
@@ -1837,7 +1967,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "potion_energy_greater",
@@ -1855,7 +1986,8 @@
     "restoreResourceType": "Energy",
     "restoreAmount": 150,
     "restoreToMax": false,
-    "goldPrice": 22000
+    "goldPrice": 22000,
+    "tags": []
   },
   {
     "id": "potion_energy_grand",
@@ -1873,7 +2005,8 @@
     "restoreResourceType": "Energy",
     "restoreAmount": 400,
     "restoreToMax": false,
-    "goldPrice": 54000
+    "goldPrice": 54000,
+    "tags": []
   },
   {
     "id": "potion_stamina_greater",
@@ -1891,7 +2024,8 @@
     "restoreResourceType": "Stamina",
     "restoreAmount": 150,
     "restoreToMax": false,
-    "goldPrice": 22000
+    "goldPrice": 22000,
+    "tags": []
   },
   {
     "id": "potion_stamina_grand",
@@ -1909,7 +2043,8 @@
     "restoreResourceType": "Stamina",
     "restoreAmount": 400,
     "restoreToMax": false,
-    "goldPrice": 54000
+    "goldPrice": 54000,
+    "tags": []
   },
   {
     "id": "potion_health_greater",
@@ -1927,7 +2062,8 @@
     "restoreResourceType": "Health",
     "restoreAmount": 150,
     "restoreToMax": false,
-    "goldPrice": 17000
+    "goldPrice": 17000,
+    "tags": []
   },
   {
     "id": "elixir_stamina_restoration",
@@ -1945,7 +2081,8 @@
     "restoreResourceType": "Stamina",
     "restoreAmount": 0,
     "restoreToMax": true,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "statbag_greater",
@@ -1963,7 +2100,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "statbag_ancient",
@@ -1981,7 +2119,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "sigil_lastwatch_lamp_normal",
@@ -1999,7 +2138,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "sigil_lastwatch_lamp_hard",
@@ -2017,7 +2157,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "sigil_lastwatch_lamp_legendary",
@@ -2035,7 +2176,8 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
   },
   {
     "id": "sigil_lastwatch_lamp_nightmare",
@@ -2053,6 +2195,586 @@
     "restoreResourceType": null,
     "restoreAmount": 0,
     "restoreToMax": false,
-    "goldPrice": 0
+    "goldPrice": 0,
+    "tags": []
+  },
+  {
+    "id": "mat_warren_teeth",
+    "name": "Warren Teeth",
+    "description": "Goblins replace them constantly and leave the old ones where they fall. A tunnel floor is half gravel and half this.",
+    "rarity": "Green",
+    "type": "Material",
+    "artKey": "mat_warren_teeth",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": "mat_brood_carapace",
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": [
+      "Goblin"
+    ]
+  },
+  {
+    "id": "mat_brood_carapace",
+    "name": "Brood Carapace",
+    "description": "Plate off something that outgrew three of these before anyone got close enough to measure.",
+    "rarity": "Blue",
+    "type": "Material",
+    "artKey": "mat_brood_carapace",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": [
+      "Goblin",
+      "Beast"
+    ]
+  },
+  {
+    "id": "mat_stag_ash",
+    "name": "Ashen Stag Ash",
+    "description": "What is left where one lay down. The Heartmarch hunters do not collect it and will not say why.",
+    "rarity": "Blue",
+    "type": "Material",
+    "artKey": "mat_stag_ash",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": "mat_deepwood_heart",
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": [
+      "Beast"
+    ]
+  },
+  {
+    "id": "mat_deepwood_heart",
+    "name": "Deepwood Heart",
+    "description": "Cut from an apex that had been growing since before the Sundering. Still warm four days out.",
+    "rarity": "Purple",
+    "type": "Material",
+    "artKey": "mat_deepwood_heart",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": [
+      "Beast"
+    ]
+  },
+  {
+    "id": "mat_gravesalt",
+    "name": "Gravesalt",
+    "description": "The Watch packs it around anything it has to move twice. It works, and nobody has asked how.",
+    "rarity": "Green",
+    "type": "Material",
+    "artKey": "mat_gravesalt",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": "mat_barrow_iron",
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": [
+      "Undead"
+    ]
+  },
+  {
+    "id": "mat_barrow_iron",
+    "name": "Barrow Iron",
+    "description": "Grave-goods iron, buried long enough to take on the habit. It does not rust and it does not hold an edge — the Watch considers the trade fair.",
+    "rarity": "Purple",
+    "type": "Material",
+    "artKey": "mat_barrow_iron",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": [
+      "Undead"
+    ]
+  },
+  {
+    "id": "mat_amber_rot",
+    "name": "Amber Rot",
+    "description": "The Awakening's own residue. It is warm, it is slightly wrong, and it keeps indefinitely in a sealed jar that nobody wants in their pack.",
+    "rarity": "Blue",
+    "type": "Material",
+    "artKey": "mat_amber_rot",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": "mat_glutbound_core",
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": [
+      "Shadow"
+    ]
+  },
+  {
+    "id": "mat_glutbound_core",
+    "name": "Glutbound Core",
+    "description": "The dense part of a thing that had nearly finished becoming something else.",
+    "rarity": "Purple",
+    "type": "Material",
+    "artKey": "mat_glutbound_core",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": [
+      "Shadow",
+      "Demon"
+    ]
+  },
+  {
+    "id": "mat_command_sigil",
+    "name": "Cracked Command Sigil",
+    "description": "Prised off a Wrought mid-order. It is still trying to finish the sentence.",
+    "rarity": "Blue",
+    "type": "Material",
+    "artKey": "mat_command_sigil",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": "mat_colossus_filament",
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": [
+      "Construct"
+    ]
+  },
+  {
+    "id": "mat_brimstone_slag",
+    "name": "Brimstone Slag",
+    "description": "Cools where a Swollen thing stood too long. Emberpan is paved in it, mostly.",
+    "rarity": "Blue",
+    "type": "Material",
+    "artKey": "mat_brimstone_slag",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": "mat_glutbound_core",
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": [
+      "Demon"
+    ]
+  },
+  {
+    "id": "mat_leviathan_tooth",
+    "name": "Leviathan Tooth",
+    "description": "One of very many, and still the largest object most people will ever hold.",
+    "rarity": "Purple",
+    "type": "Material",
+    "artKey": "mat_leviathan_tooth",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": [
+      "Horror"
+    ]
+  },
+  {
+    "id": "mat_kronarch_seal",
+    "name": "Kronarch's Broken Seal",
+    "description": "From the muster-rolls of the army that won against nothing. Most of the names are legible.",
+    "rarity": "Purple",
+    "type": "Material",
+    "artKey": "mat_kronarch_seal",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": [
+      "Legion"
+    ]
+  },
+  {
+    "id": "mat_sovereign_scale",
+    "name": "Sovereign's Shed Scale",
+    "description": "The Gauntlet collects them. It has never said what for and has never been asked twice.",
+    "rarity": "Orange",
+    "type": "Material",
+    "artKey": "mat_sovereign_scale",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": [
+      "Dragon"
+    ]
+  },
+  {
+    "id": "mat_lamp_black",
+    "name": "Lamp-Black",
+    "description": "Soot off a relay lamp, ground fine. The Watch hems its hoods with it so a courier does not shine in a doorway.",
+    "rarity": "Green",
+    "type": "Material",
+    "artKey": "mat_lamp_black",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": "mat_sable_thread",
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": []
+  },
+  {
+    "id": "mat_sable_thread",
+    "name": "Sable Vein Thread",
+    "description": "The Houses dye it twice and will not discuss the second dye.",
+    "rarity": "Purple",
+    "type": "Material",
+    "artKey": "mat_sable_thread",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": []
+  },
+  {
+    "id": "mat_pitch_seal",
+    "name": "Marsh Pitch",
+    "description": "Boiled down over three days. Gravewardens seal their wades with it and their coffins too.",
+    "rarity": "Green",
+    "type": "Material",
+    "artKey": "mat_pitch_seal",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": []
+  },
+  {
+    "id": "mat_cork_iron",
+    "name": "Cork-and-Iron Sole",
+    "description": "Salvager's stock. Buoyant enough to float a boot and heavy enough to keep it down.",
+    "rarity": "Blue",
+    "type": "Material",
+    "artKey": "mat_cork_iron",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": []
+  },
+  {
+    "id": "mat_resonant_brass",
+    "name": "Resonant Brass",
+    "description": "Cast to hum at one note and no other. The Choir orders it by the tone, never the weight.",
+    "rarity": "Purple",
+    "type": "Material",
+    "artKey": "mat_resonant_brass",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": []
+  },
+  {
+    "id": "mat_siege_lead",
+    "name": "Siege Lead",
+    "description": "Backing for a breaker's visor. A Wrought does not aim, which makes shielding a guess everywhere at once.",
+    "rarity": "Blue",
+    "type": "Material",
+    "artKey": "mat_siege_lead",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": []
+  },
+  {
+    "id": "potion_energy_relay",
+    "name": "Relay Draught",
+    "description": "Restores 900 Energy. Issued to a courier who is not expected to stop.",
+    "rarity": "Orange",
+    "type": "Consumable",
+    "artKey": "potion_energy_relay",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": false,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "restoreResourceType": "Energy",
+    "restoreAmount": 900,
+    "restoreToMax": false,
+    "goldPrice": 108000,
+    "tags": []
+  },
+  {
+    "id": "potion_stamina_relay",
+    "name": "Warhorn Draught",
+    "description": "Restores 900 Stamina. Drunk by a company that has decided the thing in front of it is going down today.",
+    "rarity": "Orange",
+    "type": "Consumable",
+    "artKey": "potion_stamina_relay",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": false,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "restoreResourceType": "Stamina",
+    "restoreAmount": 900,
+    "restoreToMax": false,
+    "goldPrice": 108000,
+    "tags": []
+  },
+  {
+    "id": "potion_health_grand",
+    "name": "Grand Healing Poultice",
+    "description": "Restores 400 Health. Field-standard for anything the Weir calls a bad week.",
+    "rarity": "Purple",
+    "type": "Consumable",
+    "artKey": "potion_health_grand",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": false,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "restoreResourceType": "Health",
+    "restoreAmount": 400,
+    "restoreToMax": false,
+    "goldPrice": 44000,
+    "tags": []
+  },
+  {
+    "id": "elixir_health_restoration",
+    "name": "Ancient's Mending",
+    "description": "Refills your Health completely. Found, never sold.",
+    "rarity": "Purple",
+    "type": "Consumable",
+    "artKey": "elixir_health_restoration",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": false,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "restoreResourceType": "Health",
+    "restoreAmount": 0,
+    "restoreToMax": true,
+    "goldPrice": 0,
+    "tags": []
+  },
+  {
+    "id": "statbag_oathsworn",
+    "name": "Oathsworn Cache",
+    "description": "Contains 65 unassigned skill points. Left by a company that did not need them after all.",
+    "rarity": "Purple",
+    "type": "StatBag",
+    "artKey": "statbag_oathsworn",
+    "statPointsOnUse": 65,
+    "isCraftingIngredient": false,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": "statbag_ancient",
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": []
+  },
+  {
+    "id": "potion_devils_tea",
+    "name": "The Devil's Tea",
+    "description": "Restores 260 Energy. He offers it to everyone who comes to kill him. Several have stayed for a second cup and one is reportedly still there.",
+    "rarity": "Purple",
+    "type": "Consumable",
+    "artKey": "potion_devils_tea",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": false,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "restoreResourceType": "Energy",
+    "restoreAmount": 260,
+    "restoreToMax": false,
+    "goldPrice": 38000,
+    "tags": []
+  },
+  {
+    "id": "potion_long_afternoon",
+    "name": "The Long Afternoon",
+    "description": "Restores 260 Stamina. Bottled from a nap of genuinely historic proportions.",
+    "rarity": "Purple",
+    "type": "Consumable",
+    "artKey": "potion_long_afternoon",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": false,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "restoreResourceType": "Stamina",
+    "restoreAmount": 260,
+    "restoreToMax": false,
+    "goldPrice": 38000,
+    "tags": []
+  },
+  {
+    "id": "mat_censer_resin",
+    "name": "Perpetual Censer Resin",
+    "description": "Scraped from the inside of a censer lit during the Age of Dawn. There is still some left. There has always been some left.",
+    "rarity": "Orange",
+    "type": "Material",
+    "artKey": "mat_censer_resin",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": []
+  },
+  {
+    "id": "mat_unwalked_leather",
+    "name": "Unwalked Leather",
+    "description": "Cut for slippers that were never worn outdoors. Immaculate, and faintly reproachful.",
+    "rarity": "Purple",
+    "type": "Material",
+    "artKey": "mat_unwalked_leather",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": []
+  },
+  {
+    "id": "statbag_reconsideration",
+    "name": "A Moment's Reconsideration",
+    "description": "Grants 25 unassigned skill points. He suggests you think about where you put them. He is not going to elaborate and he is not going to stop looking at you.",
+    "rarity": "Blue",
+    "type": "StatBag",
+    "artKey": "statbag_reconsideration",
+    "statPointsOnUse": 25,
+    "isCraftingIngredient": false,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "restoreResourceType": null,
+    "restoreAmount": 0,
+    "restoreToMax": false,
+    "goldPrice": 0,
+    "tags": []
   }
 ]
