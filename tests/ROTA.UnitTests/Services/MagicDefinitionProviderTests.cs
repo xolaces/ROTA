@@ -61,8 +61,12 @@ public class MagicDefinitionProviderTests : IDisposable
 
         smite.Should().NotBeNull();
         smite!.Name.Should().Be("Smite");
-        smite.ProcChance.Should().BeApproximately(0.10, 0.001);
-        smite.ProcAmount.Should().BeApproximately(0.60, 0.001);
+        // Owner decision 2026-09-07 — Smite is the pinnacle damage magic, so it sits at
+        // the top of the Orange band. MagicProcBandTests owns the balance invariants;
+        // this test only proves GetById resolves a real definition.
+        smite.Rarity.Should().Be(ROTA.Domain.Enums.ItemRarity.Orange);
+        smite.ProcChance.Should().BeApproximately(0.18, 0.001);
+        smite.ProcAmount.Should().BeApproximately(1.10, 0.001);
     }
 
     [Fact]
