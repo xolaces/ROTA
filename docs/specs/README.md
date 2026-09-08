@@ -37,6 +37,7 @@ queue a build agent works against; it stays as the historical decision record af
 |---|---|---|---|
 | `system-21-guild-foundations.md` | System 21 | **S1+S2 merged; S3a/S3b on branches; succession auto-driver open** | Guild/clan: identity, membership, roles, guild chat, sigil economy, guild raids. Campaigns + async guild wars on the roadmap. |
 | `system-24-gauntlet-event-experience.md` | System 24 / **T76** | **Owner decisions LOCKED; S1 foundation BUILT 2026-06-10 (§6)** | DotD-parity Gauntlet event experience: 4 level brackets (incl. Ancient 5000+), highest-stage ranking, late-ladder HP ramp, Neck/Ring event families + run identity, event page. Remaining: seasonal rank-GEAR mechanism (needs T77 content), settlement screen, prize table UI. |
+| `system-26-gravewends-table.md` | System 26 | **Specified 2026-09-07, NOT built** | The communal raid: identical loot for every participant regardless of contribution (the Rhalmarius pattern). 4,000,000 HP, 250 Pitchfork Tokens to summon, 0.3%/piece with a hard cap of one piece per completion, and the only summon cooldown in the game — two hours, anchored to when the raid ENDS rather than when it starts. Blocked on the third Orange set existing. |
 
 ## Backlog (`backlog/`)
 

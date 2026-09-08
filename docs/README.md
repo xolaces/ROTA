@@ -42,8 +42,10 @@ raid banks hang off it. New content is checked against Master Canon XX, "Princip
 drop-curve analyses. These are dated and are **not** maintained — they are the evidence behind a
 decision, useful when someone asks "why is this number what it is".
 
-[`research/`](research/) holds genre comparisons. [`design/`](design/) holds per-system design notes
-(player market, potion economy, tutorial opening).
+[`research/`](research/) holds genre comparisons. [`design/`](design/) holds per-system design
+notes — player market, potion economy, tutorial opening, and
+[`LONG_HORIZON_REWARDS.md`](design/LONG_HORIZON_REWARDS.md) (the 14-day login cycle, the Idol,
+milestone design rights, and anniversary ROTA Coins).
 
 ## History
 

@@ -47,6 +47,30 @@ up unattended work starts here and finishes here.
 > owner, or a tick with a Unity headless-compile gate added to the protocol. They stay ranked because
 > they matter; they are simply not takeable here.
 
+### RD1. Sweep — repeat a cleared node without replaying it  *(owner-deferred 2026-09-07)*
+Auto-battle that unlocks only AFTER a first manual clear, so the proof-of-mastery gate survives but
+the repetition does not. The paper calls this table stakes for 2026 and names the precedents (Raid:
+Shadow Legends "Multi-Battle", MapleStory Idle "Sweep", AFK Arena "Fast Rewards").
+
+**Why it matters here specifically:** the zone-rerun achievement ladder asks for up to **500 reruns**
+of a node the player has already proven they can beat. That ladder shipped in System 25 and is the
+single strongest argument for Sweep in the game.
+
+Owner's framing for how it is earned: possibly a **$5 shop pack**, or a **zone 10+ reward** once the
+campaign reaches that depth. Not yet decided, and the choice matters — a paid Sweep in a game whose
+core loop is repetition is a monetisation decision, not a convenience one.
+
+### RD2. Tourist mode / auto-scaling old raids  *(owner-deferred 2026-09-07)*
+The paper is blunt that the "can't catch up" problem is what actually killed Dawn's acquisition, not
+its grind: *"It is much more difficult for new players to get up to the ranks of other players these
+days, due to a combination of power-creep and inaccessible raid events."*
+
+ROTA already has the gap in miniature — chapter-1 raids sit at 4,000 HP and chapter-7 raids at
+4,670,000. A new player joining a server a year in cannot meaningfully participate in most of the
+raid list. Lost Ark's January 2025 Frontier system is the reference implementation.
+
+Owner: assess later. Recorded now because the cost of retrofitting this grows with every chapter.
+
 ### RB1. Beta-tester acknowledgement — a badge on the profile  *(owner idea, 2026-09-07)*
 The people who play the beta should carry a mark of it afterwards. Owner's framing: "a banner or
 icon on their profile", explicitly a later feature — recorded now so the DATA it needs is captured
@@ -124,6 +148,24 @@ right; the anchor is high.
 ---
 
 ## Owner decisions — the agent must not decide these
+
+0l. **Two Gauntlet rank magics are 3.4x the strongest ordinary Orange, and the mechanism they were
+   built for no longer exists.** *(found while rebalancing the magic catalogue, 2026-09-07.)*
+   `magic_wrath_of_the_ancients` (27% x +250%, EV 0.675) and `magic_blessing_of_the_ancients`
+   (15% x +425%, EV 0.637) carry `OffCap = true` — they were designed as System 16 auras applied
+   OUTSIDE `MaxAggregateProcBonus`. That path was later removed; `RaidService` now says plainly
+   *"there is no longer any off-cap aura path at all; offCapBonus stays 0."*
+
+   So they no longer bypass the cap — they flow through the ordinary magic loop, where the strongest
+   normal Orange is EV 0.198. They are 3.4x it. I rebalanced them into the band, their
+   locked-number tests failed, and **the tests were right**: this is pinned Gauntlet prize content,
+   not catalogue content, and it is not the agent's call. Reverted and exempted from
+   `MagicProcBandTests`.
+
+   Three ways out, all owner calls: (a) leave them — a seasonal trophy for the single top Gauntlet
+   player is arguably meant to be this strong; (b) restore an off-cap path so they behave as
+   designed; (c) bring them into the band and let the prize be the exclusivity rather than the
+   number.
 
 0k. **The sigil fix cut raid access by 40x. What should the rerun rate be?** *(highest-value open
    call in the queue — it decides how often half the game happens.)*
