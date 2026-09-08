@@ -55,33 +55,71 @@ while removing the outcome where a year of devotion ends because of a flight.
 
 The 14-day cycle above runs alongside the Idol and is unaffected by it.
 
-## 3. Milestone design rights — the Honorable Rock
+## 3. Milestone design rights — the pinnacle magics
 
-**Decided.** The first **three** players to reach each milestone level earn the right to **design a
-magic**.
+**Decided, and partly built.** The **first player** to reach a milestone level designs that level's
+magic outright. Everyone who reaches the same level afterwards **inherits that design and unlocks it
+permanently** — the first player earns the authorship, not exclusivity. A player may own **one of
+each**; the per-raid magic slot cap is unchanged, so owning them all is not casting them all.
 
-Milestone levels: **2,500 · 5,000 · 7,500 · 10,000 · 15,000 · 25,000**
+Milestone levels: **1,000 · 2,500 · 5,000 · 7,500 · 10,000 · 15,000 · 25,000** — later means rarer.
 
-The paper's version of this is MapleStory Idle's "Honorable Rock," which permanently engraves the
-first ten guilds per server to clear new content, and Dawn's own end-of-campaign armour sets named
-after the first guild to clear them on Hard. Its assessment: *"a brilliant, cheap, deeply social
-prestige hook that costs almost nothing to implement and produces years of guild loyalty."*
+### What a winner may design
 
-**The vessels already exist.** `magics.json` carries five inert Orange placeholders —
-`magic_pinnacle_5000`, `_7500`, `_10000`, `_15000`, `_25000` — sitting at 0% chance and 0% amount,
-reserved and doing nothing. They are exactly this feature's storage, already shipped. Only
-**2,500 is missing** and needs adding.
+Anything, within balance. Explicitly on the table (owner): a damage proc, an item drop from the
+magic itself, or an *interactive* effect — a chance to force your mount's proc to fire, a boost to
+your mount's proc chance, a general's ability re-triggering, and so on.
 
-Three constraints on what a winner may design, so the prize cannot break the game:
+> **These exotic effects exist ONLY on pinnacle magics.** No ordinary magic and no item may carry one
+> until the owner says otherwise. `PinnacleMagicTests.ExoticEffectTypesAppearOnlyOnPinnacleMagics`
+> enforces it, so the rule cannot erode by a later content pass copying a pinnacle entry as a
+> template.
 
-- Magnitude is fixed by rarity. An Orange damage proc is **+110%**, full stop — the winner chooses
-  the *name*, the *flavour*, and the *chance within 14–18%*, not the power.
-- `MagicProcBandTests` enforces this, so a designed magic that breaks the band fails the build rather
-  than reaching players.
-- The player's name goes in the description. That is the actual prize.
+Three limits keep a designed magic from breaking the game:
 
-**Deferred by the owner:** the guild equivalent, and the questing equivalent. Questing is to be
-assessed before launch.
+- **Magnitude is not the winner's to choose.** An Orange damage proc is +110%, full stop. They pick
+  the name, the flavour, and the chance within 14–18%.
+- `MagicProcBandTests` fails the build rather than shipping a magic that breaks the band.
+- **An undesigned placeholder must be genuinely inert** (0% / 0.0). A placeholder carrying a live
+  number is the "silent stub that looks complete" the code-labelling rules forbid.
+
+### The level-1,000 showcase — Ascendant's Banner
+
+Designed in-house to demonstrate what a pinnacle magic can do that an ordinary one cannot. **Built
+and tested**, not a stub.
+
+`FlatAttackAura`, a new effect type: **+120 flat Attack on every hit landed on the raid, by anyone,
+for as long as it is applied.** Always on — no roll.
+
+It was chosen over the other candidates for one property. Being **flat and raid-wide, it helps the
+weakest participant most**: a 500-Attack newcomer gains about a quarter of their damage from it,
+while the level-1,000 veteran who applied it gains about two percent. Every other power in the game
+widens the distance between a veteran and a newcomer. This is the only one that narrows it — which
+is precisely the failure the research paper blames for ending Dawn's new-player acquisition.
+
+It also cannot inflate: it enters through **Attack**, so it flows through `(ATK × 4 + DEF) × hitSize`
+like any stat point and never multiplies with a proc.
+
+### A menu for future winners
+
+Brainstormed alongside the Banner and left here as seeds rather than decisions:
+
+| Idea | What it does | Why it is interesting |
+|---|---|---|
+| **The Spur** | When your mount's proc fails, a chance to fire it anyway | The owner's own suggestion. Conditional on gear, so it rewards a build rather than a slot |
+| **Echo of Command** | Chance to re-trigger a general's ability in the same hit | Makes legion composition matter at the moment of the hit |
+| **The Long Count** | Every hit that procs nothing raises the next hit's proc chance | A pity counter. Turns bad luck into rising tension instead of a flat feel-bad |
+| **Tithe of the Fallen** | The raid's killing blow drops one extra item for *every* participant | The Rhalmarius euphoria, in a magic rather than a raid |
+| **Quartermaster's Seal** | Converts a share of the raid's gold into materials | The first magic that changes what a raid *pays*, not how hard it hits |
+
+### Still missing
+
+**Nothing grants a pinnacle magic to anyone.** There is no code path from reaching a milestone level
+to owning `magic_pinnacle_*`. The content exists, the levels are configured, the first-claim ledger
+exists — but the delivery does not. See `docs/AGENT_BACKLOG.md`.
+
+**Deferred by the owner:** the guild equivalent, and the questing equivalent (to be assessed before
+launch).
 
 ## 4. Anniversaries — ROTA Coins
 

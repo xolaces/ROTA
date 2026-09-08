@@ -917,7 +917,26 @@ public sealed class RaidService : IRaidService
                 ? await _battalion.ComputePowerAsync(playerId, combat.EffectiveAttack, combat.EffectiveDefense, ct)
                 : 0L;
 
-            long baseValue = (combat.EffectiveAttack * 4L) + combat.EffectiveDefense;
+            // Applied magics are read ONCE, here, because a FlatAttackAura has to reach baseValue
+            // below while the damage-proc loop further down needs the same list. Still inside the
+            // advisory lock, so the "we see the current applied-magic list" guarantee is unchanged.
+            var appliedMagics = isGauntlet
+                ? (IReadOnlyList<RaidMagic>)System.Array.Empty<RaidMagic>()
+                : await _raidMagics.GetForRaidAsync(activeRaidId, ct);
+
+            // FlatAttackAura (pinnacle-only) — always-on flat Attack for EVERY hit on this raid, not
+            // just the applier's. It enters through Attack rather than as a damage bonus, so it flows
+            // through (ATK x 4 + DEF) x hitSize exactly like the player's own stats and cannot
+            // interact multiplicatively with anything.
+            long auraFlatAttack = 0;
+            foreach (var rm in appliedMagics)
+            {
+                var def = _magicDefs.GetById(rm.MagicDefinitionId);
+                if (def is not null && def.EffectType == MagicEffectType.FlatAttackAura)
+                    auraFlatAttack += (long)def.ProcAmount;
+            }
+
+            long baseValue = ((combat.EffectiveAttack + auraFlatAttack) * 4L) + combat.EffectiveDefense;
             long charBase  = isGauntlet
                 ? Math.Max(1L, (long)(battalionPower * multiplier))
                 : Math.Max(1, (long)(baseValue * hitSize * multiplier));
@@ -1034,9 +1053,6 @@ public sealed class RaidService : IRaidService
             // Loaded inside the advisory lock so we see the current applied-magic list.
             // Gauntlet (D8) applies no magics — an empty list zeroes BOTH the magic damage procs here
             // and the CritChanceFlat magic-crit loop below, so the Gauntlet crit is pure Discernment.
-            var appliedMagics = isGauntlet
-                ? (IReadOnlyList<RaidMagic>)System.Array.Empty<RaidMagic>()
-                : await _raidMagics.GetForRaidAsync(activeRaidId, ct);
             long magicBonusRaw = 0;
             foreach (var raidMagic in appliedMagics)
             {

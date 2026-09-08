@@ -25,8 +25,8 @@ namespace ROTA.UnitTests.Balance;
 ///
 /// <para>Deliberately out of scope: GoldProc and XpProc magics keep large multipliers, because a
 /// 600% XP proc is a pacing knob rather than a damage-scaling risk, and CritChanceFlat magics carry
-/// no proc magnitude at all. The five inert pinnacle placeholders are reserved for the milestone-level
-/// winners to design and are exempt until they carry real values.</para>
+/// no proc magnitude at all. Pinnacle magics are exempt entirely — they are designed by
+/// milestone-level winners and governed by PinnacleMagicTests.</para>
 /// </remarks>
 public class MagicProcBandTests
 {
@@ -54,12 +54,13 @@ public class MagicProcBandTests
         "magic_wrath_of_the_ancients", "magic_blessing_of_the_ancients",
     };
 
-    /// <summary>Inert placeholders awaiting a milestone winner's design.</summary>
-    private static readonly HashSet<string> Reserved = new()
-    {
-        "magic_pinnacle_5000", "magic_pinnacle_7500", "magic_pinnacle_10000",
-        "magic_pinnacle_15000", "magic_pinnacle_25000",
-    };
+    /// <summary>
+    /// Pinnacle magics — one per milestone level, designed by the first player to reach it. Matched
+    /// by PREFIX rather than a hardcoded list: the list version was already stale one commit after it
+    /// was written, because it named five ids and levels 1,000 and 2,500 were added afterwards.
+    /// PinnacleMagicTests owns their rules.
+    /// </summary>
+    private static bool IsPinnacle(string id) => id.StartsWith("magic_pinnacle");
 
     private record Magic(string Id, string Rarity, string EffectType, double Chance, double Amount)
     {
@@ -86,7 +87,7 @@ public class MagicProcBandTests
             var effect = m.GetProperty("effectType").GetString() ?? "";
             if (effect != "DamageProc") continue;
             var id = m.GetProperty("id").GetString() ?? "?";
-            if (Reserved.Contains(id) || RankMagics.Contains(id)) continue;
+            if (IsPinnacle(id) || RankMagics.Contains(id)) continue;
             list.Add(new Magic(
                 id,
                 m.GetProperty("rarity").GetString() ?? "?",

@@ -47,6 +47,27 @@ up unattended work starts here and finishes here.
 > owner, or a tick with a Unity headless-compile gate added to the protocol. They stay ranked because
 > they matter; they are simply not takeable here.
 
+### RC1. Nothing grants a pinnacle magic to anyone  *(found 2026-09-07)*
+The milestone-design-rights feature is content-complete and delivery-incomplete. Seven
+`magic_pinnacle_*` entries exist, all seven levels are configured in `LevelingConfig.PinnacleGemRewards`
+(so `IsPinnacleLevel` recognises them), `PinnacleService.RecordFirstClaimAsync` already logs the first
+claimant per level, and the level-1,000 magic is designed and working in combat.
+
+**But there is no code path from reaching a milestone level to owning the magic.** A grep for
+pinnacle + magic + grant across Application and Infrastructure returns nothing but config comments.
+So a player who hits 10,000 gets the gems and the first-claim row, and never receives `Ancient's
+Wrath`.
+
+What it needs: a grant at the same chokepoint the gems use (`GrantLevelUpPointsAsync`), idempotent on
+`(player, magicId)` the way every other grant in this codebase is, writing to `player_magics`. The
+"everyone after the first inherits the design" rule means the grant is unconditional at that level —
+it is not a first-claim-only reward, so it must not be gated on the `PinnacleFirstClaim` row.
+
+Note while here: `IsPinnacleLevel` infers "is this a milestone" from "does this level pay gems",
+which is why levels 15,000 and 25,000 had magics but were not milestones until this session added
+their gem amounts. Those two amounts (3,500 and 5,000) are extrapolated from the shipped curve and
+are the owner's to retune — CLAUDE.md had recorded them as deliberately omitted pending confirmation.
+
 ### RD1. Sweep — repeat a cleared node without replaying it  *(owner-deferred 2026-09-07)*
 Auto-battle that unlocks only AFTER a first manual clear, so the proof-of-mastery gate survives but
 the repetition does not. The paper calls this table stakes for 2026 and names the precedents (Raid:

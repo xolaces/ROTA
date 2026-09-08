@@ -384,6 +384,76 @@ public class RaidServiceTests
         result.Response.DamageDealt.Should().BeGreaterOrEqualTo(1);
     }
 
+    /// <summary>
+    /// The level-1,000 pinnacle showcase, end to end through the real damage path.
+    /// </summary>
+    /// <remarks>
+    /// A FlatAttackAura adds flat Attack to EVERY hit on the raid it is applied to, so it enters the
+    /// formula as a stat rather than as a damage bonus: base becomes (ATK + aura) x 4 + DEF. With the
+    /// test player's 10/10 and a +120 aura that is (10+120)x4+10 = 530 against an unbuffed 50, then
+    /// the usual [0.85, 1.15] band.
+    ///
+    /// The ratio is the point of the design and the reason this test asserts it: the aura multiplied
+    /// this weak player's damage by more than ten, and would move a level-1,000 player's by about two
+    /// percent. It is the only power in the game that helps the weakest participant most.
+    /// </remarks>
+    [Fact]
+    public async Task Hit_FlatAttackAura_AddsFlatAttackForEveryone()
+    {
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var applied = RaidMagic.Create(raid.Id, "magic_pinnacle_1000", player.Id);
+        b.RaidMagics.Setup(r => r.GetForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidMagic> { applied });
+        b.MagicDefs.Setup(m => m.GetById("magic_pinnacle_1000")).Returns(new MagicDefinition
+        {
+            Id = "magic_pinnacle_1000",
+            Name = "Ascendant's Banner",
+            EffectType = MagicEffectType.FlatAttackAura,
+            ProcChance = 1.0,
+            ProcAmount = 120.0,          // FLAT Attack, not a multiplier
+        });
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        // (10 + 120) * 4 + 10 = 530, x RNG[0.85, 1.15]
+        result.Response!.DamageDealt.Should().BeInRange(450, 610);
+        // An aura is not a proc — it must not surface as magic proc damage.
+        result.Response.MagicProcBonus.Should().Be(0);
+    }
+
+    /// <summary>
+    /// The same setup with an ordinary magic definition must leave damage exactly where it was, so a
+    /// raid with no aura applied is provably unaffected by the new code path.
+    /// </summary>
+    [Fact]
+    public async Task Hit_WithoutAura_DamageIsUnchanged()
+    {
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.DamageDealt.Should().BeInRange(42, 58);
+    }
+
     // HitRaidAsync — idempotency
 
     [Fact]
