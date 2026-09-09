@@ -17,7 +17,7 @@
     },
     "isPassive": false,
     "legionBonus": 5,
-    "iconPath": "",
+    "iconPath": "icons/unit/gen_ironward.png",
     "acquisition": "Quest drop"
   },
   {
@@ -38,7 +38,7 @@
     },
     "isPassive": false,
     "legionBonus": 10,
-    "iconPath": "",
+    "iconPath": "icons/unit/gen_ashblade.png",
     "acquisition": "Raid drop"
   },
   {
@@ -59,7 +59,7 @@
     },
     "isPassive": false,
     "legionBonus": 10,
-    "iconPath": "",
+    "iconPath": "icons/unit/gen_sylvaire.png",
     "acquisition": "Gem shop"
   },
   {
@@ -80,7 +80,7 @@
     },
     "isPassive": false,
     "legionBonus": 20,
-    "iconPath": "",
+    "iconPath": "icons/unit/gen_morvath.png",
     "acquisition": "Raid drop"
   },
   {
@@ -97,7 +97,7 @@
     "ability": null,
     "isPassive": false,
     "legionBonus": 0,
-    "iconPath": "",
+    "iconPath": "icons/unit/troop_militia.png",
     "acquisition": "Starting roster"
   },
   {
@@ -118,7 +118,7 @@
     },
     "isPassive": false,
     "legionBonus": 0,
-    "iconPath": "",
+    "iconPath": "icons/unit/troop_archers.png",
     "acquisition": "Quest drop"
   },
   {
@@ -135,7 +135,7 @@
     "ability": null,
     "isPassive": false,
     "legionBonus": 0,
-    "iconPath": "",
+    "iconPath": "icons/unit/troop_pikemen.png",
     "acquisition": "Quest drop"
   },
   {
@@ -156,7 +156,7 @@
     },
     "isPassive": false,
     "legionBonus": 0,
-    "iconPath": "",
+    "iconPath": "icons/unit/troop_acolytes.png",
     "acquisition": "Raid drop"
   },
   {
@@ -177,7 +177,7 @@
     },
     "isPassive": false,
     "legionBonus": 10,
-    "iconPath": "",
+    "iconPath": "icons/unit/gen_ironward_ii.png",
     "acquisition": "Crafting (General)"
   },
   {
@@ -198,7 +198,7 @@
     },
     "isPassive": false,
     "legionBonus": 15,
-    "iconPath": "",
+    "iconPath": "icons/unit/gen_ashblade_ii.png",
     "acquisition": "Crafting (General)"
   },
   {
@@ -215,7 +215,7 @@
     "ability": null,
     "isPassive": false,
     "legionBonus": 0,
-    "iconPath": "",
+    "iconPath": "icons/unit/troop_pikemen_ii.png",
     "acquisition": "Crafting (General)"
   },
   {

@@ -26,7 +26,7 @@
     ],
     "goldCost": 15000,
     "eventKey": null,
-    "iconPath": ""
+    "iconPath": "icons/recipe/craft_ironward_ii.png"
   },
   {
     "id": "craft_ashblade_ii",
@@ -60,7 +60,7 @@
     ],
     "goldCost": 40000,
     "eventKey": null,
-    "iconPath": ""
+    "iconPath": "icons/recipe/craft_ashblade_ii.png"
   },
   {
     "id": "craft_pikemen_ii",
@@ -89,7 +89,7 @@
     ],
     "goldCost": 8000,
     "eventKey": null,
-    "iconPath": ""
+    "iconPath": "icons/recipe/craft_pikemen_ii.png"
   },
   {
     "id": "craft_vanguard_ii",
@@ -118,7 +118,7 @@
     ],
     "goldCost": 50000,
     "eventKey": null,
-    "iconPath": ""
+    "iconPath": "icons/recipe/craft_vanguard_ii.png"
   },
   {
     "id": "craft_oathsteel_helm",
@@ -147,7 +147,7 @@
     ],
     "goldCost": 12000,
     "eventKey": null,
-    "iconPath": ""
+    "iconPath": "icons/recipe/craft_oathsteel_helm.png"
   },
   {
     "id": "craft_warrens_helm",

@@ -102,118 +102,118 @@ gear_sovereign_band,gear,Ring2,Orange,set_sovereign,Tithe-Band,One notch per cli
 gear_sovereign_wyrm,gear,Mount,Orange,set_sovereign,Sovereign's Wyrm,"Not a gift. A loan, from an institution that has never once explained its terms.",gear/gear_sovereign_wyrm.png
 gear_sovereign_greaves,gear,Boots,Orange,set_sovereign,Regalia Greaves,"Made to be seen on a stair. The Eternal Stair, specifically, and the Gauntlet knows it.",gear/gear_sovereign_greaves.png
 gear_sovereign_gauntlets,gear,Gloves,Orange,set_sovereign,Sovereign's Gauntlets,"The Gauntlet's namesake, and the only pair the tournament has ever formally issued.",gear/gear_sovereign_gauntlets.png
-gear_stoned_horns,gear,Head,Orange,set_stoned_devil,Horns of Considered Inaction,"Filed blunt by their owner, on purpose, over a long afternoon. He says they kept catching on doorframes. The Choir has written four papers on what else he might have meant.",gear/gear_stoned_horns.png
-gear_stoned_censer,gear,Neck,Orange,set_stoned_devil,The Perpetual Censer,"Lit some time during the Age of Dawn and never once since. Whatever is in it, there is still some left.",gear/gear_stoned_censer.png
-gear_stoned_robe,gear,Torso,Orange,set_stoned_devil,Robe of the Long Sabbatical,Cut for a being who intended to sit down and has now been sitting down for an Age. Remarkably comfortable. Alarmingly hard to damage.,gear/gear_stoned_robe.png
-gear_stoned_signet,gear,Ring1,Orange,set_stoned_devil,Signet of Declined Ascendancy,"He was offered a throne. He read the terms, asked two questions nobody could answer, and went back inside.",gear/gear_stoned_signet.png
-gear_stoned_band,gear,Ring2,Orange,set_stoned_devil,Band of the Fourth Reconsideration,There were three earlier ones. He is not looking for them.,gear/gear_stoned_band.png
+gear_stoned_horns,gear,Head,Orange,set_stoned_devil,The Sundown Ember,"Rolled at dusk, lit at dusk, and worn behind one ear like a circlet by an archdevil who maintains this is what it is for. The congregation stopped correcting him some centuries ago. It has never gone out, and nobody has ever seen him relight it.",gear/gear_stoned_horns.png
+gear_stoned_censer,gear,Neck,Orange,set_stoned_devil,The Perpetual Censer,"A vessel lit some time during the Age of Dawn and never once refilled. There is still some left. There has always been some left. Those who come to kneel do not always remember, afterwards, what they came to ask.",gear/gear_stoned_censer.png
+gear_stoned_robe,gear,Torso,Orange,set_stoned_devil,Robe of the Long Sabbatical,"Cut for a being who intended to sit down and has now been sitting down for an Age. Remarkably comfortable. Alarmingly hard to damage. It smells, faintly and permanently, of the room.",gear/gear_stoned_robe.png
+gear_stoned_signet,gear,Ring1,Orange,set_stoned_devil,Signet of Declined Ascendancy,"He was offered a throne. He read the terms, asked two questions nobody could answer, and went back inside. He says he will look at it again. He has been saying so for four hundred years.",gear/gear_stoned_signet.png
+gear_stoned_band,gear,Ring2,Orange,set_stoned_devil,Band of the Fourth Reconsideration,There were three earlier ones. He is not looking for them. He is fairly certain one of them is in the garden.,gear/gear_stoned_band.png
 gear_stoned_goat,gear,Mount,Orange,set_stoned_devil,Extremely Relaxed Hell-Goat,"It will carry you anywhere at exactly one speed. Attempts to hurry it have never once succeeded and, by every account, have never once been forgiven.",gear/gear_stoned_goat.png
-gear_stoned_slippers,gear,Boots,Orange,set_stoned_devil,Slippers of the Unwalked Path,Immaculate. Not a scuff on them. That is the joke and it is also the point.,gear/gear_stoned_slippers.png
-gear_stoned_mitts,gear,Gloves,Orange,set_stoned_devil,Mitts of Amiable Menace,He shakes hands. It is worse than the alternative and takes considerably longer.,gear/gear_stoned_mitts.png
+gear_stoned_slippers,gear,Boots,Orange,set_stoned_devil,Slippers of the Unwalked Path,Immaculate. Not a scuff on them. He means to go out. He means to go out most evenings.,gear/gear_stoned_slippers.png
+gear_stoned_mitts,gear,Gloves,Orange,set_stoned_devil,Mitts of Amiable Menace,"He shakes hands. It is worse than the alternative and takes considerably longer. He will ask after your family, and he will remember the answer, which is the genuinely frightening part.",gear/gear_stoned_mitts.png
 mat_iron_shard,item,Material,Grey,,Iron Shard,A fragment of the Iron Colossus. Used in crafting.,item/mat_iron_shard.png
 mat_arcane_dust,item,Material,White,,Arcane Dust,Residual arcane energy left behind by Malachar's servants.,item/mat_arcane_dust.png
 statbag_minor,item,StatBag,Green,,Minor Stat Bag,Contains 5 unassigned skill points. Use to add to your stat pool.,item/statbag_minor.png
 statbag_major,item,StatBag,Blue,,Major Stat Bag,Contains 15 unassigned skill points. Use to add to your stat pool.,item/statbag_major.png
-sigil_ironcolossus_normal,item,Sigil,Green,,Iron Sigil (Normal),A binding sigil used to summon the Iron Colossus on Normal difficulty.,item/sigil_ironcolossus_normal.png
-sigil_ironcolossus_hard,item,Sigil,Blue,,Iron Sigil (Hard),A binding sigil used to summon the Iron Colossus on Hard difficulty.,item/sigil_ironcolossus_hard.png
-sigil_ironcolossus_legendary,item,Sigil,Purple,,Iron Sigil (Legendary),A binding sigil used to summon the Iron Colossus on Legendary difficulty.,item/sigil_ironcolossus_legendary.png
-sigil_ironcolossus_nightmare,item,Sigil,Orange,,Iron Sigil (Nightmare),A binding sigil used to summon the Iron Colossus on Nightmare difficulty.,item/sigil_ironcolossus_nightmare.png
-sigil_malachar_normal,item,Sigil,Green,,Malachar's Sigil (Normal),A dark sigil bound to Malachar's essence. Summons him on Normal difficulty.,item/sigil_malachar_normal.png
-sigil_malachar_hard,item,Sigil,Blue,,Malachar's Sigil (Hard),A dark sigil bound to Malachar's essence. Summons him on Hard difficulty.,item/sigil_malachar_hard.png
-sigil_malachar_legendary,item,Sigil,Purple,,Malachar's Sigil (Legendary),A dark sigil bound to Malachar's essence. Summons him on Legendary difficulty.,item/sigil_malachar_legendary.png
-sigil_malachar_nightmare,item,Sigil,Orange,,Malachar's Sigil (Nightmare),A dark sigil bound to Malachar's essence. Summons him on Nightmare difficulty.,item/sigil_malachar_nightmare.png
-sigil_c1z1b_normal,item,Sigil,Green,,Ashen Causeway Sigil (Normal),A binding sigil used to summon Guardian of Ashen Causeway on Normal difficulty.,item/sigil_c1z1b_normal.png
-sigil_c1z1b_hard,item,Sigil,Blue,,Ashen Causeway Sigil (Hard),A binding sigil used to summon Guardian of Ashen Causeway on Hard difficulty.,item/sigil_c1z1b_hard.png
-sigil_c1z1b_legendary,item,Sigil,Purple,,Ashen Causeway Sigil (Legendary),A binding sigil used to summon Guardian of Ashen Causeway on Legendary difficulty.,item/sigil_c1z1b_legendary.png
-sigil_c1z1b_nightmare,item,Sigil,Orange,,Ashen Causeway Sigil (Nightmare),A binding sigil used to summon Guardian of Ashen Causeway on Nightmare difficulty.,item/sigil_c1z1b_nightmare.png
-sigil_c1z2b_normal,item,Sigil,Green,,Hollow Marches Sigil (Normal),A binding sigil used to summon Guardian of Hollow Marches on Normal difficulty.,item/sigil_c1z2b_normal.png
-sigil_c1z2b_hard,item,Sigil,Blue,,Hollow Marches Sigil (Hard),A binding sigil used to summon Guardian of Hollow Marches on Hard difficulty.,item/sigil_c1z2b_hard.png
-sigil_c1z2b_legendary,item,Sigil,Purple,,Hollow Marches Sigil (Legendary),A binding sigil used to summon Guardian of Hollow Marches on Legendary difficulty.,item/sigil_c1z2b_legendary.png
-sigil_c1z2b_nightmare,item,Sigil,Orange,,Hollow Marches Sigil (Nightmare),A binding sigil used to summon Guardian of Hollow Marches on Nightmare difficulty.,item/sigil_c1z2b_nightmare.png
-sigil_c2z1b_normal,item,Sigil,Green,,Emberfall Reach Sigil (Normal),A binding sigil used to summon Guardian of Emberfall Reach on Normal difficulty.,item/sigil_c2z1b_normal.png
-sigil_c2z1b_hard,item,Sigil,Blue,,Emberfall Reach Sigil (Hard),A binding sigil used to summon Guardian of Emberfall Reach on Hard difficulty.,item/sigil_c2z1b_hard.png
-sigil_c2z1b_legendary,item,Sigil,Purple,,Emberfall Reach Sigil (Legendary),A binding sigil used to summon Guardian of Emberfall Reach on Legendary difficulty.,item/sigil_c2z1b_legendary.png
-sigil_c2z1b_nightmare,item,Sigil,Orange,,Emberfall Reach Sigil (Nightmare),A binding sigil used to summon Guardian of Emberfall Reach on Nightmare difficulty.,item/sigil_c2z1b_nightmare.png
-sigil_c2z2b_normal,item,Sigil,Green,,Cinderwood Sigil (Normal),A binding sigil used to summon Guardian of Cinderwood on Normal difficulty.,item/sigil_c2z2b_normal.png
-sigil_c2z2b_hard,item,Sigil,Blue,,Cinderwood Sigil (Hard),A binding sigil used to summon Guardian of Cinderwood on Hard difficulty.,item/sigil_c2z2b_hard.png
-sigil_c2z2b_legendary,item,Sigil,Purple,,Cinderwood Sigil (Legendary),A binding sigil used to summon Guardian of Cinderwood on Legendary difficulty.,item/sigil_c2z2b_legendary.png
-sigil_c2z2b_nightmare,item,Sigil,Orange,,Cinderwood Sigil (Nightmare),A binding sigil used to summon Guardian of Cinderwood on Nightmare difficulty.,item/sigil_c2z2b_nightmare.png
-sigil_c2z3b_normal,item,Sigil,Green,,Gloomspire Sigil (Normal),A binding sigil used to summon Guardian of Gloomspire on Normal difficulty.,item/sigil_c2z3b_normal.png
-sigil_c2z3b_hard,item,Sigil,Blue,,Gloomspire Sigil (Hard),A binding sigil used to summon Guardian of Gloomspire on Hard difficulty.,item/sigil_c2z3b_hard.png
-sigil_c2z3b_legendary,item,Sigil,Purple,,Gloomspire Sigil (Legendary),A binding sigil used to summon Guardian of Gloomspire on Legendary difficulty.,item/sigil_c2z3b_legendary.png
-sigil_c2z3b_nightmare,item,Sigil,Orange,,Gloomspire Sigil (Nightmare),A binding sigil used to summon Guardian of Gloomspire on Nightmare difficulty.,item/sigil_c2z3b_nightmare.png
-sigil_c3z0b_normal,item,Sigil,Green,,Keepwall Sigil (Normal),A binding sigil used to summon Guardian of Keepwall on Normal difficulty.,item/sigil_c3z0b_normal.png
-sigil_c3z0b_hard,item,Sigil,Blue,,Keepwall Sigil (Hard),A binding sigil used to summon Guardian of Keepwall on Hard difficulty.,item/sigil_c3z0b_hard.png
-sigil_c3z0b_legendary,item,Sigil,Purple,,Keepwall Sigil (Legendary),A binding sigil used to summon Guardian of Keepwall on Legendary difficulty.,item/sigil_c3z0b_legendary.png
-sigil_c3z0b_nightmare,item,Sigil,Orange,,Keepwall Sigil (Nightmare),A binding sigil used to summon Guardian of Keepwall on Nightmare difficulty.,item/sigil_c3z0b_nightmare.png
-sigil_c3z1b_normal,item,Sigil,Green,,Sunken Vaults Sigil (Normal),A binding sigil used to summon Guardian of Sunken Vaults on Normal difficulty.,item/sigil_c3z1b_normal.png
-sigil_c3z1b_hard,item,Sigil,Blue,,Sunken Vaults Sigil (Hard),A binding sigil used to summon Guardian of Sunken Vaults on Hard difficulty.,item/sigil_c3z1b_hard.png
-sigil_c3z1b_legendary,item,Sigil,Purple,,Sunken Vaults Sigil (Legendary),A binding sigil used to summon Guardian of Sunken Vaults on Legendary difficulty.,item/sigil_c3z1b_legendary.png
-sigil_c3z1b_nightmare,item,Sigil,Orange,,Sunken Vaults Sigil (Nightmare),A binding sigil used to summon Guardian of Sunken Vaults on Nightmare difficulty.,item/sigil_c3z1b_nightmare.png
-sigil_c3z2b_normal,item,Sigil,Green,,Throne Approach Sigil (Normal),A binding sigil used to summon Guardian of Throne Approach on Normal difficulty.,item/sigil_c3z2b_normal.png
-sigil_c3z2b_hard,item,Sigil,Blue,,Throne Approach Sigil (Hard),A binding sigil used to summon Guardian of Throne Approach on Hard difficulty.,item/sigil_c3z2b_hard.png
-sigil_c3z2b_legendary,item,Sigil,Purple,,Throne Approach Sigil (Legendary),A binding sigil used to summon Guardian of Throne Approach on Legendary difficulty.,item/sigil_c3z2b_legendary.png
-sigil_c3z2b_nightmare,item,Sigil,Orange,,Throne Approach Sigil (Nightmare),A binding sigil used to summon Guardian of Throne Approach on Nightmare difficulty.,item/sigil_c3z2b_nightmare.png
-sigil_c3z3b_normal,item,Sigil,Green,,Shattered Spire Sigil (Normal),A binding sigil used to summon Guardian of Shattered Spire on Normal difficulty.,item/sigil_c3z3b_normal.png
-sigil_c3z3b_hard,item,Sigil,Blue,,Shattered Spire Sigil (Hard),A binding sigil used to summon Guardian of Shattered Spire on Hard difficulty.,item/sigil_c3z3b_hard.png
-sigil_c3z3b_legendary,item,Sigil,Purple,,Shattered Spire Sigil (Legendary),A binding sigil used to summon Guardian of Shattered Spire on Legendary difficulty.,item/sigil_c3z3b_legendary.png
-sigil_c3z3b_nightmare,item,Sigil,Orange,,Shattered Spire Sigil (Nightmare),A binding sigil used to summon Guardian of Shattered Spire on Nightmare difficulty.,item/sigil_c3z3b_nightmare.png
-sigil_c4z0b_normal,item,Sigil,Green,,Rimewood Sigil (Normal),A binding sigil used to summon Guardian of Rimewood on Normal difficulty.,item/sigil_c4z0b_normal.png
-sigil_c4z0b_hard,item,Sigil,Blue,,Rimewood Sigil (Hard),A binding sigil used to summon Guardian of Rimewood on Hard difficulty.,item/sigil_c4z0b_hard.png
-sigil_c4z0b_legendary,item,Sigil,Purple,,Rimewood Sigil (Legendary),A binding sigil used to summon Guardian of Rimewood on Legendary difficulty.,item/sigil_c4z0b_legendary.png
-sigil_c4z0b_nightmare,item,Sigil,Orange,,Rimewood Sigil (Nightmare),A binding sigil used to summon Guardian of Rimewood on Nightmare difficulty.,item/sigil_c4z0b_nightmare.png
-sigil_c4z1b_normal,item,Sigil,Green,,Frostmere Sigil (Normal),A binding sigil used to summon Guardian of Frostmere on Normal difficulty.,item/sigil_c4z1b_normal.png
-sigil_c4z1b_hard,item,Sigil,Blue,,Frostmere Sigil (Hard),A binding sigil used to summon Guardian of Frostmere on Hard difficulty.,item/sigil_c4z1b_hard.png
-sigil_c4z1b_legendary,item,Sigil,Purple,,Frostmere Sigil (Legendary),A binding sigil used to summon Guardian of Frostmere on Legendary difficulty.,item/sigil_c4z1b_legendary.png
-sigil_c4z1b_nightmare,item,Sigil,Orange,,Frostmere Sigil (Nightmare),A binding sigil used to summon Guardian of Frostmere on Nightmare difficulty.,item/sigil_c4z1b_nightmare.png
-sigil_c4z2b_normal,item,Sigil,Green,,Glacier Maw Sigil (Normal),A binding sigil used to summon Guardian of Glacier Maw on Normal difficulty.,item/sigil_c4z2b_normal.png
-sigil_c4z2b_hard,item,Sigil,Blue,,Glacier Maw Sigil (Hard),A binding sigil used to summon Guardian of Glacier Maw on Hard difficulty.,item/sigil_c4z2b_hard.png
-sigil_c4z2b_legendary,item,Sigil,Purple,,Glacier Maw Sigil (Legendary),A binding sigil used to summon Guardian of Glacier Maw on Legendary difficulty.,item/sigil_c4z2b_legendary.png
-sigil_c4z2b_nightmare,item,Sigil,Orange,,Glacier Maw Sigil (Nightmare),A binding sigil used to summon Guardian of Glacier Maw on Nightmare difficulty.,item/sigil_c4z2b_nightmare.png
-sigil_c4z3b_normal,item,Sigil,Green,,Pale Citadel Sigil (Normal),A binding sigil used to summon Guardian of Pale Citadel on Normal difficulty.,item/sigil_c4z3b_normal.png
-sigil_c4z3b_hard,item,Sigil,Blue,,Pale Citadel Sigil (Hard),A binding sigil used to summon Guardian of Pale Citadel on Hard difficulty.,item/sigil_c4z3b_hard.png
-sigil_c4z3b_legendary,item,Sigil,Purple,,Pale Citadel Sigil (Legendary),A binding sigil used to summon Guardian of Pale Citadel on Legendary difficulty.,item/sigil_c4z3b_legendary.png
-sigil_c4z3b_nightmare,item,Sigil,Orange,,Pale Citadel Sigil (Nightmare),A binding sigil used to summon Guardian of Pale Citadel on Nightmare difficulty.,item/sigil_c4z3b_nightmare.png
-sigil_c5z0b_normal,item,Sigil,Green,,Dustfall Sigil (Normal),A binding sigil used to summon Guardian of Dustfall on Normal difficulty.,item/sigil_c5z0b_normal.png
-sigil_c5z0b_hard,item,Sigil,Blue,,Dustfall Sigil (Hard),A binding sigil used to summon Guardian of Dustfall on Hard difficulty.,item/sigil_c5z0b_hard.png
-sigil_c5z0b_legendary,item,Sigil,Purple,,Dustfall Sigil (Legendary),A binding sigil used to summon Guardian of Dustfall on Legendary difficulty.,item/sigil_c5z0b_legendary.png
-sigil_c5z0b_nightmare,item,Sigil,Orange,,Dustfall Sigil (Nightmare),A binding sigil used to summon Guardian of Dustfall on Nightmare difficulty.,item/sigil_c5z0b_nightmare.png
-sigil_c5z1b_normal,item,Sigil,Green,,Emberpan Sigil (Normal),A binding sigil used to summon Guardian of Emberpan on Normal difficulty.,item/sigil_c5z1b_normal.png
-sigil_c5z1b_hard,item,Sigil,Blue,,Emberpan Sigil (Hard),A binding sigil used to summon Guardian of Emberpan on Hard difficulty.,item/sigil_c5z1b_hard.png
-sigil_c5z1b_legendary,item,Sigil,Purple,,Emberpan Sigil (Legendary),A binding sigil used to summon Guardian of Emberpan on Legendary difficulty.,item/sigil_c5z1b_legendary.png
-sigil_c5z1b_nightmare,item,Sigil,Orange,,Emberpan Sigil (Nightmare),A binding sigil used to summon Guardian of Emberpan on Nightmare difficulty.,item/sigil_c5z1b_nightmare.png
-sigil_c5z2b_normal,item,Sigil,Green,,Magma Rift Sigil (Normal),A binding sigil used to summon Guardian of Magma Rift on Normal difficulty.,item/sigil_c5z2b_normal.png
-sigil_c5z2b_hard,item,Sigil,Blue,,Magma Rift Sigil (Hard),A binding sigil used to summon Guardian of Magma Rift on Hard difficulty.,item/sigil_c5z2b_hard.png
-sigil_c5z2b_legendary,item,Sigil,Purple,,Magma Rift Sigil (Legendary),A binding sigil used to summon Guardian of Magma Rift on Legendary difficulty.,item/sigil_c5z2b_legendary.png
-sigil_c5z2b_nightmare,item,Sigil,Orange,,Magma Rift Sigil (Nightmare),A binding sigil used to summon Guardian of Magma Rift on Nightmare difficulty.,item/sigil_c5z2b_nightmare.png
-sigil_c5z3b_normal,item,Sigil,Green,,Ashen Throne Sigil (Normal),A binding sigil used to summon Guardian of Ashen Throne on Normal difficulty.,item/sigil_c5z3b_normal.png
-sigil_c5z3b_hard,item,Sigil,Blue,,Ashen Throne Sigil (Hard),A binding sigil used to summon Guardian of Ashen Throne on Hard difficulty.,item/sigil_c5z3b_hard.png
-sigil_c5z3b_legendary,item,Sigil,Purple,,Ashen Throne Sigil (Legendary),A binding sigil used to summon Guardian of Ashen Throne on Legendary difficulty.,item/sigil_c5z3b_legendary.png
-sigil_c5z3b_nightmare,item,Sigil,Orange,,Ashen Throne Sigil (Nightmare),A binding sigil used to summon Guardian of Ashen Throne on Nightmare difficulty.,item/sigil_c5z3b_nightmare.png
-sigil_c5z4b_normal,item,Sigil,Green,,Cinder Crown Sigil (Normal),A binding sigil used to summon Guardian of Cinder Crown on Normal difficulty.,item/sigil_c5z4b_normal.png
-sigil_c5z4b_hard,item,Sigil,Blue,,Cinder Crown Sigil (Hard),A binding sigil used to summon Guardian of Cinder Crown on Hard difficulty.,item/sigil_c5z4b_hard.png
-sigil_c5z4b_legendary,item,Sigil,Purple,,Cinder Crown Sigil (Legendary),A binding sigil used to summon Guardian of Cinder Crown on Legendary difficulty.,item/sigil_c5z4b_legendary.png
-sigil_c5z4b_nightmare,item,Sigil,Orange,,Cinder Crown Sigil (Nightmare),A binding sigil used to summon Guardian of Cinder Crown on Nightmare difficulty.,item/sigil_c5z4b_nightmare.png
-sigil_c6z0b_normal,item,Sigil,Green,,Twilight Gate Sigil (Normal),A binding sigil used to summon Guardian of Twilight Gate on Normal difficulty.,item/sigil_c6z0b_normal.png
-sigil_c6z0b_hard,item,Sigil,Blue,,Twilight Gate Sigil (Hard),A binding sigil used to summon Guardian of Twilight Gate on Hard difficulty.,item/sigil_c6z0b_hard.png
-sigil_c6z0b_legendary,item,Sigil,Purple,,Twilight Gate Sigil (Legendary),A binding sigil used to summon Guardian of Twilight Gate on Legendary difficulty.,item/sigil_c6z0b_legendary.png
-sigil_c6z0b_nightmare,item,Sigil,Orange,,Twilight Gate Sigil (Nightmare),A binding sigil used to summon Guardian of Twilight Gate on Nightmare difficulty.,item/sigil_c6z0b_nightmare.png
-sigil_c6z1b_normal,item,Sigil,Green,,Star Hollow Sigil (Normal),A binding sigil used to summon Guardian of Star Hollow on Normal difficulty.,item/sigil_c6z1b_normal.png
-sigil_c6z1b_hard,item,Sigil,Blue,,Star Hollow Sigil (Hard),A binding sigil used to summon Guardian of Star Hollow on Hard difficulty.,item/sigil_c6z1b_hard.png
-sigil_c6z1b_legendary,item,Sigil,Purple,,Star Hollow Sigil (Legendary),A binding sigil used to summon Guardian of Star Hollow on Legendary difficulty.,item/sigil_c6z1b_legendary.png
-sigil_c6z1b_nightmare,item,Sigil,Orange,,Star Hollow Sigil (Nightmare),A binding sigil used to summon Guardian of Star Hollow on Nightmare difficulty.,item/sigil_c6z1b_nightmare.png
-sigil_c6z2b_normal,item,Sigil,Green,,Void Threshold Sigil (Normal),A binding sigil used to summon Guardian of Void Threshold on Normal difficulty.,item/sigil_c6z2b_normal.png
-sigil_c6z2b_hard,item,Sigil,Blue,,Void Threshold Sigil (Hard),A binding sigil used to summon Guardian of Void Threshold on Hard difficulty.,item/sigil_c6z2b_hard.png
-sigil_c6z2b_legendary,item,Sigil,Purple,,Void Threshold Sigil (Legendary),A binding sigil used to summon Guardian of Void Threshold on Legendary difficulty.,item/sigil_c6z2b_legendary.png
-sigil_c6z2b_nightmare,item,Sigil,Orange,,Void Threshold Sigil (Nightmare),A binding sigil used to summon Guardian of Void Threshold on Nightmare difficulty.,item/sigil_c6z2b_nightmare.png
-sigil_c6z3b_normal,item,Sigil,Green,,Eternal Stair Sigil (Normal),A binding sigil used to summon Guardian of Eternal Stair on Normal difficulty.,item/sigil_c6z3b_normal.png
-sigil_c6z3b_hard,item,Sigil,Blue,,Eternal Stair Sigil (Hard),A binding sigil used to summon Guardian of Eternal Stair on Hard difficulty.,item/sigil_c6z3b_hard.png
-sigil_c6z3b_legendary,item,Sigil,Purple,,Eternal Stair Sigil (Legendary),A binding sigil used to summon Guardian of Eternal Stair on Legendary difficulty.,item/sigil_c6z3b_legendary.png
-sigil_c6z3b_nightmare,item,Sigil,Orange,,Eternal Stair Sigil (Nightmare),A binding sigil used to summon Guardian of Eternal Stair on Nightmare difficulty.,item/sigil_c6z3b_nightmare.png
-sigil_c6z4b_normal,item,Sigil,Green,,Throne of Ancients Sigil (Normal),A binding sigil used to summon Guardian of Throne of Ancients on Normal difficulty.,item/sigil_c6z4b_normal.png
-sigil_c6z4b_hard,item,Sigil,Blue,,Throne of Ancients Sigil (Hard),A binding sigil used to summon Guardian of Throne of Ancients on Hard difficulty.,item/sigil_c6z4b_hard.png
-sigil_c6z4b_legendary,item,Sigil,Purple,,Throne of Ancients Sigil (Legendary),A binding sigil used to summon Guardian of Throne of Ancients on Legendary difficulty.,item/sigil_c6z4b_legendary.png
-sigil_c6z4b_nightmare,item,Sigil,Orange,,Throne of Ancients Sigil (Nightmare),A binding sigil used to summon Guardian of Throne of Ancients on Nightmare difficulty.,item/sigil_c6z4b_nightmare.png
+sigil_ironcolossus,item,Sigil,Green,,Iron Sigil (Normal),A binding sigil used to summon the Iron Colossus on Normal difficulty.,item/sigil_ironcolossus.png
+sigil_ironcolossus,item,Sigil,Blue,,Iron Sigil (Hard),A binding sigil used to summon the Iron Colossus on Hard difficulty.,item/sigil_ironcolossus.png
+sigil_ironcolossus,item,Sigil,Purple,,Iron Sigil (Legendary),A binding sigil used to summon the Iron Colossus on Legendary difficulty.,item/sigil_ironcolossus.png
+sigil_ironcolossus,item,Sigil,Orange,,Iron Sigil (Nightmare),A binding sigil used to summon the Iron Colossus on Nightmare difficulty.,item/sigil_ironcolossus.png
+sigil_malachar,item,Sigil,Green,,Malachar's Sigil (Normal),A dark sigil bound to Malachar's essence. Summons him on Normal difficulty.,item/sigil_malachar.png
+sigil_malachar,item,Sigil,Blue,,Malachar's Sigil (Hard),A dark sigil bound to Malachar's essence. Summons him on Hard difficulty.,item/sigil_malachar.png
+sigil_malachar,item,Sigil,Purple,,Malachar's Sigil (Legendary),A dark sigil bound to Malachar's essence. Summons him on Legendary difficulty.,item/sigil_malachar.png
+sigil_malachar,item,Sigil,Orange,,Malachar's Sigil (Nightmare),A dark sigil bound to Malachar's essence. Summons him on Nightmare difficulty.,item/sigil_malachar.png
+sigil_c1z1b,item,Sigil,Green,,Ashen Causeway Sigil (Normal),A binding sigil used to summon Guardian of Ashen Causeway on Normal difficulty.,item/sigil_c1z1b.png
+sigil_c1z1b,item,Sigil,Blue,,Ashen Causeway Sigil (Hard),A binding sigil used to summon Guardian of Ashen Causeway on Hard difficulty.,item/sigil_c1z1b.png
+sigil_c1z1b,item,Sigil,Purple,,Ashen Causeway Sigil (Legendary),A binding sigil used to summon Guardian of Ashen Causeway on Legendary difficulty.,item/sigil_c1z1b.png
+sigil_c1z1b,item,Sigil,Orange,,Ashen Causeway Sigil (Nightmare),A binding sigil used to summon Guardian of Ashen Causeway on Nightmare difficulty.,item/sigil_c1z1b.png
+sigil_c1z2b,item,Sigil,Green,,Hollow Marches Sigil (Normal),A binding sigil used to summon Guardian of Hollow Marches on Normal difficulty.,item/sigil_c1z2b.png
+sigil_c1z2b,item,Sigil,Blue,,Hollow Marches Sigil (Hard),A binding sigil used to summon Guardian of Hollow Marches on Hard difficulty.,item/sigil_c1z2b.png
+sigil_c1z2b,item,Sigil,Purple,,Hollow Marches Sigil (Legendary),A binding sigil used to summon Guardian of Hollow Marches on Legendary difficulty.,item/sigil_c1z2b.png
+sigil_c1z2b,item,Sigil,Orange,,Hollow Marches Sigil (Nightmare),A binding sigil used to summon Guardian of Hollow Marches on Nightmare difficulty.,item/sigil_c1z2b.png
+sigil_c2z1b,item,Sigil,Green,,Emberfall Reach Sigil (Normal),A binding sigil used to summon Guardian of Emberfall Reach on Normal difficulty.,item/sigil_c2z1b.png
+sigil_c2z1b,item,Sigil,Blue,,Emberfall Reach Sigil (Hard),A binding sigil used to summon Guardian of Emberfall Reach on Hard difficulty.,item/sigil_c2z1b.png
+sigil_c2z1b,item,Sigil,Purple,,Emberfall Reach Sigil (Legendary),A binding sigil used to summon Guardian of Emberfall Reach on Legendary difficulty.,item/sigil_c2z1b.png
+sigil_c2z1b,item,Sigil,Orange,,Emberfall Reach Sigil (Nightmare),A binding sigil used to summon Guardian of Emberfall Reach on Nightmare difficulty.,item/sigil_c2z1b.png
+sigil_c2z2b,item,Sigil,Green,,Cinderwood Sigil (Normal),A binding sigil used to summon Guardian of Cinderwood on Normal difficulty.,item/sigil_c2z2b.png
+sigil_c2z2b,item,Sigil,Blue,,Cinderwood Sigil (Hard),A binding sigil used to summon Guardian of Cinderwood on Hard difficulty.,item/sigil_c2z2b.png
+sigil_c2z2b,item,Sigil,Purple,,Cinderwood Sigil (Legendary),A binding sigil used to summon Guardian of Cinderwood on Legendary difficulty.,item/sigil_c2z2b.png
+sigil_c2z2b,item,Sigil,Orange,,Cinderwood Sigil (Nightmare),A binding sigil used to summon Guardian of Cinderwood on Nightmare difficulty.,item/sigil_c2z2b.png
+sigil_c2z3b,item,Sigil,Green,,Gloomspire Sigil (Normal),A binding sigil used to summon Guardian of Gloomspire on Normal difficulty.,item/sigil_c2z3b.png
+sigil_c2z3b,item,Sigil,Blue,,Gloomspire Sigil (Hard),A binding sigil used to summon Guardian of Gloomspire on Hard difficulty.,item/sigil_c2z3b.png
+sigil_c2z3b,item,Sigil,Purple,,Gloomspire Sigil (Legendary),A binding sigil used to summon Guardian of Gloomspire on Legendary difficulty.,item/sigil_c2z3b.png
+sigil_c2z3b,item,Sigil,Orange,,Gloomspire Sigil (Nightmare),A binding sigil used to summon Guardian of Gloomspire on Nightmare difficulty.,item/sigil_c2z3b.png
+sigil_c3z0b,item,Sigil,Green,,Keepwall Sigil (Normal),A binding sigil used to summon Guardian of Keepwall on Normal difficulty.,item/sigil_c3z0b.png
+sigil_c3z0b,item,Sigil,Blue,,Keepwall Sigil (Hard),A binding sigil used to summon Guardian of Keepwall on Hard difficulty.,item/sigil_c3z0b.png
+sigil_c3z0b,item,Sigil,Purple,,Keepwall Sigil (Legendary),A binding sigil used to summon Guardian of Keepwall on Legendary difficulty.,item/sigil_c3z0b.png
+sigil_c3z0b,item,Sigil,Orange,,Keepwall Sigil (Nightmare),A binding sigil used to summon Guardian of Keepwall on Nightmare difficulty.,item/sigil_c3z0b.png
+sigil_c3z1b,item,Sigil,Green,,Sunken Vaults Sigil (Normal),A binding sigil used to summon Guardian of Sunken Vaults on Normal difficulty.,item/sigil_c3z1b.png
+sigil_c3z1b,item,Sigil,Blue,,Sunken Vaults Sigil (Hard),A binding sigil used to summon Guardian of Sunken Vaults on Hard difficulty.,item/sigil_c3z1b.png
+sigil_c3z1b,item,Sigil,Purple,,Sunken Vaults Sigil (Legendary),A binding sigil used to summon Guardian of Sunken Vaults on Legendary difficulty.,item/sigil_c3z1b.png
+sigil_c3z1b,item,Sigil,Orange,,Sunken Vaults Sigil (Nightmare),A binding sigil used to summon Guardian of Sunken Vaults on Nightmare difficulty.,item/sigil_c3z1b.png
+sigil_c3z2b,item,Sigil,Green,,Throne Approach Sigil (Normal),A binding sigil used to summon Guardian of Throne Approach on Normal difficulty.,item/sigil_c3z2b.png
+sigil_c3z2b,item,Sigil,Blue,,Throne Approach Sigil (Hard),A binding sigil used to summon Guardian of Throne Approach on Hard difficulty.,item/sigil_c3z2b.png
+sigil_c3z2b,item,Sigil,Purple,,Throne Approach Sigil (Legendary),A binding sigil used to summon Guardian of Throne Approach on Legendary difficulty.,item/sigil_c3z2b.png
+sigil_c3z2b,item,Sigil,Orange,,Throne Approach Sigil (Nightmare),A binding sigil used to summon Guardian of Throne Approach on Nightmare difficulty.,item/sigil_c3z2b.png
+sigil_c3z3b,item,Sigil,Green,,Shattered Spire Sigil (Normal),A binding sigil used to summon Guardian of Shattered Spire on Normal difficulty.,item/sigil_c3z3b.png
+sigil_c3z3b,item,Sigil,Blue,,Shattered Spire Sigil (Hard),A binding sigil used to summon Guardian of Shattered Spire on Hard difficulty.,item/sigil_c3z3b.png
+sigil_c3z3b,item,Sigil,Purple,,Shattered Spire Sigil (Legendary),A binding sigil used to summon Guardian of Shattered Spire on Legendary difficulty.,item/sigil_c3z3b.png
+sigil_c3z3b,item,Sigil,Orange,,Shattered Spire Sigil (Nightmare),A binding sigil used to summon Guardian of Shattered Spire on Nightmare difficulty.,item/sigil_c3z3b.png
+sigil_c4z0b,item,Sigil,Green,,Rimewood Sigil (Normal),A binding sigil used to summon Guardian of Rimewood on Normal difficulty.,item/sigil_c4z0b.png
+sigil_c4z0b,item,Sigil,Blue,,Rimewood Sigil (Hard),A binding sigil used to summon Guardian of Rimewood on Hard difficulty.,item/sigil_c4z0b.png
+sigil_c4z0b,item,Sigil,Purple,,Rimewood Sigil (Legendary),A binding sigil used to summon Guardian of Rimewood on Legendary difficulty.,item/sigil_c4z0b.png
+sigil_c4z0b,item,Sigil,Orange,,Rimewood Sigil (Nightmare),A binding sigil used to summon Guardian of Rimewood on Nightmare difficulty.,item/sigil_c4z0b.png
+sigil_c4z1b,item,Sigil,Green,,Frostmere Sigil (Normal),A binding sigil used to summon Guardian of Frostmere on Normal difficulty.,item/sigil_c4z1b.png
+sigil_c4z1b,item,Sigil,Blue,,Frostmere Sigil (Hard),A binding sigil used to summon Guardian of Frostmere on Hard difficulty.,item/sigil_c4z1b.png
+sigil_c4z1b,item,Sigil,Purple,,Frostmere Sigil (Legendary),A binding sigil used to summon Guardian of Frostmere on Legendary difficulty.,item/sigil_c4z1b.png
+sigil_c4z1b,item,Sigil,Orange,,Frostmere Sigil (Nightmare),A binding sigil used to summon Guardian of Frostmere on Nightmare difficulty.,item/sigil_c4z1b.png
+sigil_c4z2b,item,Sigil,Green,,Glacier Maw Sigil (Normal),A binding sigil used to summon Guardian of Glacier Maw on Normal difficulty.,item/sigil_c4z2b.png
+sigil_c4z2b,item,Sigil,Blue,,Glacier Maw Sigil (Hard),A binding sigil used to summon Guardian of Glacier Maw on Hard difficulty.,item/sigil_c4z2b.png
+sigil_c4z2b,item,Sigil,Purple,,Glacier Maw Sigil (Legendary),A binding sigil used to summon Guardian of Glacier Maw on Legendary difficulty.,item/sigil_c4z2b.png
+sigil_c4z2b,item,Sigil,Orange,,Glacier Maw Sigil (Nightmare),A binding sigil used to summon Guardian of Glacier Maw on Nightmare difficulty.,item/sigil_c4z2b.png
+sigil_c4z3b,item,Sigil,Green,,Pale Citadel Sigil (Normal),A binding sigil used to summon Guardian of Pale Citadel on Normal difficulty.,item/sigil_c4z3b.png
+sigil_c4z3b,item,Sigil,Blue,,Pale Citadel Sigil (Hard),A binding sigil used to summon Guardian of Pale Citadel on Hard difficulty.,item/sigil_c4z3b.png
+sigil_c4z3b,item,Sigil,Purple,,Pale Citadel Sigil (Legendary),A binding sigil used to summon Guardian of Pale Citadel on Legendary difficulty.,item/sigil_c4z3b.png
+sigil_c4z3b,item,Sigil,Orange,,Pale Citadel Sigil (Nightmare),A binding sigil used to summon Guardian of Pale Citadel on Nightmare difficulty.,item/sigil_c4z3b.png
+sigil_c5z0b,item,Sigil,Green,,Dustfall Sigil (Normal),A binding sigil used to summon Guardian of Dustfall on Normal difficulty.,item/sigil_c5z0b.png
+sigil_c5z0b,item,Sigil,Blue,,Dustfall Sigil (Hard),A binding sigil used to summon Guardian of Dustfall on Hard difficulty.,item/sigil_c5z0b.png
+sigil_c5z0b,item,Sigil,Purple,,Dustfall Sigil (Legendary),A binding sigil used to summon Guardian of Dustfall on Legendary difficulty.,item/sigil_c5z0b.png
+sigil_c5z0b,item,Sigil,Orange,,Dustfall Sigil (Nightmare),A binding sigil used to summon Guardian of Dustfall on Nightmare difficulty.,item/sigil_c5z0b.png
+sigil_c5z1b,item,Sigil,Green,,Emberpan Sigil (Normal),A binding sigil used to summon Guardian of Emberpan on Normal difficulty.,item/sigil_c5z1b.png
+sigil_c5z1b,item,Sigil,Blue,,Emberpan Sigil (Hard),A binding sigil used to summon Guardian of Emberpan on Hard difficulty.,item/sigil_c5z1b.png
+sigil_c5z1b,item,Sigil,Purple,,Emberpan Sigil (Legendary),A binding sigil used to summon Guardian of Emberpan on Legendary difficulty.,item/sigil_c5z1b.png
+sigil_c5z1b,item,Sigil,Orange,,Emberpan Sigil (Nightmare),A binding sigil used to summon Guardian of Emberpan on Nightmare difficulty.,item/sigil_c5z1b.png
+sigil_c5z2b,item,Sigil,Green,,Magma Rift Sigil (Normal),A binding sigil used to summon Guardian of Magma Rift on Normal difficulty.,item/sigil_c5z2b.png
+sigil_c5z2b,item,Sigil,Blue,,Magma Rift Sigil (Hard),A binding sigil used to summon Guardian of Magma Rift on Hard difficulty.,item/sigil_c5z2b.png
+sigil_c5z2b,item,Sigil,Purple,,Magma Rift Sigil (Legendary),A binding sigil used to summon Guardian of Magma Rift on Legendary difficulty.,item/sigil_c5z2b.png
+sigil_c5z2b,item,Sigil,Orange,,Magma Rift Sigil (Nightmare),A binding sigil used to summon Guardian of Magma Rift on Nightmare difficulty.,item/sigil_c5z2b.png
+sigil_c5z3b,item,Sigil,Green,,Ashen Throne Sigil (Normal),A binding sigil used to summon Guardian of Ashen Throne on Normal difficulty.,item/sigil_c5z3b.png
+sigil_c5z3b,item,Sigil,Blue,,Ashen Throne Sigil (Hard),A binding sigil used to summon Guardian of Ashen Throne on Hard difficulty.,item/sigil_c5z3b.png
+sigil_c5z3b,item,Sigil,Purple,,Ashen Throne Sigil (Legendary),A binding sigil used to summon Guardian of Ashen Throne on Legendary difficulty.,item/sigil_c5z3b.png
+sigil_c5z3b,item,Sigil,Orange,,Ashen Throne Sigil (Nightmare),A binding sigil used to summon Guardian of Ashen Throne on Nightmare difficulty.,item/sigil_c5z3b.png
+sigil_c5z4b,item,Sigil,Green,,Cinder Crown Sigil (Normal),A binding sigil used to summon Guardian of Cinder Crown on Normal difficulty.,item/sigil_c5z4b.png
+sigil_c5z4b,item,Sigil,Blue,,Cinder Crown Sigil (Hard),A binding sigil used to summon Guardian of Cinder Crown on Hard difficulty.,item/sigil_c5z4b.png
+sigil_c5z4b,item,Sigil,Purple,,Cinder Crown Sigil (Legendary),A binding sigil used to summon Guardian of Cinder Crown on Legendary difficulty.,item/sigil_c5z4b.png
+sigil_c5z4b,item,Sigil,Orange,,Cinder Crown Sigil (Nightmare),A binding sigil used to summon Guardian of Cinder Crown on Nightmare difficulty.,item/sigil_c5z4b.png
+sigil_c6z0b,item,Sigil,Green,,Twilight Gate Sigil (Normal),A binding sigil used to summon Guardian of Twilight Gate on Normal difficulty.,item/sigil_c6z0b.png
+sigil_c6z0b,item,Sigil,Blue,,Twilight Gate Sigil (Hard),A binding sigil used to summon Guardian of Twilight Gate on Hard difficulty.,item/sigil_c6z0b.png
+sigil_c6z0b,item,Sigil,Purple,,Twilight Gate Sigil (Legendary),A binding sigil used to summon Guardian of Twilight Gate on Legendary difficulty.,item/sigil_c6z0b.png
+sigil_c6z0b,item,Sigil,Orange,,Twilight Gate Sigil (Nightmare),A binding sigil used to summon Guardian of Twilight Gate on Nightmare difficulty.,item/sigil_c6z0b.png
+sigil_c6z1b,item,Sigil,Green,,Star Hollow Sigil (Normal),A binding sigil used to summon Guardian of Star Hollow on Normal difficulty.,item/sigil_c6z1b.png
+sigil_c6z1b,item,Sigil,Blue,,Star Hollow Sigil (Hard),A binding sigil used to summon Guardian of Star Hollow on Hard difficulty.,item/sigil_c6z1b.png
+sigil_c6z1b,item,Sigil,Purple,,Star Hollow Sigil (Legendary),A binding sigil used to summon Guardian of Star Hollow on Legendary difficulty.,item/sigil_c6z1b.png
+sigil_c6z1b,item,Sigil,Orange,,Star Hollow Sigil (Nightmare),A binding sigil used to summon Guardian of Star Hollow on Nightmare difficulty.,item/sigil_c6z1b.png
+sigil_c6z2b,item,Sigil,Green,,Void Threshold Sigil (Normal),A binding sigil used to summon Guardian of Void Threshold on Normal difficulty.,item/sigil_c6z2b.png
+sigil_c6z2b,item,Sigil,Blue,,Void Threshold Sigil (Hard),A binding sigil used to summon Guardian of Void Threshold on Hard difficulty.,item/sigil_c6z2b.png
+sigil_c6z2b,item,Sigil,Purple,,Void Threshold Sigil (Legendary),A binding sigil used to summon Guardian of Void Threshold on Legendary difficulty.,item/sigil_c6z2b.png
+sigil_c6z2b,item,Sigil,Orange,,Void Threshold Sigil (Nightmare),A binding sigil used to summon Guardian of Void Threshold on Nightmare difficulty.,item/sigil_c6z2b.png
+sigil_c6z3b,item,Sigil,Green,,Eternal Stair Sigil (Normal),A binding sigil used to summon Guardian of Eternal Stair on Normal difficulty.,item/sigil_c6z3b.png
+sigil_c6z3b,item,Sigil,Blue,,Eternal Stair Sigil (Hard),A binding sigil used to summon Guardian of Eternal Stair on Hard difficulty.,item/sigil_c6z3b.png
+sigil_c6z3b,item,Sigil,Purple,,Eternal Stair Sigil (Legendary),A binding sigil used to summon Guardian of Eternal Stair on Legendary difficulty.,item/sigil_c6z3b.png
+sigil_c6z3b,item,Sigil,Orange,,Eternal Stair Sigil (Nightmare),A binding sigil used to summon Guardian of Eternal Stair on Nightmare difficulty.,item/sigil_c6z3b.png
+sigil_c6z4b,item,Sigil,Green,,Throne of Ancients Sigil (Normal),A binding sigil used to summon Guardian of Throne of Ancients on Normal difficulty.,item/sigil_c6z4b.png
+sigil_c6z4b,item,Sigil,Blue,,Throne of Ancients Sigil (Hard),A binding sigil used to summon Guardian of Throne of Ancients on Hard difficulty.,item/sigil_c6z4b.png
+sigil_c6z4b,item,Sigil,Purple,,Throne of Ancients Sigil (Legendary),A binding sigil used to summon Guardian of Throne of Ancients on Legendary difficulty.,item/sigil_c6z4b.png
+sigil_c6z4b,item,Sigil,Orange,,Throne of Ancients Sigil (Nightmare),A binding sigil used to summon Guardian of Throne of Ancients on Nightmare difficulty.,item/sigil_c6z4b.png
 potion_energy_minor,item,Consumable,Green,,Minor Energy Draught,Restores 25 Energy. The road does not walk itself.,item/potion_energy_minor.png
 potion_energy_major,item,Consumable,Blue,,Energy Draught,Restores 60 Energy. Brewed for those who refuse to stop.,item/potion_energy_major.png
 potion_stamina_minor,item,Consumable,Green,,Minor Stamina Draught,Restores 25 Stamina. Steadies the arm for one more strike.,item/potion_stamina_minor.png
@@ -286,21 +286,21 @@ mat_bog_cotton,item,Material,Grey,,Bog Cotton,"Grows in standing water and pulls
 mat_road_flint,item,Material,Grey,,Road Flint,Picked off any causeway by anyone who bothers to look down. It has started every fire the frontier has ever needed and it has never once been remarkable.,item/mat_road_flint.png
 mat_tallow,item,Material,White,,Rendered Tallow,"Every relay lamp in the Watch burns it, every boot in the Weir is greased with it, and nobody has ever written a sentence about it before this one.",item/mat_tallow.png
 mat_coarse_thread,item,Material,White,,Coarse Thread,"Spun thick enough to sew canvas and cheap enough to waste. The frontier repairs more than it replaces, and this is what it repairs with.",item/mat_coarse_thread.png
-magic_whetstone,magic,Damage,White,,Whetstone,Sharpens every blow; guaranteed small bonus on every hit.,magic/magic_whetstone.png
+magic_whetstone,magic,Damage,White,,Whetstone,Sharpens every blow; a guaranteed small bonus on every hit.,magic/magic_whetstone.png
 magic_lesser_poison,magic,Damage,White,,Lesser Poison,A weak venom that occasionally laces attacks.,magic/magic_lesser_poison.png
 magic_poison,magic,Damage,Green,,Poison,A reliable venom that procs with moderate frequency.,magic/magic_poison.png
 magic_greater_poison,magic,Damage,Blue,,Greater Poison,A potent venom with meaningful proc damage.,magic/magic_greater_poison.png
-magic_smite,magic,Damage,Blue,,Smite,A divine strike that hits hard but rarely.,magic/magic_smite.png
-magic_blessing_of_might,magic,Damage,Blue,,Blessing of Might,An empowering boon that surges through each blow.,magic/magic_blessing_of_might.png
+magic_smite,magic,Damage,Orange,,Smite,The pinnacle strike. It lands often enough that you plan around it.,magic/magic_smite.png
+magic_blessing_of_might,magic,Damage,Orange,,Blessing of Might,"The pinnacle boon. Sustained, reliable, and never a gamble.",magic/magic_blessing_of_might.png
 magic_impending_doom,magic,Damage,Purple,,Impending Doom,A catastrophic curse that rarely fires but devastates when it does.,magic/magic_impending_doom.png
 magic_expose_weakness,magic,Crit,Green,,Expose Weakness,"Reveals a flaw in the target's defence, increasing crit chance.",magic/magic_expose_weakness.png
 magic_midas_touch,magic,Gold,Green,,Midas Touch,Every hit has a chance to yield bonus gold.,magic/magic_midas_touch.png
 magic_kindling,magic,Leveling,White,,Kindling,Occasionally doubles the experience earned from a hit.,magic/magic_kindling.png
-magic_pinnacle_5000,magic,Damage,Orange,,Luminary's Echo,PLACEHOLDER (T33). A pinnacle-tier magic awarded around level 5000; its effect is designed by the first player to reach this pinnacle. Inert until activated.,magic/magic_pinnacle_5000.png
-magic_pinnacle_7500,magic,Damage,Orange,,Archon's Decree,PLACEHOLDER (T33). A pinnacle-tier magic awarded around level 7500; its effect is designed by the first player to reach this pinnacle. Inert until activated.,magic/magic_pinnacle_7500.png
-magic_pinnacle_10000,magic,Damage,Orange,,Ancient's Wrath,PLACEHOLDER (T33). A pinnacle-tier magic awarded around level 10000; its effect is designed by the first player to reach this pinnacle. Inert until activated.,magic/magic_pinnacle_10000.png
-magic_pinnacle_15000,magic,Damage,Orange,,Elder Resonance,PLACEHOLDER (T33). A pinnacle-tier magic awarded around level 15000; its effect is designed by the first player to reach this pinnacle. Inert until activated.,magic/magic_pinnacle_15000.png
-magic_pinnacle_25000,magic,Damage,Orange,,Eternal Aspect,PLACEHOLDER (T33). A pinnacle-tier magic awarded around level 25000; its effect is designed by the first player to reach this pinnacle. Inert until activated.,magic/magic_pinnacle_25000.png
+magic_pinnacle_5000,magic,Damage,Orange,,Luminary's Echo,"PLACEHOLDER. A pinnacle magic awarded at level 5,000. Its entire effect — proc, drop, or something stranger — is designed by the first player to reach this level; everyone who arrives afterwards receives that design and keeps it. Inert until then.",magic/magic_pinnacle_5000.png
+magic_pinnacle_7500,magic,Damage,Orange,,Archon's Decree,"PLACEHOLDER. A pinnacle magic awarded at level 7,500. Its entire effect — proc, drop, or something stranger — is designed by the first player to reach this level; everyone who arrives afterwards receives that design and keeps it. Inert until then.",magic/magic_pinnacle_7500.png
+magic_pinnacle_10000,magic,Damage,Orange,,Ancient's Wrath,"PLACEHOLDER. A pinnacle magic awarded at level 10,000. Its entire effect — proc, drop, or something stranger — is designed by the first player to reach this level; everyone who arrives afterwards receives that design and keeps it. Inert until then.",magic/magic_pinnacle_10000.png
+magic_pinnacle_15000,magic,Damage,Orange,,Elder Resonance,"PLACEHOLDER. A pinnacle magic awarded at level 15,000. Its entire effect — proc, drop, or something stranger — is designed by the first player to reach this level; everyone who arrives afterwards receives that design and keeps it. Inert until then.",magic/magic_pinnacle_15000.png
+magic_pinnacle_25000,magic,Damage,Orange,,Eternal Aspect,"PLACEHOLDER. A pinnacle magic awarded at level 25,000. Its entire effect — proc, drop, or something stranger — is designed by the first player to reach this level; everyone who arrives afterwards receives that design and keeps it. Inert until then.",magic/magic_pinnacle_25000.png
 magic_wrath_of_the_ancients,magic,Damage,Orange,,Wrath of the Ancients,"The Gauntlet rank-1 aura. An off-cap proc applied to the Gauntlet raid, outside the five-magic slot cap. Rank-acquired only (per-event consumable).",magic/magic_wrath_of_the_ancients.png
 magic_blessing_of_the_ancients,magic,Damage,Orange,,Blessing of the Ancients,"The Gauntlet ranks 2–10 aura. An off-cap proc applied to the Gauntlet raid, outside the five-magic slot cap. Rank-acquired only (per-event consumable).",magic/magic_blessing_of_the_ancients.png
 magic_hollowpoint,magic,Damage,Green,,Hollow Point,A round bored out and left empty. What fills it on the way in is the argument.,magic/magic_hollowpoint.png
@@ -323,10 +323,12 @@ magic_the_long_watch,magic,Leveling,Purple,,The Long Watch,"Four hundred years o
 magic_age_of_dawn_fragment,magic,Leveling,Orange,,Fragment of the Age of Dawn,A piece of a lesson from before the Sundering. The rest of it is not recoverable.,magic/magic_age_of_dawn_fragment.png
 magic_steady_hand,magic,Utility,White,,Steady Hand,"Never misses, never surprises. The Weir issues it to anyone who has been startled once too often.",magic/magic_steady_hand.png
 magic_gamblers_sigil,magic,Utility,Green,,Gambler's Sigil,"Old Guard camp-work, technically forbidden. Enforcement was reportedly inconsistent.",magic/magic_gamblers_sigil.png
-magic_metronome,magic,Utility,Blue,,Wardens' Metronome,"It keeps the count whether or not anybody is listening, which is the Watch in one object.",magic/magic_metronome.png
+magic_metronome,magic,Utility,Blue,,Wardens' Metronome,"It keeps time, and every beat lands. Small, certain, endless.",magic/magic_metronome.png
 magic_last_lamp_wick,magic,Utility,Purple,,Wick of the Last Lamp,It burns very slowly and it has never gone out. Arveth's lamp is still lit on the same principle.,magic/magic_last_lamp_wick.png
-magic_one_true_swing,magic,Utility,Orange,,The One True Swing,Gravewend's peasant got exactly one. The pitchfork remembers the shape of it.,magic/magic_one_true_swing.png
+magic_one_true_swing,magic,Utility,Orange,,The One True Swing,Gravewend's peasant got exactly one. The pitchfork remembers the shape of it — and has learned to repeat it.,magic/magic_one_true_swing.png
 magic_considered_inaction,magic,Utility,Orange,,Considered Inaction,"The archdevil's contribution to the war effort. He thought about it for an Age and then, on balance, contributed this. It is genuinely quite good, which nobody has forgiven.",magic/magic_considered_inaction.png
+magic_pinnacle_2500,magic,Damage,Orange,,Luminary's Vow,"PLACEHOLDER. A pinnacle magic awarded at level 2,500. Its entire effect — proc, drop, or something stranger — is designed by the first player to reach this level; everyone who arrives afterwards receives that design and keeps it. Inert until then.",magic/magic_pinnacle_2500.png
+magic_pinnacle_1000,magic,Utility,Orange,,Ascendant's Banner,"The first standard planted past the thousandth mark. It does not make its bearer stronger so much as it makes everyone within sight of it harder to discourage — and the less a soldier brought to the field, the more the banner gives back. Adds a flat +120 Attack to every blow struck against this raid, by anyone, for as long as it stands.",magic/magic_pinnacle_1000.png
 gen_ironward,unit,Human Tank,Green,,Ironward the Steadfast,A stalwart Human Tank general whose shield stance can deflect devastating strikes.,unit/gen_ironward.png
 gen_ashblade,unit,Human Melee,Blue,,Ashblade,A swift Human Melee general who strikes with burning precision.,unit/gen_ashblade.png
 gen_sylvaire,unit,Elf Ranged,Blue,,Sylvaire,An Elf Ranged general whose arrows seek vital points with unerring accuracy.,unit/gen_sylvaire.png

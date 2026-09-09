@@ -25,7 +25,7 @@
         "constraintValue": null
       }
     ],
-    "iconPath": "",
+    "iconPath": "icons/legion/legion_warband.png",
     "acquisition": "Starting legion",
     "tagAffinities": {}
   },
@@ -63,7 +63,7 @@
         "constraintValue": null
       }
     ],
-    "iconPath": "",
+    "iconPath": "icons/legion/legion_vanguard.png",
     "acquisition": "Gem shop",
     "tagAffinities": {
       "Legion": 15.0,
@@ -100,7 +100,7 @@
         "constraintValue": "Strength"
       }
     ],
-    "iconPath": "",
+    "iconPath": "icons/legion/legion_ironlegion.png",
     "acquisition": "Raid drop",
     "tagAffinities": {
       "Construct": 30.0,
@@ -141,7 +141,7 @@
         "constraintValue": null
       }
     ],
-    "iconPath": "",
+    "iconPath": "icons/legion/legion_vanguard_ii.png",
     "acquisition": "Crafting (General)",
     "tagAffinities": {
       "Shadow": 30.0,

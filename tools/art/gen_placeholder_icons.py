@@ -27,7 +27,8 @@ placeholder can be replaced by real art one file at a time without the others mo
 OUTPUT
   assets/icons/<family>/<id>.png    the 64x64 tiles
   assets/icons/MANIFEST.csv         every entry: id, family, kind, rarity, name, description
-  assets/icons/ART_PROMPTS.md       one image-generation prompt per entry, grouped by set/family
+
+Prompts for the real art live in ART_BRIEF.md, built by gen_art_brief.py.
 """
 import collections
 import colorsys
@@ -506,9 +507,13 @@ def jobs():
     for g in load("gear.json"):
         out.append((g["id"], "gear", SLOT_GLYPH.get(g.get("slot"), "torso"), g.get("rarity", "Grey"),
                     g.get("name", ""), g.get("description", ""), g.get("slot", ""), g.get("setId") or ""))
+    # Items address art through artKey, not id: the 104 sigils share 29 pictures because a sigil's
+    # art depends on the raid it summons, not on which of the four difficulty tiers it is. Keying by
+    # id here would draw the same seal 104 times.
     for i in load("items.json"):
-        out.append((i["id"], "item", ITEM_GLYPH.get(i.get("type"), "material"), i.get("rarity", "Grey"),
-                    i.get("name", ""), i.get("description", ""), i.get("type", ""), ""))
+        out.append((i.get("artKey") or i["id"], "item", ITEM_GLYPH.get(i.get("type"), "material"),
+                    i.get("rarity", "Grey"), i.get("name", ""), i.get("description", ""),
+                    i.get("type", ""), ""))
     for m in load("magics.json"):
         out.append((m["id"], "magic", "magic_" + str(m.get("category", "damage")).lower(),
                     m.get("rarity", "Grey"), m.get("name", ""), m.get("description", ""),
@@ -530,13 +535,6 @@ def jobs():
     return out
 
 
-PROMPT = ("{name} — {kind} icon for a dark mythic fantasy RPG. {desc} "
-          "Semi-pixel-art game icon, chunky readable silhouette on a plain dark background, "
-          "{rarity_word} rarity accent, centred, square, no text, no border.")
-RARITY_WORD = {
-    "Grey": "dull iron-grey", "White": "pale bone-white", "Green": "mossy green",
-    "Blue": "cold steel-blue", "Purple": "deep arcane violet", "Orange": "molten amber",
-}
 
 
 def main():
@@ -558,26 +556,10 @@ def main():
         for (eid, family, glyph, rarity, name, desc, kind, set_id) in rows:
             w.writerow([eid, family, kind, rarity, set_id, name, desc, "%s/%s.png" % (family, eid)])
 
-    by_group = collections.defaultdict(list)
-    for (eid, family, glyph, rarity, name, desc, kind, set_id) in rows:
-        by_group[set_id or family].append((eid, name, desc, rarity, kind))
-    with io.open(OUT / "ART_PROMPTS.md", "w", encoding="utf-8", newline="\n") as fh:
-        fh.write("# Art prompts — %d icons\n\n"
-                 "One prompt per entry, grouped so a whole set can be generated in one sitting and "
-                 "come out looking related. Replace `assets/icons/<family>/<id>.png` when the real "
-                 "art lands; the filename is the contract.\n\n" % len(rows))
-        for group in sorted(by_group):
-            fh.write("## %s (%d)\n\n" % (group, len(by_group[group])))
-            for (eid, name, desc, rarity, kind) in sorted(by_group[group]):
-                fh.write("- **`%s`** — %s\n  > %s\n\n" % (eid, name, PROMPT.format(
-                    name=name, kind=kind or "item", desc=desc,
-                    rarity_word=RARITY_WORD.get(rarity, "dull iron-grey"))))
-
     print("icons written: %d  (%s)" % (sum(counts.values()), dict(sorted(counts.items()))))
     print("manifest:      assets/icons/MANIFEST.csv")
-    print("prompts:       assets/icons/ART_PROMPTS.md  (%d groups)" % len(by_group))
     if dupes:
-        print("DUPLICATE ids skipped: %s" % dupes[:10])
+        print("shared art keys (expected — sigils collapse by raid): %d" % len(dupes))
 
 
 if __name__ == "__main__":

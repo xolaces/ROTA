@@ -10,7 +10,7 @@
     "procAmount": 0.04,
     "conditions": [],
     "stacks": true,
-    "iconPath": "",
+    "iconPath": "icons/magic/magic_whetstone.png",
     "acquisition": "Quest drops",
     "gemPrice": 5
   },
@@ -25,7 +25,7 @@
     "procAmount": 0.7,
     "conditions": [],
     "stacks": true,
-    "iconPath": "",
+    "iconPath": "icons/magic/magic_lesser_poison.png",
     "acquisition": "Quest drops",
     "gemPrice": 5
   },
@@ -40,7 +40,7 @@
     "procAmount": 0.8,
     "conditions": [],
     "stacks": true,
-    "iconPath": "",
+    "iconPath": "icons/magic/magic_poison.png",
     "acquisition": "Raid drops",
     "gemPrice": 15
   },
@@ -55,7 +55,7 @@
     "procAmount": 0.9,
     "conditions": [],
     "stacks": true,
-    "iconPath": "",
+    "iconPath": "icons/magic/magic_greater_poison.png",
     "acquisition": "Raid drops",
     "gemPrice": 50
   },
@@ -70,7 +70,7 @@
     "procAmount": 1.1,
     "conditions": [],
     "stacks": true,
-    "iconPath": "",
+    "iconPath": "icons/magic/magic_smite.png",
     "acquisition": "Raid drops",
     "gemPrice": 900
   },
@@ -85,7 +85,7 @@
     "procAmount": 1.1,
     "conditions": [],
     "stacks": true,
-    "iconPath": "",
+    "iconPath": "icons/magic/magic_blessing_of_might.png",
     "acquisition": "Raid drops",
     "gemPrice": 1100
   },
@@ -100,7 +100,7 @@
     "procAmount": 1.0,
     "conditions": [],
     "stacks": true,
-    "iconPath": "",
+    "iconPath": "icons/magic/magic_impending_doom.png",
     "acquisition": "Nightmare raid drops",
     "gemPrice": 0
   },
@@ -115,7 +115,7 @@
     "procAmount": 0.05,
     "conditions": [],
     "stacks": true,
-    "iconPath": "",
+    "iconPath": "icons/magic/magic_expose_weakness.png",
     "acquisition": "Raid drops",
     "gemPrice": 25
   },
@@ -130,7 +130,7 @@
     "procAmount": 1.0,
     "conditions": [],
     "stacks": true,
-    "iconPath": "",
+    "iconPath": "icons/magic/magic_midas_touch.png",
     "acquisition": "Raid drops",
     "gemPrice": 25
   },
@@ -145,7 +145,7 @@
     "procAmount": 2.0,
     "conditions": [],
     "stacks": true,
-    "iconPath": "",
+    "iconPath": "icons/magic/magic_kindling.png",
     "acquisition": "Quest drops",
     "gemPrice": 10
   },
@@ -160,7 +160,7 @@
     "procAmount": 0.0,
     "conditions": [],
     "stacks": false,
-    "iconPath": "",
+    "iconPath": "icons/magic/magic_pinnacle_5000.png",
     "acquisition": "Pinnacle reward — level 5000 (design pending first claimant)",
     "gemPrice": 0
   },
@@ -175,7 +175,7 @@
     "procAmount": 0.0,
     "conditions": [],
     "stacks": false,
-    "iconPath": "",
+    "iconPath": "icons/magic/magic_pinnacle_7500.png",
     "acquisition": "Pinnacle reward — level 7500 (design pending first claimant)",
     "gemPrice": 0
   },
@@ -190,7 +190,7 @@
     "procAmount": 0.0,
     "conditions": [],
     "stacks": false,
-    "iconPath": "",
+    "iconPath": "icons/magic/magic_pinnacle_10000.png",
     "acquisition": "Pinnacle reward — level 10000 (design pending first claimant)",
     "gemPrice": 0
   },
@@ -205,7 +205,7 @@
     "procAmount": 0.0,
     "conditions": [],
     "stacks": false,
-    "iconPath": "",
+    "iconPath": "icons/magic/magic_pinnacle_15000.png",
     "acquisition": "Pinnacle reward — level 15000 (design pending first claimant)",
     "gemPrice": 0
   },
@@ -220,7 +220,7 @@
     "procAmount": 0.0,
     "conditions": [],
     "stacks": false,
-    "iconPath": "",
+    "iconPath": "icons/magic/magic_pinnacle_25000.png",
     "acquisition": "Pinnacle reward — level 25000 (design pending first claimant)",
     "gemPrice": 0
   },
@@ -236,7 +236,7 @@
     "conditions": [],
     "offCap": true,
     "stacks": false,
-    "iconPath": "",
+    "iconPath": "icons/magic/magic_wrath_of_the_ancients.png",
     "acquisition": "Gauntlet rank 1",
     "gemPrice": 0
   },
@@ -252,7 +252,7 @@
     "conditions": [],
     "offCap": true,
     "stacks": false,
-    "iconPath": "",
+    "iconPath": "icons/magic/magic_blessing_of_the_ancients.png",
     "acquisition": "Gauntlet rank 2-10",
     "gemPrice": 0
   },
@@ -627,7 +627,7 @@
     "procAmount": 0.0,
     "conditions": [],
     "stacks": false,
-    "iconPath": "",
+    "iconPath": "icons/magic/magic_pinnacle_2500.png",
     "acquisition": "Pinnacle reward — level 2500 (design pending first claimant)",
     "gemPrice": 0
   },
