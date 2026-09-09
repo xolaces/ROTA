@@ -1,6 +1,6 @@
 namespace ROTA.Shared.DTOs;
 
-// System 26 — crafting (D-018). Dawn-faithful: named ingredients in, a better-named definition out.
+// crafting (D-018). Dawn-faithful: named ingredients in, a better-named definition out.
 
 /// <summary>One ingredient line, hydrated with how many the caller actually holds.</summary>
 public class CraftIngredientResponse

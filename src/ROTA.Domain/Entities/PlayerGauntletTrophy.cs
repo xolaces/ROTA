@@ -1,7 +1,7 @@
 namespace ROTA.Domain.Entities;
 
 // BETA (System 16 Slice 2) — permanent ownership of a Gauntlet trophy. Mirrors PlayerMagic.
-// Highest-only stacking is applied in combat (Slice 4); this row only records ownership.
+// Highest-only stacking is applied in combat; this row only records ownership.
 // Unique on (player_id, gauntlet_trophy_id).
 public class PlayerGauntletTrophy
 {

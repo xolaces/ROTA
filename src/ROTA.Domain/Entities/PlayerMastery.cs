@@ -45,7 +45,7 @@ public class PlayerMastery
 
     /// <summary>
     /// Sets the level (1..<see cref="MaxLevel"/>). Monotonic — throws on a decrease.
-    /// Used by the tier-up evaluation (Slice 4) which may advance several levels at once.
+    /// Used by the tier-up evaluation which may advance several levels at once.
     /// </summary>
     public void SetLevel(int level)
     {

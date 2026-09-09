@@ -52,7 +52,7 @@ public sealed class OutboundEmailRepository : IOutboundEmailRepository
             q = q.Where(e => EF.Functions.ILike(e.Subject, $"%{s}%") || EF.Functions.ILike(e.Summary, $"%{s}%"));
         }
 
-        // T52 — default sort is priority-first (High → Low), newest within each band; "created" sorts
+        // default sort is priority-first (High → Low), newest within each band; "created" sorts
         // purely by recency (the pre-T52 behaviour).
         var ordered = string.Equals(sort, "created", StringComparison.OrdinalIgnoreCase)
             ? q.OrderByDescending(e => e.CreatedAt)

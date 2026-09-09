@@ -6,7 +6,7 @@ using ROTA.Shared.DTOs;
 namespace ROTA.Application.Services;
 
 /// <summary>
-/// System 24 (D8) — the dedicated Gauntlet battalion. Reads/assigns a 6-general + 20-troop loadout
+/// the dedicated Gauntlet battalion. Reads/assigns a 6-general + 20-troop loadout
 /// from the player's owned units and computes battalion power, the Gauntlet strike-damage basis:
 /// <c>(playerATK + Σ battalionATK) × 4 + (playerDEF + Σ battalionDEF) × 1</c> (base stats inherent;
 /// Discernment crit stays passive and is never folded into power). A unit owns at most one copy, so

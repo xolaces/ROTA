@@ -44,7 +44,7 @@ public class GauntletEvent
     public Guid Id { get; private set; }
     public string Name { get; private set; } = string.Empty;
 
-    // T76 — event identity. Kind drives the prize set + seasonal-crown removal scope; RunNumber
+    // event identity. Kind drives the prize set + seasonal-crown removal scope; RunNumber
     // counts runs of the SAME kind ("3rd Neck Gauntlet"); blurb/banner feed the event page.
     public GauntletEventKind Kind { get; private set; } = GauntletEventKind.Neck;
     public int RunNumber { get; private set; } = 1;

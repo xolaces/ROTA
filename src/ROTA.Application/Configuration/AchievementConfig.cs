@@ -8,7 +8,7 @@ namespace ROTA.Application.Configuration;
 // tuning needs no content-schema change.
 public class AchievementConfig
 {
-    // System 25 — the rarity ladder applied to EVERY quest zone's rerun achievements. The
+    // the rarity ladder applied to EVERY quest zone's rerun achievements. The
     // AchievementDefinitionProvider expands this across the distinct (chapter, zone) pairs from the quest
     // roster at boot (one 6-tier chain per zone, deterministic ids), so adding chapters/zones to
     // quests.json grows the achievement roster automatically — no hand-authored rows. Thresholds must be

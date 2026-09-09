@@ -8,7 +8,7 @@ using ROTA.Shared.DTOs;
 namespace ROTA.Application.Services;
 
 /// <summary>
-/// System 27 — the player market (prototype). Built to the threat model in
+/// the player market (prototype). Built to the threat model in
 /// <c>docs/design/PLAYER_MARKET.md</c> §4, which is worth restating because every design choice below
 /// falls out of it: once gold has real value, every economy bug becomes an economy-wide event, gold
 /// acquires real-money value, and automation stops being tempting and becomes rational.

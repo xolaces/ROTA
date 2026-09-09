@@ -37,7 +37,7 @@ public sealed class ActiveRaidRepository : IActiveRaidRepository
             .OrderBy(r => r.CurrentHp)
             .ToListAsync(ct);
 
-    // T57 — Lootable raids the caller can still claim (participant row with RewardedAt == null).
+    // Lootable raids the caller can still claim (participant row with RewardedAt == null).
     public async Task<IReadOnlyList<ActiveRaid>> GetLootableUnclaimedForPlayerAsync(
         Guid playerId, CancellationToken ct = default)
         => await _db.ActiveRaids
@@ -64,7 +64,7 @@ public sealed class ActiveRaidRepository : IActiveRaidRepository
             .Take(limit)
             .ToListAsync(ct);
 
-    // System 16 Slice 7 — every Gauntlet ladder raid this player has for the event (any state).
+    // every Gauntlet ladder raid this player has for the event (any state).
     // Ordered by CreatedAt so the most recent stage is last; the ladder service re-derives the stage
     // number from RaidDefinitionId ("gauntlet_stage_N") rather than trusting order.
     public async Task<IReadOnlyList<ActiveRaid>> GetGauntletStagesForPlayerAsync(
@@ -87,7 +87,7 @@ public sealed class ActiveRaidRepository : IActiveRaidRepository
     {
         // Mark THIS entity Modified — never DbSet.Update(raid), which cascades Modified across the
         // whole loaded graph. Raids are loaded via FindByIdWithSummonerAsync (Include SummonedByPlayer),
-        // and Player carries an xmin concurrency token (T59). During a loot claim the reward grants bump
+        // and Player carries an xmin concurrency token. During a loot claim the reward grants bump
         // that player's row inside the advisory-lock transaction, so cascading would re-issue an UPDATE
         // for the summoner using the xmin captured BEFORE those grants — 0 rows matched, and the whole
         // claim throws DbUpdateConcurrencyException after the rewards already committed.

@@ -8,7 +8,7 @@ using ROTA.Shared.DTOs;
 namespace ROTA.Api.Controllers;
 
 /// <summary>
-/// Moderator/admin punitive actions (T40): ban, mute, unmute. Every action is audited and raises a
+/// Moderator/admin punitive actions: ban, mute, unmute. Every action is audited and raises a
 /// ModerationAction operator email, creating a dispute-review trail visible in the ops dashboard.
 /// </summary>
 [ApiController]

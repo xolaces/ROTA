@@ -1,7 +1,7 @@
 namespace ROTA.Application.Models;
 
 /// <summary>
-/// The server-authoritative subject catalog (T52), loaded once from <c>content/subjects.json</c> by
+/// The server-authoritative subject catalog, loaded once from <c>content/subjects.json</c> by
 /// <c>ISubjectCatalogProvider</c>. Bug and Player-report subjects are fixed, validated lists; player
 /// feedback stays open-text but is always indexed under <see cref="FeedbackCategory"/>.
 /// </summary>

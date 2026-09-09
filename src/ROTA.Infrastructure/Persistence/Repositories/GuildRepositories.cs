@@ -67,7 +67,7 @@ public sealed class GuildRepository : IGuildRepository
     {
         var q = _db.Guilds.AsNoTracking().Where(g => !g.IsDeleted);
 
-        // T43: hide the Dev guild ("The Dev Coffee Shop") from the public browse list. Filtering on the
+        // hide the Dev guild ("The Dev Coffee Shop") from the public browse list. Filtering on the
         // base IQueryable (before Skip/Take) keeps paging correct — the hidden row never counts.
         if (!string.IsNullOrWhiteSpace(_devGuildTagNormalized))
             q = q.Where(g => g.TagNormalized != _devGuildTagNormalized);

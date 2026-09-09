@@ -11,7 +11,7 @@ public class OutboundEmailResponse
     public string? TriggeringSystem { get; init; }
     public string Summary { get; init; } = string.Empty;
 
-    /// <summary>Operator-triage priority name (T52): "Low" | "Normal" | "High".</summary>
+    /// <summary>Operator-triage priority name: "Low" | "Normal" | "High".</summary>
     public string Priority { get; init; } = string.Empty;
 
     /// <summary>Raw JSON string (the row's jsonb detail) — the dashboard pretty-prints it.</summary>
@@ -38,7 +38,7 @@ public class OutboundEmailListResponse
     public int PageSize { get; init; }
 }
 
-/// <summary>A pinnacle first-claim row for GET /api/admin/pinnacle-claims (T33).</summary>
+/// <summary>A pinnacle first-claim row for GET /api/admin/pinnacle-claims.</summary>
 public class PinnacleClaimResponse
 {
     public int PinnacleLevel { get; init; }

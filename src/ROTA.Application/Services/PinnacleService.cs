@@ -6,7 +6,7 @@ using ROTA.Domain.Enums;
 namespace ROTA.Application.Services;
 
 /// <summary>
-/// Records pinnacle first-claims (T33). The first player to reach a pinnacle level triggers an audit
+/// Records pinnacle first-claims. The first player to reach a pinnacle level triggers an audit
 /// entry and a PinnacleFirstClaim operator email; subsequent players at the same level are no-ops.
 /// </summary>
 public sealed class PinnacleService : IPinnacleService

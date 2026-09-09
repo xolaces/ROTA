@@ -1,7 +1,7 @@
 namespace ROTA.Application.Configuration;
 
 /// <summary>
-/// System 27 — the player market's tunables. Every number here is a lever on an economy that, once
+/// the player market's tunables. Every number here is a lever on an economy that, once
 /// open, is very hard to close, so the defaults are deliberately the CAUTIOUS end of what
 /// <c>docs/design/PLAYER_MARKET.md</c> recommends: that doc argues a combined 10-20% tax is normal
 /// for the genre and would do real work, then cautions that "a market nobody uses bridges nobody" and

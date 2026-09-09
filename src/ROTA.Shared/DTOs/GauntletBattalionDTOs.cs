@@ -1,6 +1,6 @@
 namespace ROTA.Shared.DTOs;
 
-// System 24 (D8) — Gauntlet battalion DTOs. Slot units are surfaced as OwnedUnitResponse (the same
+// Gauntlet battalion DTOs. Slot units are surfaced as OwnedUnitResponse (the same
 // shape the battalion editor lists), so the client reuses its existing unit card.
 
 /// <summary>The caller's battalion: resolved general/troop units + computed power + slot caps.</summary>

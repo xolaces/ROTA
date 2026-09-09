@@ -27,7 +27,7 @@ public enum AchievementMetric
     CollectorItemCount = 5,
 
     /// <summary>
-    /// System 25 — full re-runs of one quest zone (incremented once per zone-boss clear / zone reset).
+    /// full re-runs of one quest zone (incremented once per zone-boss clear / zone reset).
     /// SCOPED by (Chapter, ZoneIndex): unlike every other metric, a ZoneReruns achievement is NOT fanned
     /// to all defs on the metric — it is routed only to the matching zone's ladder via RecordZoneRerunAsync.
     /// </summary>

@@ -5,14 +5,14 @@ public class QuestAvailabilityResponse
     public string Id { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public int Chapter { get; set; }
-    // T45 — Chapter → Zone → Node hierarchy. ZoneIndex/NodeIndex are 0-based; the boss is the last
+    // Chapter → Zone → Node hierarchy. ZoneIndex/NodeIndex are 0-based; the boss is the last
     // NodeIndex in its zone. The client groups nodes by chapter→zone for the map view.
     public int ZoneIndex { get; set; }
     public string ZoneName { get; set; } = string.Empty;
     public int NodeIndex { get; set; }
     public string NodeType { get; set; } = string.Empty;
     public int BaseEnergyCost { get; set; }
-    // T55 — co-scaled display values at Normal difficulty: the per-chapter (capped at chapter 16) +
+    // co-scaled display values at Normal difficulty: the per-chapter (capped at chapter 16) +
     // zone-depth scaling applied to the base energy cost and base XP. The client shows these (×selected
     // difficulty) so the player sees the real cost/reward; the server recomputes on attempt.
     public int EffectiveEnergyCost { get; set; }
@@ -24,7 +24,7 @@ public class QuestAvailabilityResponse
     public string? PrerequisiteQuestId { get; set; }
     public int CompletionCount { get; set; }
     public DateTimeOffset? LastCompletedAt { get; set; }
-    // Node depletion (System 20): Progress counts down from 100→0 over repeated attempts; the node
+    // Node depletion: Progress counts down from 100→0 over repeated attempts; the node
     // is Cleared at 0, which unlocks the next node. Client renders the depletion bar + cleared state.
     public double Progress { get; set; }
     public bool IsCleared { get; set; }
@@ -38,7 +38,7 @@ public class QuestAvailabilityResponse
     public bool IsUnlocked { get; set; }
 
     /// <summary>
-    /// T74 — the highest difficulty the player may ATTEMPT on this node ("Normal".."Nightmare";
+    /// the highest difficulty the player may ATTEMPT on this node ("Normal".."Nightmare";
     /// Hard unlocks after a Normal clear, etc.). The client must render higher tiers as locked
     /// and unselectable; the server still enforces the gate authoritatively on attempt.
     /// </summary>
@@ -75,7 +75,7 @@ public class QuestResultResponse
     public int XpToNextLevel { get; set; }
     public int LevelsGained { get; set; }
 
-    // Node depletion (System 20): the node's remaining Progress after this attempt, whether it is
+    // Node depletion: the node's remaining Progress after this attempt, whether it is
     // now fully Cleared, and whether THIS attempt is the one that cleared it (for a client callout).
     public double NodeProgress { get; set; }
     public bool NodeCleared { get; set; }
@@ -95,9 +95,9 @@ public enum QuestFailureCode
     PlayerNotFound     = 4,
     PlayerBanned       = 5,
     DifficultyLocked   = 6,
-    // T26: the node is cleared (locked) and can't be attempted until the zone boss resets it.
+    // the node is cleared (locked) and can't be attempted until the zone boss resets it.
     NodeCleared        = 7,
-    // T45: a zone boss can't be attempted until every preceding NON-boss node in its zone has been
+    // a zone boss can't be attempted until every preceding NON-boss node in its zone has been
     // cleared (HasEverCleared). Guard runs before any energy spend.
     ZoneBossLocked     = 8,
 }

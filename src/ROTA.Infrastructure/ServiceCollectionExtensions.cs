@@ -35,7 +35,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
         services.AddScoped<IPlayerEquipmentRepository, PlayerEquipmentRepository>();
         services.AddScoped<IPlayerGearRepository, PlayerGearRepository>();
-        // System 27 — player market.
+        // player market.
         services.AddScoped<IMarketListingRepository, MarketListingRepository>();
         services.AddScoped<IMarketTransactionRepository, MarketTransactionRepository>();
         services.AddScoped<IPlayerMagicRepository, PlayerMagicRepository>();
@@ -50,13 +50,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IFriendshipRepository, FriendshipRepository>();
         services.AddScoped<IBlockRepository, BlockRepository>();
         services.AddScoped<IPrivateMessageRepository, PrivateMessageRepository>();
-        // System 21 — Guild Foundations (Slice 1)
+        // Guild Foundations
         services.AddScoped<IGuildRepository, GuildRepository>();
         services.AddScoped<IGuildMembershipRepository, GuildMembershipRepository>();
         services.AddScoped<IGuildJoinRequestRepository, GuildJoinRequestRepository>();
-        // System 21 — Guild sigil economy (Slice 3a)
+        // Guild sigil economy
         services.AddScoped<IGuildEconomyRepository, GuildEconomyRepository>();
-        // System 22 — Masteries Core (Phase A)
+        // Masteries Core
         services.AddScoped<IPlayerMasteryRepository, PlayerMasteryRepository>();
         services.AddScoped<IPlayerMasteryActivityRepository, PlayerMasteryActivityRepository>();
         services.AddScoped<IMasteryRespecRepository, MasteryRespecRepository>();
@@ -66,7 +66,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAchievementAwardRepository, AchievementAwardRepository>();
         services.AddScoped<IAchievementProgressEventRepository, AchievementProgressEventRepository>();
 
-        // System 16 — Gauntlet (Slice 2) repositories
+        // Gauntlet repositories
         services.AddScoped<IGauntletEventRepository, GauntletEventRepository>();
         services.AddScoped<IGauntletEntryRepository, GauntletEntryRepository>();
         services.AddScoped<IStrikeRepository, StrikeRepository>();
@@ -80,7 +80,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuthLockoutService, AuthLockoutService>();
         services.AddScoped<IRaidHitCache, RaidHitCache>();
 
-        // Phase 2 — Ops & Social: operator email backbone (T39)
+        // Phase 2 — Ops & Social: operator email backbone
         services.AddScoped<IEmailService, SmtpEmailService>();
         services.AddSingleton<IEmailSendQueue, EmailSendQueue>();
         // Anti-spam limiter for player submissions (T37 reports, T38 bug/ticket)
@@ -88,7 +88,7 @@ public static class ServiceCollectionExtensions
         // Short-window chat throttle for SignalR sends (exploit-audit finding J). Singleton: depends
         // only on the singleton mux + IOptions<RateLimitConfig>.
         services.AddSingleton<IChatRateLimiter, ChatRateLimiter>();
-        // World-chat ring buffer (T36)
+        // World-chat ring buffer
         services.AddScoped<IWorldChatStore, RedisWorldChatStore>();
         // Guild-chat ring buffer (System 21 Slice 2) — per-guild keyed
         services.AddScoped<IGuildChatStore, RedisGuildChatStore>();
@@ -105,7 +105,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IGearDefinitionProvider>(
             _ => new GearDefinitionProvider(contentRootPath));
 
-        // System 26 (D-018) — recipe content is validated against the item/unit/legion/gear providers,
+        // recipe content is validated against the item/unit/legion/gear providers,
         // so it must be constructed AFTER them. Eagerly constructed in Program.cs so a recipe naming a
         // nonexistent ingredient, or one that could mint value from nothing, fails the boot.
         services.AddSingleton<ICraftingRecipeProvider>(sp =>
@@ -121,7 +121,7 @@ public static class ServiceCollectionExtensions
             _ => new UnitDefinitionProvider(contentRootPath));
         services.AddSingleton<ILegionDefinitionProvider>(
             _ => new LegionDefinitionProvider(contentRootPath));
-        // System 22 Phase A (Masteries) — the four Ancient definitions; throws at startup on bad content.
+        // the four Ancient definitions; throws at startup on bad content.
         services.AddSingleton<IMasteryDefinitionProvider>(
             _ => new MasteryDefinitionProvider(contentRootPath));
         // TICKET 46 (Achievements) — the achievement roster; throws at startup on bad content. System 25:
@@ -132,20 +132,20 @@ public static class ServiceCollectionExtensions
                 sp.GetRequiredService<IQuestDefinitionProvider>(),
                 sp.GetRequiredService<IOptions<AchievementConfig>>().Value,
                 sp.GetRequiredService<IRaidDefinitionProvider>()));
-        // T52 — subject catalog (bug/report subject lists + feedback category); throws at startup on bad content.
+        // subject catalog (bug/report subject lists + feedback category); throws at startup on bad content.
         services.AddSingleton<ISubjectCatalogProvider>(
             _ => new SubjectCatalogProvider(contentRootPath));
-        // T68 — terms/privacy markdown; throws at startup on missing/blank documents.
+        // terms/privacy markdown; throws at startup on missing/blank documents.
         services.AddSingleton<ILegalTextProvider>(
             _ => new LegalTextProvider(contentRootPath));
-        // System 16 Slice 1 — depends on the magic provider (validates Gauntlet magics +
+        // depends on the magic provider (validates Gauntlet magics +
         // prize magicId refs) and IOptions<GauntletConfig> (validates league bounds).
         services.AddSingleton<IGauntletContentProvider>(sp =>
             new GauntletContentProvider(
                 contentRootPath,
                 sp.GetRequiredService<IMagicDefinitionProvider>(),
                 sp.GetRequiredService<IOptions<GauntletConfig>>()));
-        // System 16 Slice 6 — token-shop catalogue. Depends on the unit/legion/gear def providers
+        // token-shop catalogue. Depends on the unit/legion/gear def providers
         // for payloadId referential validation; throws at startup on a bad catalogue.
         services.AddSingleton<IGauntletShopProvider>(sp =>
             new GauntletShopProvider(
@@ -187,14 +187,14 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ILegalService, LegalService>();
         services.AddScoped<IDevService, DevService>();
 
-        // System 16 — Gauntlet (Slice 2) services
+        // Gauntlet services
         services.AddScoped<IGauntletService, GauntletService>();
         services.AddScoped<IGauntletAdminService, GauntletAdminService>();
 
-        // System 16 — Gauntlet (Slice 3) scoring / leaderboard read service
+        // Gauntlet scoring / leaderboard read service
         services.AddScoped<IGauntletScoringService, GauntletScoringService>();
 
-        // System 24 (D8) — Gauntlet battalion read/assign + power
+        // Gauntlet battalion read/assign + power
         services.AddScoped<IGauntletBattalionService, GauntletBattalionService>();
 
         // FluentValidation — scan Application assembly for all IValidator<T> implementations

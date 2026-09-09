@@ -4,7 +4,7 @@ using ROTA.Shared.DTOs;
 namespace ROTA.Application.Interfaces;
 
 /// <summary>
-/// System 22 Phase A — the Masteries read/compute service. Combat/loot consumers (Slices 5/6) read
+/// the Masteries read/compute service. Combat/loot consumers (Slices 5/6) read
 /// plain modifier values from here at their existing hooks; masteries are never modelled as
 /// <c>ConditionalBonus</c> rows (they are per-player DB level-state, not content/inventory bonuses).
 /// </summary>
@@ -13,21 +13,21 @@ public interface IMasteryService
     /// <summary>Full overview for GET /api/masteries (ensures level-1 rows; rating, titles, per-Ancient progress).</summary>
     Task<MasteryOverviewResponse> GetMasteriesAsync(Guid playerId, CancellationToken ct = default);
 
-    /// <summary>Wrath (+% legion power) + Bulwark (+% guild-raid damage) modifiers for the combat hooks (Slice 5).</summary>
+    /// <summary>Wrath (+% legion power) + Bulwark (+% guild-raid damage) modifiers for the combat hooks.</summary>
     Task<MasteryCombatModifiers> GetCombatModifiersAsync(Guid playerId, CancellationToken ct = default);
 
     /// <summary>Hoard (drop/gold) + Discernment (sigil-find/quality) modifiers for the loot hooks (Slices 6/7).</summary>
     Task<MasteryLootModifiers> GetLootModifiersAsync(Guid playerId, CancellationToken ct = default);
 
     /// <summary>Both combat + loot modifiers from ONE load of (levels + pledge) — used by the raid hit path
-    /// (Slice 6) so the money path reads mastery state once, not twice.</summary>
+    /// so the money path reads mastery state once, not twice.</summary>
     Task<MasteryModifiers> GetModifiersAsync(Guid playerId, CancellationToken ct = default);
 
     /// <summary>Refreshes the MasteryRating leaderboard boards (Live snapshot). Returns the count snapshotted.</summary>
     Task<int> SnapshotRatingBoardAsync(CancellationToken ct = default);
 
     /// <summary>
-    /// LOSSLESS pledge change (Slice 3). Resolves the cheapest eligible path — free first-pledge to the
+    /// LOSSLESS pledge change. Resolves the cheapest eligible path — free first-pledge to the
     /// Ancient → free monthly → paid weekly (gems, Redis-capped) — then flips the active pledge. Mastery
     /// levels are never touched.
     /// </summary>
@@ -37,7 +37,7 @@ public interface IMasteryService
     int ComputeRating(IReadOnlyDictionary<MasteryAncient, int> levels);
 
     /// <summary>
-    /// Records mastery challenge-counter activity (Slice 4). Best-effort at chokepoints. When
+    /// Records mastery challenge-counter activity. Best-effort at chokepoints. When
     /// <paramref name="referenceId"/> is supplied the increment is exactly-once (idempotency ledger).
     /// Does NOT evaluate tier-ups (that runs off the hot path).
     /// </summary>

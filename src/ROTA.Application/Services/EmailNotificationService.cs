@@ -42,7 +42,7 @@ public sealed class EmailNotificationService : IEmailNotificationService
 
     public async Task<Guid> QueueAsync(EmailPayload payload, string? ipAddress = null, CancellationToken ct = default)
     {
-        // Player-facing mail (T65) keeps the raw subject — the ops tag is for the operator inbox only.
+        // Player-facing mail keeps the raw subject — the ops tag is for the operator inbox only.
         var subject = payload.RecipientOverride is null
             ? $"[ROTA][{payload.Type}] {payload.Subject}"
             : payload.Subject;
@@ -108,7 +108,7 @@ public sealed class EmailNotificationService : IEmailNotificationService
 
         await _emails.UpdateAsync(email, ct);
 
-        // T71 — retryable while attempts remain; exhausted rows stay Failed for dashboard triage.
+        // retryable while attempts remain; exhausted rows stay Failed for dashboard triage.
         return email.SendStatus == Domain.Enums.EmailSendStatus.Sent
             || email.SendAttempts >= _cfg.MaxSendAttempts;
     }
@@ -135,7 +135,7 @@ public sealed class EmailNotificationService : IEmailNotificationService
             "</div>";
     }
 
-    // T65 — player-facing body. The plaintext code lives in the row's detail jsonb so retries can
+    // player-facing body. The plaintext code lives in the row's detail jsonb so retries can
     // re-render it; acceptable because the code is single-use, 15-min TTL, and the row is admin-only.
     private static string BuildPasswordResetBody(OutboundEmail email)
     {

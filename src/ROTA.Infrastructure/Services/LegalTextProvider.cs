@@ -3,7 +3,7 @@ using ROTA.Application.Interfaces;
 namespace ROTA.Infrastructure.Services;
 
 /// <summary>
-/// Eager singleton (T68): loads <c>content/legal/terms.md</c> + <c>privacy.md</c> at construction
+/// Eager singleton: loads <c>content/legal/terms.md</c> + <c>privacy.md</c> at construction
 /// and throws on missing/blank files so a broken legal bundle fails at boot. Mirrors
 /// <c>SubjectCatalogProvider</c>.
 /// </summary>

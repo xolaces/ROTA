@@ -34,7 +34,7 @@ public sealed class GearDefinitionProvider : IGearDefinitionProvider
 
         _gear = list.ToDictionary(g => g.Id, g => g);
 
-        // System 22 Phase A (Slice 7) — validate the Discernment quality-upgrade ladder (resolves +
+        // validate the Discernment quality-upgrade ladder (resolves +
         // strictly higher rarity). The gear-drop upgrade roll is wired with the deferred raid-threshold work.
         foreach (var g in list)
         {

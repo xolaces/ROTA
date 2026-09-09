@@ -1,7 +1,7 @@
 namespace ROTA.Domain.Enums;
 
 /// <summary>
-/// Discriminator for Strike-ledger rows (System 16). Strikes are an earned-first,
+/// Discriminator for Strike-ledger rows. Strikes are an earned-first,
 /// persistent action currency; balance is SUM(amount). Strikes carry over across events
 /// and are never reset.
 /// </summary>

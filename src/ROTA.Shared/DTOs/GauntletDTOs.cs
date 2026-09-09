@@ -1,7 +1,7 @@
 namespace ROTA.Shared.DTOs;
 
 // ──────────────────────────────────────────────────────────────────────────────
-// System 16 Slice 2 — Gauntlet DTOs (event lifecycle, join, strike economy).
+// Gauntlet DTOs (event lifecycle, join, strike economy).
 // ──────────────────────────────────────────────────────────────────────────────
 
 /// <summary>A Gauntlet event's public shape.</summary>
@@ -15,7 +15,7 @@ public class GauntletEventResponse
     public DateTimeOffset EndsAt { get; init; }
     public DateTimeOffset? SettledAt { get; init; }
 
-    // T76 — event identity for the event page.
+    // event identity for the event page.
     /// <summary>Event family ("Neck" standard / "Ring" rare) — drives the prize set.</summary>
     public string Kind { get; init; } = "Neck";
     /// <summary>Sequential run number within this kind ("the 3rd Neck Gauntlet").</summary>
@@ -26,7 +26,7 @@ public class GauntletEventResponse
     public long SecondsRemaining { get; init; }
 
     /// <summary>
-    /// T76 — server-computed seconds until StartsAt (0 once started). Non-zero means the event is
+    /// server-computed seconds until StartsAt (0 once started). Non-zero means the event is
     /// visible but not yet playable — the Home CTA's "Coming Soon" state.
     /// </summary>
     public long SecondsUntilStart { get; init; }
@@ -74,7 +74,7 @@ public class GauntletOverviewResponse
     public long PitchforkBalance { get; init; }
 
     /// <summary>
-    /// T76 — the caller's result in the most recently SETTLED event (any kind), or null if no event
+    /// the caller's result in the most recently SETTLED event (any kind), or null if no event
     /// has settled or the caller had no entry in it. Drives the "you placed #N" settlement card and
     /// the Home CTA's Settled state.
     /// </summary>
@@ -103,7 +103,7 @@ public class OpenGauntletEventRequest
     public DateTimeOffset StartsAt { get; set; }
     public DateTimeOffset EndsAt { get; set; }
 
-    // T76 — event identity. Kind: "Neck" (default, standard run) or "Ring" (rare run).
+    // event identity. Kind: "Neck" (default, standard run) or "Ring" (rare run).
     public string Kind { get; set; } = "Neck";
     public string? LoreBlurb { get; set; }
     public string? BannerKey { get; set; }
@@ -187,7 +187,7 @@ public class GauntletSettlementSummaryResponse
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// System 16 Slice 7 — Gauntlet ladder (auto-advance climb) DTO.
+// Gauntlet ladder (auto-advance climb) DTO.
 // ──────────────────────────────────────────────────────────────────────────────
 
 /// <summary>
@@ -219,14 +219,14 @@ public class GauntletLadderResponse
     public bool NoActiveEvent { get; init; }
 
     /// <summary>
-    /// T76 — true when an event exists but its StartsAt is still in the future (Coming Soon): no
+    /// true when an event exists but its StartsAt is still in the future (Coming Soon): no
     /// stage is spawned and the ladder is not climbable until the event window opens.
     /// </summary>
     public bool NotStarted { get; init; }
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// System 16 Slice 3 — leaderboard / scoring DTOs.
+// leaderboard / scoring DTOs.
 // ──────────────────────────────────────────────────────────────────────────────
 
 /// <summary>
@@ -267,7 +267,7 @@ public class GauntletLeaderboardEntryDto
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// System 16 Slice 6 — token-shop DTOs (catalogue + purchase result).
+// token-shop DTOs (catalogue + purchase result).
 // ──────────────────────────────────────────────────────────────────────────────
 
 /// <summary>One catalogue entry, hydrated with a caller-specific <see cref="AlreadyOwned"/> flag.</summary>
@@ -347,7 +347,7 @@ public class BuyShopResult
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// T76 — prize preview table + per-player settlement summary (System 24).
+// prize preview table + per-player settlement summary.
 // ──────────────────────────────────────────────────────────────────────────────
 
 /// <summary>

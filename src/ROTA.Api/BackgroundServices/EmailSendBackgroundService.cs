@@ -66,7 +66,7 @@ public sealed class EmailSendBackgroundService : BackgroundService
         _log.LogInformation("Outbound email sender stopping.");
     }
 
-    // T71 — startup sweep: anything persisted but not Sent gets back into the channel. Failures here
+    // startup sweep: anything persisted but not Sent gets back into the channel. Failures here
     // must never block startup; the rows stay visible in the dashboard either way.
     private async Task RecoverStrandedAsync(CancellationToken ct)
     {
@@ -87,7 +87,7 @@ public sealed class EmailSendBackgroundService : BackgroundService
         }
     }
 
-    // T71 — fire-and-forget delayed re-enqueue. The row's SendAttempts (not this task) bounds the
+    // fire-and-forget delayed re-enqueue. The row's SendAttempts (not this task) bounds the
     // total tries, so a lost retry task (process exit) is healed by the next startup sweep.
     private void ScheduleRetry(Guid id, CancellationToken ct)
     {

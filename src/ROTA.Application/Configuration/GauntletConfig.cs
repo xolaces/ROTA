@@ -43,7 +43,7 @@ public class GauntletConfig
     // Strikes earned per Gauntlet raid stage defeated.
     public int StrikesPerDefeat { get; set; } = 10;
 
-    // BETA (Slice 2) — gem cost per Strike when buying Strikes with gems (uncapped).
+    // BETA — gem cost per Strike when buying Strikes with gems (uncapped).
     // Default 1; a tunable balance value (owner to confirm). Total cost = strikes × StrikeGemPrice.
     public int StrikeGemPrice { get; set; } = 1;
 
@@ -79,7 +79,7 @@ public class GauntletConfig
     public double LateRampFinalGrowth { get; set; } = 2.0;
 }
 
-// T54 — the pure Gauntlet ladder curve. Shared by the content provider (stage generation) and the
+// the pure Gauntlet ladder curve. Shared by the content provider (stage generation) and the
 // curve test (the "test run" the owner asked for) so both compute identical numbers.
 public static class GauntletStageCurve
 {

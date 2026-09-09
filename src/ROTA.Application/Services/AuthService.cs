@@ -117,7 +117,7 @@ public sealed class AuthService : IAuthService
         var player = newPlayerId.HasValue
             ? Player.CreateWithId(newPlayerId.Value, request.Username, request.Email, passwordHash)
             : Player.Create(request.Username, request.Email, passwordHash);
-        // T68 — the validator already required the CURRENT version; stamp it on the new account.
+        // the validator already required the CURRENT version; stamp it on the new account.
         player.AcceptTerms(request.AcceptedTermsVersion);
         await _players.CreateAsync(player, ct);
 
@@ -278,7 +278,7 @@ public sealed class AuthService : IAuthService
             "Session ended", null));
     }
 
-    // PASSWORD RESET (T65)
+    // PASSWORD RESET
 
     // Crockford-style base32 (no 0/1/I/L/O/U) — same alphabet as beta keys.
     private const string ResetCodeAlphabet = "23456789ABCDEFGHJKMNPQRSTVWXYZ";
@@ -399,7 +399,7 @@ public sealed class AuthService : IAuthService
         var accessTokenExpiry = DateTimeOffset.UtcNow.Add(AccessTokenLifetime);
         var accessToken = GenerateAccessToken(player, accessTokenExpiry);
 
-        // T68 — flag stale terms acceptance on every token issue (login/refresh/register).
+        // flag stale terms acceptance on every token issue (login/refresh/register).
         var currentTermsVersion = _config.GetValue("Legal:CurrentTermsVersion", 1);
 
         return new AuthResponse

@@ -5,7 +5,7 @@ using ROTA.Application.Models;
 namespace ROTA.Infrastructure.Services;
 
 /// <summary>
-/// Eager singleton (T52): loads <c>content/subjects.json</c> at construction and throws
+/// Eager singleton: loads <c>content/subjects.json</c> at construction and throws
 /// <see cref="InvalidOperationException"/> on any invalid content (empty lists, duplicate keys, blank
 /// feedback category) so a misconfigured catalog fails at boot, not on first use. Mirrors
 /// <c>MagicDefinitionProvider</c> / <c>MasteryDefinitionProvider</c>.

@@ -1,4 +1,4 @@
-// T68 — terms/privacy acceptance shapes.
+// terms/privacy acceptance shapes.
 namespace ROTA.Shared.DTOs;
 
 public class LegalDocumentResponse

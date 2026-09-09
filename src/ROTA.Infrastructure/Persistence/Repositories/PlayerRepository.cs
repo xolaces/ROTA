@@ -61,7 +61,7 @@ public sealed class PlayerRepository : IPlayerRepository
         await _db.SaveChangesAsync(ct);
     }
 
-    // T59 — reward-write chokepoint. The players row carries xmin as a concurrency token, so a save
+    // reward-write chokepoint. The players row carries xmin as a concurrency token, so a save
     // racing another request's commit throws DbUpdateConcurrencyException; we reload the row's fresh
     // values (same tracked instance — the DbContext identity map guarantees later reads in the request
     // see the committed state) and re-apply the mutation. A player can only race themselves (quest vs
@@ -92,7 +92,7 @@ public sealed class PlayerRepository : IPlayerRepository
     // as the subtraction, so there is no window between checking affordability and spending — the shape
     // that let concurrent gem buys drive a balance negative before the ledger got its advisory lock.
     // Raw SQL rather than EF because a tracked read-modify-save reintroduces exactly that window, and
-    // because the players row carries an xmin token (T59) an entity write would also conflict with a
+    // because the players row carries an xmin token an entity write would also conflict with a
     // concurrent reward grant. RETURNING hands back the committed balance without a second read.
     // Ambient-transaction aware: inside a mutation-lock transaction this enlists and commits (or rolls
     // back) together with whatever the gold paid for.

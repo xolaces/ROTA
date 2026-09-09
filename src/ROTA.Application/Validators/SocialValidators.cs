@@ -9,7 +9,7 @@ public sealed class ReportPlayerRequestValidator : AbstractValidator<ReportPlaye
     public ReportPlayerRequestValidator(ISubjectCatalogProvider subjects)
     {
         RuleFor(x => x.Target).NotEmpty();
-        // T52 — the report reason must be one of the server-catalog report subjects (key or label).
+        // the report reason must be one of the server-catalog report subjects (key or label).
         RuleFor(x => x.Reason)
             .NotEmpty().WithMessage("A reason is required.")
             .Must(subjects.IsValidReportSubject)

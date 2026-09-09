@@ -1,6 +1,6 @@
 namespace ROTA.Application.Configuration;
 
-// Quest node depletion (System 20). Each node starts at NodeStartProgress and depletes per
+// Quest node depletion. Each node starts at NodeStartProgress and depletes per
 // attempt until it hits 0 and clears, unlocking the next node. Boss nodes deplete slower to
 // reflect their weight. Config-driven (appsettings "QuestConfig") — no magic numbers in the service.
 public class QuestConfig
@@ -9,7 +9,7 @@ public class QuestConfig
     public double BattleDepletionPerAttempt { get; set; } = 5.0;   // 100 / 5  = 20 attempts to clear
     public double BossDepletionPerAttempt { get; set; } = 2.5;     // 100 / 2.5 = 40 attempts to clear
 
-    // System 25 (owner 2026-06-16) — sigils are the zone-boss's final-clear reward. The FIRST clear per
+    // sigils are the zone-boss's final-clear reward. The FIRST clear per
     // difficulty is a guaranteed 100% drop; every later (rerun) clear drops at this FLAT rate, NOT scaled
     // by Discernment and NOT the per-boss SigilDropChance (which is now just a vestigial enable — a boss
     // drops sigils iff it carries a Sigils map). A boss must be the zone's final node to drop at all.
@@ -30,7 +30,7 @@ public class QuestConfig
         ["Legendary"] = 0.083,
         ["Nightmare"] = 0.115,
     };
-    // The chance steps up per chapter to the full goal at this chapter (owner 2026-06-23): rarer early,
+    // The chance steps up per chapter to the full goal at this chapter: rarer early,
     // hitting the goal % at Ch6. chance = goal × min(1, chapter / GemChanceFullChapter). Chapters past
     // this stay at the goal. Shared by quest bosses AND raid bosses (unified gem model).
     public int GemChanceFullChapter { get; set; } = 6;
@@ -85,7 +85,7 @@ public class QuestConfig
     public double XpZoneRatioPerZone { get; set; } = 0.05;
     public double XpBossRatio { get; set; } = 2.0;
 
-    // T55 — co-scaled chapter progression. Replaces the XP-only ChapterXpScalars. The per-node base XP
+    // co-scaled chapter progression. Replaces the XP-only ChapterXpScalars. The per-node base XP
     // in quests.json ALREADY scales ~26× across chapters 1→6, so stacking an additional large XP scalar
     // on top inflated reward-per-energy to absurd levels (a ch6 attempt granted ~4 levels). The fix:
     //   • EnergyCostMultiplier grows per chapter so ENERGY becomes a meaningful late-game cost (it was
@@ -135,7 +135,7 @@ public class QuestConfig
         return new ChapterScalingEntry();
     }
 
-    // BETA — superseded by ChapterScaling (T55). Retained only so older config files / tests that still
+    // BETA — superseded by ChapterScaling. Retained only so older config files / tests that still
     // reference ChapterXpScalars bind without error; the live formula no longer reads it.
     public Dictionary<int, double> ChapterXpScalars { get; set; } = new()
     {
@@ -143,7 +143,7 @@ public class QuestConfig
     };
 }
 
-// T55 — per-chapter co-scaling of energy cost and XP reward. Bound from appsettings
+// per-chapter co-scaling of energy cost and XP reward. Bound from appsettings
 // "QuestConfig:ChapterScaling:<chapter>:{EnergyCostMultiplier,XpMultiplier}". Plain get/set props so
 // the configuration binder can populate it (records with positional ctors don't bind cleanly).
 public class ChapterScalingEntry

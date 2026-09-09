@@ -1,6 +1,6 @@
 namespace ROTA.Domain.Entities;
 
-/// <summary>A direct message from one player to another (T37). Persisted so conversation history survives.</summary>
+/// <summary>A direct message from one player to another. Persisted so conversation history survives.</summary>
 public class PrivateMessage
 {
     private PrivateMessage() { }

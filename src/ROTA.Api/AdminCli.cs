@@ -170,7 +170,7 @@ public static class AdminCli
         return 0;
     }
 
-    // T43 — flag/unflag a developer account. flag-dev grants the Developer flag and auto-joins the hidden
+    // flag/unflag a developer account. flag-dev grants the Developer flag and auto-joins the hidden
     // Dev guild ("The Dev Coffee Shop"); unflag-dev removes from the dev guild and revokes the flag.
     private static async Task<int> RunFlagDev(IServiceProvider services, string[] args, bool grant)
     {
@@ -246,7 +246,7 @@ public static class AdminCli
         return 0;
     }
 
-    // System 16 Slice 2 — Gauntlet event lifecycle. CLI uses the system bypass (no actor check),
+    // Gauntlet event lifecycle. CLI uses the system bypass (no actor check),
     // matching the existing promote/demote/grant-gear commands.
     private static async Task<int> RunGauntletOpen(IServiceProvider services, string[] args)
     {
@@ -267,7 +267,7 @@ public static class AdminCli
             return 1;
         }
 
-        // T76 — optional 4th arg: event kind (neck = standard run, ring = the rare run).
+        // optional 4th arg: event kind (neck = standard run, ring = the rare run).
         var kind = ROTA.Domain.Enums.GauntletEventKind.Neck;
         if (args.Length >= 5 && !Enum.TryParse(args[4], ignoreCase: true, out kind))
         {

@@ -7,7 +7,7 @@ using ROTA.Shared.DTOs;
 namespace ROTA.Api.Controllers;
 
 /// <summary>
-/// T68 — terms-of-service / privacy-policy documents and acceptance. Documents are anonymous (the
+/// terms-of-service / privacy-policy documents and acceptance. Documents are anonymous (the
 /// client shows them on the registration screen, pre-auth); acceptance is authenticated.
 /// </summary>
 [ApiController]

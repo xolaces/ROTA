@@ -130,7 +130,7 @@ public sealed class RaidController : ControllerBase
         };
     }
 
-    // T57 — per-participant loot CLAIM of a defeated raid. Grants this player's deferred rewards
+    // per-participant loot CLAIM of a defeated raid. Grants this player's deferred rewards
     // (gold/gems/stat-points/items; XP was granted at kill) and returns them. Idempotent on re-press.
     // Returns the full LootRaidResult (Raid + Rewards). 404 not-found / not-a-participant, 409 not-yet-defeated.
     [HttpPost("{activeRaidId}/loot")]

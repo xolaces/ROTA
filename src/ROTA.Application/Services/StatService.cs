@@ -102,7 +102,7 @@ public sealed class StatService : IStatService
         await _players.UpdateStatsAsync(stats, ct);
 
         // Update resource max values when energy or stamina investment changes.
-        // T30 — raising the cap by N also credits +N to the *current* pool (the gained delta, capped
+        // raising the cap by N also credits +N to the *current* pool (the gained delta, capped
         // at the new max by RefillEnergyAsync) so the spend has an immediate effect. This is NOT a
         // full refill — contrast GrantLevelUpPointsAsync, which calls RefillToMaxAsync.
         // int32-overflow-audit Unit 2: ComputeMax* are now long (uncapped investment), but the resource
@@ -120,7 +120,7 @@ public sealed class StatService : IStatService
             await _energy.RefillEnergyAsync(playerId, ResourceType.Stamina, amount, ct);
         }
 
-        // T56 — Health investment raises BaseMaxHealth, so grow the Health pool max to match and credit
+        // Health investment raises BaseMaxHealth, so grow the Health pool max to match and credit
         // the gained delta to the current pool (same immediate-effect rule as Energy/Stamina above).
         if (statType == StatType.Health)
         {
@@ -162,7 +162,7 @@ public sealed class StatService : IStatService
         var player = await _players.FindByIdWithStatsAsync(playerId, ct);
         if (player?.Stats is null) return;
 
-        // T22 — restore health to full on level-up (forward-compatible; health is PHASE-2 in combat).
+        // restore health to full on level-up (forward-compatible; health is PHASE-2 in combat).
         player.Stats.RestoreFullHealth();
         await _players.UpdateStatsAsync(player.Stats, ct);
 
@@ -173,16 +173,16 @@ public sealed class StatService : IStatService
         // skill_points value over the top of it.
         await _players.IncrementSkillPointsAsync(playerId, 10, ct);
 
-        // T24 — GuildStamina scales 1:1 with level. Sync the stored pool max to the new level before
+        // GuildStamina scales 1:1 with level. Sync the stored pool max to the new level before
         // the refill below (Energy/Stamina max depend on investment, not level, so they need no resync).
         await _energy.UpdateMaxAsync(playerId, ResourceType.GuildStamina, newLevel, ct);
 
-        // T22 — fully refill all resource pools on level-up.
+        // fully refill all resource pools on level-up.
         await _energy.RefillToMaxAsync(playerId, ResourceType.Energy, ct);
         await _energy.RefillToMaxAsync(playerId, ResourceType.Stamina, ct);
         await _energy.RefillToMaxAsync(playerId, ResourceType.GuildStamina, ct);
 
-        // T56 — sync the Health pool max to BaseMaxHealth (grows via stat allocation) and refill it on
+        // sync the Health pool max to BaseMaxHealth (grows via stat allocation) and refill it on
         // level-up too (owner decision: level-up still tops up health, alongside its passive regen).
         // RestoreFullHealth() above keeps the vestigial PlayerStats.CurrentHealth consistent.
         await _energy.UpdateMaxAsync(playerId, ResourceType.Health, player.Stats.BaseMaxHealth, ct);
@@ -195,7 +195,7 @@ public sealed class StatService : IStatService
                 playerId, 5, GemTransactionType.LevelUpReward, referenceId, ct);
         }
 
-        // T32 — pinnacle / milestone gem reward (data-driven via LevelingConfig.PinnacleGemRewards).
+        // pinnacle / milestone gem reward (data-driven via LevelingConfig.PinnacleGemRewards).
         // Idempotent by referenceId; separate from the every-5 LevelUpReward above.
         var pinnacleGems = _levelingConfig.Value.GetPinnacleGems(newLevel);
         if (pinnacleGems > 0)
@@ -205,7 +205,7 @@ public sealed class StatService : IStatService
                 $"pinnacle:gems:{playerId}:{newLevel}", ct);
         }
 
-        // T33 — first-claimant logging + operator email (idempotent; only the first player at a given
+        // first-claimant logging + operator email (idempotent; only the first player at a given
         // pinnacle level triggers it). Same "pinnacle level" set as the gem reward above.
         if (_levelingConfig.Value.IsPinnacleLevel(newLevel))
             await _pinnacle.RecordFirstClaimAsync(playerId, newLevel, ct);

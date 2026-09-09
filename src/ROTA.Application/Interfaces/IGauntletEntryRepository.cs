@@ -33,7 +33,7 @@ public interface IGauntletEntryRepository
         Guid eventId, Guid playerId, long delta, DateTimeOffset hitAt, CancellationToken ct = default);
 
     /// <summary>
-    /// T76 — atomically raises the entry's <c>highest_stage</c> to <paramref name="stage"/> when
+    /// atomically raises the entry's <c>highest_stage</c> to <paramref name="stage"/> when
     /// higher (SQL GREATEST — concurrent kills never lose an update). The PRIMARY ladder metric.
     /// No-op if the entry does not exist. Rides an ambient transaction when present.
     /// </summary>

@@ -271,7 +271,7 @@ builder.Services.Configure<LegalConfig>(
 builder.Services.Configure<RaidConfig>(
     builder.Configuration.GetSection("RaidConfig"));
 
-// System 27 — player market. Validated at boot because a fee rate outside [0,1) is not a balance
+// player market. Validated at boot because a fee rate outside [0,1) is not a balance
 // choice, it is a bug that either mints gold (negative) or takes more than the buyer paid (>= 1).
 builder.Services.AddOptions<MarketConfig>()
     .Bind(builder.Configuration.GetSection("MarketConfig"))
@@ -289,10 +289,10 @@ builder.Services.AddOptions<MarketConfig>()
 
 builder.Services.AddRotaServices(builder.Environment.ContentRootPath);
 
-// Phase 2 (T39): out-of-band sender that drains the email queue without blocking requests.
+// Phase 2: out-of-band sender that drains the email queue without blocking requests.
 builder.Services.AddHostedService<EmailSendBackgroundService>();
 
-// System 16 Slice 3: periodic per-league rank snapshot for the active Gauntlet event.
+// periodic per-league rank snapshot for the active Gauntlet event.
 builder.Services.AddHostedService<GauntletRankSnapshotService>();
 
 // Settles World (timer-only) raids whose clock has run out. Expiry is their only ending — nothing
@@ -337,21 +337,21 @@ if (args.Length > 0 && AdminCli.IsCommand(args[0]))
 
 var app = builder.Build();
 
-// System 16 Slice 1 — eagerly construct the Gauntlet content provider so its startup
+// eagerly construct the Gauntlet content provider so its startup
 // validation (prize bands, trophy/magic refs, league bounds, off-cap magics, naming
 // guard) throws at boot rather than on first use.
 app.Services.GetRequiredService<IGauntletContentProvider>();
 
-// System 16 Slice 6 — eagerly construct the token-shop provider so its catalogue validation
+// eagerly construct the token-shop provider so its catalogue validation
 // (payloadId referential integrity, price > 0, currency valid, no duplicate ids, bundle/refill
 // amount > 0) throws at boot rather than on first purchase.
 app.Services.GetRequiredService<IGauntletShopProvider>();
 
-// System 22 Phase A — eagerly construct the mastery definition provider so its content validation
+// eagerly construct the mastery definition provider so its content validation
 // (4 Ancients, magnitude tables, tier checklists, breadth curve) throws at boot rather than on first use.
 app.Services.GetRequiredService<IMasteryDefinitionProvider>();
 
-// System 26 (D-018) — eagerly construct the crafting recipe provider so its content validation
+// eagerly construct the crafting recipe provider so its content validation
 // (ids resolve across four providers, positive quantities, own-once outputs, no recipe consuming its
 // own output) throws at boot rather than on a player's first craft.
 app.Services.GetRequiredService<ICraftingRecipeProvider>();
@@ -361,11 +361,11 @@ app.Services.GetRequiredService<ICraftingRecipeProvider>();
 // throws at boot rather than on first use.
 app.Services.GetRequiredService<IAchievementDefinitionProvider>();
 
-// T52 — eagerly construct the subject catalog provider so its content validation (non-empty bug/report
+// eagerly construct the subject catalog provider so its content validation (non-empty bug/report
 // lists, unique keys, non-blank feedback category) throws at boot rather than on first submission.
 app.Services.GetRequiredService<ISubjectCatalogProvider>();
 
-// T68 — eagerly construct the legal-text provider so a missing/blank terms.md or privacy.md
+// eagerly construct the legal-text provider so a missing/blank terms.md or privacy.md
 // throws at boot rather than on the first registration screen.
 app.Services.GetRequiredService<ILegalTextProvider>();
 
@@ -384,7 +384,7 @@ if (app.Environment.IsDevelopment())
 // Idempotent: skipped if the admin account already exists.
 await SeedData.EnsureAdminAsync(app.Services);
 
-// T43: ensure the hidden Dev guild + the developer allowlist. No-op when the allowlist is empty.
+// ensure the hidden Dev guild + the developer allowlist. No-op when the allowlist is empty.
 await SeedData.EnsureDevGuildAsync(app.Services);
 
 // [1] Global exception handler

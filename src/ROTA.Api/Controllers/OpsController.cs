@@ -80,7 +80,7 @@ public sealed class OpsController : ControllerBase
         });
     }
 
-    /// <summary>Pinnacle first-claim leaderboard (T33) — who reached each pinnacle level first.</summary>
+    /// <summary>Pinnacle first-claim leaderboard — who reached each pinnacle level first.</summary>
     [HttpGet("/api/admin/pinnacle-claims")]
     [ProducesResponseType(typeof(IReadOnlyList<PinnacleClaimResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<PinnacleClaimResponse>>> PinnacleClaims()

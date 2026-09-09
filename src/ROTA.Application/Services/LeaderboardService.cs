@@ -7,7 +7,7 @@ using ROTA.Shared;
 
 namespace ROTA.Application.Services;
 
-// BETA — read service for System 17 Global Leaderboards (Slice 3).
+// BETA — read service for System 17 Global Leaderboards.
 // Eligibility (banned/soft-deleted/level/Admin) is enforced in SQL via the repository
 // so that page offsets and rank counts are always correct.
 public sealed class LeaderboardService : ILeaderboardService
@@ -28,7 +28,7 @@ public sealed class LeaderboardService : ILeaderboardService
             [LeaderboardBoard.EnergySpent]     = new("Top Questers",         new[] { LeaderboardPeriod.Weekly, LeaderboardPeriod.Monthly }),
             [LeaderboardBoard.DamageDealt]     = new("Top Raiders",          new[] { LeaderboardPeriod.Weekly, LeaderboardPeriod.Monthly }),
             [LeaderboardBoard.LargestHit]      = new("Largest Single Hit",   new[] { LeaderboardPeriod.Daily }),
-            // System 22 Phase A — Overall Mastery Rating (Live snapshot; Active == Lifetime in Phase A).
+            // Overall Mastery Rating (Live snapshot; Active == Lifetime in Phase A).
             [LeaderboardBoard.MasteryRatingActive]   = new("Mastery Rating",            new[] { LeaderboardPeriod.Live }),
             [LeaderboardBoard.MasteryRatingLifetime] = new("Mastery Rating (Lifetime)", new[] { LeaderboardPeriod.Live }),
         };

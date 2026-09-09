@@ -3,7 +3,7 @@ namespace ROTA.Domain.Enums;
 /// <summary>
 /// Deterministic activity counters that feed the per-Ancient mastery challenge checklists
 /// (System 22, Phase A). Each value is a running per-player tally incremented best-effort at the
-/// activity's chokepoint (Slice 4). Tier checklists in <c>content/masteries.json</c> select which
+/// activity's chokepoint. Tier checklists in <c>content/masteries.json</c> select which
 /// counters + thresholds advance each Ancient 1→5. Persisted as <c>int</c> — append, never renumber.
 /// </summary>
 public enum MasteryActivityType

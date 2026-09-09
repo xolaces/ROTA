@@ -45,7 +45,7 @@ public sealed class GauntletAdminController : ControllerBase
 
         if (!await ActorIsAdminAsync(ct)) return Forbid();
 
-        // T76 — kind is validated by the request validator (must parse to GauntletEventKind).
+        // kind is validated by the request validator (must parse to GauntletEventKind).
         var kind = Enum.Parse<GauntletEventKind>(request.Kind, ignoreCase: true);
         var result = await _admin.OpenEventAsync(
             request.Name, request.StartsAt, request.EndsAt, kind, request.LoreBlurb, request.BannerKey, ct);

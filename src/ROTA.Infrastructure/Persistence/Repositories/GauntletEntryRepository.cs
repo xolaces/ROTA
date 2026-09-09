@@ -70,7 +70,7 @@ public sealed class GauntletEntryRepository : IGauntletEntryRepository
         await EnsureOpenAsync(conn, ct);
 
         // Pick up an ambient transaction (e.g. RaidService advisory-lock tx) so the score update
-        // commits atomically with the hit that produced it (Slice 4).
+        // commits atomically with the hit that produced it.
         var dbTx = _db.Database.CurrentTransaction?.GetDbTransaction() as NpgsqlTransaction;
 
         // Single race-safe UPDATE. tie_break_at only moves forward on a positive delta — a zero or

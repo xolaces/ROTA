@@ -1,6 +1,6 @@
 namespace ROTA.Domain.Entities;
 
-// System 24 (D8) — a player's dedicated Gauntlet battalion: a loadout of up to 6 generals + 20
+// a player's dedicated Gauntlet battalion: a loadout of up to 6 generals + 20
 // troops assembled from ANY owned units (no race restriction). The slot lists are stored as two
 // JSON unit-definition-id arrays; the service validates ownership + UnitType + slot caps and
 // serialises them here. Battalion power (the Gauntlet strike basis) is computed in the service

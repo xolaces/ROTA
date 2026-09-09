@@ -1,7 +1,7 @@
 namespace ROTA.Application.Configuration;
 
 /// <summary>
-/// Developer allowlist (T43), bound from the appsettings "Developer" section via
+/// Developer allowlist, bound from the appsettings "Developer" section via
 /// <c>IOptions&lt;DeveloperConfig&gt;</c>. Accounts listed here are granted the
 /// <see cref="ROTA.Domain.Enums.PlayerRoles.Developer"/> flag at startup and auto-joined to the hidden
 /// Dev guild ("The Dev Coffee Shop"). EMPTY by default — the owner adds developer identifiers here;

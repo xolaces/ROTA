@@ -1,7 +1,7 @@
 namespace ROTA.Shared.DTOs;
 
 /// <summary>
-/// The subject catalog served by GET /api/subjects (T52). Clients populate the Bug / Report subject
+/// The subject catalog served by GET /api/subjects. Clients populate the Bug / Report subject
 /// pickers from these lists; Feedback stays open-text but is filed under <see cref="FeedbackCategory"/>.
 /// </summary>
 public class SubjectCatalogResponse

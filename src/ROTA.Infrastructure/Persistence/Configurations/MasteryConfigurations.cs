@@ -4,7 +4,7 @@ using ROTA.Domain.Entities;
 
 namespace ROTA.Infrastructure.Persistence.Configurations;
 
-// System 22 Phase A — mastery state tables. Enums stored as int (Npgsql default; the factory always
+// mastery state tables. Enums stored as int (Npgsql default; the factory always
 // sets the value, so no store default / sentinel is needed). PlayerMastery rows are permanent (never
 // soft-deleted in Phase A), so their unique indexes are NON-partial (also valid ON CONFLICT targets).
 

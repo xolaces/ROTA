@@ -48,7 +48,7 @@ public class Player
             PlayerResource.Create(id, ResourceType.Energy,       maxValue: PlayerStats.BaseMaxEnergy,  regenPerMinute: 2),
             PlayerResource.Create(id, ResourceType.Stamina,      maxValue: PlayerStats.BaseMaxStamina, regenPerMinute: 1),
             PlayerResource.Create(id, ResourceType.GuildStamina, maxValue: 1,  regenPerMinute: 0),
-            // T56 — Health pool; MaxValue mirrors PlayerStats.BaseMaxHealth (the stat-allocation target),
+            // Health pool; MaxValue mirrors PlayerStats.BaseMaxHealth (the stat-allocation target),
             // kept in sync on allocate + level-up. Regenerates via the class-configured rate.
             PlayerResource.Create(id, ResourceType.Health,       maxValue: player.Stats.BaseMaxHealth, regenPerMinute: 1),
         };
@@ -91,7 +91,7 @@ public class Player
     public Guid? GuildId { get; private set; }
     public string? GuildRank { get; private set; }
 
-    // Masteries (System 22) — denormalized active pledge; null until the player pledges an Ancient.
+    // Masteries — denormalized active pledge; null until the player pledges an Ancient.
     // MasteryService is the single writer. The four mastery LEVELS live in player_masteries rows.
     public MasteryAncient? ActivePledgeAncient { get; private set; }
 
@@ -118,7 +118,7 @@ public class Player
 
     public string? BanReason { get; private set; }
 
-    /// <summary>UTC instant the chat mute expires; null when the player has never been muted (T40).</summary>
+    /// <summary>UTC instant the chat mute expires; null when the player has never been muted.</summary>
     public DateTimeOffset? MuteExpiresAt { get; private set; }
 
     // Achievements (TICKET 46) — days-played tracking. DaysPlayed counts DISTINCT UTC calendar days
@@ -130,7 +130,7 @@ public class Player
     /// <summary>Distinct UTC calendar days the player has logged in (the DaysPlayed achievement metric).</summary>
     public int DaysPlayed { get; private set; }
 
-    // Terms/privacy acceptance (T68). 0 = never accepted (pre-T68 accounts) — a version bump in
+    // Terms/privacy acceptance. 0 = never accepted (pre-T68 accounts) — a version bump in
     // Legal:CurrentTermsVersion makes every stale account re-accept via POST /api/legal/accept.
     /// <summary>The terms version this player last accepted; 0 = never.</summary>
     public int AcceptedTermsVersion { get; private set; }
@@ -177,7 +177,7 @@ public class Player
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    /// <summary>Records acceptance of the given terms version (T68). Monotonic — never downgrades.</summary>
+    /// <summary>Records acceptance of the given terms version. Monotonic — never downgrades.</summary>
     public void AcceptTerms(int version)
     {
         if (version <= AcceptedTermsVersion) return;
@@ -249,14 +249,14 @@ public class Player
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    /// <summary>Mutes the player's chat until <paramref name="expiresAt"/> (UTC). Bumps UpdatedAt (T40).</summary>
+    /// <summary>Mutes the player's chat until <paramref name="expiresAt"/> (UTC). Bumps UpdatedAt.</summary>
     public void Mute(DateTimeOffset expiresAt)
     {
         MuteExpiresAt = expiresAt;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    /// <summary>Clears any active mute. Bumps UpdatedAt (T40).</summary>
+    /// <summary>Clears any active mute. Bumps UpdatedAt.</summary>
     public void Unmute()
     {
         MuteExpiresAt = null;
@@ -309,7 +309,7 @@ public class Player
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    // Guild membership (System 21) — denormalized GuildId/GuildRank kept in sync with the
+    // Guild membership — denormalized GuildId/GuildRank kept in sync with the
     // GuildMembership row for O(1) "what guild am I in / what rank" reads. The guild service is
     // the single writer; these are additive and never disturb existing player behavior.
 
@@ -337,7 +337,7 @@ public class Player
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    // Masteries (System 22) — the active pledge is a denormalized pointer; MasteryService is the
+    // Masteries — the active pledge is a denormalized pointer; MasteryService is the
     // single writer (mirrors the GuildId/GuildRank convention). Re-pledging is lossless — only this
     // pointer changes; the four mastery level tracks are untouched.
 

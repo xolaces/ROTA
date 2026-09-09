@@ -7,8 +7,8 @@ using ROTA.Shared.DTOs;
 namespace ROTA.Application.Services;
 
 /// <summary>
-/// Friends, private messaging, blocking, and player reports (T37). PMs are friends-only and rejected if
-/// either side has blocked the other. Reports are rate-limited and routed to a PlayerReport email (T39).
+/// Friends, private messaging, blocking, and player reports. PMs are friends-only and rejected if
+/// either side has blocked the other. Reports are rate-limited and routed to a PlayerReport email.
 /// </summary>
 public sealed class SocialService : ISocialService
 {
@@ -209,7 +209,7 @@ public sealed class SocialService : ISocialService
         if (target is null) return AdminActionResult.Fail($"Player '{targetUsernameOrId}' not found.");
         if (target.Id == reporterId) return AdminActionResult.Fail("You cannot report yourself.");
 
-        // T52 — normalize the validated reason (key or label) to its canonical label; stash the key.
+        // normalize the validated reason (key or label) to its canonical label; stash the key.
         var reasonLabel = _subjects.NormalizeReportSubject(reason) ?? reason;
         var reasonKey = _subjects.ReportSubjects.FirstOrDefault(s => s.Label == reasonLabel)?.Key;
 

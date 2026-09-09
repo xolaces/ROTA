@@ -12,7 +12,7 @@ public interface IActiveRaidRepository
 
     Task<IReadOnlyList<ActiveRaid>> GetAllActiveAsync(CancellationToken ct = default);
 
-    // T57 — defeated (Lootable) raids where this player has a participant row with UNCLAIMED deferred
+    // defeated (Lootable) raids where this player has a participant row with UNCLAIMED deferred
     // rewards (RewardedAt == null). Surfaced in the caller's active-raid list so they can return and
     // claim. SummonedByPlayer is Included for the response mapping.
     Task<IReadOnlyList<ActiveRaid>> GetLootableUnclaimedForPlayerAsync(Guid playerId, CancellationToken ct = default);

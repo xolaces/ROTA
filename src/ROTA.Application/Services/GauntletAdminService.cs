@@ -74,20 +74,20 @@ public sealed class GauntletAdminService : IGauntletAdminService
             return GauntletEventActionResult.Fail(
                 $"An active Gauntlet event already exists ({active.Id}). Close it before opening another.");
 
-        // T76 — RunNumber counts runs of the SAME kind ("the 3rd Neck Gauntlet").
+        // RunNumber counts runs of the SAME kind ("the 3rd Neck Gauntlet").
         var runNumber = await _events.CountByKindAsync(kind, ct) + 1;
 
         var ev = GauntletEvent.Create(name, startsAt, endsAt, kind, runNumber, loreBlurb, bannerKey);
         ev.Activate();
         await _events.CreateAsync(ev, ct);
 
-        // System 16 Slice 7 — cross-event rank-magic consumable hand-off (the deferred "spec step 2e").
+        // cross-event rank-magic consumable hand-off (the deferred "spec step 2e").
         // It belongs HERE (at open), not at settle: per-event consumables are scoped to the NEXT event,
         // but auto-settle-on-close runs BEFORE the next event exists. Now that the new event (ev) is
         // created, grant the most-recently-settled event's rank winners their consumable for ev — so a
         // prior rank-1 holder is a CURRENT Wrath owner (×1.25) and ranks 2–10 are CURRENT Blessing
         // owners (×1.10/×1.25 honor logic in Slice 4 combat reads PlayerEventMagic for the active event).
-        // T76 — rank magics are a NECK-family crown: only a Neck open hands them off, and only from
+        // rank magics are a NECK-family crown: only a Neck open hands them off, and only from
         // the prior NECK run (a Ring Gauntlet neither receives nor disturbs them).
         int handedOff = kind == GauntletEventKind.Neck
             ? await HandOffRankMagicsAsync(ev.Id, ct)
@@ -109,7 +109,7 @@ public sealed class GauntletAdminService : IGauntletAdminService
     // (or retried) open never double-grants. Returns the number of grants written this call.
     private async Task<int> HandOffRankMagicsAsync(Guid newEventId, CancellationToken ct)
     {
-        // T76 — kind-scoped: the magic crown passes Neck-run → Neck-run only.
+        // kind-scoped: the magic crown passes Neck-run → Neck-run only.
         var prior = await _events.GetMostRecentSettledAsync(GauntletEventKind.Neck, ct);
         if (prior is null)
             return 0;   // first-ever event → nobody to hand off to
@@ -236,7 +236,7 @@ public sealed class GauntletAdminService : IGauntletAdminService
             if (entry.LastRank is null || entry.LastRank.Value > _config.PrizeRankCount)
                 continue;
 
-            // T76 — kind-aware: Ring events use the ring prize set (or magic-stripped Neck bands
+            // kind-aware: Ring events use the ring prize set (or magic-stripped Neck bands
             // until the ring set is authored by the content wave).
             var band = _content.GetBandForRank(entry.LastRank.Value, ev.Kind);
             if (band is null)
@@ -244,7 +244,7 @@ public sealed class GauntletAdminService : IGauntletAdminService
 
             ranksSettled++;
 
-            // System 22 Phase A — GauntletRankEarned mastery counter (a prize-ranked placement).
+            // GauntletRankEarned mastery counter (a prize-ranked placement).
             // Best-effort + idempotent (per-(event,player) referenceId), so a re-settle never
             // double-counts and a counter failure never blocks the payout. No ambient tx here.
             try

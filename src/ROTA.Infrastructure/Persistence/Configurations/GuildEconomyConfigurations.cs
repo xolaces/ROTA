@@ -56,7 +56,7 @@ public class GuildCurrencyTransactionConfiguration : IEntityTypeConfiguration<Gu
 }
 
 // Append-only guild sigil-pool ledger (System 21 Slice 3a). Pool balance per guild = SUM(amount).
-// Donations credit it (Slice 3a); raid summons debit it (Slice 3b). Idempotency on
+// Donations credit it; raid summons debit it. Idempotency on
 // (guild_id, transaction_type, reference_id) WHERE reference_id IS NOT NULL — the donor is encoded in
 // the reference_id, so concurrent donors never collide.
 public class GuildSigilPoolTransactionConfiguration : IEntityTypeConfiguration<GuildSigilPoolTransaction>

@@ -35,7 +35,7 @@ public sealed class ItemDefinitionProvider : IItemDefinitionProvider
                 throw new InvalidOperationException($"items.json: duplicate id '{i.Id}'.");
         }
 
-        // System 22 Phase A (Slice 7) — validate the Discernment quality-upgrade ladder.
+        // validate the Discernment quality-upgrade ladder.
         foreach (var i in list)
         {
             if (string.IsNullOrEmpty(i.UpgradesTo)) continue;

@@ -1,7 +1,7 @@
 namespace ROTA.Domain.Entities;
 
 // BETA (System 16 Slice 2) — permanent "honor echo" record written when a player's
-// PlayerEventMagic expires (Slice 5). Read by combat (Slice 4) to apply the ×1.10 former-owner
+// PlayerEventMagic expires. Read by combat to apply the ×1.10 former-owner
 // proc multiplier indefinitely after the per-event consumable is gone. Unique on
 // (player_id, magic_definition_id).
 public class PlayerMagicHonor

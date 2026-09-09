@@ -6,7 +6,7 @@ using StackExchange.Redis;
 namespace ROTA.Infrastructure.Services;
 
 /// <summary>
-/// 100-message world-chat ring buffer in Redis (T36): LPUSH the newest then LTRIM to the cap. Reads return
+/// 100-message world-chat ring buffer in Redis: LPUSH the newest then LTRIM to the cap. Reads return
 /// the buffer oldest→newest. No DB table — retention is intentionally ephemeral.
 /// </summary>
 public sealed class RedisWorldChatStore : IWorldChatStore

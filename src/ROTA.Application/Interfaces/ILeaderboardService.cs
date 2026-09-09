@@ -4,8 +4,8 @@ using ROTA.Shared.DTOs;
 namespace ROTA.Application.Interfaces;
 
 // BETA — read service for System 17 Global Leaderboards.
-// Slice 3: discovery list + ranked-page with eligibility filtering.
-// Slice 4: write hooks — RecordEnergySpendAsync / RecordRaidHitAsync.
+// discovery list + ranked-page with eligibility filtering.
+// write hooks — RecordEnergySpendAsync / RecordRaidHitAsync.
 // Eligibility predicate (server-enforced, applied in SQL):
 //   - player.is_deleted = false
 //   - player.is_banned = false

@@ -1,7 +1,7 @@
 namespace ROTA.Domain.Entities;
 
 /// <summary>
-/// Records the FIRST player to reach a given pinnacle level post-launch (T33). Exactly one row per
+/// Records the FIRST player to reach a given pinnacle level post-launch. Exactly one row per
 /// pinnacle level — a unique index on <see cref="PinnacleLevel"/> enforces the "first" semantics
 /// atomically at the database, so concurrent level-ups can't both claim the same level.
 /// </summary>

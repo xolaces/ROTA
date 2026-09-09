@@ -29,7 +29,7 @@ public interface IAdminService
         CancellationToken ct = default);
 
     /// <summary>
-    /// Bans the target player (T40). Reason is required; cannot ban an admin. Revokes the target's
+    /// Bans the target player. Reason is required; cannot ban an admin. Revokes the target's
     /// sessions, audits, and raises a ModerationAction operator email.
     ///
     /// <para><paramref name="durationDays"/> null = PERMANENT, which northstar §6 reserves to Admins.
@@ -51,7 +51,7 @@ public interface IAdminService
         CancellationToken ct = default);
 
     /// <summary>
-    /// Mutes the target's chat for <paramref name="durationMinutes"/> (T40). Requires Moderator/Admin;
+    /// Mutes the target's chat for <paramref name="durationMinutes"/>. Requires Moderator/Admin;
     /// cannot mute an admin. Audits + raises a ModerationAction email.
     /// </summary>
     Task<AdminActionResult> MutePlayerAsync(
@@ -66,7 +66,7 @@ public interface IAdminService
         string targetUsernameOrId, int limit = 100, CancellationToken ct = default);
 
     /// <summary>
-    /// Lifts an active mute on the target (T40). Audits, writes the §6 governance record, and raises a
+    /// Lifts an active mute on the target. Audits, writes the §6 governance record, and raises a
     /// ModerationAction email.
     ///
     /// A reason is REQUIRED — a reversal is a moderation action, and §6's "no reasonless punishment"

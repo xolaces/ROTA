@@ -37,17 +37,17 @@ public class RaidParticipant
     // BETA: items stored as a JSON blob (application-serialized List<ItemGrantDTO>).
     public string ContributionTier { get; private set; } = string.Empty;
     public long GoldEarned { get; private set; }
-    // int32-overflow-audit Unit 2 (owner-locked, no caps): earned reward amounts widened to bigint
+    // int32-overflow-audit Unit 2: earned reward amounts widened to bigint
     // alongside the gem ledger + reward DTOs, so late-game tier×difficulty payouts never lap int32.
     public long XpEarned { get; private set; }
     public long GemsEarned { get; private set; }
     public long StatPointsEarned { get; private set; }
     public string ItemsEarnedJson { get; private set; } = string.Empty;
-    // T57 — deferred magic/unit/legion/gear drops (JSON list of PendingDrop), granted at Loot.
+    // deferred magic/unit/legion/gear drops (JSON list of PendingDrop), granted at Loot.
     public string PendingDropsJson { get; private set; } = string.Empty;
     public DateTimeOffset? RewardedAt { get; private set; }
 
-    // T57 — true once this participant has claimed (looted) their deferred rewards.
+    // true once this participant has claimed (looted) their deferred rewards.
     public bool RewardsClaimed => RewardedAt is not null;
 
     public void RecordHit(long damage)
@@ -57,7 +57,7 @@ public class RaidParticipant
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    // T57 — store the computed reward amounts on the killing hit WITHOUT marking them claimed (RewardedAt
+    // store the computed reward amounts on the killing hit WITHOUT marking them claimed (RewardedAt
     // stays null). The player claims them later via Loot (per-participant). Gold/gems/stat-points/items
     // are NOT granted here — only the XP/level-ups (granted separately at kill) are immediate.
     public void RecordPendingRewards(
@@ -80,7 +80,7 @@ public class RaidParticipant
         UpdatedAt        = DateTimeOffset.UtcNow;
     }
 
-    // T57 — mark this participant's deferred rewards as claimed (granted at Loot).
+    // mark this participant's deferred rewards as claimed (granted at Loot).
     public void MarkRewardsClaimed(DateTimeOffset claimedAt)
     {
         RewardedAt = claimedAt;

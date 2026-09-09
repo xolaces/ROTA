@@ -3,7 +3,7 @@ using ROTA.Domain.Enums;
 namespace ROTA.Application.Models;
 
 /// <summary>
-/// System 26 — a crafting recipe (D-018). Dawn-faithful: named ingredients in, a better-named
+/// a crafting recipe (D-018). Dawn-faithful: named ingredients in, a better-named
 /// DEFINITION out (<c>Bucket Brigade II ← Riot II + Bucket Brigade</c>). There is no levelling —
 /// all power lives in the output's own definition, so tuning a tier is a content edit.
 /// </summary>

@@ -1,6 +1,6 @@
 namespace ROTA.Domain.Enums;
 
-/// <summary>What a Gauntlet prize-band entry grants at settlement (System 16).</summary>
+/// <summary>What a Gauntlet prize-band entry grants at settlement.</summary>
 public enum GauntletRewardKind
 {
     /// <summary>Gauntlet Tokens credited to the currency ledger.</summary>

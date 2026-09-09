@@ -30,7 +30,7 @@ public sealed class GauntletEventRepository : IGauntletEventRepository
             .OrderBy(e => e.EndsAt)
             .ToListAsync(ct);
 
-    // System 16 Slice 7 — most recently settled event (by SettledAt desc). Settled events always have
+    // most recently settled event (by SettledAt desc). Settled events always have
     // a non-null SettledAt (stamped by MarkSettled), so ordering is well-defined.
     public Task<GauntletEvent?> GetMostRecentSettledAsync(CancellationToken ct = default)
         => _db.GauntletEvents
@@ -38,7 +38,7 @@ public sealed class GauntletEventRepository : IGauntletEventRepository
             .OrderByDescending(e => e.SettledAt)
             .FirstOrDefaultAsync(ct);
 
-    // T76 — kind-scoped variant: the seasonal-crown hand-off only looks at the SAME event family
+    // kind-scoped variant: the seasonal-crown hand-off only looks at the SAME event family
     // (a Ring Gauntlet never hands off / revokes the Neck Gauntlet's crowns).
     public Task<GauntletEvent?> GetMostRecentSettledAsync(
         GauntletEventKind kind, CancellationToken ct = default)

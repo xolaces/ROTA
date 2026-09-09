@@ -13,7 +13,7 @@ public enum MagicEffectType
     /// roll — it is always on.
     /// </summary>
     /// <remarks>
-    /// PINNACLE-ONLY (owner 2026-09-07). Effect types beyond the ordinary four exist only on
+    /// PINNACLE-ONLY. Effect types beyond the ordinary four exist only on
     /// milestone-level <c>magic_pinnacle_*</c> magics; no other magic and no item may carry one until
     /// the owner says otherwise. <c>PinnacleEffectExclusivityTests</c> enforces this.
     ///

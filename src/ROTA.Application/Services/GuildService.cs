@@ -79,7 +79,7 @@ public sealed class GuildService : IGuildService
         if (player is null)
             return CreateGuildResult.Fail(GuildFailureCode.NotFound, "Player not found.");
 
-        // T43: developer accounts are confined to the hidden Dev guild — they can't found guilds.
+        // developer accounts are confined to the hidden Dev guild — they can't found guilds.
         if (player.HasRole(PlayerRoles.Developer))
             return CreateGuildResult.Fail(GuildFailureCode.DevGuildRestricted,
                 "Developer accounts cannot create guilds.");
@@ -225,7 +225,7 @@ public sealed class GuildService : IGuildService
         var guild = await _guilds.FindByIdAsync(guildId, ct);
         if (guild is null) return ApplyGuildResult.Fail(GuildFailureCode.NotFound, "Guild not found.");
 
-        // T43: keep devs and non-devs on the right side of the Dev guild boundary.
+        // keep devs and non-devs on the right side of the Dev guild boundary.
         bool isDev = player.HasRole(PlayerRoles.Developer);
         bool targetIsDevGuild = IsDevGuild(guild);
         if (isDev && !targetIsDevGuild)
@@ -282,7 +282,7 @@ public sealed class GuildService : IGuildService
         var target = await _players.FindByIdAsync(req.PlayerId, ct);
         if (target is null) return NotFound("Applicant not found.");
 
-        // T43: never let a non-dev join the Dev guild (nor a dev join a normal one) via accepted application.
+        // never let a non-dev join the Dev guild (nor a dev join a normal one) via accepted application.
         bool targetIsDev = target.HasRole(PlayerRoles.Developer);
         bool guildIsDev = IsDevGuild(guild);
         if (guildIsDev && !targetIsDev)
@@ -341,7 +341,7 @@ public sealed class GuildService : IGuildService
         var target = await ResolveAsync(targetUsernameOrId, ct);
         if (target is null) return NotFound($"Player '{targetUsernameOrId}' not found.");
 
-        // T43: only developers may be pulled into the Dev guild; devs may not be pulled elsewhere.
+        // only developers may be pulled into the Dev guild; devs may not be pulled elsewhere.
         bool targetIsDev = target.HasRole(PlayerRoles.Developer);
         bool guildIsDev = IsDevGuild(guild);
         if (guildIsDev && !targetIsDev)
@@ -381,7 +381,7 @@ public sealed class GuildService : IGuildService
         var guild = await _guilds.FindByIdAsync(req.GuildId, ct);
         if (guild is null) return NotFound("Guild not found.");
 
-        // T43: enforce the Dev guild boundary on the invite's target guild too.
+        // enforce the Dev guild boundary on the invite's target guild too.
         bool isDev = player.HasRole(PlayerRoles.Developer);
         bool targetIsDevGuild = IsDevGuild(guild);
         if (isDev && !targetIsDevGuild)
@@ -577,7 +577,7 @@ public sealed class GuildService : IGuildService
         var guild = await _guilds.FindByIdAsync(guildId, ct);
         if (guild is null) return null;
 
-        // T43: the Dev guild is invisible to non-devs — return null so the controller 404s (hide existence).
+        // the Dev guild is invisible to non-devs — return null so the controller 404s (hide existence).
         if (IsDevGuild(guild))
         {
             var caller = await _players.FindByIdAsync(callerId, ct);

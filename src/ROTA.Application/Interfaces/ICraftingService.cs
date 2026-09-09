@@ -3,7 +3,7 @@ using ROTA.Shared.DTOs;
 namespace ROTA.Application.Interfaces;
 
 /// <summary>
-/// System 26 — crafting (D-018). The read-only catalogue plus the consuming transaction.
+/// crafting (D-018). The read-only catalogue plus the consuming transaction.
 /// </summary>
 public interface ICraftingService
 {

@@ -55,7 +55,7 @@ public interface IPlayerRepository
     Task<bool> TryDemoteAdminAsync(Guid targetId, CancellationToken ct = default);
 
     /// <summary>
-    /// T59 — applies <paramref name="mutate"/> to the player and saves under the xmin optimistic-
+    /// applies <paramref name="mutate"/> to the player and saves under the xmin optimistic-
     /// concurrency token, retrying on conflict (reload fresh values, re-apply, re-save). Use this for
     /// every gameplay reward write to the players row (quest rewards, raid on-hit gold/XP, kill-loop
     /// XP/gold) so simultaneous quest+raid writes can never lose gold/XP via last-write-wins.

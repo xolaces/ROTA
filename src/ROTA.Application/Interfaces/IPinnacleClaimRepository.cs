@@ -2,7 +2,7 @@ using ROTA.Domain.Entities;
 
 namespace ROTA.Application.Interfaces;
 
-/// <summary>Persistence for pinnacle first-claims (T33).</summary>
+/// <summary>Persistence for pinnacle first-claims.</summary>
 public interface IPinnacleClaimRepository
 {
     /// <summary>

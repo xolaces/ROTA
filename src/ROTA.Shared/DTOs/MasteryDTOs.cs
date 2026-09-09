@@ -1,6 +1,6 @@
 namespace ROTA.Shared.DTOs;
 
-// System 22 Phase A — Masteries read model. Ancient/ActivePledge/ActivityType are strings (the
+// Masteries read model. Ancient/ActivePledge/ActivityType are strings (the
 // ROTA.Shared convention — DTOs never depend on Domain enums).
 
 public class MasteryOverviewResponse
@@ -83,7 +83,7 @@ public class MasteryForceRequest
     public Dictionary<string, int> Levels { get; set; } = new();
 }
 
-// ── Re-spec / pledge (Slice 3) ────────────────────────────────────────────────
+// ── Re-spec / pledge ────────────────────────────────────────────────
 
 public enum MasteryRespecFailureCode
 {

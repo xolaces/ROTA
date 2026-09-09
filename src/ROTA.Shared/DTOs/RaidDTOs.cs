@@ -42,7 +42,7 @@ public class RaidHitResponse
     // ParticipantCount is on ActiveRaidResponse (list screen) — not exposed per-hit.
     public int NewStaminaValue { get; set; }
     public int NewStaminaMax { get; set; }
-    // T56 — live Health after the per-hit drain, so the client can patch the health bar without a
+    // live Health after the per-hit drain, so the client can patch the health bar without a
     // profile re-fetch (otherwise it freezes after the first hit). On guild raids the stamina fields
     // above carry GuildStamina, not regular Stamina.
     public int NewHealthValue { get; set; }
@@ -66,14 +66,14 @@ public class RaidHitResponse
     public double CritMultiplier { get; set; }
     public bool   ProcFired  { get; set; }
     public long   ProcBonus  { get; set; } // raw bonus damage from mount proc (0 if no proc)
-    // Magic DamageProc totals for this hit (Slice 4).
+    // Magic DamageProc totals for this hit.
     // MagicProcBonus = min(Σ raw per-magic bonuses, cap). MagicProcs = raw per-magic
     // breakdown BEFORE the cap; their sum may exceed MagicProcBonus when capped.
     public long              MagicProcBonus { get; set; }
     public List<MagicProcDTO> MagicProcs   { get; set; } = new();
-    // Magic CritChanceFlat total for this hit (Slice 5); 0.0 when no CritChanceFlat magic applied
+    // Magic CritChanceFlat total for this hit; 0.0 when no CritChanceFlat magic applied
     public double MagicCritBonus { get; set; }
-    // Legion contribution for this hit (Slice 4).
+    // Legion contribution for this hit.
     // LegionPower = legionPower term after PowerScaling (0 when no active legion).
     // UnitProcs = raw per-unit-ability bonuses BEFORE the aggregate cap; their sum may exceed
     // UnitProcBonus when capped (same semantics as MagicProcs vs MagicProcBonus).
@@ -90,7 +90,7 @@ public class RaidHitResponse
     public long OffCapAuraBonus  { get; set; }
     public long NewStrikeBalance { get; set; }
 
-    // System 22 Phase A — mastery combat surfacing. WrathLegionBonus = marginal legion power added by
+    // mastery combat surfacing. WrathLegionBonus = marginal legion power added by
     // the Wrath mastery this hit (0 with no active legion / no Wrath level). BulwarkBonus = marginal
     // damage added by the Bulwark mastery (0 on non-guild raids; hard-capped).
     public long WrathLegionBonus { get; set; }

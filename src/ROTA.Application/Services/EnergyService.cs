@@ -66,7 +66,7 @@ public sealed class EnergyService : IEnergyService
                 $"Spent {amount} {type}",
                 null), ct);
 
-            // Slice 4 — leaderboard write hook (EnergySpent boards).
+            // leaderboard write hook (EnergySpent boards).
             // Only Energy counts toward the Questing leaderboard (Q6 — Stamina/GuildStamina excluded).
             // The spend has no ambient DB transaction at this point (AtomicUpdateAsync is its own
             // self-contained PostgreSQL FOR UPDATE, already committed).  Any leaderboard failure must
@@ -108,7 +108,7 @@ public sealed class EnergyService : IEnergyService
         }, ct);
     }
 
-    // T56 — deduct up to `amount` from a pool, clamping at 0 (never fails). Used for health damage,
+    // deduct up to `amount` from a pool, clamping at 0 (never fails). Used for health damage,
     // which should drain the pool rather than be rejected like a spend. Returns the amount drained.
     public async Task<int> DrainAsync(Guid playerId, ResourceType type, int amount, CancellationToken ct = default)
     {

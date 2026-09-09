@@ -71,24 +71,24 @@ public sealed class RaidService : IRaidService
     private readonly IMagicDefinitionProvider _magicDefs;
     private readonly IMagicService _magicService;
     private readonly MagicConfig _magicConfig;
-    // Slice 4 — legion combat deps
+    // legion combat deps
     private readonly IPlayerLegionRepository        _playerLegions;
     private readonly IPlayerLegionSlotRepository    _legionSlots;
     private readonly IUnitDefinitionProvider        _unitDefs;
     private readonly ILegionDefinitionProvider      _legionDefs;
     private readonly LegionConfig                   _legionConfig;
-    // Slice 5 — commander gear
+    // commander gear
     private readonly IPlayerCommanderGearRepository _commanderGear;
     private readonly IGearDefinitionProvider        _gearDefs;
-    // Slice 6 — unit/legion drop grants
+    // unit/legion drop grants
     private readonly ILegionService _legionService;
-    // System 17 Slice 4 — leaderboard write hooks
+    // leaderboard write hooks
     private readonly ILeaderboardService _leaderboards;
     private readonly CombatConfig _combatConfig;
     // Shared boss-gem reward rules (flat amount + chapter-scaled drop chance) — unified across quest
-    // bosses and raid bosses (owner 2026-06-23). Lives in QuestConfig; raids read it for parity.
+    // bosses and raid bosses. Lives in QuestConfig; raids read it for parity.
     private readonly QuestConfig _questConfig;
-    // System 16 Slice 4 — Gauntlet combat amplifiers (trophies, off-cap auras, strikes, scoring).
+    // Gauntlet combat amplifiers (trophies, off-cap auras, strikes, scoring).
     private readonly IPlayerGauntletTrophyRepository _trophyRepo;
     private readonly IGauntletContentProvider        _gauntletContent;
     private readonly IPlayerEventMagicRepository      _playerEventMagics;
@@ -97,14 +97,14 @@ public sealed class RaidService : IRaidService
     private readonly IGauntletScoringService          _gauntletScoring;
     private readonly IGauntletBattalionService        _battalion;   // System 24 (D8) — Gauntlet strike power
     private readonly GauntletConfig                   _gauntletConfig;
-    // System 16 Slice 5 — per-Gauntlet-raid-defeat Token reward (credited inside the advisory-lock tx).
+    // per-Gauntlet-raid-defeat Token reward (credited inside the advisory-lock tx).
     private readonly IGauntletCurrencyRepository       _gauntletCurrency;
     // System 21 Slice 3b — guild raids: membership gate + contribution accrual; pooled-sigil summon.
     private readonly IGuildMembershipRepository _guildMemberships;
     private readonly IGuildEconomyRepository    _guildEconomy;
     // Ticket 50 — accepted-friend lookup for the FriendsOnly visibility tier in GetActiveRaidsAsync.
     private readonly IFriendshipRepository _friendships;
-    // System 22 Phase A — mastery challenge-counter hooks (enlisted in the advisory-lock tx).
+    // mastery challenge-counter hooks (enlisted in the advisory-lock tx).
     private readonly IMasteryService _mastery;
     // TICKET 46 — achievement metric hook (RaidCompletions, recorded on a kill inside the tx).
     private readonly IAchievementService _achievements;
@@ -227,7 +227,7 @@ public sealed class RaidService : IRaidService
         var acceptedFriends = await _friendships.ListForPlayerAsync(playerId, FriendshipStatus.Accepted, ct);
         var acceptedFriendIds = new HashSet<Guid>(acceptedFriends.Select(f => f.OtherSide(playerId)));
 
-        // System 16 Slice 7 — Gauntlet ladder stages (GauntletEventId != null) are EXCLUDED from the
+        // Gauntlet ladder stages (GauntletEventId != null) are EXCLUDED from the
         // regular list: they are Personal + caller-owned (so the own-raids branch would otherwise
         // surface them) but are accessed exclusively via GET /api/gauntlet/ladder. Excluding them
         // keeps the normal raid screen free of ladder clutter. (Join-by-id is unaffected — a Gauntlet
@@ -251,7 +251,7 @@ public sealed class RaidService : IRaidService
         foreach (var raid in activeRaids)
             result.Add(await MapToResponseAsync(raid, playerId, activeRaids.Count, now, ct));
 
-        // T57 — also surface the caller's defeated raids with UNCLAIMED deferred rewards (Lootable), so
+        // also surface the caller's defeated raids with UNCLAIMED deferred rewards (Lootable), so
         // they can return and loot after leaving without claiming. Disjoint from the Active list above
         // (different lifecycle). Gauntlet/guild raids are excluded — those are claimed on their own screens.
         var lootable = await _raids.GetLootableUnclaimedForPlayerAsync(playerId, ct);
@@ -624,7 +624,7 @@ public sealed class RaidService : IRaidService
                     foreach (var it in pendingItems)
                         await GrantInventoryItemAsync(callerId, it.ItemId, it.Quantity, throwaway, ct);
                 }
-                // T57 — deferred collection drops (idempotent grants).
+                // deferred collection drops (idempotent grants).
                 if (!string.IsNullOrEmpty(participant.PendingDropsJson))
                 {
                     var drops = JsonSerializer.Deserialize<List<PendingDrop>>(participant.PendingDropsJson)
@@ -785,7 +785,7 @@ public sealed class RaidService : IRaidService
         //     resolved at step 4.
         // System 21 Slice 3b — guild raids spend GuildStamina (= hit size) instead of Stamina/Strikes.
         bool isGuildRaid = raid.GuildId is not null;
-        // D6 (System 24) — Gauntlet strikes are a FLAT 1 ticket: hit sizes don't apply on the
+        // Gauntlet strikes are a FLAT 1 ticket: hit sizes don't apply on the
         // Gauntlet fork, and strikeCost is only ever read on the Gauntlet (strike-spend) path.
         int strikeCost = 1;
         // SECURITY (exploit audit 2026-06-14, finding A — CRITICAL): key the strike-spend reference off
@@ -896,21 +896,21 @@ public sealed class RaidService : IRaidService
             var combat = await _equipment.GetEffectiveCombatDataAsync(
                 playerId, player.Stats!.BaseAttack, player.Stats.BaseDefense, ct);
 
-            // T56 — health cost for this hit: flat per difficulty for ordinary/guild raids; a Defense-
+            // health cost for this hit: flat per difficulty for ordinary/guild raids; a Defense-
             // scaled mob-damage curve for the Gauntlet (ramps past ~stage 200). Best-effort drain inside
             // the hit tx, clamped at 0 — it never blocks the hit (PHASE-2: optional 0-health gate).
             int healthCost = ComputeHealthCost(isGauntlet, lockedRaid, combat.EffectiveDefense);
             if (healthCost > 0)
                 await _energy.DrainAsync(playerId, ResourceType.Health, healthCost, ct);
 
-            // System 22 Phase A — mastery modifiers (combat: Wrath +% legion power, Bulwark +% guild-raid
+            // mastery modifiers (combat: Wrath +% legion power, Bulwark +% guild-raid
             // damage; loot: Hoard +% gold). ONE mastery-state read for the whole hit; a mastery-less player
             // gets all-neutral → a byte-for-byte unchanged hit.
             var masteryMods = await _mastery.GetModifiersAsync(playerId, ct);
 
             var multiplier = 0.85 + _random.NextDouble() * 0.30; // uniform [0.85, 1.15]
 
-            // System 24 (D8) — Gauntlet FULL-REPLACE: the strike-damage base IS battalion power × the
+            // Gauntlet FULL-REPLACE: the strike-damage base IS battalion power × the
             // RNG band (owner decision — NO character base, legion, procs, trophy, auras, or PowerScaling).
             // Crit still applies below; every additive block further down is gated off for the Gauntlet.
             long battalionPower = isGauntlet
@@ -1229,14 +1229,14 @@ public sealed class RaidService : IRaidService
             }
             participantFinal!.RecordHit(damageFinal);
 
-            // System 17 Slice 4 — leaderboard write hook (inside advisory-lock tx).
+            // leaderboard write hook (inside advisory-lock tx).
             // Rides the same ambient transaction as RecordHit: the board increments and the
             // damage commit are atomic.  NOT reached on the Redis cached-replay path (the early-
             // return at step 4 fires before AtomicApplyHitAsync is entered).  No second damage
             // computation — damageFinal is the authoritative value already computed above.
             await _leaderboards.RecordRaidHitAsync(playerId, damageFinal, DateTimeOffset.UtcNow, ct);
 
-            // System 22 Phase A — mastery challenge counters (RaidHit + RaidDamageDealt), enlisted in
+            // mastery challenge counters (RaidHit + RaidDamageDealt), enlisted in
             // this advisory-lock tx exactly like the leaderboard hook. Replay-safe for free: the Redis
             // cached-replay early-return fires before AtomicApplyHitAsync is entered.
             await _mastery.RecordActivityAsync(playerId, MasteryActivityType.RaidHit, 1, ct: ct);
@@ -1268,7 +1268,7 @@ public sealed class RaidService : IRaidService
                 {
                     contributor.AddContribution(damageFinal);
                     await _guildMemberships.UpdateAsync(contributor, ct);
-                    // System 22 Phase A — guild-raid contribution mastery counter (enlisted in this tx).
+                    // guild-raid contribution mastery counter (enlisted in this tx).
                     await _mastery.RecordActivityAsync(
                         playerId, MasteryActivityType.GuildRaidContribution, damageFinal, ct: ct);
                 }
@@ -1285,7 +1285,7 @@ public sealed class RaidService : IRaidService
             double goldMin  = _combatConfig.GoldPerStaminaRollMin;
             double goldMax  = _combatConfig.GoldPerStaminaRollMax;
             double goldRoll = goldMin + _random.NextDouble() * (goldMax - goldMin);
-            // System 22 Phase A — Hoard +% gold (global). Applied to the on-hit gold; the GoldEarned
+            // Hoard +% gold (global). Applied to the on-hit gold; the GoldEarned
             // mastery counter below then reflects the boosted amount. Neutral (×1.0) for non-Hoard players.
             goldGained = Math.Max(1, (long)Math.Round(staminaCost * goldRoll * masteryMods.Loot.HoardGoldMultiplier));
 
@@ -1318,7 +1318,7 @@ public sealed class RaidService : IRaidService
                 }
             }
 
-            // T59 — xmin-retry chokepoint: a simultaneous quest completion writing the same players
+            // xmin-retry chokepoint: a simultaneous quest completion writing the same players
             // row no longer loses this hit's gold/XP (or vice versa). Same tracked instance as
             // `player`, so the response totals below reflect the committed values.
             var hitLevelUps = await _players.MutateWithRetryAsync(playerId, pl =>
@@ -1328,7 +1328,7 @@ public sealed class RaidService : IRaidService
                 return ups;
             }, ct);
 
-            // System 22 Phase A — gold-earned mastery counter (on-hit gold, enlisted in this tx).
+            // gold-earned mastery counter (on-hit gold, enlisted in this tx).
             await _mastery.RecordActivityAsync(playerId, MasteryActivityType.GoldEarned, goldGained, ct: ct);
 
             // Fire level-up side effects for each level gained (mirrors DistributeKillRewardsAsync)
@@ -1344,7 +1344,7 @@ public sealed class RaidService : IRaidService
             {
                 lockedRaid.MarkDefeated();
 
-                // System 22 Phase A — RaidKill mastery counter for the killer (caller). Idempotent via a
+                // RaidKill mastery counter for the killer (caller). Idempotent via a
                 // per-(raid,player) referenceId so a re-processed kill never double-counts; enlisted in this tx.
                 await _mastery.RecordActivityAsync(
                     playerId, MasteryActivityType.RaidKill, 1, $"mastery:kill:{activeRaidId}:{playerId}", ct);
@@ -1361,7 +1361,7 @@ public sealed class RaidService : IRaidService
                 await _achievements.RecordRaidClearAsync(
                     playerId, lockedRaid.RaidDefinitionId, $"ach:raidclear:{activeRaidId}:{playerId}", ct);
 
-                // System 16 Slice 5 — per-Gauntlet-raid-defeat reward. GAUNTLET RAIDS ONLY (gated on
+                // per-Gauntlet-raid-defeat reward. GAUNTLET RAIDS ONLY (gated on
                 // GauntletEventId). Gauntlet raids are Personal/solo, so the killer is the lone
                 // contributor — credit playerId. Both grants ride THIS advisory-lock tx (atomic with
                 // the kill / MarkDefeated) and are plain append CreateAsync (EF Add+SaveChanges, no
@@ -1390,7 +1390,7 @@ public sealed class RaidService : IRaidService
                             GauntletCurrencyTransactionType.RaidDefeatReward, tokenDefeatRef), ct);
                     }
 
-                    // T76 — record the ladder-stage defeat (the PRIMARY ranking metric: highest
+                    // record the ladder-stage defeat (the PRIMARY ranking metric: highest
                     // stage completed). Atomic GREATEST in SQL, rides this advisory-lock tx;
                     // naturally idempotent (a re-processed kill can never raise the peak twice).
                     var stageDef = _gauntletContent.GetGauntletRaidByDefinitionId(lockedRaid.RaidDefinitionId);
@@ -1428,7 +1428,7 @@ public sealed class RaidService : IRaidService
             if (staminaInsufficient)
                 return HitFail(RaidHitFailureCode.InsufficientStamina, "Insufficient stamina.");
 
-            // System 16 Slice 4 — Gauntlet strike spend rolled back with the tx; no damage, no score.
+            // Gauntlet strike spend rolled back with the tx; no damage, no score.
             if (strikesInsufficient)
                 return HitFail(RaidHitFailureCode.InsufficientStrikes, "Insufficient strikes.");
 
@@ -1450,7 +1450,7 @@ public sealed class RaidService : IRaidService
         string legionSuffix    = legionPowerTerm > 0 ? $" LEGION +{legionPowerTerm}" : string.Empty;
         string unitSuffix      = unitProcBonus  > 0 ? $" UNITPROC +{unitProcBonus}({unitProcs.Count})" : string.Empty;
         string commanderSuffix = commanderProcFired ? $" CMDR +{commanderProcBonus}" : string.Empty;
-        // System 16 Slice 4 — Gauntlet off-cap aura + strike-spend audit suffixes (Gauntlet raids only).
+        // Gauntlet off-cap aura + strike-spend audit suffixes (Gauntlet raids only).
         string offCapSuffix    = offCapBonus > 0 ? $" OFFCAP +{offCapBonus}" : string.Empty;
         string strikeSuffix    = isGauntlet ? $" STRIKES -{strikeCost}" : string.Empty;
         await _auditLog.AppendAsync(AuditLog.Create(
@@ -1466,13 +1466,13 @@ public sealed class RaidService : IRaidService
         var newStaminaValue = await _energy.GetCurrentEnergyAsync(playerId, staminaResourceType, ct);
         var staminaResource = await _resources.GetAsync(playerId, staminaResourceType, ct);
         int newStaminaMax   = staminaResource?.MaxValue ?? 0;
-        // T56 — Health is drained per hit; surface the live value/max so the client can patch the
+        // Health is drained per hit; surface the live value/max so the client can patch the
         // health bar without a profile re-fetch (otherwise it freezes after the first hit).
         var newHealthValue  = await _energy.GetCurrentEnergyAsync(playerId, ResourceType.Health, ct);
         var healthResource  = await _resources.GetAsync(playerId, ResourceType.Health, ct);
         int newHealthMax    = healthResource?.MaxValue ?? 0;
         string callerTier   = rewards?.ContributionTier ?? "Participant";
-        // System 16 Slice 4 — post-spend Strike balance (0 for non-Gauntlet raids; they spend Stamina).
+        // post-spend Strike balance (0 for non-Gauntlet raids; they spend Stamina).
         long newStrikeBalance = isGauntlet ? await _strikes.GetBalanceAsync(playerId, ct) : 0;
 
         var response = new RaidHitResponse
@@ -1513,10 +1513,10 @@ public sealed class RaidService : IRaidService
             UnitProcs            = unitProcs,
             CommanderProcFired   = commanderProcFired,
             CommanderProcBonus   = commanderProcBonus,
-            // System 16 Slice 4 — Gauntlet amplifier surfacing (0 on non-Gauntlet raids).
+            // Gauntlet amplifier surfacing (0 on non-Gauntlet raids).
             OffCapAuraBonus      = offCapBonus,
             NewStrikeBalance     = newStrikeBalance,
-            // System 22 Phase A — mastery combat surfacing (0 when no Wrath legion bonus / non-guild raid).
+            // mastery combat surfacing (0 when no Wrath legion bonus / non-guild raid).
             WrathLegionBonus     = wrathLegionBonus,
             LegionTagAffinityPercent = legionTagAffinityPercent,
             LegionTagAffinityMatch   = legionTagAffinityMatch,
@@ -1532,7 +1532,7 @@ public sealed class RaidService : IRaidService
 
     // KILL REWARD DISTRIBUTION
 
-    // T56 — per-hit health cost. Ordinary/guild raids pay a flat cost by difficulty; the Gauntlet pays a
+    // per-hit health cost. Ordinary/guild raids pay a flat cost by difficulty; the Gauntlet pays a
     // Defense-scaled mob-damage curve that ramps past the configured stage (~200). Always returns ≥ 1 for
     // a Gauntlet hit so the mob is always noticeable; ordinary raids use the configured per-difficulty cost.
     private int ComputeHealthCost(bool isGauntlet, ActiveRaid raid, long effectiveDefense)
@@ -1715,11 +1715,11 @@ public sealed class RaidService : IRaidService
             // normal per-hit (stamina-spent) XP in HitRaidAsync; the kill itself grants ZERO extra XP.
             int xp = 0;
 
-            // T57 — XP + GOLD are IMMEDIATE on-hit rewards (the killing hit grants both, alongside the
+            // XP + GOLD are IMMEDIATE on-hit rewards (the killing hit grants both, alongside the
             // per-hit on-hit gold/XP). EVERYTHING ELSE — gems, stat-points, items, and the magic/unit/
             // legion/gear drops — is DEFERRED: computed + stored on the participant row now, GRANTED when
             // that participant presses Loot.
-            // T59 — xmin-retry chokepoint: each participant may be mid-quest/mid-hit elsewhere; a
+            // xmin-retry chokepoint: each participant may be mid-quest/mid-hit elsewhere; a
             // stale full-column save here silently lost their gold/XP (kill-reward last-write-wins).
             var levelUps = await _players.MutateWithRetryAsync(p.PlayerId, pl =>
             {
@@ -1731,7 +1731,7 @@ public sealed class RaidService : IRaidService
             foreach (var newLevel in levelUps)
                 await _stats.GrantLevelUpPointsAsync(p.PlayerId, newLevel, ct);
 
-            // Gems — UNIFIED boss-gem model (owner 2026-06-23): a flat BossGemRewardAmount on a
+            // Gems — UNIFIED boss-gem model: a flat BossGemRewardAmount on a
             // per-chapter-scaled CHANCE (by the raid's chapter + difficulty), identical to quest bosses.
             // Replaces the old BaseGemReward × contribution-tier grant (that JSON field is now vestigial).
             // Rare+ contributors only. T57: COMPUTED now, GRANTED at Loot (idempotent ref reused there).
@@ -1790,12 +1790,12 @@ public sealed class RaidService : IRaidService
                             if (_random.NextDouble() < ScaleDropChance(drop.Chance, hoardForThisPlayer))
                             {
                                 int qty = (int)Math.Max(1, Math.Round(drop.Quantity * (double)multiplier));
-                                // T57 — roll only; the item is GRANTED to inventory at Loot.
+                                // roll only; the item is GRANTED to inventory at Loot.
                                 BuildItemGrantDTO(drop.ItemId, qty, items);
                             }
                         }
 
-                        // T57 — magic/unit/legion/gear drops are DEFERRED: rolled now, stored as PendingDrop,
+                        // magic/unit/legion/gear drops are DEFERRED: rolled now, stored as PendingDrop,
                         // granted (idempotently) at Loot.
                         foreach (var drop in threshold.MagicDrops)
                             if (_random.NextDouble() < ScaleDropChance(drop.Chance, hoardForThisPlayer))
@@ -1817,7 +1817,7 @@ public sealed class RaidService : IRaidService
                 }
             }
 
-            // T57 — stat points are DEFERRED (granted at Loot), not added here.
+            // stat points are DEFERRED (granted at Loot), not added here.
 
             // Persist the COMPUTED (pending) reward summary onto the participant row — same advisory-lock
             // transaction. RewardedAt stays null until the participant claims via Loot. Gold/XP were just
@@ -1918,7 +1918,7 @@ public sealed class RaidService : IRaidService
         }
     }
 
-    // T57 — build the loot DTO WITHOUT granting to inventory. The roll OUTCOME is fixed + stored at kill
+    // build the loot DTO WITHOUT granting to inventory. The roll OUTCOME is fixed + stored at kill
     // (in items_earned_json); the actual inventory grant happens at Loot. Mirrors the DTO tail of
     // GrantInventoryItemAsync.
     private void BuildItemGrantDTO(string itemDefId, int quantity, List<ItemGrantDTO> into)
@@ -1935,7 +1935,7 @@ public sealed class RaidService : IRaidService
             });
     }
 
-    // T57 — the Loot CLAIM summary: only what Loot actually grants (gems / stat-points / items). Gold +
+    // the Loot CLAIM summary: only what Loot actually grants (gems / stat-points / items). Gold +
     // XP are 0 here because they were on-hit rewards (granted on the killing hit), not claimed at Loot.
     private RaidRewards BuildClaimedRewards(RaidParticipant p)
     {

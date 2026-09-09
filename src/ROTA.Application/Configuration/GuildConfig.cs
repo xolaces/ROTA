@@ -31,7 +31,7 @@ public class GuildConfig
     /// <summary>Maximum guild name length (matches the name-input validator). Standard-v1 default.</summary>
     public int NameMaxLength { get; set; } = 32;
 
-    // ── Sigil economy (Slice 3a) — all TUNABLE BALANCE VALUES, flagged for owner confirmation ──
+    // ── Sigil economy — all TUNABLE BALANCE VALUES, flagged for owner confirmation ──
 
     /// <summary>Sigils granted by the once-daily guild claim (decision §7). TUNABLE. Default 1.</summary>
     public int DailySigilClaimAmount { get; set; } = 1;

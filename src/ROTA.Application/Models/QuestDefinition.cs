@@ -7,7 +7,7 @@ public class QuestDefinition
     public string Id { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public int Chapter { get; set; }
-    // T45 — Chapter → Zone → Node hierarchy. ZoneIndex is 0-based within a chapter; NodeIndex is
+    // Chapter → Zone → Node hierarchy. ZoneIndex is 0-based within a chapter; NodeIndex is
     // 0-based within a zone (the boss is always the last NodeIndex in its zone). Zone membership
     // lives entirely in JSON; no DB column (PlayerQuestProgress keys on quest_id only).
     public int ZoneIndex { get; set; }

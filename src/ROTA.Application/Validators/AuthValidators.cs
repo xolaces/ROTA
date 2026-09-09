@@ -36,7 +36,7 @@ public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest
             .Matches(@"[a-z]").WithMessage("Password must contain at least one lowercase letter.")
             .Matches(@"\d").WithMessage("Password must contain at least one digit.");
 
-        // T68 — registration requires accepting the CURRENT terms version exactly.
+        // registration requires accepting the CURRENT terms version exactly.
         var currentTermsVersion = config.GetValue("Legal:CurrentTermsVersion", 1);
         RuleFor(x => x.AcceptedTermsVersion)
             .Equal(currentTermsVersion)

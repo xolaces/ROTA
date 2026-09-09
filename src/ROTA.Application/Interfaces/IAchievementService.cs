@@ -34,7 +34,7 @@ public interface IAchievementService
     Task RecountCollectorCountersAsync(Guid playerId, CancellationToken ct = default);
 
     /// <summary>
-    /// System 25 — records ONE rerun of a single quest zone. Routes to only that zone's rerun ladder
+    /// records ONE rerun of a single quest zone. Routes to only that zone's rerun ladder
     /// (NOT the metric-wide fan-out), incrementing each tier's counter exactly once per
     /// <paramref name="referenceId"/> (one per zone-boss clear). Does NOT evaluate completions — the
     /// caller's <see cref="EvaluateCompletionsAsync"/> awards any crossed tiers.

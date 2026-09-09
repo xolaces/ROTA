@@ -74,7 +74,7 @@ public static class SeedData
     }
 
     /// <summary>
-    /// Ensures the hidden Dev guild ("The Dev Coffee Shop") and the developer allowlist are seeded (T43).
+    /// Ensures the hidden Dev guild ("The Dev Coffee Shop") and the developer allowlist are seeded.
     /// Behaviour, idempotent throughout:
     /// <list type="number">
     /// <item>Grant the <see cref="PlayerRoles.Developer"/> flag to every resolvable account in the
@@ -199,7 +199,7 @@ public static class SeedData
     }
 
     /// <summary>
-    /// CLI entry point (T43) for the <c>flag-dev</c> / <c>unflag-dev</c> commands. Resolves
+    /// CLI entry point for the <c>flag-dev</c> / <c>unflag-dev</c> commands. Resolves
     /// <paramref name="targetUsernameOrId"/> to a single player, then:
     /// <list type="bullet">
     /// <item><b>grant=true</b>: grants the <see cref="PlayerRoles.Developer"/> flag, ensures the Dev guild

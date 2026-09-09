@@ -7,7 +7,7 @@ using ROTA.Shared.DTOs;
 namespace ROTA.Application.Services;
 
 /// <summary>
-/// System 26 — crafting (D-018). Dawn-faithful: a recipe names exact ingredients and produces a
+/// crafting (D-018). Dawn-faithful: a recipe names exact ingredients and produces a
 /// better-named DEFINITION (<c>Bucket Brigade II ← Riot II + Bucket Brigade</c>). No levelling — all
 /// power lives in the output's own definition.
 ///

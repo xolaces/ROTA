@@ -69,7 +69,7 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
             .HasColumnName("guild_rank")
             .HasMaxLength(20);
 
-        // Masteries (System 22) — denormalized active pledge; nullable enum stored as nullable int
+        // Masteries — denormalized active pledge; nullable enum stored as nullable int
         // (Npgsql default, like the ledger enums). Null until the player pledges an Ancient.
         builder.Property(p => p.ActivePledgeAncient)
             .HasColumnName("active_pledge_ancient");
@@ -105,7 +105,7 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
             .HasColumnName("days_played")
             .HasDefaultValue(0);
 
-        // T68 — terms acceptance. 0 = never accepted; pre-T68 rows backfill to 0 via the default.
+        // terms acceptance. 0 = never accepted; pre-T68 rows backfill to 0 via the default.
         builder.Property(p => p.AcceptedTermsVersion)
             .HasColumnName("accepted_terms_version")
             .HasDefaultValue(0);
@@ -125,7 +125,7 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
             .HasColumnName("is_deleted")
             .HasDefaultValue(false);
 
-        // T59 — optimistic concurrency on the players row via the PostgreSQL xmin system column.
+        // optimistic concurrency on the players row via the PostgreSQL xmin system column.
         // Concurrent quest/raid reward writes were last-write-wins (silent XP/gold loss); with xmin
         // as the token a stale write throws DbUpdateConcurrencyException and the reward chokepoints
         // retry via IPlayerRepository.MutateWithRetryAsync. No schema change (xmin is a system column).

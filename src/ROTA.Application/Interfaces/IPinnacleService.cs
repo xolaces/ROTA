@@ -1,6 +1,6 @@
 namespace ROTA.Application.Interfaces;
 
-/// <summary>Pinnacle first-claim handling (T33): records who reached a pinnacle level first + notifies ops.</summary>
+/// <summary>Pinnacle first-claim handling: records who reached a pinnacle level first + notifies ops.</summary>
 public interface IPinnacleService
 {
     /// <summary>

@@ -6,7 +6,7 @@ using ROTA.Shared.DTOs;
 namespace ROTA.Api.Controllers;
 
 /// <summary>
-/// Serves the server-authoritative subject catalog (T52) so clients can populate the Bug / Player-report
+/// Serves the server-authoritative subject catalog so clients can populate the Bug / Player-report
 /// subject pickers. The same catalog is enforced server-side on submission — clients cannot send off-list
 /// subjects. Feedback stays open-text but is always filed under <c>FeedbackCategory</c>.
 /// </summary>

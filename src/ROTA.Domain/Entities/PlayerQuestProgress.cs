@@ -33,8 +33,8 @@ public class PlayerQuestProgress
     // forward map-unlock latch) is also per-difficulty — each tier is progressed in order on its own.
     public QuestDifficulty Difficulty { get; private set; }
     public int CompletionCount { get; private set; }
-    // Node depletion (System 20). Starts at the configured node value and counts down each attempt;
-    // when it reaches 0 the node is Cleared (locked). A chapter-boss completion resets it (T26).
+    // Node depletion. Starts at the configured node value and counts down each attempt;
+    // when it reaches 0 the node is Cleared (locked). A chapter-boss completion resets it.
     public double Progress { get; private set; }
     // Current depletion state — gates attemptability. Resettable: a chapter-boss completion clears it
     // back to false (the node becomes fresh and attemptable again).
@@ -67,7 +67,7 @@ public class PlayerQuestProgress
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    // Chapter-boss reset (T26): restore the node to fresh so it's attemptable again. HasEverCleared
+    // Chapter-boss reset: restore the node to fresh so it's attemptable again. HasEverCleared
     // is intentionally preserved so forward progression (next-node unlock) is never lost.
     public void Reset(double startProgress)
     {

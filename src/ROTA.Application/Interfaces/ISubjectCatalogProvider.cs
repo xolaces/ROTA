@@ -3,7 +3,7 @@ using ROTA.Application.Models;
 namespace ROTA.Application.Interfaces;
 
 /// <summary>
-/// Single source of truth for the server-validated subject catalog (T52). Loaded once at startup from
+/// Single source of truth for the server-validated subject catalog. Loaded once at startup from
 /// <c>content/subjects.json</c> (eager singleton, startup-validated). Validators reject off-list
 /// subjects; the public catalog endpoint serves the lists to clients.
 /// </summary>

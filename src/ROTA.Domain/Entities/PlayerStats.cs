@@ -26,7 +26,7 @@ public class PlayerStats
     public Guid PlayerId { get; private set; }
     public Player Player { get; private set; } = null!;
 
-    // int32-overflow-audit Unit 2 (owner-locked, no caps): uncapped stat/investment growth over a
+    // int32-overflow-audit Unit 2: uncapped stat/investment growth over a
     // no-reset capped-scaling lifetime can lap int32 (e.g. ~250k SP by L25000, uncapped ATK growth).
     // bigint columns. BaseMaxHealth/CurrentHealth stay int (bounded by the health pool, not economy).
     public long BaseAttack { get; private set; }

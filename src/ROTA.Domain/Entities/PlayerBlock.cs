@@ -1,7 +1,7 @@
 namespace ROTA.Domain.Entities;
 
 /// <summary>
-/// A one-way block: <see cref="BlockerId"/> no longer receives PMs from <see cref="BlockedId"/> (T37).
+/// A one-way block: <see cref="BlockerId"/> no longer receives PMs from <see cref="BlockedId"/>.
 /// Exactly one row per ordered (blocker, blocked) pair.
 /// </summary>
 public class PlayerBlock

@@ -12,7 +12,7 @@ namespace ROTA.Infrastructure.Services;
 /// <see cref="InvalidOperationException"/> on any invalid content so a misconfigured roster fails at
 /// boot, not on first use. Mirrors <c>MasteryDefinitionProvider</c>.
 ///
-/// System 25: when a quest provider + <see cref="AchievementConfig.ZoneRerunLadder"/> are supplied, the
+/// when a quest provider + <see cref="AchievementConfig.ZoneRerunLadder"/> are supplied, the
 /// per-zone rerun ladders are SYNTHESIZED here — one 6-tier rarity chain per distinct (chapter, zone) in
 /// the quest roster — rather than hand-authored. Adding chapters/zones to quests.json grows the roster
 /// automatically; the synthesized rows are validated by the same rules as authored ones.
@@ -52,7 +52,7 @@ public sealed class AchievementDefinitionProvider : IAchievementDefinitionProvid
             throw new InvalidOperationException($"achievements.json is invalid: {ex.Message}", ex);
         }
 
-        // System 25 — append the per-zone rerun ladders (skipped when there's no quest provider/ladder,
+        // append the per-zone rerun ladders (skipped when there's no quest provider/ladder,
         // e.g. bare unit fixtures that construct the provider with just a path).
         list.AddRange(SynthesizeZoneRerunLadders(quests, config));
         list.AddRange(SynthesizeRaidClearLadders(raids, config));
@@ -202,7 +202,7 @@ public sealed class AchievementDefinitionProvider : IAchievementDefinitionProvid
                 throw new InvalidOperationException(
                     $"achievements.json: Collector achievement '{a.Id}' is missing collectorKey.");
 
-            // System 25 — ZoneReruns achievements MUST be scoped so RecordZoneRerunAsync can route them.
+            // ZoneReruns achievements MUST be scoped so RecordZoneRerunAsync can route them.
             if (a.Metric == AchievementMetric.ZoneReruns && (a.Chapter is null || a.ZoneIndex is null))
                 throw new InvalidOperationException(
                     $"achievements.json: ZoneReruns achievement '{a.Id}' must set chapter + zoneIndex.");

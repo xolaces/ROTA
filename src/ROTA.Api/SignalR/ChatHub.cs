@@ -7,10 +7,10 @@ using ROTA.Shared.DTOs;
 namespace ROTA.Api.SignalR;
 
 /// <summary>
-/// Real-time chat hub. World chat (T36) is broadcast to everyone and persisted to a 100-message Redis
-/// ring buffer; raid chat (T35) is broadcast to a per-raid group and is ephemeral; guild chat (System 21
+/// Real-time chat hub. World chat is broadcast to everyone and persisted to a 100-message Redis
+/// ring buffer; raid chat is broadcast to a per-raid group and is ephemeral; guild chat (System 21
 /// Slice 2) is broadcast to a per-guild group and persisted to a per-guild ring buffer, member-gated.
-/// Muted players (T40) are rejected. PM delivery (T37) reuses this hub's connection via Clients.User from
+/// Muted players are rejected. PM delivery reuses this hub's connection via Clients.User from
 /// SocialController.
 /// </summary>
 [Authorize]
@@ -56,7 +56,7 @@ public sealed class ChatHub : Hub
     }
 
     /// <summary>
-    /// Joins the caller to a raid's chat group (T35). AUDIT FIX — participant-gated: the raidId is
+    /// Joins the caller to a raid's chat group. AUDIT FIX — participant-gated: the raidId is
     /// client-supplied, so without the gate any authenticated player who learned a raid GUID could
     /// subscribe to (and read) another party's raid chat. Mirrors the guild-chat member gate below.
     /// The group key is canonicalized from the parsed GUID so case-variant strings can't fork groups.
@@ -175,7 +175,7 @@ public sealed class ChatHub : Hub
 
     private async Task<bool> CannotChatAsync()
     {
-        // A muted (T40) or banned player cannot send. Banned matters because their 15-min access token
+        // A muted or banned player cannot send. Banned matters because their 15-min access token
         // outlives session revocation, so a live socket could otherwise keep chatting post-ban.
         var p = await _players.FindByIdAsync(SenderId());
         return p is not null && (p.IsBanned || p.IsMuted);

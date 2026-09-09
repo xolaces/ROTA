@@ -40,7 +40,7 @@ public class AchievementDefinition
     public string? CollectorKey { get; set; }
 
     /// <summary>
-    /// System 25 — the quest chapter this achievement is scoped to. REQUIRED (with <see cref="ZoneIndex"/>)
+    /// the quest chapter this achievement is scoped to. REQUIRED (with <see cref="ZoneIndex"/>)
     /// when Metric == ZoneReruns, null otherwise (startup-validated). Set on the per-zone rerun ladders the
     /// provider synthesizes; lets <c>RecordZoneRerunAsync</c> route a rerun to exactly one zone's ladder
     /// instead of the metric-wide fan-out.

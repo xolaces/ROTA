@@ -3,7 +3,7 @@ using ROTA.Shared.DTOs;
 namespace ROTA.Application.Interfaces;
 
 // BETA (System 16 Slice 2 + 5) — admin lifecycle for Gauntlet events. Used by the [AdminOnly]
-// controller and the CLI. Settle (Slice 5) distributes the rank-band prizes idempotently.
+// controller and the CLI. Settle distributes the rank-band prizes idempotently.
 public interface IGauntletAdminService
 {
     /// <summary>
@@ -22,7 +22,7 @@ public interface IGauntletAdminService
     Task<GauntletEventActionResult> CloseEventAsync(Guid eventId, CancellationToken ct = default);
 
     /// <summary>
-    /// Settles a Closed event (Slice 5): recomputes ranks, then grants the per-rank-band prizes
+    /// Settles a Closed event: recomputes ranks, then grants the per-rank-band prizes
     /// (Tokens + Pitchfork to the currency ledger, Trophies, honor-echo write-back on revoked
     /// event-magics) — every grant idempotent via a unique referenceId / unique index. Marks the
     /// event Settled only after all grants commit. Idempotent and re-runnable: a re-settle on an

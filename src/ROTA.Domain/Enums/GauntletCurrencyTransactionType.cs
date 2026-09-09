@@ -1,7 +1,7 @@
 namespace ROTA.Domain.Enums;
 
 /// <summary>
-/// Discriminator for Gauntlet currency-ledger rows (System 16). Parallel to
+/// Discriminator for Gauntlet currency-ledger rows. Parallel to
 /// <see cref="GemTransactionType"/>; does NOT touch the gem ledger.
 /// </summary>
 public enum GauntletCurrencyTransactionType

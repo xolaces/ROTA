@@ -34,7 +34,7 @@ public class LevelingConfig
     public Dictionary<int, int> MilestoneFloors { get; set; } = new();
 
     /// <summary>
-    /// Gem rewards granted on reaching exact pinnacle / milestone levels (T32): level → gems.
+    /// Gem rewards granted on reaching exact pinnacle / milestone levels: level → gems.
     /// Class-gate levels (the mandatory class-select overlay) are <c>ClassConfig.ConvergenceLevels</c>;
     /// this map is the gem grant, which also includes two gem-only milestones (1000, 2500) that are NOT
     /// class gates. The convergence tiers 2000/15000/25000 are intentionally absent until their gem
@@ -76,8 +76,8 @@ public class LevelingConfig
         => PinnacleGemRewards.TryGetValue(level, out var gems) ? gems : 0;
 
     /// <summary>
-    /// True if <paramref name="level"/> is a configured pinnacle level. Drives both the gem reward (T32)
-    /// and the first-claim logging (T33), so a single config map is the one source of "pinnacle levels".
+    /// True if <paramref name="level"/> is a configured pinnacle level. Drives both the gem reward
+    /// and the first-claim logging, so a single config map is the one source of "pinnacle levels".
     /// </summary>
     public bool IsPinnacleLevel(int level) => PinnacleGemRewards.ContainsKey(level);
 }

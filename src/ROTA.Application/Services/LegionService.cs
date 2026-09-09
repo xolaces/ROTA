@@ -230,7 +230,7 @@ public sealed class LegionService : ILegionService
         }
 
         double bonusFraction = totalLegionBonus / 100.0;
-        // No PowerScaling here — that's a combat-only dial applied in RaidService (Slice 4).
+        // No PowerScaling here — that's a combat-only dial applied in RaidService.
         double rawPower = unitSum * (1.0 + bonusFraction);
 
         return new LegionPowerResult

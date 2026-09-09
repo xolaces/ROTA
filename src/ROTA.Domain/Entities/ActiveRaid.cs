@@ -58,7 +58,7 @@ public class ActiveRaid
 
     public DateTimeOffset ExpiresAt { get; private set; }
 
-    // System 16 Slice 2 (additive) — links this raid to a Gauntlet event so scoring + off-cap
+    // links this raid to a Gauntlet event so scoring + off-cap
     // aura resolution can filter by event without re-inspecting the definition each hit. Null on
     // ordinary raids. Stamped at summon by Slice 4; the setter is provided now.
     public Guid? GauntletEventId { get; private set; }
@@ -149,7 +149,7 @@ public class ActiveRaid
         UpdatedAt      = DateTimeOffset.UtcNow;
     }
 
-    // System 16 Slice 2 (additive) — stamps this raid as belonging to a Gauntlet event. Set once
+    // stamps this raid as belonging to a Gauntlet event. Set once
     // at summon (Slice 4 wires the call site). Does not alter any other raid behaviour.
     public void LinkGauntletEvent(Guid eventId)
     {

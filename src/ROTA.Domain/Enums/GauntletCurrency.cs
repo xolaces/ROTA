@@ -1,7 +1,7 @@
 namespace ROTA.Domain.Enums;
 
 /// <summary>
-/// Discriminator on the shared Gauntlet currency ledger (System 16). Separate from gems;
+/// Discriminator on the shared Gauntlet currency ledger. Separate from gems;
 /// balance is computed per currency as SUM(amount) WHERE currency = X.
 /// </summary>
 public enum GauntletCurrency

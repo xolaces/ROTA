@@ -3,7 +3,7 @@ using ROTA.Shared.DTOs;
 namespace ROTA.Application.Interfaces;
 
 /// <summary>
-/// T75 — dev/admin grant actions backing the client Dev Tools screen. AdminOnly at the controller;
+/// dev/admin grant actions backing the client Dev Tools screen. AdminOnly at the controller;
 /// every action audits with the ACTING admin id + the affected target. Test/dev affordance — these
 /// bypass the normal earn loops by design, which is exactly why each one writes audit_log.
 /// </summary>

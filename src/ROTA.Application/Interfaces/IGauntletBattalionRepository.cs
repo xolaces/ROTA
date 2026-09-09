@@ -2,7 +2,7 @@ using ROTA.Domain.Entities;
 
 namespace ROTA.Application.Interfaces;
 
-/// <summary>Persistence for a player's dedicated Gauntlet battalion (System 24 D8). One per player.</summary>
+/// <summary>Persistence for a player's dedicated Gauntlet battalion. One per player.</summary>
 public interface IGauntletBattalionRepository
 {
     Task<PlayerGauntletBattalion?> GetForPlayerAsync(Guid playerId, CancellationToken ct = default);

@@ -9,7 +9,7 @@ namespace ROTA.Infrastructure.Services;
 // BETA (System 16 Slice 6) — singleton; loads content/gauntlet_shop.json at construction and
 // validates it against the spec (referential integrity on payloadId, price > 0, currency valid,
 // no duplicate ids, GemBundle/StrikeRefill amount > 0). Throws InvalidOperationException at
-// startup on any invalid data — mirrors GauntletContentProvider (Slice 1). Eagerly constructed
+// startup on any invalid data — mirrors GauntletContentProvider. Eagerly constructed
 // in Program.cs so a bad catalogue fails the boot, not the first purchase.
 public sealed class GauntletShopProvider : IGauntletShopProvider
 {

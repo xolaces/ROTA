@@ -1,6 +1,6 @@
 namespace ROTA.Domain.Enums;
 
-/// <summary>Lifecycle of a Gauntlet event (System 16). Admin-triggered transitions.</summary>
+/// <summary>Lifecycle of a Gauntlet event. Admin-triggered transitions.</summary>
 public enum GauntletEventState
 {
     /// <summary>Created but not yet open for play.</summary>

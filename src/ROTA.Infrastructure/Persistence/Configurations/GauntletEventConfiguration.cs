@@ -26,7 +26,7 @@ public class GauntletEventConfiguration : IEntityTypeConfiguration<GauntletEvent
             .HasColumnName("state")
             .IsRequired();
 
-        // T76 — event identity. Kind stored as int (Neck=0 default for pre-T76 rows).
+        // event identity. Kind stored as int (Neck=0 default for pre-T76 rows).
         builder.Property(e => e.Kind)
             .HasColumnName("kind")
             .HasDefaultValue(Domain.Enums.GauntletEventKind.Neck);

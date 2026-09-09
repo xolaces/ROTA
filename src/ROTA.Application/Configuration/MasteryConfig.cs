@@ -1,6 +1,6 @@
 namespace ROTA.Application.Configuration;
 
-// System 22 Phase A (Masteries) — scalar tuning surface, bound from appsettings "MasteryConfig"
+// scalar tuning surface, bound from appsettings "MasteryConfig"
 // via IOptions<MasteryConfig>. Per-Ancient per-level magnitudes live in content/masteries.json;
 // this holds only the cross-cutting scalar dials. Defaults mirror the locked spec.
 public class MasteryConfig

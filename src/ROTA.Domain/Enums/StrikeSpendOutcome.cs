@@ -1,7 +1,7 @@
 namespace ROTA.Domain.Enums;
 
 /// <summary>
-/// Tri-state result of spending Strikes (System 16). Mirrors <see cref="GemSpendOutcome"/>'s
+/// Tri-state result of spending Strikes. Mirrors <see cref="GemSpendOutcome"/>'s
 /// idempotency discipline: <see cref="AlreadyCharged"/> (referenceId already debited) must NEVER
 /// be conflated with <see cref="Insufficient"/> (balance too low), so a retry never double-debits.
 /// </summary>

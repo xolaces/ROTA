@@ -38,8 +38,8 @@ public class ActiveRaidConfiguration : IEntityTypeConfiguration<ActiveRaid>
         builder.Property(r => r.ExpiresAt)
             .HasColumnName("expires_at");
 
-        // System 16 Slice 2 (additive) — nullable link to a Gauntlet event. Stamped at summon on
-        // Gauntlet-eligible raids (Slice 4); null on ordinary raids.
+        // nullable link to a Gauntlet event. Stamped at summon on
+        // Gauntlet-eligible raids; null on ordinary raids.
         builder.Property(r => r.GauntletEventId)
             .HasColumnName("gauntlet_event_id");
 
@@ -101,7 +101,7 @@ public class ActiveRaidConfiguration : IEntityTypeConfiguration<ActiveRaid>
         builder.HasIndex(r => new { r.IsDefeated, r.IsDeleted, r.ExpiresAt })
             .HasDatabaseName("ix_active_raids_status");
 
-        // System 16 Slice 2 (additive) — nullable FK → gauntlet_events. Restrict so we keep raid
+        // nullable FK → gauntlet_events. Restrict so we keep raid
         // history if an event is soft-deleted. Indexed (architecture rule: every FK indexed) +
         // used by the per-event scoring filter.
         builder.HasOne<GauntletEvent>()

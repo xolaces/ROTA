@@ -21,14 +21,14 @@ public sealed class GauntletService : IGauntletService
     private readonly IGemService _gems;
     private readonly IAuditLogRepository _auditLog;
     private readonly GauntletConfig _config;
-    // Slice 6 — token shop
+    // token shop
     private readonly IGauntletShopProvider _shop;
     private readonly ILegionService _legions;
     private readonly IEquipmentService _equipment;
-    // Slice 7 — ladder summon/auto-advance
+    // ladder summon/auto-advance
     private readonly IActiveRaidRepository _raids;
     private readonly IRaidService _raidService;
-    // T76 — magic display names for the prize preview / settlement summary
+    // magic display names for the prize preview / settlement summary
     private readonly IMagicDefinitionProvider _magics;
     private readonly IPlayerMutationLock _mutationLock;   // exploit audit 2026-06-14 (H)
 
@@ -80,7 +80,7 @@ public sealed class GauntletService : IGauntletService
         if (active is null)
             return JoinGauntletResult.Fail("There is no active Gauntlet event.");
 
-        // T76 — Coming Soon: an opened event with a future StartsAt is visible but not yet playable.
+        // Coming Soon: an opened event with a future StartsAt is visible but not yet playable.
         if (active.StartsAt > DateTimeOffset.UtcNow)
             return JoinGauntletResult.Fail("The Gauntlet has not started yet.");
 
@@ -130,7 +130,7 @@ public sealed class GauntletService : IGauntletService
         if (active is null)
             return new GauntletLadderResponse { NoActiveEvent = true, StageCount = stageCount };
 
-        // T76 — Coming Soon: before StartsAt nothing spawns and nothing is climbable (mirrors the
+        // Coming Soon: before StartsAt nothing spawns and nothing is climbable (mirrors the
         // join gate, so the pair can never disagree about whether the event window is open).
         if (active.StartsAt > DateTimeOffset.UtcNow)
             return new GauntletLadderResponse { NotStarted = true, StageCount = stageCount };
@@ -546,13 +546,13 @@ public sealed class GauntletService : IGauntletService
             StartsAt  = e.StartsAt,
             EndsAt    = e.EndsAt,
             SettledAt = e.SettledAt,
-            // T76 — event identity + server-side countdown.
+            // event identity + server-side countdown.
             Kind      = e.Kind.ToString(),
             RunNumber = e.RunNumber,
             LoreBlurb = e.LoreBlurb,
             BannerKey = e.BannerKey,
             SecondsRemaining = (long)Math.Max(0, (e.EndsAt - DateTimeOffset.UtcNow).TotalSeconds),
-            // T76 — non-zero only before the window opens (the Home CTA's Coming Soon state).
+            // non-zero only before the window opens (the Home CTA's Coming Soon state).
             SecondsUntilStart = (long)Math.Max(0, (e.StartsAt - DateTimeOffset.UtcNow).TotalSeconds),
         };
 

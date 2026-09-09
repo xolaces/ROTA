@@ -61,7 +61,7 @@ public class OutboundEmail
     /// <summary>One-line human summary shown in the dashboard list.</summary>
     public string Summary { get; private set; } = string.Empty;
 
-    /// <summary>Operator-triage priority (T52): reports High, feedback Low, bugs Normal. Drives dashboard sort/filter.</summary>
+    /// <summary>Operator-triage priority: reports High, feedback Low, bugs Normal. Drives dashboard sort/filter.</summary>
     public EmailPriority Priority { get; private set; } = EmailPriority.Normal;
 
     /// <summary>Structured payload (jsonb) — the producer's detail object.</summary>

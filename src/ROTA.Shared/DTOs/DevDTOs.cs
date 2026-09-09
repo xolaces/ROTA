@@ -1,4 +1,4 @@
-// T75 — admin/dev tooling shapes. Every action is AdminOnly + audited; the dev tools screen in
+// admin/dev tooling shapes. Every action is AdminOnly + audited; the dev tools screen in
 // the client is the only intended consumer.
 namespace ROTA.Shared.DTOs;
 

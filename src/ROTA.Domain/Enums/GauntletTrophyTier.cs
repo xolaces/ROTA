@@ -1,7 +1,7 @@
 namespace ROTA.Domain.Enums;
 
 /// <summary>
-/// Gauntlet trophy tiers (System 16). Trophies are permanent and stack highest-only —
+/// Gauntlet trophy tiers. Trophies are permanent and stack highest-only —
 /// owning several applies only the best <c>LegionPowerBonusFraction</c>.
 /// </summary>
 public enum GauntletTrophyTier

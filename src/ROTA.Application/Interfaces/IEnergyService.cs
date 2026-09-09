@@ -11,7 +11,7 @@ public interface IEnergyService
     Task RefillEnergyAsync(Guid playerId, ResourceType type, int amount, CancellationToken ct = default);
 
     /// <summary>
-    /// T56 — deducts up to <paramref name="amount"/> from the pool, clamping at 0 (never fails).
+    /// deducts up to <paramref name="amount"/> from the pool, clamping at 0 (never fails).
     /// Used for health damage (drain rather than reject). Returns the amount actually drained.
     /// </summary>
     Task<int> DrainAsync(Guid playerId, ResourceType type, int amount, CancellationToken ct = default);

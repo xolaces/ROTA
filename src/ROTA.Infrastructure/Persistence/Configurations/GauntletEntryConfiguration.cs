@@ -36,7 +36,7 @@ public class GauntletEntryConfiguration : IEntityTypeConfiguration<GauntletEntry
             .HasColumnName("tie_break_at")
             .IsRequired();
 
-        // T76 — primary ranking metric (highest ladder stage defeated); 0 for pre-T76 rows.
+        // primary ranking metric (highest ladder stage defeated); 0 for pre-T76 rows.
         builder.Property(e => e.HighestStage)
             .HasColumnName("highest_stage")
             .HasDefaultValue(0);
@@ -80,7 +80,7 @@ public class GauntletEntryConfiguration : IEntityTypeConfiguration<GauntletEntry
             .IsUnique()
             .HasDatabaseName("ix_gauntlet_entries_event_player");
 
-        // Read index for the per-league ranked snapshot (Slice 3): ORDER BY score DESC, tie_break_at ASC.
+        // Read index for the per-league ranked snapshot: ORDER BY score DESC, tie_break_at ASC.
         builder.HasIndex(e => new { e.GauntletEventId, e.League, e.Score })
             .HasDatabaseName("ix_gauntlet_entries_event_league_score");
     }

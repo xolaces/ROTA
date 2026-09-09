@@ -10,8 +10,8 @@ using ROTA.Shared.DTOs;
 namespace ROTA.Api.Controllers;
 
 /// <summary>
-/// Friends, private messaging, blocking, and player reports (T37). PMs deliver in real time to the
-/// recipient over the chat hub; reports route to a PlayerReport operator email (T39).
+/// Friends, private messaging, blocking, and player reports. PMs deliver in real time to the
+/// recipient over the chat hub; reports route to a PlayerReport operator email.
 /// </summary>
 [ApiController]
 [Route("api/social")]

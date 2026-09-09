@@ -1,7 +1,7 @@
 namespace ROTA.Domain.Entities;
 
 /// <summary>
-/// A single-use password-reset code (T65). Only the SHA256 hash of the code is stored — the plaintext
+/// A single-use password-reset code. Only the SHA256 hash of the code is stored — the plaintext
 /// code travels to the player by email and is never persisted here. Consumption is an atomic
 /// conditional UPDATE in the repository (the same race guard as BetaKey redemption).
 /// </summary>

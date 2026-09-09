@@ -2,7 +2,7 @@ namespace ROTA.Domain.Entities;
 
 // BETA (System 16 Slice 2) — per-event consumable ownership of a rank magic (Wrath/Blessing).
 // Granted at settlement scoped to the NEXT event; soft-deleted (Revoke) at event close. The
-// former-owner "honor echo" (PlayerMagicHonor) is written when this is revoked (Slice 5).
+// former-owner "honor echo" (PlayerMagicHonor) is written when this is revoked.
 // Unique on (player_id, gauntlet_event_id, magic_definition_id).
 public class PlayerEventMagic
 {

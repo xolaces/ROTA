@@ -19,7 +19,7 @@ public class RoleChangeRequest
     public string Role { get; set; } = string.Empty;
 }
 
-/// <summary>Request to ban a player (T40).</summary>
+/// <summary>Request to ban a player.</summary>
 public class BanPlayerRequest
 {
     /// <summary>Reason for the ban (recorded + emailed for the dispute trail).</summary>
@@ -80,7 +80,7 @@ public class UnmutePlayerRequest
     public string Reason { get; set; } = string.Empty;
 }
 
-/// <summary>Request to mute a player's chat for a fixed duration (T40).</summary>
+/// <summary>Request to mute a player's chat for a fixed duration.</summary>
 public class MutePlayerRequest
 {
     /// <summary>Mute duration in minutes (must be positive).</summary>

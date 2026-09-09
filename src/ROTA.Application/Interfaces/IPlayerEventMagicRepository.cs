@@ -2,7 +2,7 @@ using ROTA.Domain.Entities;
 
 namespace ROTA.Application.Interfaces;
 
-// BETA (System 16 Slice 2) — per-event rank-magic ownership. Granted at settlement (Slice 5),
+// BETA (System 16 Slice 2) — per-event rank-magic ownership. Granted at settlement,
 // revoked at event close. FindAsync filters IsDeleted=false (only active grants count as "owned").
 public interface IPlayerEventMagicRepository
 {

@@ -1,6 +1,6 @@
 namespace ROTA.Shared.DTOs;
 
-/// <summary>In-game bug report / general feedback submission (T38).</summary>
+/// <summary>In-game bug report / general feedback submission.</summary>
 public class FeedbackRequest
 {
     /// <summary>"Bug" or "Feedback".</summary>

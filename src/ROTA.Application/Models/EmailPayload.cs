@@ -14,7 +14,7 @@ public sealed class EmailPayload
     /// <summary>Short subject (the service prefixes <c>[ROTA][Type]</c>).</summary>
     public required string Subject { get; init; }
 
-    /// <summary>Operator-triage priority (T52). Producers set this; defaults to Normal.</summary>
+    /// <summary>Operator-triage priority. Producers set this; defaults to Normal.</summary>
     public EmailPriority Priority { get; init; } = EmailPriority.Normal;
 
     /// <summary>One-line human summary for the dashboard list.</summary>
@@ -34,7 +34,7 @@ public sealed class EmailPayload
 
     /// <summary>
     /// When set, the email is delivered to this address instead of the operator inbox, with the raw
-    /// <see cref="Subject"/> (no <c>[ROTA][Type]</c> ops tag) — used for player-facing mail (T65).
+    /// <see cref="Subject"/> (no <c>[ROTA][Type]</c> ops tag) — used for player-facing mail.
     /// </summary>
     public string? RecipientOverride { get; init; }
 }

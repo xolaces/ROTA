@@ -122,7 +122,7 @@ public sealed class QuestService : IQuestService
         _random            = random ?? Random.Shared;
     }
 
-    // T55 — energy cost carries the per-chapter (capped) scaling + zone depth + difficulty:
+    // energy cost carries the per-chapter (capped) scaling + zone depth + difficulty:
     //   base × difficultyEnergyMult × chapterEnergyMult × (1 + zoneIndex × zoneRamp).
     // XP is NO LONGER computed here — owner 2026-06-14, XP scales with energy SPENT (see RollEnergyXp),
     // so it inherits all of this scaling automatically (a boss costs more energy ⇒ earns more XP).
@@ -157,7 +157,7 @@ public sealed class QuestService : IQuestService
             .Where(p => p.Difficulty == difficulty);
         var progressByQuestId = allProgress.ToDictionary(p => p.QuestId);
 
-        // T74 — per-quest difficulty completions, so the client can render locked tiers as
+        // per-quest difficulty completions, so the client can render locked tiers as
         // unselectable. One query; the attempt-time gate stays authoritative.
         var difficultyCompletions = (await _difficultyProgress.GetAllForPlayerAsync(playerId, ct))
             .Where(p => p.CompletionCount > 0)
@@ -170,13 +170,13 @@ public sealed class QuestService : IQuestService
         var zoneHighest = new Dictionary<(int Chapter, int ZoneIndex), QuestDifficulty>();
 
         // A node unlocks the next once the prerequisite has EVER been cleared (permanent latch) — so a
-        // chapter-boss reset (T26), which clears IsCleared back to false, never re-locks earned content.
+        // chapter-boss reset, which clears IsCleared back to false, never re-locks earned content.
         var unlockedQuestIds = progressByQuestId
             .Where(kv => kv.Value.HasEverCleared)
             .Select(kv => kv.Key)
             .ToHashSet();
 
-        // System 25 — nodes cleared in the CURRENT cycle (reset flips these back off). The zone-boss is
+        // nodes cleared in the CURRENT cycle (reset flips these back off). The zone-boss is
         // greyed until every non-boss sibling is in this set, mirroring the attempt-time re-lock gate.
         var clearedThisCycleIds = progressByQuestId
             .Where(kv => kv.Value.IsCleared)
@@ -208,7 +208,7 @@ public sealed class QuestService : IQuestService
 
             progressByQuestId.TryGetValue(quest.Id, out var prog);
 
-            // System 25 — a zone boss is attemptable only once every non-boss node in its zone is cleared
+            // a zone boss is attemptable only once every non-boss node in its zone is cleared
             // IN THE CURRENT CYCLE (matches the attempt-time re-lock gate). After a reset the siblings are
             // no longer cleared-this-cycle, so the boss re-greys until the zone is fully re-run.
             bool isUnlocked = true;
@@ -219,7 +219,7 @@ public sealed class QuestService : IQuestService
                     .All(n => clearedThisCycleIds.Contains(n.Id));
             }
 
-            // T55 — effective (chapter+zone-scaled) cost at Normal as the card display baseline; the
+            // effective (chapter+zone-scaled) cost at Normal as the card display baseline; the
             // client multiplies by the selected difficulty. XP preview is the MEAN of the per-energy roll
             // (the real grant rolls on attempt). The server recomputes authoritatively, so display-only.
             var effEnergy = ComputeEnergyCost(quest, QuestDifficulty.Normal);
@@ -336,7 +336,7 @@ public sealed class QuestService : IQuestService
         if (player.IsBanned)
             return Fail(QuestFailureCode.PlayerBanned, "Account is banned.");
 
-        // System 22 Phase A — mastery loot modifiers (Hoard +% drop/gold, Discernment sigil-find).
+        // mastery loot modifiers (Hoard +% drop/gold, Discernment sigil-find).
         // Best-effort: a fetch failure falls back to neutral so the player still gets base rewards.
         MasteryLootModifiers lootMods;
         try { lootMods = await _mastery.GetLootModifiersAsync(playerId, ct); }
@@ -355,11 +355,11 @@ public sealed class QuestService : IQuestService
         if (!spent)
             return Fail(QuestFailureCode.InsufficientEnergy, "Insufficient energy.");
 
-        // 6b. XP earned scales with the energy just spent (owner 2026-06-14), level-independent.
+        // 6b. XP earned scales with the energy just spent, level-independent.
         long xpReward = RollEnergyXp(energyCost);
 
         // 7. Apply rewards (energy committed — errors from here propagate as 500).
-        // T59 — gold/XP go through the xmin-retry chokepoint so a simultaneous raid hit can't
+        // gold/XP go through the xmin-retry chokepoint so a simultaneous raid hit can't
         // last-write-wins this away. `player` is the same tracked instance, so later reads see the result.
         var levelUps = await _players.MutateWithRetryAsync(playerId, p =>
         {
@@ -414,7 +414,7 @@ public sealed class QuestService : IQuestService
         // quest attempt, a full re-attempt is a fresh clear (new CompletionCount) — not request-idempotent
         // by design. quest.GemReward is now vestigial for bosses (chance + amount come from QuestConfig).
         int gemsGranted = 0;
-        // Chapter-scaled chance (owner 2026-06-23): rarer early, ramping to the per-difficulty goal at Ch6.
+        // Chapter-scaled chance: rarer early, ramping to the per-difficulty goal at Ch6.
         double gemChance = quest.IsBoss && nodeJustCleared
             ? _questConfig.ResolveBossGemChance(quest.Chapter, difficulty.ToString())
             : 0.0;
@@ -444,8 +444,8 @@ public sealed class QuestService : IQuestService
             }
         }
 
-        // 13. Sigil drop — ONLY from the zone's FINAL boss node (owner 2026-06-12), and ONLY on the
-        //     attempt that CLEARS it (owner 2026-09-04). Every zone's boss is its last node by content
+        // 13. Sigil drop — ONLY from the zone's FINAL boss node, and ONLY on the
+        //     attempt that CLEARS it. Every zone's boss is its last node by content
         //     convention; the explicit max-NodeIndex check guarantees a future mid-zone boss can never
         //     leak sigils.
         //
@@ -471,13 +471,13 @@ public sealed class QuestService : IQuestService
 
             if (!diffProg.FirstSigilDropped)
             {
-                // System 25 — the FIRST clear of this boss at this difficulty guarantees the sigil (100%).
+                // the FIRST clear of this boss at this difficulty guarantees the sigil (100%).
                 dropSigil = true;
                 diffProg.MarkSigilDropped();
             }
             else
             {
-                // Every later (rerun) clear: a flat chance (owner 2026-06-16). NOT Discernment-scaled and
+                // Every later (rerun) clear: a flat chance. NOT Discernment-scaled and
                 // NOT the per-boss SigilDropChance — the Sigils map's presence is the only enable.
                 dropSigil = _random.NextDouble() < _questConfig.SigilRerunDropChance;
             }
@@ -520,7 +520,7 @@ public sealed class QuestService : IQuestService
                 if (quest.IsBoss)
                     await _achievements.RecordProgressAsync(playerId, AchievementMetric.QuestBossesCleared, 1, ct: ct);
             }
-            // System 25 — one zone-rerun per zone-boss clear (zoneReset fires on every boss clear, incl.
+            // one zone-rerun per zone-boss clear (zoneReset fires on every boss clear, incl.
             // the first → cycle #1). Exactly-once per cycle via the boss node's CompletionCount.
             // The reference MUST carry the difficulty. `progress` is the per-DIFFICULTY row and each
             // difficulty clears its own zone boss at the same CompletionCount (40, 80, 120 ...), so
@@ -601,7 +601,7 @@ public sealed class QuestService : IQuestService
         // Discernment raises every chance-drop's effective rate, capped at MaxDropChance — but the
         // cap never *lowers* a base that's already high (a base 1.0 "always" drop stays 1.0). It only
         // bounds the boost on low-base drops. Guaranteed drops never pass through here.
-        // System 22 Phase A — Hoard +% drop rate stacks multiplicatively into the same scaled chance.
+        // Hoard +% drop rate stacks multiplicatively into the same scaled chance.
         double Scale(double baseChance)
         {
             double boosted = baseChance * (1 + discernmentInvestment * _questConfig.DiscernmentDropMultiplier) * hoardDropMultiplier;
@@ -638,7 +638,7 @@ public sealed class QuestService : IQuestService
                 double rate = drop.RareScaling ? RareScale(drop.Chance) : Scale(drop.Chance);
                 if (_random.NextDouble() < rate)
                 {
-                    // System 22 Phase A (Slice 7) — Discernment drop-quality: a successful roll upgrades a
+                    // Discernment drop-quality: a successful roll upgrades a
                     // fired chance drop to its next-tier item (never a guaranteed drop).
                     var itemId = ResolveQualityUpgrade(drop.ItemId, discernmentQualityChance);
                     await GrantItemAsync(playerId, itemId, drop.Quantity, itemsGranted, ct);
@@ -686,7 +686,7 @@ public sealed class QuestService : IQuestService
         }
     }
 
-    // System 22 Phase A (Slice 7) — resolve a fired chance-drop to its upgraded item on a successful
+    // resolve a fired chance-drop to its upgraded item on a successful
     // Discernment-quality roll. Returns the original id when there's no upgrade or the roll misses.
     private string ResolveQualityUpgrade(string itemId, double qualityChance)
     {

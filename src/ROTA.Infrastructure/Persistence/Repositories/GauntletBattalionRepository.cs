@@ -4,7 +4,7 @@ using ROTA.Domain.Entities;
 
 namespace ROTA.Infrastructure.Persistence.Repositories;
 
-// System 24 (D8) — a player's Gauntlet battalion loadout. One row per player (unique index on
+// a player's Gauntlet battalion loadout. One row per player (unique index on
 // player_id). The loadout slot lists are JSON columns; (de)serialisation + validation live in the
 // service, so this repo is a thin EF read/upsert.
 public sealed class GauntletBattalionRepository : IGauntletBattalionRepository

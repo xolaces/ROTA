@@ -72,7 +72,7 @@ public sealed class PlayerService : IPlayerService
             effDef = combat.EffectiveDefense;
         }
 
-        // Masteries (System 22) — pledge is free from the loaded player; rating from current levels
+        // Masteries — pledge is free from the loaded player; rating from current levels
         // (no row writes on a profile GET; missing levels default to 1 inside ComputeRating).
         var masteryLevels = (await _masteryRepo.GetForPlayerAsync(playerId, ct))
             .ToDictionary(m => m.Ancient, m => m.Level);

@@ -1,6 +1,6 @@
 namespace ROTA.Domain.Enums;
 
-// System 26 — crafting (D-018). Persisted only inside content JSON and audit strings today, but
+// crafting (D-018). Persisted only inside content JSON and audit strings today, but
 // treated as append-only from the start: never renumber, only add.
 
 /// <summary>What a recipe consumes. Mirrors Dawn, where recipes mixed owned units/legions with materials.</summary>

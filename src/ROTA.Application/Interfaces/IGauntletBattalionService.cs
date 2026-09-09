@@ -3,7 +3,7 @@ using ROTA.Shared.DTOs;
 namespace ROTA.Application.Interfaces;
 
 /// <summary>
-/// The dedicated Gauntlet battalion (System 24 D8): read/assign a 6-general + 20-troop loadout
+/// The dedicated Gauntlet battalion: read/assign a 6-general + 20-troop loadout
 /// from owned units, and compute battalion power — the Gauntlet strike-damage basis
 /// <c>(playerATK + Σ battalionATK) × 4 + (playerDEF + Σ battalionDEF) × 1</c>.
 /// </summary>

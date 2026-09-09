@@ -15,7 +15,7 @@ public class SendMessageRequest
     public string Body { get; set; } = string.Empty;
 }
 
-/// <summary>Report a player (T37) — routes to a PlayerReport operator email.</summary>
+/// <summary>Report a player — routes to a PlayerReport operator email.</summary>
 public class ReportPlayerRequest
 {
     public string Target { get; set; } = string.Empty;

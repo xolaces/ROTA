@@ -151,7 +151,7 @@ public sealed class RaidDefinitionProvider : IRaidDefinitionProvider
                         $"raids.json: raid '{r.Id}' lists tag '{tag}' twice.");
             }
 
-            // A World raid is TIMER-ONLY (owner 2026-08-29): no collective health, rewards come from
+            // A World raid is TIMER-ONLY: no collective health, rewards come from
             // a damage ladder. Zero health is therefore meaningful there and a mistake anywhere else,
             // which is exactly the distinction a hand-typed number cannot make for itself.
             bool timerOnly = string.Equals(r.Tier, "World", StringComparison.OrdinalIgnoreCase);

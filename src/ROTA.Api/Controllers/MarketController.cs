@@ -7,7 +7,7 @@ using ROTA.Shared.DTOs;
 namespace ROTA.Api.Controllers;
 
 /// <summary>
-/// System 27 — the player market (prototype).
+/// the player market (prototype).
 ///
 /// Every route derives the acting player from the VERIFIED JWT subject and nothing else. There is no
 /// endpoint here that names a counterparty, because there is no direct transfer to name one for: a

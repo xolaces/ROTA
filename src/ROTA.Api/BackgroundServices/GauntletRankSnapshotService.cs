@@ -5,7 +5,7 @@ using ROTA.Application.Interfaces;
 namespace ROTA.Api.BackgroundServices;
 
 /// <summary>
-/// System 16 Slice 3 — periodically materialises the per-league rank snapshot
+/// periodically materialises the per-league rank snapshot
 /// (<see cref="IGauntletScoringService.RecomputeRanksAsync"/>) for the single Active Gauntlet event,
 /// every <c>GauntletConfig.ScoreSnapshotSeconds</c>. The leaderboard read serves these snapshotted
 /// ranks (no per-request ranking).

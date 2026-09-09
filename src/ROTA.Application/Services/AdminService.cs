@@ -14,7 +14,7 @@ namespace ROTA.Application.Services;
 ///   audit_log      — the operational trail, uniform across every action in the system.
 ///   punishment_log — the governance record northstar §6 requires (actor, ROLE, target, type, reason,
 ///                    expiry, timestamp), structured so a dispute can be reviewed without parsing prose.
-///   ModerationAction email — the operator notification (T40).
+///   ModerationAction email — the operator notification.
 /// </summary>
 public sealed class AdminService : IAdminService
 {
@@ -123,7 +123,7 @@ public sealed class AdminService : IAdminService
         return AdminActionResult.Ok();
     }
 
-    // Moderation — punitive actions (ban / unban / mute / unmute) — T40
+    // Moderation — punitive actions (ban / unban / mute / unmute)
 
     /// <summary>Validator parity: 30 days, expressed in minutes.</summary>
     /// <summary>Northstar §6: a Moderator's ban is capped at three days.</summary>
@@ -446,7 +446,7 @@ public sealed class AdminService : IAdminService
         return actor is not null && actor.HasRole(PlayerRoles.Admin);
     }
 
-    /// <summary>Raises a ModerationAction operator email (T40) for a punitive action. Never blocks.</summary>
+    /// <summary>Raises a ModerationAction operator email for a punitive action. Never blocks.</summary>
     private async Task QueueModerationEmailAsync(
         Guid actorId, Player target, string action, string reason, DateTimeOffset? expiresAt,
         string? ipAddress, CancellationToken ct)

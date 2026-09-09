@@ -2,7 +2,7 @@ using ROTA.Shared.DTOs;
 
 namespace ROTA.Application.Interfaces;
 
-/// <summary>Friends, private messaging, blocking, and player reports (T37).</summary>
+/// <summary>Friends, private messaging, blocking, and player reports.</summary>
 public interface ISocialService
 {
     Task<AdminActionResult> SendFriendRequestAsync(Guid requesterId, string targetUsernameOrId, CancellationToken ct = default);
@@ -18,7 +18,7 @@ public interface ISocialService
     Task<SendMessageResult> SendMessageAsync(Guid senderId, string targetUsernameOrId, string body, CancellationToken ct = default);
     Task<IReadOnlyList<PrivateMessageDto>> GetConversationAsync(Guid playerId, string targetUsernameOrId, int take, CancellationToken ct = default);
 
-    /// <summary>Files a player report (rate-limited) → PlayerReport operator email (T39).</summary>
+    /// <summary>Files a player report (rate-limited) → PlayerReport operator email.</summary>
     Task<AdminActionResult> ReportPlayerAsync(
         Guid reporterId, string targetUsernameOrId, string reason, string? description, string? ipAddress,
         CancellationToken ct = default);

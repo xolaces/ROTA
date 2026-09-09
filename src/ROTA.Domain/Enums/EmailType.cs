@@ -7,19 +7,19 @@ namespace ROTA.Domain.Enums;
 /// </summary>
 public enum EmailType
 {
-    /// <summary>Beta in-game bug report (T38).</summary>
+    /// <summary>Beta in-game bug report.</summary>
     BugReport = 1,
 
-    /// <summary>Player-filed report against another player (T37).</summary>
+    /// <summary>Player-filed report against another player.</summary>
     PlayerReport = 2,
 
-    /// <summary>Punitive action by a moderator/admin: ban, mute, role change (T40).</summary>
+    /// <summary>Punitive action by a moderator/admin: ban, mute, role change.</summary>
     ModerationAction = 3,
 
-    /// <summary>First player to reach a pinnacle level post-launch (T33).</summary>
+    /// <summary>First player to reach a pinnacle level post-launch.</summary>
     PinnacleFirstClaim = 4,
 
-    /// <summary>General in-game feedback / ticket (T38).</summary>
+    /// <summary>General in-game feedback / ticket.</summary>
     GeneralTicket = 5,
 
     /// <summary>Password-reset code sent to the PLAYER (not the operator) — T65.</summary>

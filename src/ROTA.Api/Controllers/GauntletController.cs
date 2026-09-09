@@ -87,7 +87,7 @@ public sealed class GauntletController : ControllerBase
         var tokenBalance     = await _currency.GetBalanceAsync(playerId, GauntletCurrency.Token, ct);
         var pitchforkBalance = await _currency.GetBalanceAsync(playerId, GauntletCurrency.Pitchfork, ct);
 
-        // T76 — the caller's "you placed #N" card from the most recently settled event (null when
+        // the caller's "you placed #N" card from the most recently settled event (null when
         // none settled or the caller sat it out). Always populated so the client decides display.
         var lastSettlement = await _gauntlet.GetMyLastSettlementAsync(playerId, ct);
 
@@ -103,7 +103,7 @@ public sealed class GauntletController : ControllerBase
     }
 
     /// <summary>
-    /// T76 — the kind-aware prize preview table for the event page. <c>kind</c> optional: defaults
+    /// the kind-aware prize preview table for the event page. <c>kind</c> optional: defaults
     /// to the active event's kind (Neck when no event is active). 400 on an unknown kind.
     /// </summary>
     [HttpGet("prizes")]

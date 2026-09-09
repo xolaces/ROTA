@@ -2,7 +2,7 @@ namespace ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
 
 /// <summary>
-/// A directed friend request that becomes a mutual friendship on acceptance (T37). Exactly one row per
+/// A directed friend request that becomes a mutual friendship on acceptance. Exactly one row per
 /// ordered (requester, addressee) pair; the service prevents duplicate/reverse pairs.
 /// </summary>
 public class Friendship

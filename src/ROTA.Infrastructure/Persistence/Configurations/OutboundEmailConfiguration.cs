@@ -43,7 +43,7 @@ public class OutboundEmailConfiguration : IEntityTypeConfiguration<OutboundEmail
             .HasMaxLength(1024)
             .IsRequired();
 
-        // T52 — operator-triage priority (Low/Normal/High). The DB default (Normal) backfills any legacy
+        // operator-triage priority (Low/Normal/High). The DB default (Normal) backfills any legacy
         // row; the sentinel is set out of the enum range so an explicit Low(0) — the CLR default — is
         // still written on INSERT instead of being mistaken for "unset" and falling back to the default.
         builder.Property(e => e.Priority)
@@ -104,7 +104,7 @@ public class OutboundEmailConfiguration : IEntityTypeConfiguration<OutboundEmail
         builder.HasIndex(e => e.CreatedAt);
         builder.HasIndex(e => e.TriggeringPlayerId);
         builder.HasIndex(e => e.ReviewedBy);
-        // T52 — the dashboard filters/sorts on priority.
+        // the dashboard filters/sorts on priority.
         builder.HasIndex(e => e.Priority);
 
         // FK → players (nullable; players are soft-deleted, so SetNull is a defensive default).

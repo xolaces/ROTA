@@ -7,7 +7,7 @@ using ROTA.Shared.DTOs;
 namespace ROTA.Api.Controllers;
 
 /// <summary>
-/// T75 — dev/admin grant actions for the client Dev Tools screen. AdminOnly (role claim or
+/// dev/admin grant actions for the client Dev Tools screen. AdminOnly (role claim or
 /// break-glass allowlist); every action is audited with the acting admin's id. These bypass the
 /// normal earn loops by design — beta tooling, not gameplay surface.
 /// </summary>

@@ -14,7 +14,7 @@ public sealed class FeedbackRequestValidator : AbstractValidator<FeedbackRequest
             .Must(c => Categories.Contains(c, StringComparer.OrdinalIgnoreCase))
             .WithMessage("Category must be 'Bug' or 'Feedback'.");
 
-        // T52 — Bug subjects must come from the server catalog (accept key or label); Feedback stays
+        // Bug subjects must come from the server catalog (accept key or label); Feedback stays
         // open text (it is filed under the fixed feedback category on submission).
         When(x => string.Equals(x.Category, "Bug", StringComparison.OrdinalIgnoreCase), () =>
         {

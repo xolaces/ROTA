@@ -4,7 +4,7 @@ namespace ROTA.Domain.Enums;
 /// The four Gauntlet leagues (T76 — DotD-parity level brackets, owner-locked 2026-06-10:
 /// 1–999 / 1000–2499 / 2500–4999 / 5000+; the Ancient bracket was added because late-game
 /// power differences are huge). The band a player falls into is locked at first entry for
-/// the cycle (System 16). Boundaries are tunable via <c>GauntletConfig.LeagueBounds</c>.
+/// the cycle. Boundaries are tunable via <c>GauntletConfig.LeagueBounds</c>.
 /// </summary>
 public enum GauntletLeague
 {

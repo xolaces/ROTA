@@ -50,7 +50,7 @@ public sealed class DevService : IDevService
 
         if (request.Gold > 0 || request.Xp > 0)
         {
-            // Same chokepoint as quest/raid rewards (T59) — concurrency-safe; XP fires REAL level-ups.
+            // Same chokepoint as quest/raid rewards — concurrency-safe; XP fires REAL level-ups.
             var levelUps = await _players.MutateWithRetryAsync<IReadOnlyList<int>>(targetId, p =>
             {
                 if (request.Gold > 0) p.AddGold(request.Gold);

@@ -51,12 +51,12 @@ public class RotaDbContext : DbContext
     // ----- System 18 — Gear Ownership -----
     public DbSet<PlayerGear> PlayerGear => Set<PlayerGear>();
 
-    // System 27 — the player market. The listing table holds escrowed goods; the transaction table is
+    // the player market. The listing table holds escrowed goods; the transaction table is
     // the append-only trade ledger the daily caps are read from.
     public DbSet<MarketListing> MarketListings => Set<MarketListing>();
     public DbSet<MarketTransaction> MarketTransactions => Set<MarketTransaction>();
 
-    // ----- System 16 — Gauntlet (Slice 2) -----
+    // ----- System 16 — Gauntlet -----
     public DbSet<GauntletEvent> GauntletEvents => Set<GauntletEvent>();
     public DbSet<GauntletEntry> GauntletEntries => Set<GauntletEntry>();
     public DbSet<StrikeTransaction> StrikeTransactions => Set<StrikeTransaction>();
@@ -75,16 +75,16 @@ public class RotaDbContext : DbContext
     public DbSet<PlayerBlock> PlayerBlocks => Set<PlayerBlock>();
     public DbSet<PrivateMessage> PrivateMessages => Set<PrivateMessage>();
 
-    // ----- System 21 — Guild / Clan Foundations (Slice 1) -----
+    // ----- System 21 — Guild / Clan Foundations -----
     public DbSet<Guild> Guilds => Set<Guild>();
     public DbSet<GuildMembership> GuildMemberships => Set<GuildMembership>();
     public DbSet<GuildJoinRequest> GuildJoinRequests => Set<GuildJoinRequest>();
 
-    // ----- System 21 — Guild sigil economy (Slice 3a) -----
+    // ----- System 21 — Guild sigil economy -----
     public DbSet<GuildCurrencyTransaction> GuildCurrencyTransactions => Set<GuildCurrencyTransaction>();
     public DbSet<GuildSigilPoolTransaction> GuildSigilPoolTransactions => Set<GuildSigilPoolTransaction>();
 
-    // ----- System 22 — Masteries Core (Phase A) -----
+    // ----- System 22 — Masteries Core -----
     public DbSet<PlayerMastery> PlayerMasteries => Set<PlayerMastery>();
     public DbSet<PlayerMasteryActivity> PlayerMasteryActivities => Set<PlayerMasteryActivity>();
     public DbSet<MasteryActivityEvent> MasteryActivityEvents => Set<MasteryActivityEvent>();

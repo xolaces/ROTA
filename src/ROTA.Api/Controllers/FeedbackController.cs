@@ -10,8 +10,8 @@ using ROTA.Shared.DTOs;
 namespace ROTA.Api.Controllers;
 
 /// <summary>
-/// In-game bug/ticket submission (T38). Any authenticated player can file a Bug or Feedback item; it is
-/// validated, rate-limited (anti-spam), and routed to the operator as a BugReport/GeneralTicket email (T39).
+/// In-game bug/ticket submission. Any authenticated player can file a Bug or Feedback item; it is
+/// validated, rate-limited (anti-spam), and routed to the operator as a BugReport/GeneralTicket email.
 /// </summary>
 [ApiController]
 [Route("api/feedback")]
@@ -61,7 +61,7 @@ public sealed class FeedbackController : ControllerBase
 
         var isBug = string.Equals(request.Category, "Bug", StringComparison.OrdinalIgnoreCase);
 
-        // T52 — resolve the subject + priority:
+        // resolve the subject + priority:
         //   Bug      → validated subject normalized to its label; subjectKey stashed in detail; Priority=Normal.
         //   Feedback → open text, always filed under the fixed feedback category label; Priority=Low.
         string subjectLabel;

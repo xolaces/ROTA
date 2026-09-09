@@ -1,7 +1,7 @@
 namespace ROTA.Domain.Enums;
 
 /// <summary>
-/// Operator-triage priority for an <c>outbound_emails</c> row (T52). Derived at submission time from the
+/// Operator-triage priority for an <c>outbound_emails</c> row. Derived at submission time from the
 /// email type: player reports are High, general feedback is Low, bug reports are Normal. The dashboard
 /// sorts priority-first so the most urgent items surface at the top of the queue.
 /// </summary>

@@ -1,7 +1,7 @@
 namespace ROTA.Domain.Enums;
 
 /// <summary>
-/// T76 — the two Gauntlet event families (owner-locked 2026-06-10). Seasonal rank rewards are
+/// the two Gauntlet event families. Seasonal rank rewards are
 /// removed when the NEXT event of the SAME kind opens (DotD "removed each time X Gauntlet is
 /// summoned" semantics).
 /// </summary>

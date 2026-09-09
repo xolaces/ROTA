@@ -13,7 +13,7 @@ public class PlayerProfileResponse
     // XP required to reach the next level — the denominator for "x/xxxx TNL".
     public long XpToNextLevel { get; set; }
     public long Gold { get; set; }
-    // Gem balance — never stored; SUMMED from the gem_transactions ledger (System 7) for header display.
+    // Gem balance — never stored; SUMMED from the gem_transactions ledger for header display.
     // long: the ledger SUM can exceed int32 over a no-reset lifetime (int32-overflow-audit).
     public long Gems { get; set; }
     public Guid? GuildId { get; set; }

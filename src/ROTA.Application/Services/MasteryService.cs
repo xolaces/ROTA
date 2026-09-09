@@ -9,7 +9,7 @@ using ROTA.Shared.DTOs;
 namespace ROTA.Application.Services;
 
 /// <summary>
-/// System 22 Phase A — Masteries read/compute service. Modifier values are plain numbers consumed at
+/// Masteries read/compute service. Modifier values are plain numbers consumed at
 /// the existing combat/loot hooks (no new combat path; not ConditionalBonus rows). Tier-up evaluation
 /// and activity recording arrive in Slice 4; re-spec in Slice 3.
 /// </summary>
@@ -143,7 +143,7 @@ public sealed class MasteryService : IMasteryService
         return ratings.Count;
     }
 
-    // ── Activity recording + tier-up leveling (Slice 4) ───────────────────────
+    // ── Activity recording + tier-up leveling ───────────────────────
 
     public async Task RecordActivityAsync(Guid playerId, MasteryActivityType activityType, long amount = 1,
         string? referenceId = null, CancellationToken ct = default)

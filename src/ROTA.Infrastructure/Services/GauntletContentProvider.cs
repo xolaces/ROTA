@@ -56,7 +56,7 @@ public sealed class GauntletContentProvider : IGauntletContentProvider
         _trophies = trophies.ToDictionary(t => t.Id, t => t, StringComparer.Ordinal);
         _prizeTable = prizeTable;
 
-        // T54 — formula-extend the ladder to MaxLadderStage when configured (0/≤count = off → JSON
+        // formula-extend the ladder to MaxLadderStage when configured (0/≤count = off → JSON
         // stages exactly as loaded, so small-fixture unit tests are unaffected).
         var ladder = raids.OrderBy(r => r.LadderStage).ToList();
         if (_config.MaxLadderStage > ladder.Count)
@@ -65,7 +65,7 @@ public sealed class GauntletContentProvider : IGauntletContentProvider
         _raidsByStage = _raids.ToDictionary(r => r.LadderStage, r => r);
     }
 
-    // T54 — regenerate the ladder as config.MaxLadderStage stages whose HP/rewards follow the single
+    // regenerate the ladder as config.MaxLadderStage stages whose HP/rewards follow the single
     // smooth GauntletStageCurve (no per-stage JSON authoring). Early stages keep their JSON name/art/id;
     // generated stages get a synthesized id + name. Strictly rising by construction (growth > 1), so the
     // ladder invariants hold; stage-1 HP == StageHpBase keeps the shipped integration assertion valid.
@@ -101,7 +101,7 @@ public sealed class GauntletContentProvider : IGauntletContentProvider
     public GauntletPrizeBand? GetBandForRank(int rank)
         => _prizeTable.Bands.FirstOrDefault(b => rank >= b.RankFrom && rank <= b.RankTo);
 
-    // T76 — kind-aware lookup. Ring uses its own authored set when present; otherwise the Neck
+    // kind-aware lookup. Ring uses its own authored set when present; otherwise the Neck
     // bands with MagicId stripped (ring gauntlets never grant rank magics — owner-locked).
     public GauntletPrizeBand? GetBandForRank(int rank, GauntletEventKind kind)
     {
@@ -115,7 +115,7 @@ public sealed class GauntletContentProvider : IGauntletContentProvider
         return neck is null ? null : StripMagic(neck);
     }
 
-    // T76 — the full kind-aware band list for the prize preview table; same fallback rule as the
+    // the full kind-aware band list for the prize preview table; same fallback rule as the
     // single-rank lookup so the preview always matches what settle would actually pay.
     public IReadOnlyList<GauntletPrizeBand> GetBands(GauntletEventKind kind)
     {
@@ -148,7 +148,7 @@ public sealed class GauntletContentProvider : IGauntletContentProvider
     public GauntletRaidDefinition? GetGauntletRaidByStage(int ladderStage)
         => _raidsByStage.TryGetValue(ladderStage, out var r) ? r : null;
 
-    // T76 — reverse lookup for the combat kill hook (raid definition id → ladder stage).
+    // reverse lookup for the combat kill hook (raid definition id → ladder stage).
     public GauntletRaidDefinition? GetGauntletRaidByDefinitionId(string raidDefinitionId)
         => _raids.FirstOrDefault(r => r.Id == raidDefinitionId);
 
