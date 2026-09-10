@@ -27,7 +27,9 @@ ICONS = ROOT / "assets" / "icons"
 OUT_PNG = ICONS / "atlas.png"
 OUT_MAP = ICONS / "atlas.json"
 
-PAD = 2   # transparent gutter, so bilinear filtering cannot bleed a neighbour into a tile
+PAD = 2      # transparent gutter, so bilinear filtering cannot bleed a neighbour into a tile
+CELL = 128   # atlas cell size; inventory tiles draw at 64-96px, so 128 is ample and keeps the
+             # texture inside the 4096 limit every WebGL target supports
 
 
 def _read_png(path):
@@ -85,6 +87,21 @@ def _read_png(path):
     return w, h, rows
 
 
+def _resample(src, w, h, size):
+    """Nearest-neighbour to a square cell. Icons are flat colour with hard edges, which is exactly
+    the case where nearest keeps the edges crisp and a smooth filter would soften them."""
+    out = []
+    for y in range(size):
+        sy = min(h - 1, y * h // size)
+        row = src[sy]
+        line = bytearray(size * 4)
+        for x in range(size):
+            sx = min(w - 1, x * w // size)
+            line[x * 4:x * 4 + 4] = row[sx * 4:sx * 4 + 4]
+        out.append(line)
+    return out
+
+
 def write_png(path, width, height, pixels):
     raw = bytearray()
     for y in range(height):
@@ -110,31 +127,36 @@ def main():
     if not tiles:
         raise SystemExit("no icons found under assets/icons/")
 
-    w0, h0, _ = _read_png(tiles[0][2])
-    cell_w, cell_h = w0 + PAD, h0 + PAD
+    # Every tile is resampled to one cell size. Sources are a mix — 512px real art beside 64px
+    # placeholders, and they arrive mixed for as long as the art pass is unfinished — so keying the
+    # cell off the first file and skipping anything that disagrees would silently drop whichever
+    # kind sorted second. The atlas is a runtime artifact anyway: build it at display resolution and
+    # leave the sources at whatever the artist exported.
+    cell = CELL
+    cell_w = cell_h = cell + PAD
     cols = int(math.ceil(math.sqrt(len(tiles))))
     rows_n = int(math.ceil(len(tiles) / cols))
     atlas_w, atlas_h = cols * cell_w, rows_n * cell_h
 
     canvas = [bytearray(atlas_w * 4) for _ in range(atlas_h)]
     index = {}
-    mixed = []
+    resampled = 0
 
     for n, (family, stem, path) in enumerate(tiles):
         w, h, src = _read_png(path)
-        if (w, h) != (w0, h0):
-            mixed.append("%s (%dx%d)" % (stem, w, h))
-            continue
+        if (w, h) != (cell, cell):
+            src = _resample(src, w, h, cell)
+            resampled += 1
         cx, cy = (n % cols) * cell_w, (n // cols) * cell_h
-        for y in range(h):
-            canvas[cy + y][cx * 4:(cx + w) * 4] = src[y]
-        index[stem] = {"x": cx, "y": cy, "w": w, "h": h, "family": family}
+        for y in range(cell):
+            canvas[cy + y][cx * 4:(cx + cell) * 4] = src[y]
+        index[stem] = {"x": cx, "y": cy, "w": cell, "h": cell, "family": family}
 
     write_png(OUT_PNG, atlas_w, atlas_h, canvas)
     io.open(OUT_MAP, "w", encoding="utf-8", newline="\n").write(json.dumps({
         "image": "atlas.png",
         "size": {"w": atlas_w, "h": atlas_h},
-        "cell": {"w": w0, "h": h0, "padding": PAD},
+        "cell": {"w": cell, "h": cell, "padding": PAD},
         "count": len(index),
         "frames": index,
     }, indent=2) + "\n")
@@ -144,8 +166,7 @@ def main():
     print("  %s  %.0f KB   (loose files total %.0f KB)" % (
         OUT_PNG.name, OUT_PNG.stat().st_size / 1024, loose / 1024))
     print("  %s  %.0f KB" % (OUT_MAP.name, OUT_MAP.stat().st_size / 1024))
-    if mixed:
-        print("  SKIPPED, not %dx%d: %s" % (w0, h0, ", ".join(mixed[:6])))
+    print("  cell %dpx, %d tile(s) resampled to fit" % (cell, resampled))
 
 
 if __name__ == "__main__":
