@@ -20,6 +20,8 @@ public sealed class StatService : IStatService
     private readonly IClassService _classService;
     private readonly IEquipmentService _equipment;
     private readonly IPinnacleService _pinnacle;
+    private readonly IMagicService _magics;
+    private readonly IMagicDefinitionProvider _magicDefs;
     private readonly IPlayerMutationLock _mutationLock;   // exploit audit 2026-06-14 (D)
 
     public StatService(
@@ -32,6 +34,8 @@ public sealed class StatService : IStatService
         IClassService classService,
         IEquipmentService equipment,
         IPinnacleService pinnacle,
+        IMagicService magics,
+        IMagicDefinitionProvider magicDefs,
         IPlayerMutationLock mutationLock)
     {
         _players        = players;
@@ -43,6 +47,8 @@ public sealed class StatService : IStatService
         _classService   = classService;
         _equipment      = equipment;
         _pinnacle       = pinnacle;
+        _magics         = magics;
+        _magicDefs      = magicDefs;
         _mutationLock   = mutationLock;
     }
 
@@ -207,8 +213,36 @@ public sealed class StatService : IStatService
 
         // first-claimant logging + operator email (idempotent; only the first player at a given
         // pinnacle level triggers it). Same "pinnacle level" set as the gem reward above.
+        var pinnacleMagicId = (string?)null;
         if (_levelingConfig.Value.IsPinnacleLevel(newLevel))
+        {
             await _pinnacle.RecordFirstClaimAsync(playerId, newLevel, ct);
+
+            // The magic itself, which until now nothing granted: the levels existed, the seven
+            // magic_pinnacle_* definitions existed, the first claim was recorded — and a player who
+            // reached 10,000 got the gems, got the audit row, and never received Ancient's Wrath.
+            //
+            // NOT gated on RecordFirstClaimAsync's return. The first player to a milestone designs
+            // the magic; everyone who arrives later inherits that design and owns it too, so the
+            // grant is unconditional at the level. Gating it on first-claim would give the magic to
+            // exactly one player per milestone forever.
+            //
+            // Convention, not a second table: level 10,000 grants magic_pinnacle_10000. The seven
+            // configured levels and the seven shipped definitions already agree one-for-one, and a
+            // mapping table would only be a third place for them to disagree.
+            // PinnacleMagicTests.EveryPinnacleLevelHasAMagicAndViceVersa already pins that
+            // correspondence in both directions, so this convention cannot silently rot.
+            //
+            // The definition lookup is still a real guard, not ceremony: without it a level added to
+            // PinnacleGemRewards ahead of its magic would write a player_magics row naming a
+            // definition that does not exist, and the failure would surface later, somewhere else.
+            var candidate = $"magic_pinnacle_{newLevel}";
+            if (_magicDefs.GetById(candidate) is not null)
+            {
+                await _magics.GrantMagicAsync(playerId, candidate, ct);
+                pinnacleMagicId = candidate;
+            }
+        }
 
         // Auto-advance class on milestone levels (500, 1000, 2000, 5000, etc.)
         var advanced    = _classService.ComputeAutoAdvance(newLevel, player.Class);
@@ -221,7 +255,7 @@ public sealed class StatService : IStatService
 
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, "LevelUpReward", null,
-            $"Level {newLevel} reward: +10 SkillPoints{(newLevel % 5 == 0 ? ", +5 Gems" : "")}{(pinnacleGems > 0 ? $", +{pinnacleGems} Pinnacle Gems" : "")}{(classChanged ? $", class → {advanced}" : "")}",
+            $"Level {newLevel} reward: +10 SkillPoints{(newLevel % 5 == 0 ? ", +5 Gems" : "")}{(pinnacleGems > 0 ? $", +{pinnacleGems} Pinnacle Gems" : "")}{(pinnacleMagicId is not null ? $", magic {pinnacleMagicId}" : "")}{(classChanged ? $", class → {advanced}" : "")}",
             null), ct);
     }
 

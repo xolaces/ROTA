@@ -91,6 +91,8 @@ public class TutorialFourPassesTests
             new Mock<IClassService>().Object,
             new Mock<IEquipmentService>().Object,
             new Mock<IPinnacleService>().Object,
+            new Mock<IMagicService>().Object,
+            new Mock<IMagicDefinitionProvider>().Object,
             new ROTA.UnitTests.TestSupport.PassThroughPlayerMutationLock());
 
     private static (QuestConfig Quest, LevelingConfig Leveling) ShippedConfig()

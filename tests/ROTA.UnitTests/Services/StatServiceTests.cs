@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using ROTA.Application.Configuration;
 using ROTA.Application.Interfaces;
+using ROTA.Application.Models;
 using ROTA.Application.Services;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
@@ -20,7 +21,8 @@ public class StatServiceTests
         Mock<IAuditLogRepository> AuditLog,
         Mock<IClassService> Classes,
         Mock<IEquipmentService> Equipment,
-        Mock<IPinnacleService> Pinnacle);
+        Mock<IPinnacleService> Pinnacle,
+        Mock<IMagicService> Magics);
 
     // MIRRORS src/ROTA.Api/appsettings.json LevelingConfig. It used to carry exponent 0.7 and a
     // partial floor table while production ran 0.8 with a fuller one, so these tests were pinning a
@@ -75,6 +77,15 @@ public class StatServiceTests
         var classes   = new Mock<IClassService>();
         var equipment = new Mock<IEquipmentService>();
         var pinnacle  = new Mock<IPinnacleService>();
+        var magics    = new Mock<IMagicService>();
+        var magicDefs = new Mock<IMagicDefinitionProvider>();
+
+        // The seven shipped magic_pinnacle_* definitions, stubbed by the convention the grant uses.
+        // Anything else resolves to null, which is what proves the grant checks before it writes.
+        magicDefs.Setup(d => d.GetById(It.IsAny<string>()))
+                 .Returns((string id) => id.StartsWith("magic_pinnacle_")
+                     ? new MagicDefinition { Id = id, Name = id }
+                     : null);
 
         auditLog.Setup(a => a.AppendAsync(It.IsAny<AuditLog>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -98,8 +109,9 @@ public class StatServiceTests
         return new ServiceBundle(
             new StatService(players.Object, energy.Object, gems.Object, auditLog.Object,
                 DefaultLevelingConfig(), DefaultCombatConfig(), classes.Object, equipment.Object, pinnacle.Object,
+                magics.Object, magicDefs.Object,
                 new ROTA.UnitTests.TestSupport.PassThroughPlayerMutationLock()),
-            players, energy, gems, auditLog, classes, equipment, pinnacle);
+            players, energy, gems, auditLog, classes, equipment, pinnacle, magics);
     }
 
     // Creates a player that has FindByIdWithStatsAsync returning it with fully initialised stats
@@ -365,6 +377,65 @@ public class StatServiceTests
 
         b.Pinnacle.Verify(p => p.RecordFirstClaimAsync(player.Id, 5000, It.IsAny<CancellationToken>()),
             Times.Once, "reaching a configured pinnacle level records the first-claim");
+    }
+
+    // RC1 — the magic itself. Recording the claim and paying the gems was all that happened before;
+    // the magic the milestone exists to award was never granted to anyone.
+
+    [Theory]
+    [InlineData(1000)]
+    [InlineData(2500)]
+    [InlineData(5000)]
+    [InlineData(7500)]
+    [InlineData(10000)]
+    public async Task GrantLevelUpPoints_GrantsThePinnacleMagic_AtPinnacleLevel(int level)
+    {
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: level, skillPoints: 0);
+        SetupPlayer(b, player);
+
+        await b.Service.GrantLevelUpPointsAsync(player.Id, level);
+
+        b.Magics.Verify(m => m.GrantMagicAsync(
+                player.Id, $"magic_pinnacle_{level}", It.IsAny<CancellationToken>()),
+            Times.Once, "reaching a milestone level awards that level's magic");
+    }
+
+    /// <summary>
+    /// The first player to a milestone designs the magic; everyone after inherits that design and
+    /// owns it too. So the grant must NOT be gated on being the first claimant — if it were, exactly
+    /// one player per milestone would ever hold the magic.
+    /// </summary>
+    [Fact]
+    public async Task GrantLevelUpPoints_GrantsThePinnacleMagic_EvenWhenNotTheFirstClaimant()
+    {
+        var b = BuildService();
+        b.Pinnacle.Setup(p => p.RecordFirstClaimAsync(
+                    It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                  .ReturnsAsync(false);            // someone else got here first
+
+        var player = MakePlayerWithStats(level: 10000, skillPoints: 0);
+        SetupPlayer(b, player);
+
+        await b.Service.GrantLevelUpPointsAsync(player.Id, 10000);
+
+        b.Magics.Verify(m => m.GrantMagicAsync(
+                player.Id, "magic_pinnacle_10000", It.IsAny<CancellationToken>()),
+            Times.Once, "later arrivals inherit the first player's design and own the magic too");
+    }
+
+    [Fact]
+    public async Task GrantLevelUpPoints_GrantsNoMagic_AtNonPinnacleLevel()
+    {
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: 12, skillPoints: 0);
+        SetupPlayer(b, player);
+
+        await b.Service.GrantLevelUpPointsAsync(player.Id, 12);
+
+        b.Magics.Verify(m => m.GrantMagicAsync(
+                It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never, "ordinary levels award no magic");
     }
 
     [Fact]

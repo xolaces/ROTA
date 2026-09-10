@@ -47,26 +47,23 @@ up unattended work starts here and finishes here.
 > owner, or a tick with a Unity headless-compile gate added to the protocol. They stay ranked because
 > they matter; they are simply not takeable here.
 
-### RC1. Nothing grants a pinnacle magic to anyone  *(found 2026-09-07)*
-The milestone-design-rights feature is content-complete and delivery-incomplete. Seven
-`magic_pinnacle_*` entries exist, all seven levels are configured in `LevelingConfig.PinnacleGemRewards`
-(so `IsPinnacleLevel` recognises them), `PinnacleService.RecordFirstClaimAsync` already logs the first
-claimant per level, and the level-1,000 magic is designed and working in combat.
+### RC2. Nobody already past a milestone will ever receive its magic  *(found while doing RC1)*
+RC1 grants the magic at the level-up event, which is the right chokepoint and the only one that
+exists. It means the grant is **not retroactive**: a player who was already level 3,000 when the
+grant shipped crossed 1,000 and 2,500 before there was anything to receive, and will never cross
+them again.
 
-**But there is no code path from reaching a milestone level to owning the magic.** A grep for
-pinnacle + magic + grant across Application and Infrastructure returns nothing but config comments.
-So a player who hits 10,000 gets the gems and the first-claim row, and never receives `Ancient's
-Wrath`.
+On a wiped beta this is harmless — everyone starts at 1 and crosses every milestone with the grant
+in place. It matters only if a live database carries players above 1,000 at deploy time, and it is
+worth checking before assuming it does not.
 
-What it needs: a grant at the same chokepoint the gems use (`GrantLevelUpPointsAsync`), idempotent on
-`(player, magicId)` the way every other grant in this codebase is, writing to `player_magics`. The
-"everyone after the first inherits the design" rule means the grant is unconditional at that level —
-it is not a first-claim-only reward, so it must not be gated on the `PinnacleFirstClaim` row.
+The fix is a one-shot backfill, not a code change: for each player, for each configured pinnacle
+level at or below their current level, upsert `magic_pinnacle_{level}`. `PlayerMagicRepository.UpsertAsync`
+is already idempotent and `player_magics` has a unique index on `(player_id, magic_definition_id)`,
+so the backfill is safe to run more than once. It belongs in `AdminCli` beside `beta-reset`.
 
-Note while here: `IsPinnacleLevel` infers "is this a milestone" from "does this level pay gems",
-which is why levels 15,000 and 25,000 had magics but were not milestones until this session added
-their gem amounts. Those two amounts (3,500 and 5,000) are extrapolated from the shipped curve and
-are the owner's to retune — CLAUDE.md had recorded them as deliberately omitted pending confirmation.
+Deliberately NOT done as part of RC1: a backfill is a data migration over live rows, and the owner
+applies those.
 
 ### RD1. Sweep — repeat a cleared node without replaying it  *(owner-deferred 2026-09-07)*
 Auto-battle that unlocks only AFTER a first manual clear, so the proof-of-mastery gate survives but
@@ -387,6 +384,17 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- *(this commit)* — **RC1: reaching a milestone level now actually awards the magic.** Everything
+  around it already worked — the levels, the seven definitions, the gems, the first-claim row — and
+  the one line that hands the player the magic did not exist. Granted at the same chokepoint as the
+  gems (`StatService.GrantLevelUpPointsAsync`), by convention rather than a mapping table: level
+  10,000 grants `magic_pinnacle_10000`, and `PinnacleMagicTests.EveryPinnacleLevelHasAMagicAndViceVersa`
+  already pins that correspondence in both directions. **Not gated on the first claim** — the first
+  player designs the magic, everyone after inherits the design and owns it too, so gating would give
+  each milestone's magic to exactly one player forever. Seven tests, proven by neutering the grant
+  and watching them fail. Verified live as well: crossing 1,000 granted Ascendant's Banner, then
+  crossing 2,500 granted Luminary's Vow, two rows and no duplicates. Raised RC2 (no backfill for
+  players already past a milestone).
 - `dafe718` — **the icons are served, and 186 of the 362 paths pointed at nothing.** The API
   registered no static file middleware at all, so every icon path it sent a client addressed a URL
   it would not answer. Most were wrong regardless: every hand-set path dropped the id's family
