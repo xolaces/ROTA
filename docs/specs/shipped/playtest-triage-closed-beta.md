@@ -2,9 +2,14 @@
 
 _Source: closed-beta playtest feedback, triaged 2026-06-22 via a multi-agent root-cause pass (12 parallel investigations + compile). 30 tickets, root causes pinned with file:line._
 
-## ▶ RESUME HERE — Editor-verify the Unity batch, then deploy (2026-06-23 PM)
-**State:** Backend Tier 1–3 + gem/Pano/XP batch DONE (`dotnet build` 0 err, **1005 unit green**, UNCOMMITTED on `main`). **The full Unity client batch below is now DONE** (write + cross-file compile-sanity audit + lead spot-review; UNCOMMITTED on client branch `client/webgl-build`). **3 migrations NOT applied**: `AddQuestProgressDifficulty`, `WidenGemAmountToBigint`, `WidenStatAndRewardFieldsToBigint` — idempotent SQL pre-generated at `deploy/migrate.sql` (gitignored). Deploy commands ready (backend live at api.riseoftheancients.com; client WebGL → play.riseoftheancients.com).
-**Repos:** backend `C:\Users\xolac\OneDrive\Documentos\Projects\ROTA`; client `C:\Dev\ROTA.Client6` — Unity 6, code-first UI Toolkit, **CANNOT headless-compile here** → owner verifies in Editor Play mode.
+> **Archived 2026-09-10.** A June 2026 triage batch, kept for its root-cause work rather than as a
+> plan — the backend half shipped; how much of the Unity half was verified in the Editor is not
+> recorded anywhere, so treat the client sections as an account of what was written, not of what
+> landed. The "resume here" header that used to sit at this spot has been removed rather than updated.
+> It described a moment — which build was uncommitted, which migrations were outstanding, where the
+> repositories lived — and every one of those facts went stale within days while still reading as
+> current. A shipped spec should record what was decided and why, not the state of the world on the
+> afternoon it was written.
 
 ### Unity client batch — DONE 2026-06-23 (UNCOMMITTED, branch `client/webgl-build`; needs Editor Play-mode verify)
 Wired via a 6-agent workflow (foundation → 4 parallel screen agents → compile-sanity audit) + lead spot-review. Audit verdict: **compiles, no blockers**; IRotaApi gained `GetMagicCatalogueAsync` + `OnSessionExpired`, both implemented in Http + Mock. Files touched: Dtos.cs, IRotaApi/Http/MockRotaApi.cs, AppBootstrap.cs, LoginScreen.cs, RaidScreen.cs, RaidCombatView.cs, QuestScreen.cs, ProfileScreen.cs, BazaarScreen.cs, ItemsScreen.cs (+ pre-existing edits in Theme.uss/HeaderBar/LeaderboardScreen/EquipmentScreen/BuildPlayer/build-client.ps1/ProjectSettings).
