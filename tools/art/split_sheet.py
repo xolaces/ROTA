@@ -267,6 +267,20 @@ def main():
                 if keep is None:
                     continue          # empty cell: a grid with more slots than icons
                 full.append(box); keeps.append(keep)
+        # A cell that is meant to be empty is rarely perfectly empty — a stray fourteen-by-eight
+        # speck in the corner counts as an island and becomes an eighth "icon", which then trips the
+        # name-count check on a seven-item batch. Anything far below the median is not an icon.
+        if full:
+            areas = sorted((b[2] - b[0] + 1) * (b[3] - b[1] + 1) for b in full)
+            floor = areas[len(areas) // 2] * args.min_area
+            kept = [(b, k) for b, k in zip(full, keeps)
+                    if (b[2] - b[0] + 1) * (b[3] - b[1] + 1) >= floor]
+            dropped = len(full) - len(kept)
+            full = [b for b, _ in kept]
+            keeps = [k for _, k in kept]
+            if dropped:
+                print("  ignored %d speck(s) below %.0f%% of the median icon area\n"
+                      % (dropped, args.min_area * 100))
     else:
         small, sw, sh = downscale(mask, w, h)
         grown = dilate(small, sw, sh, max(1, args.gap // SCALE))
