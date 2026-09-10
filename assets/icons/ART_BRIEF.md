@@ -14,9 +14,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+{budget} It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -61,15 +60,16 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Severely simplified: two materials, three or four shapes, no decoration at all. This is issued kit — plain, unadorned, slightly shabby. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
 
 Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
 the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+This set's signature, visible in every piece: Undyed brown leather and bare grey steel. No insignia, no colour, no decoration whatsoever — this is the kit a recruit is handed.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
@@ -107,15 +107,16 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four or five materials, about nine shapes — the most detailed tier, and still no filigree. One distinctive silhouette flourish, and one precious or glowing inlay. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
 
 Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
 the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+This set's signature, visible in every piece: White enamel, deep blue and gold, carrying a four-pointed star.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
@@ -153,9 +154,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four or five materials, about nine shapes — the most detailed tier, and still no filigree. One distinctive silhouette flourish, and one precious or glowing inlay. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -200,15 +200,16 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Simple: three materials, about five shapes, and ONE functional detail such as a strap, a buckle or a stamped mark. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
 
 Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
 the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+This set's signature, visible in every piece: Riveted iron bands over olive-green canvas, and a stamped square tower mark. Frontier issue: functional, squared-off, no curves. No lamps.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
@@ -246,15 +247,16 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Three materials, about six shapes. One decorative element beyond pure function. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
 
 Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
 the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+This set's signature, visible in every piece: Cream canvas with blue piping and brass fittings. Where a lamp appears it is a CLEAR SIGNAL LAMP — tall, glass-sided, amber lens. Never caged.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
@@ -292,15 +294,16 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
 
 Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
 the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+This set's signature, visible in every piece: Matte black with a single gold lozenge and sable-thread edging. Severe, narrow, aristocratic.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
@@ -338,15 +341,16 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Simple: three materials, about five shapes, and ONE functional detail such as a strap, a buckle or a stamped mark. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
 
 Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
 the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+This set's signature, visible in every piece: Soot-blackened leather with brass fittings, and tusk or tooth accents. Where a lamp appears it is a CAGED PIT LAMP — squat, barred, underground.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
@@ -384,15 +388,16 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Simple: three materials, about five shapes, and ONE functional detail such as a strap, a buckle or a stamped mark. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
 
 Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
 the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+This set's signature, visible in every piece: Long oiled wool in slate grey and waxed storm-cloth. Draped, caped, weatherproof silhouettes. Almost no metal beyond a single pin. No lamps.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
@@ -430,15 +435,16 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Three materials, about six shapes. One decorative element beyond pure function. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
 
 Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
 the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+This set's signature, visible in every piece: Heavy dark canvas over barrow-iron plate, black pitch seals, and one chalk-white line of gravesalt. Sombre, buried, weighted.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
@@ -476,15 +482,16 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Three materials, about six shapes. One decorative element beyond pure function. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
 
 Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
 the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+This set's signature, visible in every piece: Sealed collars, thick glass plate, cork-and-iron soles and green verdigris copper. Everything looks watertight.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
@@ -522,15 +529,16 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
 
 Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
 the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+This set's signature, visible in every piece: Blunt lead-grey slabs with an orange cracked-core glow in the seams. Industrial, heavy, siege equipment rather than armour.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
@@ -568,15 +576,16 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
 
 Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
 the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+This set's signature, visible in every piece: Resonant brass and pale bone-white, in bell and tuning-fork shapes. Deliberately open at the ears and throat.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
@@ -614,15 +623,16 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four or five materials, about nine shapes — the most detailed tier, and still no filigree. One distinctive silhouette flourish, and one precious or glowing inlay. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
 
 Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
 the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+This set's signature, visible in every piece: Deep crimson dragon scale and antique gold, with scale-plate edges.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
@@ -660,15 +670,16 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four or five materials, about nine shapes — the most detailed tier, and still no filigree. One distinctive silhouette flourish, and one precious or glowing inlay. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
 
 Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
 the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+This set's signature, visible in every piece: Deep maroon and cream with aged brass. Soft, draped, unhurried shapes — nothing sharp anywhere in the set.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
@@ -706,9 +717,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Three materials, about six shapes. One decorative element beyond pure function. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -752,9 +762,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four or five materials, about nine shapes — the most detailed tier, and still no filigree. One distinctive silhouette flourish, and one precious or glowing inlay. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -798,9 +807,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -844,9 +852,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -890,9 +897,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Three materials, about six shapes. One decorative element beyond pure function. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -936,9 +942,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -983,9 +988,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -1027,9 +1031,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Simple: three materials, about five shapes, and ONE functional detail such as a strap, a buckle or a stamped mark. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -1073,9 +1076,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Simple: three materials, about five shapes, and ONE functional detail such as a strap, a buckle or a stamped mark. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -1119,9 +1121,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Simple: three materials, about five shapes, and ONE functional detail such as a strap, a buckle or a stamped mark. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -1165,9 +1166,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Simple: three materials, about five shapes, and ONE functional detail such as a strap, a buckle or a stamped mark. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -1205,9 +1205,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -1251,9 +1250,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -1297,9 +1295,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Three materials, about six shapes. One decorative element beyond pure function. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -1340,9 +1337,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four or five materials, about nine shapes — the most detailed tier, and still no filigree. One distinctive silhouette flourish, and one precious or glowing inlay. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -1386,9 +1382,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Simple: three materials, about five shapes, and ONE functional detail such as a strap, a buckle or a stamped mark. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -1432,9 +1427,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four or five materials, about nine shapes — the most detailed tier, and still no filigree. One distinctive silhouette flourish, and one precious or glowing inlay. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -1478,9 +1472,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four or five materials, about nine shapes — the most detailed tier, and still no filigree. One distinctive silhouette flourish, and one precious or glowing inlay. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -1524,9 +1517,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -1570,9 +1562,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Severely simplified: two materials, four shapes. One small functional detail at most. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -1613,9 +1604,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Three materials, about six shapes. One decorative element beyond pure function. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -1659,9 +1649,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -1705,9 +1694,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Three materials, about six shapes. One decorative element beyond pure function. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -1751,9 +1739,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -1797,9 +1784,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Three materials, about six shapes. One decorative element beyond pure function. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -1842,9 +1828,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -1888,9 +1873,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Severely simplified: two materials, four shapes. One small functional detail at most. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -1928,9 +1912,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Three materials, about six shapes. One decorative element beyond pure function. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -1974,9 +1957,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Three materials, about six shapes. One decorative element beyond pure function. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -2020,9 +2002,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Three materials, about six shapes. One decorative element beyond pure function. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -2067,9 +2048,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -2113,9 +2093,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -2159,9 +2138,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -2205,9 +2183,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -2251,9 +2228,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.

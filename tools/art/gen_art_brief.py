@@ -25,9 +25,8 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
-will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
-stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+{budget} It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
 implied direction. Square, with no halo or glow around the cutout.
@@ -36,6 +35,23 @@ Save with a genuinely transparent background — real alpha in the PNG. Do not D
 the grey-and-white chequer is how an editor displays transparency, not something to paint.\
 """
 
+# A single flat budget made every tier look the same, which is the wrong lesson from "keep it
+# simple": simplicity should be what a COMMON item looks like, not what every item looks like. The
+# ceiling stays low even at Orange — nine shapes is still legible at 64px, and the cap is what keeps
+# a chase item from turning into the filigree the style forbids everywhere else.
+BUDGET = {
+    "Grey":   "Severely simplified: two materials, three or four shapes, no decoration at all. "
+              "This is issued kit — plain, unadorned, slightly shabby.",
+    "White":  "Severely simplified: two materials, four shapes. One small functional detail at most.",
+    "Green":  "Simple: three materials, about five shapes, and ONE functional detail such as a "
+              "strap, a buckle or a stamped mark.",
+    "Blue":   "Three materials, about six shapes. One decorative element beyond pure function.",
+    "Purple": "Four materials, about seven shapes. A simple repeating motif, and one inlay or set "
+              "stone. Still flat and readable, never filigree.",
+    "Orange": "Four or five materials, about nine shapes — the most detailed tier, and still no "
+              "filigree. One distinctive silhouette flourish, and one precious or glowing inlay.",
+}
+
 NEGATIVE = ("thick black outline, heavy keyline, sticker cutout, white halo, gradient shading, "
             "airbrush, gloss highlight, specular, glossy, bevel, emboss, drop shadow, "
             "three-quarter perspective, pixel art, photorealistic, hyperdetailed, intricate, "
@@ -43,6 +59,37 @@ NEGATIVE = ("thick black outline, heavy keyline, sticker cutout, white halo, gra
             "frame, card layout, background scene, multiple objects, collage, checkerboard, transparency "
             "grid, grey and white squares")
 
+
+# Three sets share each rarity tier, and without a signature they all resolve to the model's default
+# for that tier — which for Green is brown leather and grey steel, three times over. Each line below
+# is the one thing that must be visible in every piece of that set, chosen so no two sets in a tier
+# can collide. Warrens and Relay both legitimately carry lamps, so they are given DIFFERENT lamps.
+SET_MOTIF = {
+    "set_conscript":      "Undyed brown leather and bare grey steel. No insignia, no colour, no "
+                          "decoration whatsoever — this is the kit a recruit is handed.",
+    "set_weir":           "Riveted iron bands over olive-green canvas, and a stamped square tower "
+                          "mark. Frontier issue: functional, squared-off, no curves. No lamps.",
+    "set_warrens":        "Soot-blackened leather with brass fittings, and tusk or tooth accents. "
+                          "Where a lamp appears it is a CAGED PIT LAMP — squat, barred, underground.",
+    "set_marchwatch":     "Long oiled wool in slate grey and waxed storm-cloth. Draped, caped, "
+                          "weatherproof silhouettes. Almost no metal beyond a single pin. No lamps.",
+    "set_relay":          "Cream canvas with blue piping and brass fittings. Where a lamp appears it "
+                          "is a CLEAR SIGNAL LAMP — tall, glass-sided, amber lens. Never caged.",
+    "set_gravewarden":    "Heavy dark canvas over barrow-iron plate, black pitch seals, and one "
+                          "chalk-white line of gravesalt. Sombre, buried, weighted.",
+    "set_drowned":        "Sealed collars, thick glass plate, cork-and-iron soles and green "
+                          "verdigris copper. Everything looks watertight.",
+    "set_sable_vein":     "Matte black with a single gold lozenge and sable-thread edging. Severe, "
+                          "narrow, aristocratic.",
+    "set_wroughtbreaker": "Blunt lead-grey slabs with an orange cracked-core glow in the seams. "
+                          "Industrial, heavy, siege equipment rather than armour.",
+    "set_choir":          "Resonant brass and pale bone-white, in bell and tuning-fork shapes. "
+                          "Deliberately open at the ears and throat.",
+    "set_pano":           "White enamel, deep blue and gold, carrying a four-pointed star.",
+    "set_sovereign":      "Deep crimson dragon scale and antique gold, with scale-plate edges.",
+    "set_stoned_devil":   "Deep maroon and cream with aged brass. Soft, draped, unhurried shapes — "
+                          "nothing sharp anywhere in the set.",
+}
 
 LAYOUT = """\
 Arrange them on ONE landscape image, 1536 x 1024, as a strict {cols} x {rows} grid.
@@ -89,7 +136,8 @@ def rows():
     out = []
     for g in load("gear.json"):
         out.append(("gear", g.get("setId") or "gear (no set)", g["id"], g["name"],
-                    SLOT_NOUN.get(g.get("slot"), "piece of equipment"), g.get("description", "")))
+                    SLOT_NOUN.get(g.get("slot"), "piece of equipment"), g.get("description", ""),
+                    g.get("rarity", "Green")))
     # Sigils are raid x difficulty — 26 raids, four tiers each. The four share one seal and differ
     # only by tier, which the engine's rarity frame already conveys, so they need ONE artwork between
     # them. Collapsing them cuts 78 icons off the job for no visible loss.
@@ -102,28 +150,31 @@ def rows():
             seen_sigils.add(base)
             out.append(("item", "items — Sigil (one per raid, shared by all four tiers)",
                         base, re.sub(r"\s*\((Normal|Hard|Legendary|Nightmare)\)\s*$", "", i["name"]),
-                        TYPE_NOUN["Sigil"], i.get("description", "")))
+                        TYPE_NOUN["Sigil"], i.get("description", ""), i.get("rarity", "Green")))
             continue
         out.append(("item", "items — " + str(i.get("type", "")), i["id"], i["name"],
-                    TYPE_NOUN.get(i.get("type"), "item"), i.get("description", "")))
+                    TYPE_NOUN.get(i.get("type"), "item"), i.get("description", ""),
+                    i.get("rarity", "Green")))
     for m in load("magics.json"):
         out.append(("magic", "magics", m["id"], m["name"],
                     "arcane rune, sigil or talisman representing a spell effect",
-                    m.get("description", "")))
+                    m.get("description", ""), m.get("rarity", "Green")))
     for u in load("units.json"):
         out.append(("unit", "units", u["id"], u["name"],
                     "character portrait bust of a %s %s" % (u.get("race", ""), u.get("role", "")),
-                    u.get("description", "")))
+                    u.get("description", ""), u.get("rarity", "Green")))
     for l in load("legions.json"):
         out.append(("legion", "legions", l["id"], l["name"],
-                    "military banner or standard", l.get("description", "")))
+                    "military banner or standard", l.get("description", ""),
+                    l.get("rarity", "Green")))
     for r in load("recipes.json"):
         out.append(("recipe", "crafting recipes", r["id"], r["name"],
-                    "crafting or forging emblem for the item it produces", r.get("description", "")))
+                    "crafting or forging emblem for the item it produces", r.get("description", ""),
+                    "Blue"))
     for fn in ("raids.json", "guild_raids.json", "gauntlet_raids.json"):
         for r in load(fn):
             out.append(("raid", "raid bosses", r["id"], r["name"],
-                        "monster or boss portrait", r.get("description", "")))
+                        "monster or boss portrait", r.get("description", ""), "Purple"))
     return out
 
 
@@ -138,8 +189,8 @@ def clean(text, limit=190):
 def main():
     data = rows()
     groups = collections.OrderedDict()
-    for fam, group, gid, name, noun, desc in data:
-        groups.setdefault((fam, group), []).append((gid, name, noun, desc))
+    for fam, group, gid, name, noun, desc, rarity in data:
+        groups.setdefault((fam, group), []).append((gid, name, noun, desc, rarity))
 
     with io.open(OUT, "w", encoding="utf-8", newline="\n") as fh:
         w = fh.write
@@ -193,14 +244,21 @@ def main():
                 spare = slots - len(chunk)
                 spare_txt = "" if not spare else SPARE.format(
                     n=len(chunk), slots=slots, spare=spare, s="" if spare == 1 else "s")
-                w("```\n%s\n\n%s\n\nDraw these %d, in this order:\n\n"
-                  % (STYLE, LAYOUT.format(cols=cols, rows=rws, spare=spare_txt), len(chunk)))
-                for gid, name, noun, desc in chunk:
+                # Detail budget comes from the batch's dominant rarity, so a Grey set stays plain
+                # and an Orange one earns its extra shapes.
+                rarity = collections.Counter(r for *_, r in chunk).most_common(1)[0][0]
+                motif = SET_MOTIF.get(group)
+                motif_txt = "" if not motif else "\n\nThis set's signature, visible in every piece: " + motif
+
+                w("```\n%s%s\n\n%s\n\nDraw these %d, in this order:\n\n"
+                  % (STYLE.format(budget=BUDGET.get(rarity, BUDGET["Green"])),
+                     motif_txt, LAYOUT.format(cols=cols, rows=rws, spare=spare_txt), len(chunk)))
+                for gid, name, noun, desc, _r in chunk:
                     w("%s — %s. %s\n" % (name, noun, clean(desc)))
                 w("```\n\n")
                 w("Then cut it up:\n\n```bash\npython tools/art/split_sheet.py SHEET.png "
                   "--grid %dx%d --out assets/icons/%s --size 512 --names %s\n```\n\n"
-                  % (cols, rws, fam, ",".join(g for g, _, _, _ in chunk)))
+                  % (cols, rws, fam, ",".join(g for g, _, _, _, _ in chunk)))
                 w("---\n\n")
 
     print("wrote %s" % OUT.relative_to(ROOT))
