@@ -176,8 +176,10 @@ def main():
                 cols, rws = grid_for(len(chunk))
                 label = group if len(chunks) == 1 else "%s (%d of %d)" % (group, ci + 1, len(chunks))
                 w("## Batch %d — %s · %d icons\n\n" % (n_batch, label, len(chunk)))
-                w("```\n%s\n```\n\n" % LAYOUT.format(cols=cols, rows=rws))
-                w("```\n")
+                # Style + layout + items in ONE block, so a batch is a single paste rather than
+                # three pieces the reader has to assemble in the right order every time.
+                w("```\n%s\n\n%s\n\nDraw these %d, in this order:\n\n"
+                  % (STYLE, LAYOUT.format(cols=cols, rows=rws), len(chunk)))
                 for gid, name, noun, desc in chunk:
                     w("%s — %s. %s\n" % (name, noun, clean(desc)))
                 w("```\n\n")

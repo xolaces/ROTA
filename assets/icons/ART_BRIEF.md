@@ -53,6 +53,18 @@ Consistency beats quality here. A set of forty merely-good icons that share a st
 ## Batch 1 — set_conscript · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -60,9 +72,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Conscript Boots — boots. Worn leather boots. Better than bare feet.
 Conscript Chest — chest armour. Padded leather chest armour. Stops the smallest of blows.
 Conscript Collar — amulet or pendant. A crude neck guard offering minimal protection.
@@ -84,6 +96,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 ## Batch 2 — set_pano · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -91,9 +115,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Pano's Amulet — amulet or pendant. An amulet warm to the touch, part of Pano's questing regalia.
 Pano's Band — ring. The companion band to Pano's signet. Steadies the hand in battle.
 Pano's Cuirass — chest armour. The famed breastplate of Pano. Turns aside blows that would fell a lesser fighter.
@@ -115,6 +139,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 ## Batch 3 — gear (no set) · 7 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -122,9 +158,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 7, in this order:
+
 The Cinder-Cuff — gauntlet or glove. Wrath-slag, cooled and cuffed. It makes the wearer stronger and angrier in the same motion, and does not distinguish between the two.
 The Vanguard's Cold Token — amulet or pendant. Kin to the lost signet: the same unknown script worn nearly smooth, the same cold that does not warm in the hand. Nobody alive can read it. That is the whole of what is known.
 Colossus-Core Shard — chest armour. Pried from a war-construct that never stood down. It still pulses with the last order it was given, and there is no one left to amend it: hold.
@@ -145,6 +181,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 ## Batch 4 — set_weir · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -152,9 +200,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Causeway Seal Ring — ring. Ash-pitted signet of a road warden. The Ashen Causeway still has wardens. They are just not paid.
 Marchwarden's Band — ring. Worn thin at one edge, where a thumb rubbed through forty years of standing still.
 Weir Brigandine — chest armour. Riveted from the scrap of three older coats. Every plate in it has already survived something.
@@ -176,6 +224,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 ## Batch 5 — set_relay · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -183,9 +243,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Lamplighter's Seal — ring. Proof the bearer may enter a sealed relay. Nine in ten of those relays no longer answer.
 Relay Charger — mount, shown as the animal alone in profile. Trained to run a route with no rider. Several still do, on roads no one has walked in an Age.
 Relay Coat — chest armour. Long, grey, unremarkable, which is the point. A courier who is looked at twice is a dead courier.
@@ -207,6 +267,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 ## Batch 6 — set_sable_vein · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -214,9 +286,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Vein-Cut Band — ring. Split by a hairline fracture that has not widened in two hundred years of being watched.
 Sable Vein Circlet — helmet or headgear. Archive work. The script around the band is a catalogue number, and the thing catalogued is you.
 Threnody Collar — amulet or pendant. Worn by a scribe who recorded a Manifestation from close enough to be corrected by it.
@@ -238,6 +310,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 ## Batch 7 — set_warrens · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -245,9 +329,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Ratter's Choker — amulet or pendant. Leather, doubled. Goblins go for the throat because it works, so the Weir stopped leaving it bare.
 Ratter's Grips — gauntlet or glove. Reinforced across the back of the hand. You will be hitting things that are already biting you.
 Warrens Jack — chest armour. Quilted and short-cut. Long coats catch on everything down there, and everything down there catches back.
@@ -269,6 +353,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 ## Batch 8 — set_marchwatch · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -276,9 +372,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Marchwatch Boots — boots. Heavy, and worn through at the heel rather than the toe — the wear pattern of a man who stands.
 Long Marchwatch Coat — chest armour. Cut to the knee and lined against the wind. Most of the job is weather.
 Watchman's Gorget — amulet or pendant. Plain steel, no device. A marchwatch is not a house and does not want to be mistaken for one.
@@ -300,6 +396,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 ## Batch 9 — set_gravewarden · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -307,9 +415,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Binding Band — ring. Old sigil-work, worn smooth. It does not hold anything closed any more. The Watch wears it anyway.
 Gravewarden's Coat — chest armour. Heavy canvas with iron at the forearms, because the thing you are moving sometimes moves back.
 Gravewarden's Dray — mount, shown as the animal alone in profile. Bred to stand still while unpleasant work happens behind it. The rarest quality a horse can have.
@@ -331,6 +439,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 ## Batch 10 — set_drowned · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -338,9 +458,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Barnacle Band — ring. Recovered encrusted and left that way. Coast salvagers say a clean ring means a short career.
 Shalewalkers — boots. Soled in cork and iron. The Drowned Coast is loose all the way down.
 Coastwise Courser — mount, shown as the animal alone in profile. Sure-footed on wet shale and entirely unwilling to enter water above the knee. It has its reasons.
@@ -362,6 +482,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 ## Batch 11 — set_wroughtbreaker · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -369,9 +501,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Breaker's Band — ring. Cast from the melt of a construct that finally stopped. The Weir keeps the melt and the tally.
 Siege Collar — amulet or pendant. Braced to the shoulders. It exists so the head stays on when the arm stops something heavy.
 Siege Destrier — mount, shown as the animal alone in profile. Trained to stand under a falling thing. Horses are not built for this and it is taught anyway.
@@ -393,6 +525,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 ## Batch 12 — set_choir · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -400,9 +544,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Attendant's Band — ring. Given to those who stand and do not sing. Somebody has to be listening to the listeners.
 Listener's Circlet — helmet or headgear. Thin, and open at the ears by design. The Choir does not cover what it uses.
 Choir Palfrey — mount, shown as the animal alone in profile. Trained to a whisper and unshod, so a procession arrives without announcing itself.
@@ -424,6 +568,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 ## Batch 13 — set_sovereign · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -431,9 +587,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Tithe-Band — ring. One notch per climb paid. Nobody has found the ring where the notches run out.
 Collar of the Founding Pact — amulet or pendant. Names the Gauntlet's first tithe in a script the tournament no longer teaches.
 Regalia Cuirass — chest armour. Ceremonial in cut and emphatically not in construction. The Gauntlet has always been honest about that.
@@ -455,6 +611,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 ## Batch 14 — set_stoned_devil · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -462,9 +630,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Band of the Fourth Reconsideration — ring. There were three earlier ones. He is not looking for them. He is fairly certain one of them is in the garden.
 The Perpetual Censer — amulet or pendant. A vessel lit some time during the Age of Dawn and never once refilled. There is still some left. There has always been some left. Those who come to kneel do not always remember, afterwards,…
 Extremely Relaxed Hell-Goat — mount, shown as the animal alone in profile. It will carry you anywhere at exactly one speed. Attempts to hurry it have never once succeeded and, by every account, have never once been forgiven.
@@ -486,6 +654,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 ## Batch 15 — items — Material (1 of 6) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -493,9 +673,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Amber Rot — crafting material. The Awakening's own residue. It is warm, it is slightly wrong, and it keeps indefinitely in a sealed jar that nobody wants in their pack.
 Arcane Dust — crafting material. Residual arcane energy left behind by Malachar's servants.
 Barrow Iron — crafting material. Grave-goods iron, buried long enough to take on the habit. It does not rust and it does not hold an edge — the Watch considers the trade fair.
@@ -517,6 +697,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 ## Batch 16 — items — Material (2 of 6) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -524,9 +716,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Perpetual Censer Resin — crafting material. Scraped from the inside of a censer lit during the Age of Dawn. There is still some left. There has always been some left.
 Cinder-Salt — crafting material. Scraped off the Ashen Throne, where the heat drove everything out of the stone but this. Tastes of iron. Nobody tastes it twice.
 Coarse Thread — crafting material. Spun thick enough to sew canvas and cheap enough to waste. The frontier repairs more than it replaces, and this is what it repairs with.
@@ -548,6 +740,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 ## Batch 17 — items — Material (3 of 6) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -555,9 +759,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Glutbound Core — crafting material. The dense part of a thing that had nearly finished becoming something else.
 Gravesalt — crafting material. The Watch packs it around anything it has to move twice. It works, and nobody has asked how.
 Haft of Gravewend — crafting material. A farm tool from a village whose name is not written down, carried by a man whose name is not written down, who used it to kill a thing that should have killed him. The village is gone. The…
@@ -579,6 +783,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 ## Batch 18 — items — Material (4 of 6) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -586,9 +802,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Leviathan Baleen — crafting material. Cut from a Primordial that was never killed, only out-waited. It filters things out of air that air was not known to contain.
 Leviathan Tooth — crafting material. One of very many, and still the largest object most people will ever hold.
 Mire-Ichor — crafting material. Pale, luminous, foul. Bled from the Brood-things of the drowned shallows. Useless alone; the basis of half the alchemy on the Drowned Coast.
@@ -610,6 +826,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 ## Batch 19 — items — Material (5 of 6) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -617,9 +845,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Rime-Glass — crafting material. Frostmere water frozen so slowly it set clear. It does not melt in the hand. It does not melt in a forge either, which is the difficulty.
 Road Flint — crafting material. Picked off any causeway by anyone who bothers to look down. It has started every fire the frontier has ever needed and it has never once been remarkable.
 Sable Vein Thread — crafting material. The Houses dye it twice and will not discuss the second dye.
@@ -641,6 +869,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 ## Batch 20 — items — Material (6 of 6) · 7 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -648,9 +888,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 7, in this order:
+
 Star Hollow Dust — crafting material. Collected where the sky is closest and least reliable. It settles upward if left alone, so it is never left alone.
 Rendered Tallow — crafting material. Every relay lamp in the Watch burns it, every boot in the Weir is greased with it, and nobody has ever written a sentence about it before this one.
 Unwalked Leather — crafting material. Cut for slippers that were never worn outdoors. Immaculate, and faintly reproachful.
@@ -671,6 +911,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 ## Batch 21 — items — StatBag · 6 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 3 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -678,9 +930,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 6, in this order:
+
 Ancient's Reliquary — pouch or cache. Contains 100 unassigned skill points. What the Dawnward Choir calls an answer.
 Greater Stat Bag — pouch or cache. Contains 40 unassigned skill points. Old Guard requisition, unopened since the fall.
 Major Stat Bag — pouch or cache. Contains 15 unassigned skill points. Use to add to your stat pool.
@@ -700,6 +952,18 @@ python tools/art/split_sheet.py SHEET.png --grid 3x2 --out assets/icons/item --s
 ## Batch 22 — items — Sigil (one per raid, shared by all four tiers) (1 of 4) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -707,9 +971,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Ashen Causeway Sigil — summoning sigil or seal. A binding sigil used to summon Guardian of Ashen Causeway on Normal difficulty.
 Hollow Marches Sigil — summoning sigil or seal. A binding sigil used to summon Guardian of Hollow Marches on Normal difficulty.
 Emberfall Reach Sigil — summoning sigil or seal. A binding sigil used to summon Guardian of Emberfall Reach on Normal difficulty.
@@ -731,6 +995,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 ## Batch 23 — items — Sigil (one per raid, shared by all four tiers) (2 of 4) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -738,9 +1014,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Shattered Spire Sigil — summoning sigil or seal. A binding sigil used to summon Guardian of Shattered Spire on Normal difficulty.
 Rimewood Sigil — summoning sigil or seal. A binding sigil used to summon Guardian of Rimewood on Normal difficulty.
 Frostmere Sigil — summoning sigil or seal. A binding sigil used to summon Guardian of Frostmere on Normal difficulty.
@@ -762,6 +1038,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 ## Batch 24 — items — Sigil (one per raid, shared by all four tiers) (3 of 4) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -769,9 +1057,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Ashen Throne Sigil — summoning sigil or seal. A binding sigil used to summon Guardian of Ashen Throne on Normal difficulty.
 Cinder Crown Sigil — summoning sigil or seal. A binding sigil used to summon Guardian of Cinder Crown on Normal difficulty.
 Twilight Gate Sigil — summoning sigil or seal. A binding sigil used to summon Guardian of Twilight Gate on Normal difficulty.
@@ -793,6 +1081,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 ## Batch 25 — items — Sigil (one per raid, shared by all four tiers) (4 of 4) · 2 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 2 x 1 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -800,9 +1100,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 2, in this order:
+
 Sigil of the Last Lamp — summoning sigil or seal. The name of a lamp that has not gone out. Speak it and the vigil resumes.
 Malachar's Sigil — summoning sigil or seal. A dark sigil bound to Malachar's essence. Summons him on Normal difficulty.
 ```
@@ -818,6 +1118,18 @@ python tools/art/split_sheet.py SHEET.png --grid 2x1 --out assets/icons/item --s
 ## Batch 26 — items — Consumable (1 of 3) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -825,9 +1137,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Ancient's Mending — flask, vial or potion. Refills your Health completely. Found, never sold.
 Ancient's Restorative — flask, vial or potion. Refills your Energy completely. Found, never sold.
 Ancient's Draught — flask, vial or potion. Refills your Stamina completely. Found, never sold.
@@ -849,6 +1161,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 ## Batch 27 — items — Consumable (2 of 3) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -856,9 +1180,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Relay Draught — flask, vial or potion. Restores 900 Energy. Issued to a courier who is not expected to stop.
 Grand Healing Poultice — flask, vial or potion. Restores 400 Health. Field-standard for anything the Weir calls a bad week.
 Greater Healing Poultice — flask, vial or potion. Restores 150 Health. Closes what a company opened.
@@ -880,6 +1204,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 ## Batch 28 — items — Consumable (3 of 3) · 3 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 2 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -887,9 +1223,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 3, in this order:
+
 Stamina Draught — flask, vial or potion. Restores 60 Stamina. The long fight favours the prepared.
 Minor Stamina Draught — flask, vial or potion. Restores 25 Stamina. Steadies the arm for one more strike.
 Warhorn Draught — flask, vial or potion. Restores 900 Stamina. Drunk by a company that has decided the thing in front of it is going down today.
@@ -906,6 +1242,18 @@ python tools/art/split_sheet.py SHEET.png --grid 2x2 --out assets/icons/item --s
 ## Batch 29 — magics (1 of 6) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -913,9 +1261,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Fragment of the Age of Dawn — arcane rune, sigil or talisman representing a spell effect. A piece of a lesson from before the Sundering. The rest of it is not recoverable.
 Blessing of Might — arcane rune, sigil or talisman representing a spell effect. The pinnacle boon. Sustained, reliable, and never a gamble.
 Blessing of the Ancients — arcane rune, sigil or talisman representing a spell effect. The Gauntlet ranks 2–10 aura. An off-cap proc applied to the Gauntlet raid, outside the five-magic slot cap. Rank-acquired only (per-event consumable).
@@ -937,6 +1285,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/magic --
 ## Batch 30 — magics (2 of 6) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -944,9 +1304,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Gambler's Sigil — arcane rune, sigil or talisman representing a spell effect. Old Guard camp-work, technically forbidden. Enforcement was reportedly inconsistent.
 Greater Poison — arcane rune, sigil or talisman representing a spell effect. A potent venom with meaningful proc damage.
 Hoarder's Eye — arcane rune, sigil or talisman representing a spell effect. Hoard's dominion is not petty. It is the principle of accumulation itself, and it is contagious.
@@ -968,6 +1328,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/magic --
 ## Batch 31 — magics (3 of 6) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -975,9 +1347,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Wick of the Last Lamp — arcane rune, sigil or talisman representing a spell effect. It burns very slowly and it has never gone out. Arveth's lamp is still lit on the same principle.
 Lesser Poison — arcane rune, sigil or talisman representing a spell effect. A weak venom that occasionally laces attacks.
 Wardens' Metronome — arcane rune, sigil or talisman representing a spell effect. It keeps time, and every beat lands. Small, certain, endless.
@@ -999,6 +1371,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/magic --
 ## Batch 32 — magics (4 of 6) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -1006,9 +1390,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Luminary's Vow — arcane rune, sigil or talisman representing a spell effect. PLACEHOLDER. A pinnacle magic awarded at level 2,500. Its entire effect — proc, drop, or something stranger — is designed by the first player to reach this level; everyone who arrives…
 Eternal Aspect — arcane rune, sigil or talisman representing a spell effect. PLACEHOLDER. A pinnacle magic awarded at level 25,000. Its entire effect — proc, drop, or something stranger — is designed by the first player to reach this level; everyone who arrives…
 Luminary's Echo — arcane rune, sigil or talisman representing a spell effect. PLACEHOLDER. A pinnacle magic awarded at level 5,000. Its entire effect — proc, drop, or something stranger — is designed by the first player to reach this level; everyone who arrives…
@@ -1030,6 +1414,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/magic --
 ## Batch 33 — magics (5 of 6) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -1037,9 +1433,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Smite — arcane rune, sigil or talisman representing a spell effect. The pinnacle strike. It lands often enough that you plan around it.
 The Sovereign's Cut — arcane rune, sigil or talisman representing a spell effect. Every climb pays a tithe. This is the arrangement that decides which way it flows.
 Spoils of the March — arcane rune, sigil or talisman representing a spell effect. What an army leaves is worth more than what it carried. The Weir has always known this.
@@ -1061,6 +1457,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/magic --
 ## Batch 34 — magics (6 of 6) · 3 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 2 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -1068,9 +1476,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 3, in this order:
+
 Whetstone — arcane rune, sigil or talisman representing a spell effect. Sharpens every blow; a guaranteed small bonus on every hit.
 Wrath of the Ancients — arcane rune, sigil or talisman representing a spell effect. The Gauntlet rank-1 aura. An off-cap proc applied to the Gauntlet raid, outside the five-magic slot cap. Rank-acquired only (per-event consumable).
 Wrathslag Ember — arcane rune, sigil or talisman representing a spell effect. A coal off a Manifestation. Still warm, still trying, still not quite a Herald.
@@ -1087,6 +1495,18 @@ python tools/art/split_sheet.py SHEET.png --grid 2x2 --out assets/icons/magic --
 ## Batch 35 — units (1 of 5) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -1094,9 +1514,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Ashblade — character portrait bust of a Human Melee. A swift Human Melee general who strikes with burning precision.
 Ashblade, Emberborn — character portrait bust of a Human Melee. The blade drank the pyre and came back hungrier.
 The Ashen Stag — character portrait bust of a Beast Special. Not tamed. Accompanying. The Heartmarch hunters are precise about the distinction and have been since the first one tried the other word.
@@ -1118,6 +1538,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/unit --s
 ## Batch 36 — units (2 of 5) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -1125,9 +1557,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Ironward the Unbroken — character portrait bust of a Human Tank. Ironward reforged. The shield that deflected a wyrm now turns aside armies.
 Makh the Unhurried — character portrait bust of a Oroc Melee. Fights at exactly one speed. Opponents consistently mistake this for an opening.
 Morvath the Unliving — character portrait bust of a Undead Special. An Undead Special general whose cursed wisdom amplifies every strike of his legion.
@@ -1149,6 +1581,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/unit --s
 ## Batch 37 — units (3 of 5) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -1156,9 +1600,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Vaskarr the Bargained — character portrait bust of a Demon Special. Bound by an agreement the Choir drafted and the Threnody Houses will not read aloud.
 Shadow Acolytes — character portrait bust of a Undead Special. Undead Special troops channeling dark wisdom into devastating blasts.
 Wood Archers — character portrait bust of a Elf Ranged. Elf Ranged troops who pepper enemies from a distance.
@@ -1180,6 +1624,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/unit --s
 ## Batch 38 — units (4 of 5) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -1187,9 +1643,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Glacier-Maw Bears — character portrait bust of a Beast Tank. Taken as cubs from a den nobody has found twice.
 Lamp-Walkers — character portrait bust of a Construct Ranged. Relay-work that kept walking its route after the relay fell. The Watch marches beside them now.
 Conscript Militia — character portrait bust of a Human Melee. Untrained Human foot soldiers — numerous but unremarkable.
@@ -1211,6 +1667,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/unit --s
 ## Batch 39 — units (5 of 5) · 5 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 3 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -1218,9 +1686,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 5, in this order:
+
 Rimewood Wolves — character portrait bust of a Beast Ranged. They hunt the cold better than anything the Watch has ever fielded, and they know it.
 Sable Vein Witnesses — character portrait bust of a Human Special. House scribes who record a fight from inside it. Their accounts are the only ones that agree.
 Slagborn — character portrait bust of a Demon Melee. What cools where a Manifestation stood, if it cools into legs.
@@ -1239,6 +1707,18 @@ python tools/art/split_sheet.py SHEET.png --grid 3x2 --out assets/icons/unit --s
 ## Batch 40 — legions (1 of 2) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -1246,9 +1726,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 The Anvilkeep Siege — military banner or standard. Dwarven engineers and the heaviest thing they could get to the site. It is slow, it is loud, and Wrought do not get back up.
 The Bargained Company — military banner or standard. Demons under written agreement, fielded by people who have read the agreement very carefully. It answers its own kind better than anything else will.
 The Deepwatch — military banner or standard. The Last Watch's answer to the things that were here first. Everyone in it has seen one and elected to come back, which is the only entry requirement.
@@ -1270,6 +1750,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/legion -
 ## Batch 41 — legions (2 of 2) · 2 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 2 x 1 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -1277,9 +1769,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 2, in this order:
+
 Free Warband — military banner or standard. An undisciplined but adaptable warband with no unit-type restrictions.
 The Warrenguard — military banner or standard. Iron Weir tunnel work. Short ranks, low ceilings, and a doctrine that assumes the enemy is already inside the line.
 ```
@@ -1295,6 +1787,18 @@ python tools/art/split_sheet.py SHEET.png --grid 2x1 --out assets/icons/legion -
 ## Batch 42 — crafting recipes (1 of 3) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -1302,9 +1806,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Ashblade, Emberborn — crafting or forging emblem for the item it produces. Quench Ashblade in wyrm-fire. Costly, and there is no way back to the blade you had.
 The Perpetual Censer — crafting or forging emblem for the item it produces. Lit some time during the Age of Dawn and never once since. Whatever is in it, there is still some left. The Choir has a theory. He has never confirmed or denied it and appears to find the…
 Listener's Circlet — crafting or forging emblem for the item it produces. Thin, and open at the ears by design. The Choir does not cover what it uses.
@@ -1326,6 +1830,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/recipe -
 ## Batch 43 — crafting recipes (2 of 3) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -1333,9 +1849,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 A Warden's Measure of Gravesalt — crafting or forging emblem for the item it produces. The Watch packs it around anything it has to move twice. Six jars is a season.
 Gravewarden's Coat — crafting or forging emblem for the item it produces. Heavy canvas with iron at the forearms, because the thing you are moving sometimes moves back.
 Gravewarden's Dray — crafting or forging emblem for the item it produces. Bred to stand still while unpleasant work happens behind it. The rarest quality a horse can have.
@@ -1357,6 +1873,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/recipe -
 ## Batch 44 — crafting recipes (3 of 3) · 7 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -1364,9 +1892,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 7, in this order:
+
 Sovereign's Signet — crafting or forging emblem for the item it produces. Opens the Gauntlet's inner registry. What is written there is the pact's other half.
 Slippers of the Unwalked Path — crafting or forging emblem for the item it produces. Immaculate. Not a scuff on them. Making a pair requires leather that has never been walked on, which is harder to source than it sounds and much harder to explain.
 Dawn Vanguard II — crafting or forging emblem for the item it produces. Rebuild the Vanguard around a veteran core — the banner survives, the legion under it does not.
@@ -1387,6 +1915,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/recipe -
 ## Batch 45 — raid bosses (1 of 5) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -1394,9 +1934,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Gauntlet — Whelp Warden — monster or boss portrait. 
 Gauntlet — Drake Sentinel — monster or boss portrait. 
 Gauntlet — Wyrm Vanguard — monster or boss portrait. 
@@ -1418,6 +1958,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/raid --s
 ## Batch 46 — raid bosses (2 of 5) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -1425,9 +1977,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Gorehowl the Warlord — monster or boss portrait. 
 Guardian of Ashen Causeway — monster or boss portrait. 
 The Hollow Marcher — monster or boss portrait. 
@@ -1449,6 +2001,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/raid --s
 ## Batch 47 — raid bosses (3 of 5) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -1456,9 +2020,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Herald of the Approach — monster or boss portrait. 
 Spirebreaker — monster or boss portrait. 
 The Rimewood Stalker — monster or boss portrait. 
@@ -1480,6 +2044,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/raid --s
 ## Batch 48 — raid bosses (4 of 5) · 8 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -1487,9 +2063,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 8, in this order:
+
 Guardian of Magma Rift — monster or boss portrait. 
 The Ashen Throne — monster or boss portrait. 
 The Cinder Crown — monster or boss portrait. 
@@ -1511,6 +2087,18 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/raid --s
 ## Batch 49 — raid bosses (5 of 5) · 5 icons
 
 ```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 3 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
@@ -1518,9 +2106,9 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
-```
 
-```
+Draw these 5, in this order:
+
 The Iron Colossus — monster or boss portrait. 
 The Last Lamp of Arveth — monster or boss portrait. 
 The Relay of Sable Glass — monster or boss portrait. 
