@@ -9,19 +9,23 @@ Work one batch at a time. Paste the **style block** first, then the batch's item
 ## The style block — paste this before every batch
 
 ```
-Flat 2D game icon, clean illustrated vector style. Bold readable silhouette, two or three tone
-cel shading, one soft light source from the upper left. Thick soft outline. A single object,
-centred, filling most of the frame. Fully transparent background. Square.
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
 
-No pixel art. No photorealism. No painterly texture. No fine filigree or micro-detail. No text,
-no numbers, no letters. No border, no frame, no card, no background scene, no ground shadow.
-Simple and confident rather than intricate.
+Severely simplified. At most three materials and about five distinct shapes in the whole icon. It
+will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely: no
+stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Fully transparent background, square, and no halo or glow around the cutout.
 ```
 
 **Negative prompt:**
 
 ```
-pixel art, 8-bit, photorealistic, hyperdetailed, intricate, ornate filigree, painterly brushwork, text, watermark, border, frame, card layout, background scene, drop shadow on the ground, multiple objects, collage
+thick black outline, heavy keyline, sticker cutout, white halo, gradient shading, airbrush, gloss highlight, specular, glossy, bevel, emboss, drop shadow, three-quarter perspective, pixel art, photorealistic, hyperdetailed, intricate, ornate, filigree, painterly, stitching, rivets, scratches, text, watermark, border, frame, card layout, background scene, multiple objects, collage
 ```
 
 ## Output specification
