@@ -149,7 +149,7 @@ def main():
             w("*Family `%s` → `assets/icons/%s/`*\n\n" % (fam, fam))
             for gid, name, noun, desc in sorted(entries):
                 w("**`%s`** — %s\n" % (gid, name))
-                w("> %s. A %s. %s\n\n" % (name, noun, clean(desc)))
+                w("> %s — %s. %s\n\n" % (name, noun, clean(desc)))
             w("---\n\n")
 
     print("wrote %s" % OUT.relative_to(ROOT))
