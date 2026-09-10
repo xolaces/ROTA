@@ -236,7 +236,7 @@
     },
     "isPassive": false,
     "legionBonus": 10,
-    "iconPath": "icons/unit/gorruk.png",
+    "iconPath": "icons/unit/gen_gorruk.png",
     "acquisition": "Chapter 3 raid threshold",
     "gemPrice": 0
   },
@@ -258,7 +258,7 @@
     },
     "isPassive": false,
     "legionBonus": 18,
-    "iconPath": "icons/unit/makh.png",
+    "iconPath": "icons/unit/gen_makh.png",
     "acquisition": "Chapter 5 boss drops",
     "gemPrice": 0
   },
@@ -276,7 +276,7 @@
     "ability": null,
     "isPassive": false,
     "legionBonus": 0,
-    "iconPath": "icons/unit/oroc_shieldline.png",
+    "iconPath": "icons/unit/troop_oroc_shieldline.png",
     "acquisition": "Chapter 3 quest drops",
     "gemPrice": 0
   },
@@ -294,7 +294,7 @@
     "ability": null,
     "isPassive": false,
     "legionBonus": 0,
-    "iconPath": "icons/unit/oroc_maulers.png",
+    "iconPath": "icons/unit/troop_oroc_maulers.png",
     "acquisition": "Chapter 5 quest drops",
     "gemPrice": 0
   },
@@ -316,7 +316,7 @@
     },
     "isPassive": false,
     "legionBonus": 10,
-    "iconPath": "icons/unit/durn.png",
+    "iconPath": "icons/unit/gen_durn.png",
     "acquisition": "Chapter 3 raid threshold",
     "gemPrice": 0
   },
@@ -338,7 +338,7 @@
     },
     "isPassive": false,
     "legionBonus": 18,
-    "iconPath": "icons/unit/brannoc.png",
+    "iconPath": "icons/unit/gen_brannoc.png",
     "acquisition": "Chapter 5 raid threshold",
     "gemPrice": 0
   },
@@ -356,7 +356,7 @@
     "ability": null,
     "isPassive": false,
     "legionBonus": 0,
-    "iconPath": "icons/unit/dwarf_sappers.png",
+    "iconPath": "icons/unit/troop_dwarf_sappers.png",
     "acquisition": "Chapter 4 quest drops",
     "gemPrice": 0
   },
@@ -374,7 +374,7 @@
     "ability": null,
     "isPassive": false,
     "legionBonus": 0,
-    "iconPath": "icons/unit/dwarf_hammers.png",
+    "iconPath": "icons/unit/troop_dwarf_hammers.png",
     "acquisition": "Chapter 5 quest drops",
     "gemPrice": 0
   },
@@ -396,7 +396,7 @@
     },
     "isPassive": false,
     "legionBonus": 18,
-    "iconPath": "icons/unit/ashen_stag.png",
+    "iconPath": "icons/unit/gen_ashen_stag.png",
     "acquisition": "Chapter 4 boss drops",
     "gemPrice": 0
   },
@@ -414,7 +414,7 @@
     "ability": null,
     "isPassive": false,
     "legionBonus": 0,
-    "iconPath": "icons/unit/mire_brood.png",
+    "iconPath": "icons/unit/troop_mire_brood.png",
     "acquisition": "Chapter 2 quest drops",
     "gemPrice": 0
   },
@@ -432,7 +432,7 @@
     "ability": null,
     "isPassive": false,
     "legionBonus": 0,
-    "iconPath": "icons/unit/rime_wolves.png",
+    "iconPath": "icons/unit/troop_rime_wolves.png",
     "acquisition": "Chapter 4 quest drops",
     "gemPrice": 0
   },
@@ -450,7 +450,7 @@
     "ability": null,
     "isPassive": false,
     "legionBonus": 0,
-    "iconPath": "icons/unit/glacier_bears.png",
+    "iconPath": "icons/unit/troop_glacier_bears.png",
     "acquisition": "Chapter 4 boss drops",
     "gemPrice": 0
   },
@@ -472,7 +472,7 @@
     },
     "isPassive": false,
     "legionBonus": 18,
-    "iconPath": "icons/unit/sentinel_prime.png",
+    "iconPath": "icons/unit/gen_sentinel_prime.png",
     "acquisition": "Iron Colossus",
     "gemPrice": 0
   },
@@ -490,7 +490,7 @@
     "ability": null,
     "isPassive": false,
     "legionBonus": 0,
-    "iconPath": "icons/unit/wrought_automata.png",
+    "iconPath": "icons/unit/troop_wrought_automata.png",
     "acquisition": "Chapter 3 raid threshold",
     "gemPrice": 0
   },
@@ -508,7 +508,7 @@
     "ability": null,
     "isPassive": false,
     "legionBonus": 0,
-    "iconPath": "icons/unit/lamp_walkers.png",
+    "iconPath": "icons/unit/troop_lamp_walkers.png",
     "acquisition": "Black Archive",
     "gemPrice": 0
   },
@@ -530,7 +530,7 @@
     },
     "isPassive": false,
     "legionBonus": 18,
-    "iconPath": "icons/unit/vaskarr.png",
+    "iconPath": "icons/unit/gen_vaskarr.png",
     "acquisition": "Chapter 5 raid threshold",
     "gemPrice": 0
   },
@@ -552,7 +552,7 @@
     },
     "isPassive": false,
     "legionBonus": 28,
-    "iconPath": "icons/unit/the_reconsidered.png",
+    "iconPath": "icons/unit/gen_the_reconsidered.png",
     "acquisition": "The Stoned Devil",
     "gemPrice": 0
   },
@@ -570,7 +570,7 @@
     "ability": null,
     "isPassive": false,
     "legionBonus": 0,
-    "iconPath": "icons/unit/emberpan_imps.png",
+    "iconPath": "icons/unit/troop_emberpan_imps.png",
     "acquisition": "Chapter 5 quest drops",
     "gemPrice": 0
   },
@@ -588,7 +588,7 @@
     "ability": null,
     "isPassive": false,
     "legionBonus": 0,
-    "iconPath": "icons/unit/slagborn.png",
+    "iconPath": "icons/unit/troop_slagborn.png",
     "acquisition": "Chapter 5 boss drops",
     "gemPrice": 0
   },
@@ -610,7 +610,7 @@
     },
     "isPassive": true,
     "legionBonus": 18,
-    "iconPath": "icons/unit/sister_arveth.png",
+    "iconPath": "icons/unit/gen_sister_arveth.png",
     "acquisition": "Black Archive",
     "gemPrice": 0
   },
@@ -632,7 +632,7 @@
     },
     "isPassive": true,
     "legionBonus": 28,
-    "iconPath": "icons/unit/choirmaster.png",
+    "iconPath": "icons/unit/gen_choirmaster.png",
     "acquisition": "Chapter 6 boss drops",
     "gemPrice": 0
   },
@@ -650,7 +650,7 @@
     "ability": null,
     "isPassive": false,
     "legionBonus": 0,
-    "iconPath": "icons/unit/field_chirurgeons.png",
+    "iconPath": "icons/unit/troop_field_chirurgeons.png",
     "acquisition": "Chapter 2 quest drops",
     "gemPrice": 0
   },
@@ -668,7 +668,7 @@
     "ability": null,
     "isPassive": false,
     "legionBonus": 0,
-    "iconPath": "icons/unit/choir_attendants.png",
+    "iconPath": "icons/unit/troop_choir_attendants.png",
     "acquisition": "Chapter 6 quest drops",
     "gemPrice": 0
   },
@@ -690,7 +690,7 @@
     },
     "isPassive": false,
     "legionBonus": 28,
-    "iconPath": "icons/unit/pano.png",
+    "iconPath": "icons/unit/gen_pano.png",
     "acquisition": "Pano's set completion",
     "gemPrice": 0
   },
@@ -708,7 +708,7 @@
     "ability": null,
     "isPassive": false,
     "legionBonus": 0,
-    "iconPath": "icons/unit/vanguard_oathsworn.png",
+    "iconPath": "icons/unit/troop_vanguard_oathsworn.png",
     "acquisition": "Chapter 6 raid threshold",
     "gemPrice": 0
   },
@@ -726,7 +726,7 @@
     "ability": null,
     "isPassive": false,
     "legionBonus": 0,
-    "iconPath": "icons/unit/sable_witnesses.png",
+    "iconPath": "icons/unit/troop_sable_witnesses.png",
     "acquisition": "Black Archive",
     "gemPrice": 0
   }

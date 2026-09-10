@@ -171,7 +171,7 @@
     ],
     "goldCost": 3000,
     "eventKey": null,
-    "iconPath": "icons/craft/warrens_helm.png"
+    "iconPath": "icons/recipe/craft_warrens_helm.png"
   },
   {
     "id": "craft_marchwatch_coat",
@@ -195,7 +195,7 @@
     ],
     "goldCost": 4000,
     "eventKey": null,
-    "iconPath": "icons/craft/marchwatch_coat.png"
+    "iconPath": "icons/recipe/craft_marchwatch_coat.png"
   },
   {
     "id": "craft_gravesalt_batch",
@@ -219,7 +219,7 @@
     ],
     "goldCost": 6500,
     "eventKey": null,
-    "iconPath": "icons/craft/gravesalt_batch.png"
+    "iconPath": "icons/recipe/craft_gravesalt_batch.png"
   },
   {
     "id": "craft_gravewarden_coat",
@@ -248,7 +248,7 @@
     ],
     "goldCost": 14000,
     "eventKey": null,
-    "iconPath": "icons/craft/gravewarden_coat.png"
+    "iconPath": "icons/recipe/craft_gravewarden_coat.png"
   },
   {
     "id": "craft_drowned_helm",
@@ -277,7 +277,7 @@
     ],
     "goldCost": 15000,
     "eventKey": null,
-    "iconPath": "icons/craft/drowned_helm.png"
+    "iconPath": "icons/recipe/craft_drowned_helm.png"
   },
   {
     "id": "craft_wrought_visor",
@@ -306,7 +306,7 @@
     ],
     "goldCost": 38000,
     "eventKey": null,
-    "iconPath": "icons/craft/wrought_visor.png"
+    "iconPath": "icons/recipe/craft_wrought_visor.png"
   },
   {
     "id": "craft_choir_stole",
@@ -335,7 +335,7 @@
     ],
     "goldCost": 40000,
     "eventKey": null,
-    "iconPath": "icons/craft/choir_stole.png"
+    "iconPath": "icons/recipe/craft_choir_stole.png"
   },
   {
     "id": "craft_wroughtbreaker_gauntlets",
@@ -369,7 +369,7 @@
     ],
     "goldCost": 85000,
     "eventKey": null,
-    "iconPath": "icons/craft/wroughtbreaker_gauntlets.png"
+    "iconPath": "icons/recipe/craft_wroughtbreaker_gauntlets.png"
   },
   {
     "id": "craft_deepwatch_gauntlets",
@@ -403,7 +403,7 @@
     ],
     "goldCost": 52000,
     "eventKey": null,
-    "iconPath": "icons/craft/deepwatch_gauntlets.png"
+    "iconPath": "icons/recipe/craft_deepwatch_gauntlets.png"
   },
   {
     "id": "craft_choir_crown",
@@ -437,7 +437,7 @@
     ],
     "goldCost": 95000,
     "eventKey": null,
-    "iconPath": "icons/craft/choir_crown.png"
+    "iconPath": "icons/recipe/craft_choir_crown.png"
   },
   {
     "id": "craft_warrens_pitpony",
@@ -466,7 +466,7 @@
     ],
     "goldCost": 26000,
     "eventKey": null,
-    "iconPath": "icons/craft/warrens_pitpony.png"
+    "iconPath": "icons/recipe/craft_warrens_pitpony.png"
   },
   {
     "id": "craft_gravewarden_dray",
@@ -495,7 +495,7 @@
     ],
     "goldCost": 64000,
     "eventKey": null,
-    "iconPath": "icons/craft/gravewarden_dray.png"
+    "iconPath": "icons/recipe/craft_gravewarden_dray.png"
   },
   {
     "id": "craft_gorruk_oathbound",
@@ -524,7 +524,7 @@
     ],
     "goldCost": 45000,
     "eventKey": null,
-    "iconPath": "icons/craft/gorruk_oathbound.png"
+    "iconPath": "icons/recipe/craft_gorruk_oathbound.png"
   },
   {
     "id": "craft_durn_sigilwise",
@@ -553,7 +553,7 @@
     ],
     "goldCost": 70000,
     "eventKey": null,
-    "iconPath": "icons/craft/durn_sigilwise.png"
+    "iconPath": "icons/recipe/craft_durn_sigilwise.png"
   },
   {
     "id": "craft_sovereign_signet",
@@ -587,7 +587,7 @@
     ],
     "goldCost": 220000,
     "eventKey": null,
-    "iconPath": "icons/craft/sovereign_signet.png"
+    "iconPath": "icons/recipe/craft_sovereign_signet.png"
   },
   {
     "id": "craft_censer",
@@ -621,7 +621,7 @@
     ],
     "goldCost": 180000,
     "eventKey": null,
-    "iconPath": "icons/craft/censer.png"
+    "iconPath": "icons/recipe/craft_censer.png"
   },
   {
     "id": "craft_stoned_slippers",
@@ -655,7 +655,7 @@
     ],
     "goldCost": 160000,
     "eventKey": null,
-    "iconPath": "icons/craft/stoned_slippers.png"
+    "iconPath": "icons/recipe/craft_stoned_slippers.png"
   },
   {
     "id": "craft_hell_goat",
@@ -689,6 +689,6 @@
     ],
     "goldCost": 260000,
     "eventKey": null,
-    "iconPath": "icons/craft/hell_goat.png"
+    "iconPath": "icons/recipe/craft_hell_goat.png"
   }
 ]

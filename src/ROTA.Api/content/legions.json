@@ -178,7 +178,7 @@
         "constraintValue": null
       }
     ],
-    "iconPath": "icons/legion/houndsmen.png",
+    "iconPath": "icons/legion/legion_houndsmen.png",
     "acquisition": "Chapter 4 boss drops",
     "gemPrice": 0,
     "tagAffinities": {
@@ -212,7 +212,7 @@
         "constraintValue": null
       }
     ],
-    "iconPath": "icons/legion/warrenguard.png",
+    "iconPath": "icons/legion/legion_warrenguard.png",
     "acquisition": "Chapter 2 quest drops",
     "gemPrice": 0,
     "tagAffinities": {
@@ -253,7 +253,7 @@
         "constraintValue": null
       }
     ],
-    "iconPath": "icons/legion/anvilkeep.png",
+    "iconPath": "icons/legion/legion_anvilkeep.png",
     "acquisition": "Chapter 5 raid threshold",
     "gemPrice": 0,
     "tagAffinities": {
@@ -295,7 +295,7 @@
         "constraintValue": null
       }
     ],
-    "iconPath": "icons/legion/bargained.png",
+    "iconPath": "icons/legion/legion_bargained.png",
     "acquisition": "Chapter 5 boss drops",
     "gemPrice": 0,
     "tagAffinities": {
@@ -341,7 +341,7 @@
         "constraintValue": null
       }
     ],
-    "iconPath": "icons/legion/deepwatch.png",
+    "iconPath": "icons/legion/legion_deepwatch.png",
     "acquisition": "Black Archive",
     "gemPrice": 0,
     "tagAffinities": {
@@ -387,7 +387,7 @@
         "constraintValue": null
       }
     ],
-    "iconPath": "icons/legion/sovereigns_climb.png",
+    "iconPath": "icons/legion/legion_sovereigns_climb.png",
     "acquisition": "Gauntlet rank prize",
     "gemPrice": 0,
     "tagAffinities": {

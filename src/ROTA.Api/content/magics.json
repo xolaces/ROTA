@@ -267,7 +267,7 @@
     "procAmount": 0.8,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/hollowpoint.png",
+    "iconPath": "icons/magic/magic_hollowpoint.png",
     "acquisition": "Quest drops, chapter 2+",
     "gemPrice": 20
   },
@@ -282,7 +282,7 @@
     "procAmount": 0.9,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/rimefang.png",
+    "iconPath": "icons/magic/magic_rimefang.png",
     "acquisition": "Quest drops, chapter 4+",
     "gemPrice": 60
   },
@@ -297,7 +297,7 @@
     "procAmount": 1.0,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/sunder.png",
+    "iconPath": "icons/magic/magic_sunder.png",
     "acquisition": "Raid threshold, Deadly+",
     "gemPrice": 140
   },
@@ -312,7 +312,7 @@
     "procAmount": 1.0,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/wrathslag_ember.png",
+    "iconPath": "icons/magic/magic_wrathslag_ember.png",
     "acquisition": "Chapter 5 boss drops",
     "gemPrice": 150
   },
@@ -327,7 +327,7 @@
     "procAmount": 1.1,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/kronarchs_last_order.png",
+    "iconPath": "icons/magic/magic_kronarchs_last_order.png",
     "acquisition": "Black Archive",
     "gemPrice": 0
   },
@@ -342,7 +342,7 @@
     "procAmount": 0.02,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/keen_eye.png",
+    "iconPath": "icons/magic/magic_keen_eye.png",
     "acquisition": "Starting shop",
     "gemPrice": 8
   },
@@ -357,7 +357,7 @@
     "procAmount": 0.08,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/readers_mark.png",
+    "iconPath": "icons/magic/magic_readers_mark.png",
     "acquisition": "Quest drops, chapter 3+",
     "gemPrice": 65
   },
@@ -372,7 +372,7 @@
     "procAmount": 0.14,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/veiled_eye.png",
+    "iconPath": "icons/magic/magic_veiled_eye.png",
     "acquisition": "Mastery: Discernment",
     "gemPrice": 175
   },
@@ -387,7 +387,7 @@
     "procAmount": 0.22,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/sealwrights_measure.png",
+    "iconPath": "icons/magic/magic_sealwrights_measure.png",
     "acquisition": "Sunken Vaults, vanishingly rare",
     "gemPrice": 0
   },
@@ -402,7 +402,7 @@
     "procAmount": 0.6,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/coinsense.png",
+    "iconPath": "icons/magic/magic_coinsense.png",
     "acquisition": "Starting shop",
     "gemPrice": 8
   },
@@ -417,7 +417,7 @@
     "procAmount": 0.9,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/tithe_ledger.png",
+    "iconPath": "icons/magic/magic_tithe_ledger.png",
     "acquisition": "Gauntlet token shop",
     "gemPrice": 30
   },
@@ -432,7 +432,7 @@
     "procAmount": 1.3,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/hoarders_eye.png",
+    "iconPath": "icons/magic/magic_hoarders_eye.png",
     "acquisition": "Mastery: Hoard",
     "gemPrice": 70
   },
@@ -447,7 +447,7 @@
     "procAmount": 2.2,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/spoils_of_the_march.png",
+    "iconPath": "icons/magic/magic_spoils_of_the_march.png",
     "acquisition": "Raid threshold, Elite+",
     "gemPrice": 160
   },
@@ -462,7 +462,7 @@
     "procAmount": 3.4,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/sovereigns_cut.png",
+    "iconPath": "icons/magic/magic_sovereigns_cut.png",
     "acquisition": "Gauntlet rank prize",
     "gemPrice": 0
   },
@@ -477,7 +477,7 @@
     "procAmount": 2.4,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/drillmasters_cant.png",
+    "iconPath": "icons/magic/magic_drillmasters_cant.png",
     "acquisition": "Quest drops, chapter 2+",
     "gemPrice": 30
   },
@@ -492,7 +492,7 @@
     "procAmount": 3.0,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/field_commission.png",
+    "iconPath": "icons/magic/magic_field_commission.png",
     "acquisition": "Raid threshold, Deadly+",
     "gemPrice": 75
   },
@@ -507,7 +507,7 @@
     "procAmount": 4.2,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/the_long_watch.png",
+    "iconPath": "icons/magic/magic_the_long_watch.png",
     "acquisition": "Black Archive",
     "gemPrice": 170
   },
@@ -522,7 +522,7 @@
     "procAmount": 6.0,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/age_of_dawn_fragment.png",
+    "iconPath": "icons/magic/magic_age_of_dawn_fragment.png",
     "acquisition": "Chapter 6 boss drops",
     "gemPrice": 0
   },
@@ -537,7 +537,7 @@
     "procAmount": 0.7,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/steady_hand.png",
+    "iconPath": "icons/magic/magic_steady_hand.png",
     "acquisition": "Starting shop",
     "gemPrice": 10
   },
@@ -552,7 +552,7 @@
     "procAmount": 0.8,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/gamblers_sigil.png",
+    "iconPath": "icons/magic/magic_gamblers_sigil.png",
     "acquisition": "Quest drops, chapter 3+",
     "gemPrice": 35
   },
@@ -567,7 +567,7 @@
     "procAmount": 0.09,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/metronome.png",
+    "iconPath": "icons/magic/magic_metronome.png",
     "acquisition": "Quest drops, chapter 4+",
     "gemPrice": 80
   },
@@ -582,7 +582,7 @@
     "procAmount": 1.0,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/last_lamp_wick.png",
+    "iconPath": "icons/magic/magic_last_lamp_wick.png",
     "acquisition": "Black Archive",
     "gemPrice": 165
   },
@@ -597,7 +597,7 @@
     "procAmount": 1.1,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/one_true_swing.png",
+    "iconPath": "icons/magic/magic_one_true_swing.png",
     "acquisition": "Hollow Marches, vanishingly rare",
     "gemPrice": 0
   },
@@ -612,7 +612,7 @@
     "procAmount": 4.1,
     "conditions": [],
     "stacks": true,
-    "iconPath": "icons/magic/considered_inaction.png",
+    "iconPath": "icons/magic/magic_considered_inaction.png",
     "acquisition": "The Stoned Devil",
     "gemPrice": 0
   },
@@ -642,7 +642,7 @@
     "procAmount": 120.0,
     "conditions": [],
     "stacks": false,
-    "iconPath": "icons/magic/pinnacle_1000.png",
+    "iconPath": "icons/magic/magic_pinnacle_1000.png",
     "acquisition": "Pinnacle reward — level 1000 (designed in-house as the showcase)",
     "gemPrice": 0
   }

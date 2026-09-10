@@ -11,7 +11,16 @@ So the rule is:
     items          icons/item/<artKey>.png       (many ids -> one file, by design)
     everything else  icons/<family>/<id>.png
 
-This fills blanks and never overwrites a hand-set path.
+It used to fill blanks and leave hand-set paths alone, on the reasonable theory that a path someone
+typed deliberately knows something the rule does not. It did not: 186 of the 362 references were
+hand-set, and every one of them was wrong. They drop the id's family prefix — `gear_conscript_helm`
+addressed as `icons/gear/conscript_helm.png` — and the recipes point at `icons/craft/`, a folder
+that has never existed. Nothing caught it because nothing served the files, so nothing ever asked
+for one.
+
+So the rule now wins, and a wrong path is repaired rather than preserved. The one exception stays
+the one that carries meaning: a path already pointing at a file that exists is left alone, which is
+what protects an artKey-style share if one is ever set by hand.
 """
 import collections
 import io
@@ -30,15 +39,24 @@ FAMILY = {
 
 def main():
     filled = collections.Counter()
+    repaired = collections.Counter()
+    examples = []
     for fname, family in FAMILY.items():
         p = CONTENT / fname
         data = json.load(io.open(p, encoding="utf-8"), object_pairs_hook=collections.OrderedDict)
         changed = False
         for e in data:
-            if not e.get("iconPath"):
-                e["iconPath"] = "icons/%s/%s.png" % (family, e["id"])
-                filled[fname] += 1
-                changed = True
+            want = "icons/%s/%s.png" % (family, e["id"])
+            have = e.get("iconPath") or ""
+            if have == want:
+                continue
+            if have and (ICONS.parent / have).exists():
+                continue                      # points at a real file — it knows something we do not
+            e["iconPath"] = want
+            (repaired if have else filled)[fname] += 1
+            if have and len(examples) < 6:
+                examples.append((e["id"], have, want))
+            changed = True
         if changed:
             io.open(p, "w", encoding="utf-8", newline="\n").write(
                 json.dumps(data, indent=2, ensure_ascii=False) + "\n")
@@ -48,6 +66,14 @@ def main():
         print("   %-16s %d" % (f, n))
     if not filled:
         print("   none — every entry already had one")
+
+    print("\nBROKEN REFERENCES REPAIRED")
+    for f, n in sorted(repaired.items()):
+        print("   %-16s %d" % (f, n))
+    if not repaired:
+        print("   none — every path already resolved")
+    for i, was, now in examples:
+        print("      %-30s %s  ->  %s" % (i, was, now))
 
     # Which references have no PNG behind them yet?
     missing = collections.Counter()

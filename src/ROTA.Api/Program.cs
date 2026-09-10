@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.FileProviders;
 using ROTA.Api;
 using ROTA.Api.BackgroundServices;
 using ROTA.Api.SignalR;
@@ -467,6 +468,48 @@ app.UseRouting();
 // [5b] Response compression — after routing, before endpoints, so controller/SignalR
 // responses are compressed for clients that send an Accept-Encoding header.
 app.UseResponseCompression();
+
+// [5c] Icons.
+//
+// Every DTO that names a picture carries a path like "icons/gear/gear_conscript_helm.png", so
+// serving the icon directory AT /icons makes that string the URL verbatim — the client concatenates
+// a base and is done, with no prefix to agree on and no place for the two sides to drift apart.
+//
+// Deliberately ahead of authentication and rate limiting. Art is public, an unauthenticated login
+// screen still wants to draw it, and a client warming a cold cache would otherwise spend its entire
+// rate-limit bucket on pictures before it could take a turn.
+//
+// Caching splits by what the file is. A named icon is addressed by content id and changes only when
+// that item is redrawn, so it earns a day. The atlas is one file that is rebuilt every time ANY of
+// the 362 change, and a client holding a stale one shows stale art everywhere at once, so it
+// revalidates each load — one conditional request, almost always answered 304 and empty.
+// BaseDirectory, not ContentRootPath. Content JSON lives in the source tree AND is copied to the
+// output, so ContentRootPath finds it either way; icons only exist in the output, because the
+// csproj LINKS them in from the repo root rather than keeping 28 MB of PNGs inside the project.
+// Under `dotnet run` ContentRootPath is the project folder, which has no assets/ at all — the
+// warning below is how that was caught. BaseDirectory is where the build output is in dev and is
+// the app folder once published, so it is the one path that means the same thing in both.
+var iconRoot = Path.Combine(AppContext.BaseDirectory, "assets", "icons");
+if (Directory.Exists(iconRoot))
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(iconRoot),
+        RequestPath  = "/icons",
+        OnPrepareResponse = ctx =>
+        {
+            var name = ctx.File.Name;
+            ctx.Context.Response.Headers.CacheControl =
+                name is "atlas.png" or "atlas.json" ? "public, no-cache" : "public, max-age=86400";
+        },
+    });
+}
+else
+{
+    app.Logger.LogWarning(
+        "Icon directory not found at {Path}; /icons will 404. Content DTOs still carry icon paths, "
+        + "so a client will render without art rather than fail.", iconRoot);
+}
 
 // [6] Authentication
 app.UseAuthentication();
