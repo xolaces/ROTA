@@ -247,10 +247,16 @@ def main():
 
     names = [n.strip() for n in args.names.split(",") if n.strip()]
     if names and len(names) != len(full):
-        print("WARNING: %d names given but %d icons found — writing numbered crops instead.\n"
-              "         Check --gap: too low splits one icon in two, too high merges neighbours."
-              % (len(names), len(full)))
-        names = []
+        # Refuse rather than write. Writing numbered crops instead dumps junk into whatever --out
+        # points at, which on a real run is the asset folder: eight files to find and delete next to
+        # a hundred real ones.
+        raise SystemExit(
+            "REFUSING TO WRITE: %d names given, %d icons found. Nothing was written.\n"
+            "  The sheet is probably not a clean grid. An object crossing a cell line is cut into\n"
+            "  two crops, and a batch that does not fill its grid invites the model to spread\n"
+            "  objects across the boundaries.\n"
+            "  Re-run without --names, pointing --out at a scratch folder, to see what it found."
+            % (len(names), len(full)))
 
     print("sheet %dx%d, background=%s, %d icons\n" % (
         w, h, "white (keyed out)" if keyed else "alpha", len(full)))

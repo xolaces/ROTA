@@ -159,6 +159,8 @@ may cross a cell boundary. Leave clear empty space between cells. Transparent ba
 
 Reading order is left to right, top to bottom, matching the list below.
 
+There are 7 objects and 8 cells, so leave the last 1 cell of the bottom row completely empty. Do not spread the objects out to fill the canvas — keep every cell the same size and leave the spare one blank.
+
 Draw these 7, in this order:
 
 The Cinder-Cuff — gauntlet or glove. Wrath-slag, cooled and cuffed. It makes the wearer stronger and angrier in the same motion, and does not distinguish between the two.
@@ -889,6 +891,8 @@ may cross a cell boundary. Leave clear empty space between cells. Transparent ba
 
 Reading order is left to right, top to bottom, matching the list below.
 
+There are 7 objects and 8 cells, so leave the last 1 cell of the bottom row completely empty. Do not spread the objects out to fill the canvas — keep every cell the same size and leave the spare one blank.
+
 Draw these 7, in this order:
 
 Star Hollow Dust — crafting material. Collected where the sky is closest and least reliable. It settles upward if left alone, so it is never left alone.
@@ -1224,6 +1228,8 @@ may cross a cell boundary. Leave clear empty space between cells. Transparent ba
 
 Reading order is left to right, top to bottom, matching the list below.
 
+There are 3 objects and 4 cells, so leave the last 1 cell of the bottom row completely empty. Do not spread the objects out to fill the canvas — keep every cell the same size and leave the spare one blank.
+
 Draw these 3, in this order:
 
 Stamina Draught — flask, vial or potion. Restores 60 Stamina. The long fight favours the prepared.
@@ -1477,6 +1483,8 @@ may cross a cell boundary. Leave clear empty space between cells. Transparent ba
 
 Reading order is left to right, top to bottom, matching the list below.
 
+There are 3 objects and 4 cells, so leave the last 1 cell of the bottom row completely empty. Do not spread the objects out to fill the canvas — keep every cell the same size and leave the spare one blank.
+
 Draw these 3, in this order:
 
 Whetstone — arcane rune, sigil or talisman representing a spell effect. Sharpens every blow; a guaranteed small bonus on every hit.
@@ -1687,6 +1695,8 @@ may cross a cell boundary. Leave clear empty space between cells. Transparent ba
 
 Reading order is left to right, top to bottom, matching the list below.
 
+There are 5 objects and 6 cells, so leave the last 1 cell of the bottom row completely empty. Do not spread the objects out to fill the canvas — keep every cell the same size and leave the spare one blank.
+
 Draw these 5, in this order:
 
 Rimewood Wolves — character portrait bust of a Beast Ranged. They hunt the cold better than anything the Watch has ever fielded, and they know it.
@@ -1892,6 +1902,8 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
+
+There are 7 objects and 8 cells, so leave the last 1 cell of the bottom row completely empty. Do not spread the objects out to fill the canvas — keep every cell the same size and leave the spare one blank.
 
 Draw these 7, in this order:
 
@@ -2106,6 +2118,8 @@ round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no tra
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
 Reading order is left to right, top to bottom, matching the list below.
+
+There are 5 objects and 6 cells, so leave the last 1 cell of the bottom row completely empty. Do not spread the objects out to fill the canvas — keep every cell the same size and leave the spare one blank.
 
 Draw these 5, in this order:
 

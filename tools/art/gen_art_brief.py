@@ -47,8 +47,15 @@ Every object sits centred in its own cell and stays entirely inside it, with equ
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
 may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
 
-Reading order is left to right, top to bottom, matching the list below.\
+Reading order is left to right, top to bottom, matching the list below.{spare}\
 """
+
+# A batch that does not fill its grid is the layout that actually breaks. Given 7 items in 8 cells
+# the model spreads them to fill the canvas, objects sprawl across the cell lines, and the splitter
+# then cuts one wide crown into two halves. Naming the empty cells keeps the grid honest.
+SPARE = ("\n\nThere are {n} objects and {slots} cells, so leave the last {spare} cell{s} of the "
+         "bottom row completely empty. Do not spread the objects out to fill the canvas — keep every "
+         "cell the same size and leave the spare one blank.")
 
 
 def grid_for(n):
@@ -178,8 +185,12 @@ def main():
                 w("## Batch %d — %s · %d icons\n\n" % (n_batch, label, len(chunk)))
                 # Style + layout + items in ONE block, so a batch is a single paste rather than
                 # three pieces the reader has to assemble in the right order every time.
+                slots = cols * rws
+                spare = slots - len(chunk)
+                spare_txt = "" if not spare else SPARE.format(
+                    n=len(chunk), slots=slots, spare=spare, s="" if spare == 1 else "s")
                 w("```\n%s\n\n%s\n\nDraw these %d, in this order:\n\n"
-                  % (STYLE, LAYOUT.format(cols=cols, rows=rws), len(chunk)))
+                  % (STYLE, LAYOUT.format(cols=cols, rows=rws, spare=spare_txt), len(chunk)))
                 for gid, name, noun, desc in chunk:
                     w("%s — %s. %s\n" % (name, noun, clean(desc)))
                 w("```\n\n")
