@@ -40,6 +40,24 @@ NEGATIVE = ("thick black outline, heavy keyline, sticker cutout, white halo, gra
             "frame, card layout, background scene, multiple objects, collage")
 
 
+LAYOUT = """\
+Arrange them on ONE landscape image, 1536 x 1024, as a strict {cols} x {rows} grid.
+
+Every object sits centred in its own cell and stays entirely inside it, with equal margins all
+round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
+may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+
+Reading order is left to right, top to bottom, matching the list below.\
+"""
+
+
+def grid_for(n):
+    """Cell layout for a batch of n on a 1536x1024 canvas. Never more than four across, so a cell
+    stays wide enough to hold a 512px icon without the model cramping it."""
+    cols = 4 if n > 6 else (3 if n > 4 else (2 if n > 2 else max(1, n)))
+    return cols, -(-n // cols)
+
+
 def load(name):
     p = CONTENT / name
     return json.load(io.open(p, encoding="utf-8")) if p.exists() else []
@@ -150,13 +168,23 @@ def main():
           "reads as a game; forty beautiful icons that do not share one reads as a folder.\n\n")
         w("---\n\n")
 
+        n_batch = 0
         for (fam, group), entries in groups.items():
-            w("## %s — %d icons\n\n" % (group, len(entries)))
-            w("*Family `%s` → `assets/icons/%s/`*\n\n" % (fam, fam))
-            for gid, name, noun, desc in sorted(entries):
-                w("**`%s`** — %s\n" % (gid, name))
-                w("> %s — %s. %s\n\n" % (name, noun, clean(desc)))
-            w("---\n\n")
+            chunks = [sorted(entries)[i:i + 8] for i in range(0, len(entries), 8)]
+            for ci, chunk in enumerate(chunks):
+                n_batch += 1
+                cols, rws = grid_for(len(chunk))
+                label = group if len(chunks) == 1 else "%s (%d of %d)" % (group, ci + 1, len(chunks))
+                w("## Batch %d — %s · %d icons\n\n" % (n_batch, label, len(chunk)))
+                w("```\n%s\n```\n\n" % LAYOUT.format(cols=cols, rows=rws))
+                w("```\n")
+                for gid, name, noun, desc in chunk:
+                    w("%s — %s. %s\n" % (name, noun, clean(desc)))
+                w("```\n\n")
+                w("Then cut it up:\n\n```bash\npython tools/art/split_sheet.py SHEET.png "
+                  "--grid %dx%d --out assets/icons/%s --size 512 --names %s\n```\n\n"
+                  % (cols, rws, fam, ",".join(g for g, _, _, _ in chunk)))
+                w("---\n\n")
 
     print("wrote %s" % OUT.relative_to(ROOT))
     print("  %d icons across %d batches" % (len(data), len(groups)))
