@@ -8,7 +8,13 @@
 tests
 tools
 docs
+# assets/ is excluded wholesale, then icons are let back in: the API serves them at /icons and the
+# csproj links them into the publish output, so an image built without them starts fine and 404s
+# every picture. branding/ and classes/ are design sources nothing at runtime reads.
 assets
+!assets/icons
+assets/icons/_*.png
+assets/icons/MANIFEST.csv
 *.md
 *.pdf
 .env
