@@ -788,7 +788,7 @@ Colossus Filament — crafting material. Sigil-wire from the Iron Colossus's com
 Cracked Command Sigil — crafting material. Prised off a Wrought mid-order. It is still trying to finish the sentence.
 Cork-and-Iron Sole — crafting material. Salvager's stock. Buoyant enough to float a boot and heavy enough to keep it down.
 Deepwood Heart — crafting material. Cut from an apex that had been growing since before the Sundering. Still warm four days out.
-Emberfall Slag — crafting material. Run-off from a fire that burned in the Age of Dawn and has not entirely stopped. Warm at the core a thousand years after the fact.
+Emberfall Slag — crafting material. A cold clinker, crusted over in pale ash-grey and chalky white, its surface matte and porous like pumice. It is NOT black rock and it has NO bright orange cracks. Only a single deep fracture shows any heat at all, and there the colour is a dull banked red, the darkest red on the icon — a fire remembered, not a fire burning.
 ```
 
 Then cut it up:

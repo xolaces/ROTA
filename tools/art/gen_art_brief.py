@@ -101,6 +101,16 @@ ART_NOTE = {
         "Draw a single hand-rolled cigarette — a slim tapered paper roll, cream coloured, with a "
         "glowing ember at one lit end and a thin curl of smoke. It is the whole object; there is no "
         "circlet, no crown and no headband. Lay it horizontally across the cell.",
+
+    # Two slags, two descriptions that both amount to "cooling molten run-off", and so two
+    # identical black rocks with orange cracks. Gear had a set signature to pull neighbours apart;
+    # a material has nothing but its own description, so where two of those describe the same
+    # object the separation has to be written here. Brimstone stays hot; Emberfall went out.
+    "mat_emberfall_slag":
+        "A cold clinker, crusted over in pale ash-grey and chalky white, its surface matte and "
+        "porous like pumice. It is NOT black rock and it has NO bright orange cracks. Only a "
+        "single deep fracture shows any heat at all, and there the colour is a dull banked red, "
+        "the darkest red on the icon — a fire remembered, not a fire burning.",
 }
 
 LAYOUT = """\
