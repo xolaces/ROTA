@@ -19,13 +19,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 ```
 
 **Negative prompt:**
 
 ```
-thick black outline, heavy keyline, sticker cutout, white halo, gradient shading, airbrush, gloss highlight, specular, glossy, bevel, emboss, drop shadow, three-quarter perspective, pixel art, photorealistic, hyperdetailed, intricate, ornate, filigree, painterly, stitching, rivets, scratches, text, watermark, border, frame, card layout, background scene, multiple objects, collage
+thick black outline, heavy keyline, sticker cutout, white halo, gradient shading, airbrush, gloss highlight, specular, glossy, bevel, emboss, drop shadow, three-quarter perspective, pixel art, photorealistic, hyperdetailed, intricate, ornate, filigree, painterly, stitching, rivets, scratches, text, watermark, border, frame, card layout, background scene, multiple objects, collage, checkerboard, transparency grid, grey and white squares
 ```
 
 ## Output specification
@@ -63,13 +66,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -106,13 +112,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -149,13 +158,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -193,13 +205,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -236,13 +251,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -279,13 +297,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -322,13 +343,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -365,13 +389,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -408,13 +435,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -451,13 +481,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -494,13 +527,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -537,13 +573,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -580,13 +619,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -623,13 +665,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -666,13 +711,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -709,13 +757,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -752,13 +803,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -795,13 +849,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -838,13 +895,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -881,13 +941,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -925,13 +988,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 3 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -966,13 +1032,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1009,13 +1078,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1052,13 +1124,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1095,13 +1170,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 2 x 1 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1132,13 +1210,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1175,13 +1256,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1218,13 +1302,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 2 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1258,13 +1345,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1301,13 +1391,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1344,13 +1437,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1387,13 +1483,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1430,13 +1529,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1473,13 +1575,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 2 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1513,13 +1618,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1556,13 +1664,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1599,13 +1710,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1642,13 +1756,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1685,13 +1802,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 3 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1727,13 +1847,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1770,13 +1893,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 2 x 1 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1807,13 +1933,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1850,13 +1979,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1893,13 +2025,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1937,13 +2072,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -1980,13 +2118,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -2023,13 +2164,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -2066,13 +2210,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 
@@ -2109,13 +2256,16 @@ will be viewed at 64 pixels, so anything smaller than a fingernail is left out e
 stitching, no rivets, no buckle prongs, no scratches, no wood grain, no engraved pattern.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Fully transparent background, square, and no halo or glow around the cutout.
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
 
 Arrange them on ONE landscape image, 1536 x 1024, as a strict 3 x 2 grid.
 
 Every object sits centred in its own cell and stays entirely inside it, with equal margins all
 round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells. Transparent background throughout.
+may cross a cell boundary. Leave clear empty space between cells.
 
 Reading order is left to right, top to bottom, matching the list below.
 

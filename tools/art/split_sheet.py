@@ -11,7 +11,8 @@ of boots is two blobs and one icon, and so is a pair of gloves. Radius is tunabl
 with tight gutters needs a smaller one than a sheet with generous gaps.
 
 BACKGROUND. Real alpha is used when the sheet has any. Image models often return opaque white
-instead, so a white sheet is detected and keyed out — which also fixes the "white box on a dark
+instead, or draws the transparency CHECKERBOARD as real pixels. Either way the background is
+inferred from the outer ring and keyed out — which also fixes the "white box on a dark
 inventory tile" problem before it reaches the game.
 
 Components are found on a quarter-scale mask. At full resolution the flood fill is slow in pure
@@ -33,12 +34,36 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import pnglib
 
 SCALE = 4          # mask is built at 1/SCALE for component finding
-WHITE = 238        # a channel at or above this, on all three, counts as白 background
+WHITE = 238        # a channel at or above this, on all three, counts as background
 ALPHA_BG = 16
 
 
+def border_colours(w, h, rows, bands=6):
+    """Colour histogram of the outer ring, which is background by definition."""
+    hist = collections.Counter()
+    for y in list(range(bands)) + list(range(h - bands, h)):
+        r = rows[y]
+        for x in range(0, w, 2):
+            hist[bytes(r[x * 4:x * 4 + 3])] += 1
+    for y in range(0, h, 2):
+        r = rows[y]
+        for x in list(range(bands)) + list(range(w - bands, w)):
+            hist[bytes(r[x * 4:x * 4 + 3])] += 1
+    return hist
+
+
 def build_mask(w, h, rows):
-    """Returns (mask, keyed_white). mask[y][x] is 1 for foreground, at full resolution."""
+    """Returns (mask, keyed). mask[y][x] is 1 for foreground, at full resolution.
+
+    Real alpha is used whenever the sheet has any. Otherwise the background is inferred from the
+    outer ring rather than assumed to be white, because an image model asked for a transparent
+    background sometimes draws the CHECKERBOARD — the visual convention for transparency — as actual
+    pixels. That is two flat greys on a regular grid, so a white-only key leaves it in place and the
+    icon ships with a chequered box behind it.
+
+    Taking the dominant ring colours covers white, any flat colour, and the checkerboard alike, and
+    needs no special case for a pattern whose exact greys vary between models.
+    """
     has_alpha = any(rows[y][x * 4 + 3] < 250 for y in range(0, h, 7) for x in range(0, w, 7))
     mask = [bytearray(w) for _ in range(h)]
     if has_alpha:
@@ -47,14 +72,26 @@ def build_mask(w, h, rows):
             for x in range(w):
                 if r[x * 4 + 3] > ALPHA_BG:
                     m[x] = 1
-        return mask, False
+        return mask, None
+
+    hist = border_colours(w, h, rows)
+    total = sum(hist.values())
+    bg = []
+    covered = 0
+    for colour, n in hist.most_common(4):
+        bg.append(colour)
+        covered += n
+        if covered >= total * 0.90:
+            break
+    keyed = set(bg)
+
     for y in range(h):
         r, m = rows[y], mask[y]
         for x in range(w):
             i = x * 4
-            if not (r[i] >= WHITE and r[i + 1] >= WHITE and r[i + 2] >= WHITE):
+            if bytes(r[i:i + 3]) not in keyed:
                 m[x] = 1
-    return mask, True
+    return mask, keyed
 
 
 def downscale(mask, w, h):
@@ -169,7 +206,7 @@ def isolate(mask, x0, y0, x1, y1):
     return best if best else ((x0, y0, x1, y1), None)
 
 
-def crop_square(rows, w, h, box, keyed_white, size, keep=None):
+def crop_square(rows, w, h, box, bg, size, keep=None):
     x0, y0, x1, y1 = box
     cw, ch = x1 - x0 + 1, y1 - y0 + 1
     side = max(cw, ch)
@@ -181,7 +218,7 @@ def crop_square(rows, w, h, box, keyed_white, size, keep=None):
         for x in range(cw):
             si, di = (x0 + x) * 4, (pad_x + x) * 4
             r, g, b, a = src[si], src[si + 1], src[si + 2], src[si + 3]
-            if keyed_white and r >= WHITE and g >= WHITE and b >= WHITE:
+            if bg is not None and bytes((r, g, b)) in bg:
                 a = 0
             elif keep is not None and (x0 + x, y0 + y) not in keep:
                 a = 0                     # a sliver of the neighbour that leaned into this cell
@@ -259,7 +296,9 @@ def main():
             % (len(names), len(full)))
 
     print("sheet %dx%d, background=%s, %d icons\n" % (
-        w, h, "white (keyed out)" if keyed else "alpha", len(full)))
+        w, h,
+        "alpha" if keyed is None else "%d flat colour(s) keyed out" % len(keyed),
+        len(full)))
     for n, box in enumerate(full):
         name = names[n] if names else "crop_%02d" % (n + 1)
         img = crop_square(rows, w, h, box, keyed, args.size, keeps[n])
