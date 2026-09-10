@@ -115,6 +115,29 @@ Later, when the badge itself is built:
 Ranked below the client items because it ships nothing a player sees this wave, but the `cohort`
 column is genuinely time-sensitive — it is free before the first key is minted and archaeology after.
 
+### RE1. The client has no art pipeline, and now that is the only thing missing  *(found 2026-09-10)*
+As of `dafe718` the server serves every icon at `/icons/<the exact string the DTO carries>`, and all
+400 references in shipped content return 200. The atlas ships beside them: `/icons/atlas.png` plus
+`/icons/atlas.json`, one request and one draw call instead of 362 round trips.
+
+Nothing consumes any of it. A grep across `ROTA.Client6` for `UnityWebRequestTexture`,
+`Resources.Load<Sprite>`, `SpriteAtlas` and `LoadImage` returns **nothing** — the client carries
+`ArtKey` and `IconPath` through its DTOs and draws a coloured swatch, exactly as
+`ItemDropOverlay.cs` says it does: *"No art pipeline yet."*
+
+What it needs, in the order it should be built:
+1. Fetch `/icons/atlas.json` and `/icons/atlas.png` once at boot; build a `name -> Rect` lookup.
+2. `Sprite.Create` per frame against the one texture, cached by stem.
+3. A resolver taking the DTO string: items key on `artKey`, everything else on the `iconPath` stem.
+   Both reduce to the same lookup, because the atlas is keyed by file stem and that IS the artKey
+   for items — which is what makes 176 item ids resolve to 101 pictures.
+4. Fall back to the existing swatch when a stem is missing, so a half-finished art pass degrades to
+   what the client already does rather than to a blank.
+
+**Not takeable under the current tick protocol,** for the same reason as R0 and R4: the gate is
+`dotnet build ROTA.slnx` + `dotnet test tests/ROTA.UnitTests`, and neither compiles a line of Unity.
+Ranked here because it is now the ONLY thing between the art and a player seeing it.
+
 ### R0. Client runs in MOCK mode — the playtest never touched the backend
 `AppBootstrap.useMock` defaults to `true` and the scene's serialized value wins over the code default,
 so `Assets/Scenes/Main.unity` starts on canned data. The console says `[ROTA] client started (MOCK).`
@@ -169,6 +192,32 @@ right; the anchor is high.
 ---
 
 ## Owner decisions — the agent must not decide these
+
+0m. **The atlas is a derived file being committed as a source file, and it is 24% of the repo.**
+   *(measured 2026-09-10.)* `assets/icons/atlas.png` is rebuilt whenever any of the 362 icons
+   change, and every rebuild writes a wholly different 4.4 MB binary — compression means one changed
+   tile alters the entire stream, so git stores a full new blob every time and can never delta them.
+
+   Measured, not estimated: **9 versions, 19.7 MB, in an 82 MB `.git`.** Nine art batches have
+   landed. Thirty-five remain. At the current rate that is roughly 150 MB more of pure derived
+   churn, on a repo that is **public**.
+
+   **This is cheap to fix right now and expensive later: all 129 commits are unpushed.** Nothing has
+   left the machine, so history is still local and rewritable.
+
+   Three ways out, and the choice is a real tradeoff:
+   - **Keep committing it.** Simplest. A fresh clone builds and runs with art, no toolchain needed.
+     Costs the repo size, permanently and publicly.
+   - **Rebuild only at release points**, not per batch. Keeps most of the benefit, cuts most of the
+     churn. But `IconReferenceTests.The_atlas_carries_a_frame_for_every_icon_on_disk` fails the
+     moment the atlas is stale, which is the test doing its job — so this means accepting a red test
+     during an art pass, and that is a bad habit to install.
+   - **Drop it from git and generate it during the Docker build.** Correct in principle: derived
+     artifacts do not belong in source control. Costs a Python step in the image, and a fresh clone
+     no longer has an atlas until something builds one.
+
+   The agent should not pick. Rewriting published history is destructive, and *when* to spend the
+   one cheap window is a judgement about how much the public repo's size matters.
 
 0l. **Two Gauntlet rank magics are 3.4x the strongest ordinary Orange, and the mechanism they were
    built for no longer exists.** *(found while rebalancing the magic catalogue, 2026-09-07.)*
@@ -338,6 +387,19 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- `dafe718` — **the icons are served, and 186 of the 362 paths pointed at nothing.** The API
+  registered no static file middleware at all, so every icon path it sent a client addressed a URL
+  it would not answer. Most were wrong regardless: every hand-set path dropped the id's family
+  prefix, and every recipe pointed into `icons/craft/`, which has never existed. Nothing caught it
+  because with no file server, no request for these paths was ever made. Fixed in three places —
+  `normalize_icon_refs.py` now repairs rather than preserves, the csproj links `assets/icons/**`
+  into the build output, and `Program.cs` serves that directory AT `/icons` so the DTO string is the
+  URL verbatim. Ahead of auth and rate limiting, because art is public and a cold-cache client would
+  otherwise spend its whole bucket on pictures. Uses `AppContext.BaseDirectory`, not
+  `ContentRootPath` — linked icons exist only in the build output, and the warning on the not-found
+  branch is what caught that on the first run. Verified live: 400/400 references return 200, bytes
+  match disk, `If-None-Match` gets 304, `../` and `%2e%2e/` get 404. Three tests added so it cannot
+  rot. Raised RE1 and Owner decision 0m.
 - `0025a1e` — **audit tick: what the sigil fix did to raid access.** Every Ready item was blocked or
   Unity-side, so this was R6/R7-style work. Started from the raid-HP retune (did cutting HP up to 280x
   inflate kill rewards? yes, 28x-313x per stamina — but the SHAPE improved, spread 123x -> 15.5x), which
