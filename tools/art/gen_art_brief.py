@@ -91,6 +91,18 @@ SET_MOTIF = {
                           "nothing sharp anywhere in the set.",
 }
 
+# Flavour text is written to be read, not to be drawn from, and now and then the two want different
+# things. "Worn behind one ear like a circlet" is the line that sells the joke in an inventory
+# tooltip; handed to an image model it is simply the word "circlet", and a circlet is what comes
+# back. A note here overrides the description for drawing purposes only — the shipped string is
+# never touched, because the string is not the thing that is wrong.
+ART_NOTE = {
+    "gear_stoned_horns":
+        "Draw a single hand-rolled cigarette — a slim tapered paper roll, cream coloured, with a "
+        "glowing ember at one lit end and a thin curl of smoke. It is the whole object; there is no "
+        "circlet, no crown and no headband. Lay it horizontally across the cell.",
+}
+
 LAYOUT = """\
 Arrange them on ONE landscape image, 1536 x 1024, as a strict {cols} x {rows} grid.
 
@@ -254,7 +266,7 @@ def main():
                   % (STYLE.format(budget=BUDGET.get(rarity, BUDGET["Green"])),
                      motif_txt, LAYOUT.format(cols=cols, rows=rws, spare=spare_txt), len(chunk)))
                 for gid, name, noun, desc, _r in chunk:
-                    w("%s — %s. %s\n" % (name, noun, clean(desc)))
+                    w("%s — %s. %s\n" % (name, noun, ART_NOTE.get(gid) or clean(desc)))
                 w("```\n\n")
                 w("Then cut it up:\n\n```bash\npython tools/art/split_sheet.py SHEET.png "
                   "--grid %dx%d --out assets/icons/%s --size 512 --names %s\n```\n\n"
