@@ -7,8 +7,29 @@ generator, so the whole art pipeline runs on a bare Python with no pip install.
 The reader handles all five scanline filters rather than only the flat filter-0 the generator emits,
 because sheets exported by an image tool or an image model use whichever filter compresses best.
 """
+import pathlib
 import struct
 import zlib
+
+# The placeholder generator writes 64px tiles; every real icon is delivered at 512. Nothing in
+# between exists, so the width alone says which one a file is.
+PLACEHOLDER_SIZE = 64
+
+
+def dims(path):
+    """(width, height) from the IHDR alone — no decode, so it is cheap enough to ask of 362 files."""
+    with open(path, "rb") as fh:
+        head = fh.read(24)
+    if head[:8] != b"\x89PNG\r\n\x1a\n":
+        raise ValueError("%s is not a PNG" % path)
+    return struct.unpack(">II", head[16:24])
+
+
+def is_real_art(path):
+    """True when the file is delivered art rather than a generated placeholder. Missing counts as
+    not-art, so callers can ask about ids that have never been drawn at all."""
+    p = pathlib.Path(path)
+    return p.exists() and dims(p)[0] > PLACEHOLDER_SIZE
 
 
 def read(path):

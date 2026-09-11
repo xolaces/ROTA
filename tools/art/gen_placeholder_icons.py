@@ -40,6 +40,8 @@ import pathlib
 import struct
 import zlib
 
+import pnglib
+
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 CONTENT = ROOT / "src" / "ROTA.Api" / "content"
 OUT = ROOT / "assets" / "icons"
@@ -541,12 +543,20 @@ def main():
     rows = jobs()
     seen, dupes = set(), []
     counts = collections.Counter()
+    kept = 0
     for (eid, family, glyph, rarity, name, desc, kind, set_id) in rows:
         if eid in seen:
             dupes.append(eid)
             continue
         seen.add(eid)
-        write_png(OUT / family / (eid + ".png"), SIZE, SIZE, render(eid, glyph, rarity))
+        target = OUT / family / (eid + ".png")
+        # Delivered art is never overwritten. This runs after every content change to fill in
+        # tiles for new ids, and a filler that also flattened 127 finished icons back to glyphs
+        # would be the most expensive script in the repo.
+        if pnglib.is_real_art(target):
+            kept += 1
+            continue
+        write_png(target, SIZE, SIZE, render(eid, glyph, rarity))
         counts[family] += 1
 
     OUT.mkdir(parents=True, exist_ok=True)
@@ -557,6 +567,7 @@ def main():
             w.writerow([eid, family, kind, rarity, set_id, name, desc, "%s/%s.png" % (family, eid)])
 
     print("icons written: %d  (%s)" % (sum(counts.values()), dict(sorted(counts.items()))))
+    print("real art kept:  %d" % kept)
     print("manifest:      assets/icons/MANIFEST.csv")
     if dupes:
         print("shared art keys (expected — sigils collapse by raid): %d" % len(dupes))

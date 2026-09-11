@@ -1,6 +1,68 @@
 # ROTA — art brief
 
-**359 icons, in 23 batches.** Generated from the shipped content, so it cannot drift from what the game actually contains.
+**359 icons, in 49 batches.** Generated from the shipped content, so it cannot drift from what the game actually contains.
+
+## Progress
+
+**127 of 359 icons have real art. 16 of 49 batches are done; 33 remain (232 icons).**
+
+A batch is done when every file it names in `assets/icons/<family>/` is delivered art (512px). Everything not yet drawn ships the generated placeholder — a 64px glyph tile with the rarity colour and a slot mark — so nothing is blank in the game; the placeholders are exactly what the remaining batches replace. This section is read from disk, not maintained by hand: land a sheet with `split_sheet.py`, re-run `python tools/art/gen_art_brief.py`, and the batch moves itself to done.
+
+**Next up: Batch 17 — items — Material (3 of 6).** Remaining, in order: 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49.
+
+| Batch | Group | Icons | Status |
+|---|---|---|---|
+| 1 | set_conscript | 8 | done — real art |
+| 2 | set_pano | 8 | done — real art |
+| 3 | gear (no set) | 7 | done — real art |
+| 4 | set_weir | 8 | done — real art |
+| 5 | set_relay | 8 | done — real art |
+| 6 | set_sable_vein | 8 | done — real art |
+| 7 | set_warrens | 8 | done — real art |
+| 8 | set_marchwatch | 8 | done — real art |
+| 9 | set_gravewarden | 8 | done — real art |
+| 10 | set_drowned | 8 | done — real art |
+| 11 | set_wroughtbreaker | 8 | done — real art |
+| 12 | set_choir | 8 | done — real art |
+| 13 | set_sovereign | 8 | done — real art |
+| 14 | set_stoned_devil | 8 | done — real art |
+| 15 | items — Material (1 of 6) | 8 | done — real art |
+| 16 | items — Material (2 of 6) | 8 | done — real art |
+| 17 | items — Material (3 of 6) | 8 | **to do** — placeholders in game |
+| 18 | items — Material (4 of 6) | 8 | **to do** — placeholders in game |
+| 19 | items — Material (5 of 6) | 8 | **to do** — placeholders in game |
+| 20 | items — Material (6 of 6) | 7 | **to do** — placeholders in game |
+| 21 | items — StatBag | 6 | **to do** — placeholders in game |
+| 22 | items — Sigil (one per raid, shared by all four tiers) (1 of 4) | 8 | **to do** — placeholders in game |
+| 23 | items — Sigil (one per raid, shared by all four tiers) (2 of 4) | 8 | **to do** — placeholders in game |
+| 24 | items — Sigil (one per raid, shared by all four tiers) (3 of 4) | 8 | **to do** — placeholders in game |
+| 25 | items — Sigil (one per raid, shared by all four tiers) (4 of 4) | 2 | **to do** — placeholders in game |
+| 26 | items — Consumable (1 of 3) | 8 | **to do** — placeholders in game |
+| 27 | items — Consumable (2 of 3) | 8 | **to do** — placeholders in game |
+| 28 | items — Consumable (3 of 3) | 3 | **to do** — placeholders in game |
+| 29 | magics (1 of 6) | 8 | **to do** — placeholders in game |
+| 30 | magics (2 of 6) | 8 | **to do** — placeholders in game |
+| 31 | magics (3 of 6) | 8 | **to do** — placeholders in game |
+| 32 | magics (4 of 6) | 8 | **to do** — placeholders in game |
+| 33 | magics (5 of 6) | 8 | **to do** — placeholders in game |
+| 34 | magics (6 of 6) | 3 | **to do** — placeholders in game |
+| 35 | units (1 of 5) | 8 | **to do** — placeholders in game |
+| 36 | units (2 of 5) | 8 | **to do** — placeholders in game |
+| 37 | units (3 of 5) | 8 | **to do** — placeholders in game |
+| 38 | units (4 of 5) | 8 | **to do** — placeholders in game |
+| 39 | units (5 of 5) | 5 | **to do** — placeholders in game |
+| 40 | legions (1 of 2) | 8 | **to do** — placeholders in game |
+| 41 | legions (2 of 2) | 2 | **to do** — placeholders in game |
+| 42 | crafting recipes (1 of 3) | 8 | **to do** — placeholders in game |
+| 43 | crafting recipes (2 of 3) | 8 | **to do** — placeholders in game |
+| 44 | crafting recipes (3 of 3) | 7 | **to do** — placeholders in game |
+| 45 | raid bosses (1 of 5) | 8 | **to do** — placeholders in game |
+| 46 | raid bosses (2 of 5) | 8 | **to do** — placeholders in game |
+| 47 | raid bosses (3 of 5) | 8 | **to do** — placeholders in game |
+| 48 | raid bosses (4 of 5) | 8 | **to do** — placeholders in game |
+| 49 | raid bosses (5 of 5) | 5 | **to do** — placeholders in game |
+
+---
 
 ## How to use this
 
@@ -52,7 +114,9 @@ Consistency beats quality here. A set of forty merely-good icons that share a st
 
 ---
 
-## Batch 1 — set_conscript · 8 icons
+## Batch 1 — set_conscript · 8 icons · DONE
+
+Real art is on disk for all 8. The prompt stays for re-rolls.
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -99,7 +163,9 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 
 ---
 
-## Batch 2 — set_pano · 8 icons
+## Batch 2 — set_pano · 8 icons · DONE
+
+Real art is on disk for all 8. The prompt stays for re-rolls.
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -146,7 +212,9 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 
 ---
 
-## Batch 3 — gear (no set) · 7 icons
+## Batch 3 — gear (no set) · 7 icons · DONE
+
+Real art is on disk for all 7. The prompt stays for re-rolls.
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -192,7 +260,9 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 
 ---
 
-## Batch 4 — set_weir · 8 icons
+## Batch 4 — set_weir · 8 icons · DONE
+
+Real art is on disk for all 8. The prompt stays for re-rolls.
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -239,7 +309,9 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 
 ---
 
-## Batch 5 — set_relay · 8 icons
+## Batch 5 — set_relay · 8 icons · DONE
+
+Real art is on disk for all 8. The prompt stays for re-rolls.
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -286,7 +358,9 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 
 ---
 
-## Batch 6 — set_sable_vein · 8 icons
+## Batch 6 — set_sable_vein · 8 icons · DONE
+
+Real art is on disk for all 8. The prompt stays for re-rolls.
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -333,7 +407,9 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 
 ---
 
-## Batch 7 — set_warrens · 8 icons
+## Batch 7 — set_warrens · 8 icons · DONE
+
+Real art is on disk for all 8. The prompt stays for re-rolls.
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -380,7 +456,9 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 
 ---
 
-## Batch 8 — set_marchwatch · 8 icons
+## Batch 8 — set_marchwatch · 8 icons · DONE
+
+Real art is on disk for all 8. The prompt stays for re-rolls.
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -427,7 +505,9 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 
 ---
 
-## Batch 9 — set_gravewarden · 8 icons
+## Batch 9 — set_gravewarden · 8 icons · DONE
+
+Real art is on disk for all 8. The prompt stays for re-rolls.
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -474,7 +554,9 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 
 ---
 
-## Batch 10 — set_drowned · 8 icons
+## Batch 10 — set_drowned · 8 icons · DONE
+
+Real art is on disk for all 8. The prompt stays for re-rolls.
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -521,7 +603,9 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 
 ---
 
-## Batch 11 — set_wroughtbreaker · 8 icons
+## Batch 11 — set_wroughtbreaker · 8 icons · DONE
+
+Real art is on disk for all 8. The prompt stays for re-rolls.
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -568,7 +652,9 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 
 ---
 
-## Batch 12 — set_choir · 8 icons
+## Batch 12 — set_choir · 8 icons · DONE
+
+Real art is on disk for all 8. The prompt stays for re-rolls.
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -615,7 +701,9 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 
 ---
 
-## Batch 13 — set_sovereign · 8 icons
+## Batch 13 — set_sovereign · 8 icons · DONE
+
+Real art is on disk for all 8. The prompt stays for re-rolls.
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -662,7 +750,9 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 
 ---
 
-## Batch 14 — set_stoned_devil · 8 icons
+## Batch 14 — set_stoned_devil · 8 icons · DONE
+
+Real art is on disk for all 8. The prompt stays for re-rolls.
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -709,7 +799,9 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 
 ---
 
-## Batch 15 — items — Material (1 of 6) · 8 icons
+## Batch 15 — items — Material (1 of 6) · 8 icons · DONE
+
+Real art is on disk for all 8. The prompt stays for re-rolls.
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -754,7 +846,9 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 
 ---
 
-## Batch 16 — items — Material (2 of 6) · 8 icons
+## Batch 16 — items — Material (2 of 6) · 8 icons · DONE
+
+Real art is on disk for all 8. The prompt stays for re-rolls.
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -799,7 +893,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 
 ---
 
-## Batch 17 — items — Material (3 of 6) · 8 icons
+## Batch 17 — items — Material (3 of 6) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -844,7 +938,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 
 ---
 
-## Batch 18 — items — Material (4 of 6) · 8 icons
+## Batch 18 — items — Material (4 of 6) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -889,7 +983,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 
 ---
 
-## Batch 19 — items — Material (5 of 6) · 8 icons
+## Batch 19 — items — Material (5 of 6) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -934,7 +1028,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 
 ---
 
-## Batch 20 — items — Material (6 of 6) · 7 icons
+## Batch 20 — items — Material (6 of 6) · 7 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -980,7 +1074,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 
 ---
 
-## Batch 21 — items — StatBag · 6 icons
+## Batch 21 — items — StatBag · 6 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1023,7 +1117,7 @@ python tools/art/split_sheet.py SHEET.png --grid 3x2 --out assets/icons/item --s
 
 ---
 
-## Batch 22 — items — Sigil (one per raid, shared by all four tiers) (1 of 4) · 8 icons
+## Batch 22 — items — Sigil (one per raid, shared by all four tiers) (1 of 4) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1068,7 +1162,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 
 ---
 
-## Batch 23 — items — Sigil (one per raid, shared by all four tiers) (2 of 4) · 8 icons
+## Batch 23 — items — Sigil (one per raid, shared by all four tiers) (2 of 4) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1113,7 +1207,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 
 ---
 
-## Batch 24 — items — Sigil (one per raid, shared by all four tiers) (3 of 4) · 8 icons
+## Batch 24 — items — Sigil (one per raid, shared by all four tiers) (3 of 4) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1158,7 +1252,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 
 ---
 
-## Batch 25 — items — Sigil (one per raid, shared by all four tiers) (4 of 4) · 2 icons
+## Batch 25 — items — Sigil (one per raid, shared by all four tiers) (4 of 4) · 2 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1197,7 +1291,7 @@ python tools/art/split_sheet.py SHEET.png --grid 2x1 --out assets/icons/item --s
 
 ---
 
-## Batch 26 — items — Consumable (1 of 3) · 8 icons
+## Batch 26 — items — Consumable (1 of 3) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1242,7 +1336,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 
 ---
 
-## Batch 27 — items — Consumable (2 of 3) · 8 icons
+## Batch 27 — items — Consumable (2 of 3) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1287,7 +1381,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 
 ---
 
-## Batch 28 — items — Consumable (3 of 3) · 3 icons
+## Batch 28 — items — Consumable (3 of 3) · 3 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1329,7 +1423,7 @@ python tools/art/split_sheet.py SHEET.png --grid 2x2 --out assets/icons/item --s
 
 ---
 
-## Batch 29 — magics (1 of 6) · 8 icons
+## Batch 29 — magics (1 of 6) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1374,7 +1468,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/magic --
 
 ---
 
-## Batch 30 — magics (2 of 6) · 8 icons
+## Batch 30 — magics (2 of 6) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1419,7 +1513,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/magic --
 
 ---
 
-## Batch 31 — magics (3 of 6) · 8 icons
+## Batch 31 — magics (3 of 6) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1464,7 +1558,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/magic --
 
 ---
 
-## Batch 32 — magics (4 of 6) · 8 icons
+## Batch 32 — magics (4 of 6) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1509,7 +1603,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/magic --
 
 ---
 
-## Batch 33 — magics (5 of 6) · 8 icons
+## Batch 33 — magics (5 of 6) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1554,7 +1648,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/magic --
 
 ---
 
-## Batch 34 — magics (6 of 6) · 3 icons
+## Batch 34 — magics (6 of 6) · 3 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1596,7 +1690,7 @@ python tools/art/split_sheet.py SHEET.png --grid 2x2 --out assets/icons/magic --
 
 ---
 
-## Batch 35 — units (1 of 5) · 8 icons
+## Batch 35 — units (1 of 5) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1641,7 +1735,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/unit --s
 
 ---
 
-## Batch 36 — units (2 of 5) · 8 icons
+## Batch 36 — units (2 of 5) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1686,7 +1780,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/unit --s
 
 ---
 
-## Batch 37 — units (3 of 5) · 8 icons
+## Batch 37 — units (3 of 5) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1731,7 +1825,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/unit --s
 
 ---
 
-## Batch 38 — units (4 of 5) · 8 icons
+## Batch 38 — units (4 of 5) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1776,7 +1870,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/unit --s
 
 ---
 
-## Batch 39 — units (5 of 5) · 5 icons
+## Batch 39 — units (5 of 5) · 5 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1820,7 +1914,7 @@ python tools/art/split_sheet.py SHEET.png --grid 3x2 --out assets/icons/unit --s
 
 ---
 
-## Batch 40 — legions (1 of 2) · 8 icons
+## Batch 40 — legions (1 of 2) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1865,7 +1959,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/legion -
 
 ---
 
-## Batch 41 — legions (2 of 2) · 2 icons
+## Batch 41 — legions (2 of 2) · 2 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1904,7 +1998,7 @@ python tools/art/split_sheet.py SHEET.png --grid 2x1 --out assets/icons/legion -
 
 ---
 
-## Batch 42 — crafting recipes (1 of 3) · 8 icons
+## Batch 42 — crafting recipes (1 of 3) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1949,7 +2043,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/recipe -
 
 ---
 
-## Batch 43 — crafting recipes (2 of 3) · 8 icons
+## Batch 43 — crafting recipes (2 of 3) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1994,7 +2088,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/recipe -
 
 ---
 
-## Batch 44 — crafting recipes (3 of 3) · 7 icons
+## Batch 44 — crafting recipes (3 of 3) · 7 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -2040,7 +2134,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/recipe -
 
 ---
 
-## Batch 45 — raid bosses (1 of 5) · 8 icons
+## Batch 45 — raid bosses (1 of 5) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -2085,7 +2179,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/raid --s
 
 ---
 
-## Batch 46 — raid bosses (2 of 5) · 8 icons
+## Batch 46 — raid bosses (2 of 5) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -2130,7 +2224,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/raid --s
 
 ---
 
-## Batch 47 — raid bosses (3 of 5) · 8 icons
+## Batch 47 — raid bosses (3 of 5) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -2175,7 +2269,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/raid --s
 
 ---
 
-## Batch 48 — raid bosses (4 of 5) · 8 icons
+## Batch 48 — raid bosses (4 of 5) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -2220,7 +2314,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/raid --s
 
 ---
 
-## Batch 49 — raid bosses (5 of 5) · 5 icons
+## Batch 49 — raid bosses (5 of 5) · 5 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat

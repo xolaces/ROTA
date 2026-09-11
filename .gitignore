@@ -142,3 +142,7 @@ docs/research/dotd-wiki/*_files/
 /.vsconfig
 # Unity Purchasing writes this into the TRACKED assets/ directory.
 /assets/Resources/
+
+# Python bytecode from the art tools
+__pycache__/
+*.pyc

@@ -15,9 +15,12 @@ import re
 import json
 import pathlib
 
+import pnglib
+
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 CONTENT = ROOT / "src" / "ROTA.Api" / "content"
-OUT = ROOT / "assets" / "icons" / "ART_BRIEF.md"
+ICONS = ROOT / "assets" / "icons"
+OUT = ICONS / "ART_BRIEF.md"
 
 STYLE = """\
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -208,17 +211,63 @@ def clean(text, limit=190):
     return cut[:cut.rfind(" ")] + "…"
 
 
+def done_on_disk(fam, gid):
+    """Whether real art has landed for this id. Read from the folder rather than from a checklist,
+    so the brief tells the truth after every batch lands and never needs editing by hand."""
+    return pnglib.is_real_art(ICONS / fam / (gid + ".png"))
+
+
 def main():
     data = rows()
     groups = collections.OrderedDict()
     for fam, group, gid, name, noun, desc, rarity in data:
         groups.setdefault((fam, group), []).append((gid, name, noun, desc, rarity))
 
+    # Chunk before writing anything: the title counts batches and the progress table lists them.
+    batches = []   # (number, fam, group, label, chunk, still-placeholder ids)
+    for (fam, group), entries in groups.items():
+        chunks = [sorted(entries)[i:i + 8] for i in range(0, len(entries), 8)]
+        for ci, chunk in enumerate(chunks):
+            label = group if len(chunks) == 1 else "%s (%d of %d)" % (group, ci + 1, len(chunks))
+            missing = [gid for gid, *_ in chunk if not done_on_disk(fam, gid)]
+            batches.append((len(batches) + 1, fam, group, label, chunk, missing))
+    n_done = sum(len(chunk) - len(missing) for *_, chunk, missing in batches)
+    todo = [b for b in batches if b[5]]
+
     with io.open(OUT, "w", encoding="utf-8", newline="\n") as fh:
         w = fh.write
         w("# ROTA — art brief\n\n")
         w("**%d icons, in %d batches.** Generated from the shipped content, so it cannot drift "
-          "from what the game actually contains.\n\n" % (len(data), len(groups)))
+          "from what the game actually contains.\n\n" % (len(data), len(batches)))
+
+        # The owner's question after the first sixteen sheets landed was "what is left?" — and a
+        # brief that cannot answer it from its own first page is a brief that gets a checklist
+        # kept beside it, which drifts. So the answer is computed from the folder every run.
+        w("## Progress\n\n")
+        w("**%d of %d icons have real art. %d of %d batches are done; %d remain (%d icons).**\n\n"
+          % (n_done, len(data), len(batches) - len(todo), len(batches), len(todo),
+             len(data) - n_done))
+        w("A batch is done when every file it names in `assets/icons/<family>/` is delivered art "
+          "(512px). Everything not yet drawn ships the generated placeholder — a 64px glyph tile "
+          "with the rarity colour and a slot mark — so nothing is blank in the game; the "
+          "placeholders are exactly what the remaining batches replace. This section is read "
+          "from disk, not maintained by hand: land a sheet with `split_sheet.py`, re-run "
+          "`python tools/art/gen_art_brief.py`, and the batch moves itself to done.\n\n")
+        if todo:
+            w("**Next up: Batch %d — %s.** Remaining, in order: %s.\n\n"
+              % (todo[0][0], todo[0][3], ", ".join(str(b[0]) for b in todo)))
+        else:
+            w("**Every batch has landed.** Nothing left to draw.\n\n")
+        w("| Batch | Group | Icons | Status |\n|---|---|---|---|\n")
+        for num, fam, group, label, chunk, missing in batches:
+            if not missing:
+                status = "done — real art"
+            elif len(missing) == len(chunk):
+                status = "**to do** — placeholders in game"
+            else:
+                status = "**partial** — still placeholders: %s" % ", ".join("`%s`" % m for m in missing)
+            w("| %d | %s | %d | %s |\n" % (num, label, len(chunk), status))
+        w("\n---\n\n")
 
         w("## How to use this\n\n")
         w("Work one batch at a time. Paste the **style block** first, then the batch's items. "
@@ -252,41 +301,46 @@ def main():
           "reads as a game; forty beautiful icons that do not share one reads as a folder.\n\n")
         w("---\n\n")
 
-        n_batch = 0
-        for (fam, group), entries in groups.items():
-            chunks = [sorted(entries)[i:i + 8] for i in range(0, len(entries), 8)]
-            for ci, chunk in enumerate(chunks):
-                n_batch += 1
-                cols, rws = grid_for(len(chunk))
-                label = group if len(chunks) == 1 else "%s (%d of %d)" % (group, ci + 1, len(chunks))
-                w("## Batch %d — %s · %d icons\n\n" % (n_batch, label, len(chunk)))
-                # Style + layout + items in ONE block, so a batch is a single paste rather than
-                # three pieces the reader has to assemble in the right order every time.
-                slots = cols * rws
-                spare = slots - len(chunk)
-                spare_txt = "" if not spare else SPARE.format(
-                    n=len(chunk), slots=slots, spare=spare, s="" if spare == 1 else "s")
-                # Detail budget comes from the batch's dominant rarity, so a Grey set stays plain
-                # and an Orange one earns its extra shapes.
-                rarity = collections.Counter(r for *_, r in chunk).most_common(1)[0][0]
-                motif = SET_MOTIF.get(group)
-                motif_txt = "" if not motif else "\n\nThis set's signature, visible in every piece: " + motif
+        for num, fam, group, label, chunk, missing in batches:
+            cols, rws = grid_for(len(chunk))
+            state = "TO DO" if len(missing) == len(chunk) else ("PARTIAL" if missing else "DONE")
+            w("## Batch %d — %s · %d icons · %s\n\n" % (num, label, len(chunk), state))
+            # A landed batch keeps its prompt: re-rolls happen (Stoned Devil went twice), and a
+            # re-roll wants the exact text the first sheet came from.
+            if state == "DONE":
+                w("Real art is on disk for all %d. The prompt stays for re-rolls.\n\n" % len(chunk))
+            elif state == "PARTIAL":
+                w("Still placeholders: %s. Re-run the whole sheet — a set drawn in one sitting "
+                  "matches itself.\n\n" % ", ".join("`%s`" % m for m in missing))
+            # Style + layout + items in ONE block, so a batch is a single paste rather than
+            # three pieces the reader has to assemble in the right order every time.
+            slots = cols * rws
+            spare = slots - len(chunk)
+            spare_txt = "" if not spare else SPARE.format(
+                n=len(chunk), slots=slots, spare=spare, s="" if spare == 1 else "s")
+            # Detail budget comes from the batch's dominant rarity, so a Grey set stays plain
+            # and an Orange one earns its extra shapes.
+            rarity = collections.Counter(r for *_, r in chunk).most_common(1)[0][0]
+            motif = SET_MOTIF.get(group)
+            motif_txt = "" if not motif else "\n\nThis set's signature, visible in every piece: " + motif
 
-                w("```\n%s%s\n\n%s\n\nDraw these %d, in this order:\n\n"
-                  % (STYLE.format(budget=BUDGET.get(rarity, BUDGET["Green"])),
-                     motif_txt, LAYOUT.format(cols=cols, rows=rws, spare=spare_txt), len(chunk)))
-                for gid, name, noun, desc, _r in chunk:
-                    w("%s — %s. %s\n" % (name, noun, ART_NOTE.get(gid) or clean(desc)))
-                w("```\n\n")
-                w("Then cut it up:\n\n```bash\npython tools/art/split_sheet.py SHEET.png "
-                  "--grid %dx%d --out assets/icons/%s --size 512 --names %s\n```\n\n"
-                  % (cols, rws, fam, ",".join(g for g, _, _, _, _ in chunk)))
-                w("---\n\n")
+            w("```\n%s%s\n\n%s\n\nDraw these %d, in this order:\n\n"
+              % (STYLE.format(budget=BUDGET.get(rarity, BUDGET["Green"])),
+                 motif_txt, LAYOUT.format(cols=cols, rows=rws, spare=spare_txt), len(chunk)))
+            for gid, name, noun, desc, _r in chunk:
+                w("%s — %s. %s\n" % (name, noun, ART_NOTE.get(gid) or clean(desc)))
+            w("```\n\n")
+            w("Then cut it up:\n\n```bash\npython tools/art/split_sheet.py SHEET.png "
+              "--grid %dx%d --out assets/icons/%s --size 512 --names %s\n```\n\n"
+              % (cols, rws, fam, ",".join(g for g, _, _, _, _ in chunk)))
+            w("---\n\n")
 
     print("wrote %s" % OUT.relative_to(ROOT))
-    print("  %d icons across %d batches" % (len(data), len(groups)))
+    print("  %d icons across %d batches; %d icons drawn, %d batches still to do"
+          % (len(data), len(batches), n_done, len(todo)))
     for (fam, group), e in groups.items():
-        print("    %-28s %3d" % (group, len(e)))
+        drawn = sum(1 for gid, *_ in e if done_on_disk(fam, gid))
+        print("    %-28s %3d  (%d drawn)" % (group, len(e), drawn))
 
 
 if __name__ == "__main__":
