@@ -40,12 +40,18 @@ up unattended work starts here and finishes here.
 
 ## Ready — ranked
 
-> **Note for an autonomous tick (2026-09-04): R0 and R4 live in `C:\Dev\ROTA.Client6`, not here.**
-> The tick protocol's gate is `dotnet build ROTA.slnx` + `dotnet test tests/ROTA.UnitTests`, and
+> **Note for an autonomous tick, revised 2026-09-11: Unity DOES build headlessly on this machine.**
+> The 2026-09-04 note below said the opposite, and it was wrong for a reason worth knowing: the
+> build script passed `-version`, which is Unity's own "print version and exit" flag, so every
+> headless attempt quit before running anything and looked like a licensing failure. Fixed in
+> `ROTA.Client6` `e097f7d`. The working gate for client items is now
+> `.\tools\build-client.ps1 -Target WebGL` — a full IL2CPP build, ~10 min, exit 0 = compiles.
+> **So R4 and RE1 are takeable.** R0 is partly moot (see its entry).
+>
+> ~~The tick protocol's gate is `dotnet build ROTA.slnx` + `dotnet test tests/ROTA.UnitTests`, and
 > neither compiles a line of Unity, so an agent cannot VERIFY either item under the rule it is given.
 > R0's actual fix is also an Inspector checkbox, which is not a code change at all. Both need the
-> owner, or a tick with a Unity headless-compile gate added to the protocol. They stay ranked because
-> they matter; they are simply not takeable here.
+> owner, or a tick with a Unity headless-compile gate added to the protocol.~~
 
 ### RF1. TrustedProxies should accept a CIDR, so a recreated Caddy cannot silently break it  *(found in the 2026-09-10 deploy)*
 `Program.cs` parses each `ForwardedHeaders:TrustedProxies` entry with `IPAddress.Parse` and adds it to
@@ -62,24 +68,6 @@ the API itself, none of which an attacker can source packets from.
 
 Verifiable by the standard gate: a unit test that a CIDR entry lands in `KnownIPNetworks` and a bare
 IP still lands in `KnownProxies`. Update 7b in `BETA_DEPLOY.md` to use the CIDR once it ships.
-
-### RC2. Nobody already past a milestone will ever receive its magic  *(found while doing RC1)*
-RC1 grants the magic at the level-up event, which is the right chokepoint and the only one that
-exists. It means the grant is **not retroactive**: a player who was already level 3,000 when the
-grant shipped crossed 1,000 and 2,500 before there was anything to receive, and will never cross
-them again.
-
-On a wiped beta this is harmless — everyone starts at 1 and crosses every milestone with the grant
-in place. It matters only if a live database carries players above 1,000 at deploy time, and it is
-worth checking before assuming it does not.
-
-The fix is a one-shot backfill, not a code change: for each player, for each configured pinnacle
-level at or below their current level, upsert `magic_pinnacle_{level}`. `PlayerMagicRepository.UpsertAsync`
-is already idempotent and `player_magics` has a unique index on `(player_id, magic_definition_id)`,
-so the backfill is safe to run more than once. It belongs in `AdminCli` beside `beta-reset`.
-
-Deliberately NOT done as part of RC1: a backfill is a data migration over live rows, and the owner
-applies those.
 
 ### RD1. Sweep — repeat a cleared node without replaying it  *(owner-deferred 2026-09-07)*
 Auto-battle that unlocks only AFTER a first manual clear, so the proof-of-mastery gate survives but
@@ -120,6 +108,12 @@ What is NOT yet captured, and would be lost:
   indistinguishable after the fact. One nullable `cohort` column on `beta_keys`, set at generation
   time, is the whole fix — and it has to exist BEFORE the keys are minted, not after.
 
+  *Softened 2026-09-11:* `BetaKey.CreatedAt` already exists, and the waves are separated by the
+  reset itself — the 4 redeemed keys that survived `beta-reset` were all minted in June; anything
+  minted after 2026-09-11 is wave 2. So the cohort is recoverable from the timestamp for as long as
+  waves are separated by resets. The column is still the right long-term shape; it just stopped
+  being a blocker for minting the next batch.
+
 Later, when the badge itself is built:
 - Derive it rather than storing a flag: `PlayerProfileResponse.BetaCohorts` from the redeemed keys.
   A stored bool drifts; a derived list cannot.
@@ -152,6 +146,13 @@ What it needs, in the order it should be built:
 Ranked here because it is now the ONLY thing between the art and a player seeing it.
 
 ### R0. Client runs in MOCK mode — the playtest never touched the backend
+> **Scoped down 2026-09-11.** This no longer affects the WebGL build, which is the primary way to
+> play. `AppBootstrap.ApplyConfigOverrides` forces `useMock = false` and the production URL whenever
+> `Application.platform == WebGLPlayer`, before any config is read — verified live: the September
+> WebGL build rejects a duplicate registration, which `MockRotaApi.RegisterAsync` is incapable of
+> doing (it unconditionally succeeds). What remains is Editor Play mode and the Windows standalone,
+> both of which still read the scene's `useMock: 1`. Lower priority than it was.
+
 `AppBootstrap.useMock` defaults to `true` and the scene's serialized value wins over the code default,
 so `Assets/Scenes/Main.unity` starts on canned data. The console says `[ROTA] client started (MOCK).`
 and the profile shows DEV_Owner at Lv 2498 with 24.8M gold — none of it from the API.
@@ -400,6 +401,19 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- *(2026-09-11)* — **The beta is wiped and the September client is live.** `beta-reset --confirm
+  WIPE-BETA` applied on production after a dry run and a pre-wipe backup (772K): 5 accounts reset in
+  place, 0 purged, 11 unredeemed keys deleted, 4 redeemed kept, 3,688 rows across 24 tables, dry run
+  and real run identical to the row. The post-check passed, so all 5 accounts are loadable at level 1.
+  **RC2 closed by this** — nobody is past a milestone any more, so the pinnacle grant covers everyone
+  from here and the backfill never needs to exist. Separately, the WebGL client was rebuilt from
+  `feat/mock-playtest-accounts` (all five client branches, 20 commits past `master`) and shipped to
+  `/opt/rota/web` — 41,018,641-byte wasm, byte-identical local and remote. Three builds failed
+  first: twice on `-version` being Unity's own flag (fixed, `ROTA.Client6` `e097f7d`), once on a
+  June artifact owned by the old Windows install's SID (`takeown` from an admin shell). Caddy now
+  sends `must-revalidate` on `Build/*` so the next deploy is picked up without a cache clear.
+  Confirmed live against the real API rather than mock: a duplicate registration is rejected, which
+  `MockRotaApi` cannot do.
 - *(deploy, 2026-09-10)* — **132 commits to production, and the first real art off the server.**
   Backup taken (769K), `AddPlayerMarket` and `AddAchievementIncompleteIndex` applied via idempotent
   script and verified three ways (history rows, `to_regclass` on every new object, the full
