@@ -47,6 +47,22 @@ up unattended work starts here and finishes here.
 > owner, or a tick with a Unity headless-compile gate added to the protocol. They stay ranked because
 > they matter; they are simply not takeable here.
 
+### RF1. TrustedProxies should accept a CIDR, so a recreated Caddy cannot silently break it  *(found in the 2026-09-10 deploy)*
+`Program.cs` parses each `ForwardedHeaders:TrustedProxies` entry with `IPAddress.Parse` and adds it to
+`KnownProxies`. That forces the operator to list Caddy's exact container IP — `172.18.0.5` today —
+which Docker reassigns whenever the caddy service is recreated. When that happens the list is still
+non-empty, so the boot guard is satisfied and the API starts; it just stops honouring
+`X-Forwarded-For`, and every rate-limit bucket and audit IP collapses back onto the proxy. That is
+the exact quiet failure the guard was built to catch, moved one step along.
+
+The fix is ~6 lines: if an entry contains `/`, parse it as `IPNetwork` and add to `KnownIPNetworks`
+instead. Then the override can say `172.18.0.0/16` — the compose network — and never go stale.
+Trusting the whole compose subnet is safe here: the only things on it are postgres, redis, caddy and
+the API itself, none of which an attacker can source packets from.
+
+Verifiable by the standard gate: a unit test that a CIDR entry lands in `KnownIPNetworks` and a bare
+IP still lands in `KnownProxies`. Update 7b in `BETA_DEPLOY.md` to use the CIDR once it ships.
+
 ### RC2. Nobody already past a milestone will ever receive its magic  *(found while doing RC1)*
 RC1 grants the magic at the level-up event, which is the right chokepoint and the only one that
 exists. It means the grant is **not retroactive**: a player who was already level 3,000 when the
@@ -384,7 +400,18 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
-- *(this commit)* — **RC1: reaching a milestone level now actually awards the magic.** Everything
+- *(deploy, 2026-09-10)* — **132 commits to production, and the first real art off the server.**
+  Backup taken (769K), `AddPlayerMarket` and `AddAchievementIncompleteIndex` applied via idempotent
+  script and verified three ways (history rows, `to_regclass` on every new object, the full
+  `verify-prod-schema.sql` — every verdict OK, 55 files = 55 recorded). Image built with the icon
+  layer; `/health` Healthy; `/icons/gear/gear_stoned_horns.png` returns 200 at 169,311 bytes, the
+  same byte count as the local file. **One outage, self-inflicted by the runbook:** step 7b wrote
+  `ForwardedHeaders__Enabled: "true"` with no `TrustedProxies`, and `a7abe05`'s new boot guard
+  refused to start on exactly that — correctly, since the combination already behaved as disabled.
+  Fixed on the server by listing Caddy's IP; fixed in the runbook so 7b writes both lines and 7c no
+  longer calls it "not a launch blocker". Raised RF1 for the CIDR fix that removes the remaining
+  silent-failure mode.
+- `b29b3f3` — **RC1: reaching a milestone level now actually awards the magic.** Everything
   around it already worked — the levels, the seven definitions, the gems, the first-claim row — and
   the one line that hands the player the magic did not exist. Granted at the same chokepoint as the
   gems (`StatService.GrantLevelUpPointsAsync`), by convention rather than a mapping table: level

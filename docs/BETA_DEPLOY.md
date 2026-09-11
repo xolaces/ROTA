@@ -179,11 +179,35 @@ services:
   api:
     environment:
       ForwardedHeaders__Enabled: "true"
+      ForwardedHeaders__TrustedProxies__0: "CADDY_IP"   # see below — the API refuses to boot without it
+      Cors__AllowedOrigins__0: "https://play.example.com"
 volumes:
   caddy_data:
   caddy_config:
 EOF
 ```
+
+**`TrustedProxies` is not optional.** The API refuses to boot with `Enabled: "true"` and no trusted proxy,
+because that combination trusts nothing and honours no `X-Forwarded-For` — it reads as configured while
+behaving exactly like disabled, and every player's rate-limit bucket and audit IP silently collapses
+onto Caddy. An earlier revision of this step omitted the line and deferred it as "not a launch
+blocker"; the 2026-09-10 deploy crash-looped on it.
+
+Caddy has to exist before you can read its IP, so bring it up once, then fill the value in:
+
+```bash
+cd /opt/rota
+docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d caddy
+CADDY_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' rota-caddy)
+sed -i "s/\"CADDY_IP\"/\"$CADDY_IP\"/" docker-compose.caddy.yml
+grep TrustedProxies docker-compose.caddy.yml     # should now show a real 172.x address
+```
+
+> The value is a single IP, not a CIDR — `Program.cs` parses it with `IPAddress.Parse`. If Caddy's
+> container is ever recreated and lands on a different address, the API will still boot (the list is
+> non-empty) but will silently stop honouring forwarded headers. Re-run the three lines above after
+> any `up --build` that touches the caddy service, and check `docker logs rota-api` for the client IP
+> on a request rather than `172.18.x.x`.
 
 ### 7c. Stop the API publishing a public port
 
@@ -192,10 +216,8 @@ Edit `docker-compose.prod.yml` and **delete the api `ports:` block** (the two li
 port. (Leaving it exposed would let people hit plain HTTP and bypass TLS.)
 
 > The `api:8080` you'll launch with `-f docker-compose.prod.yml -f docker-compose.caddy.yml` so both files
-> merge. Per-IP rate-limiting/audit IPs: with Caddy in front, enable forwarded headers (done in 7b). If audit
-> logs later show the proxy IP instead of the real client, add Caddy's container IP to
-> `ForwardedHeaders__TrustedProxies__0` (find it with `docker inspect rota-caddy | grep IPAddress`). Not a
-> launch blocker.
+> merge. Per-IP rate-limiting and audit IPs depend on forwarded headers being enabled AND a trusted proxy
+> being listed — both done in 7b, and both required before the API will start.
 
 ---
 
