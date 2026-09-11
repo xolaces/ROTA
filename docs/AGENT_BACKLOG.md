@@ -38,6 +38,56 @@ up unattended work starts here and finishes here.
 
 ---
 
+## RESUME HERE — 2026-09-10, checkpointed at a usage limit
+
+The owner is asleep and asked for "a full functioning live test with pictures" of the icon
+pipeline (RE1) by morning. State when the limit hit:
+
+**Live right now:** `play.riseoftheancients.com` serves the WebGL build from `ROTA.Client6`
+`c281c77` — IconAtlas in, `runInBackground: 1`, verified booting unfocused with
+`[ROTA icons] atlas loaded: 362 frames`. The API serves all icons. The beta is wiped (5 accounts at
+level 1). The server-side backup dirs `/opt/rota/web.broken` and `/opt/rota/web.diag` are junk from
+a false-alarm rollback and can be deleted; `/opt/rota/web.june-backup` is the real rollback.
+
+**Proven with pictures** (in `scratchpad/s4-potions.png`, `s5-crafting.png`, `s5-zoom.png` of the
+session that wrote this — re-take them, the scratchpad does not survive): the Windows client in mock
+mode against the live atlas renders potion placeholders as 32px rarity-bordered tiles, and Crafting
+shows the REAL Oathsteel Helm (output) and REAL Conscript Helm (ingredient), crisp and correctly
+oriented. The pipeline works.
+
+**Uncommitted-to-live, unbuilt:** `ROTA.Client6` `1fb15bd` — the Profile's equipped-slot grid now
+draws the piece's icon (it drew a letter; the pass missed it), and the mock seed stamps IconPath on
+gear/magic so mock-mode screenshots can show the bag and equipped grid too. A Windows build hit a
+duplicate-initializer compile error, fixed in that commit, NOT yet rebuilt.
+
+**To finish, in order:**
+1. `cd C:\Dev\ROTA.Client6; .	oolsuild-client.ps1 -Target Windows -NoZip` — then write
+   `dist\ROTAota-config.json` = `{ "useMock": true, "baseUrl": "https://api.riseoftheancients.com" }`.
+2. Drive it with the PowerShell helper pattern (launch windowed, Win32 click + CopyFromScreen — no
+   MCP consent needed; the owner's desktop is unlocked). Mock login: click ENTER on empty fields.
+   Screenshot: Bazaar → Potions, Crafting, Profile (equipped grid), Profile → Bag. Send them with
+   SendUserFile.
+3. `.	oolsuild-client.ps1 -Target WebGL`, then `.	oolspply-webgl-bg.ps1` (MUST run through
+   the PowerShell tool, not powershell.exe — execution policy), then
+   `scp -r dist\ROTA-WebGL\index.html dist\ROTA-WebGL\Build dist\ROTA-WebGL\TemplateData root@104.248.232.77:/opt/rota/web/`.
+   NEVER `mv` the web dir — Caddy's bind mount follows the inode and keeps serving the old one.
+4. Verify live in a FRESH browser tab with IndexedDB cleared (`indexedDB.deleteDatabase('UnityCache')`
+   and `/idbfs`) — a cached framework.js from a previous build with a new wasm will not boot and looks
+   exactly like a broken build. Wait 30s; look for `atlas loaded` in the console.
+
+**Then the owner's second ask:** "fill the missing icons for now and update ART_BRIEF.md for me to
+create what's left / what was filled by yours." Every content entry already has a placeholder from
+`gen_placeholder_icons.py` (chunky glyph, rarity border), so nothing is missing at runtime. What is
+wanted is the brief annotated: mark batches 1–16 (all 14 gear sets, NoSet, Materials 1–2) as DONE
+with real art, and the remaining 33 batches as still-to-generate, so the owner can paste the right
+prompts. Do that in `tools/art/gen_art_brief.py` by reading which stems have a >256px file, so the
+annotation regenerates rather than rots.
+
+**Do NOT** enter the owner's password anywhere — they offered it; the rule holds. Mock mode is the
+test surface, and the pictures it produces are of the real UI code against the real atlas.
+
+---
+
 ## Ready — ranked
 
 > **Note for an autonomous tick, revised 2026-09-11: Unity DOES build headlessly on this machine.**
