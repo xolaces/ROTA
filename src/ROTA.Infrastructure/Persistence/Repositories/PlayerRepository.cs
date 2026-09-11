@@ -43,9 +43,14 @@ public sealed class PlayerRepository : IPlayerRepository
         return player;
     }
 
+    // The profile read. It needs Resources for the header pools AND Stats for the ATK/DEF chips:
+    // PlayerService.GetProfileAsync folds equipment into player.Stats.BaseAttack, and with Stats
+    // left unloaded that branch is skipped and the live profile reported 0 ATK / 0 DEF for every
+    // player while the Investments panel — a different endpoint — showed the real numbers.
     public async Task<Player?> FindByIdWithResourcesAsync(Guid id, CancellationToken ct = default)
         => await _db.Players
             .Include(p => p.Resources)
+            .Include(p => p.Stats)
             .Where(p => p.Id == id && !p.IsDeleted)
             .FirstOrDefaultAsync(ct);
 
