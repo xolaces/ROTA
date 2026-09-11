@@ -61,13 +61,13 @@ gear/magic so mock-mode screenshots can show the bag and equipped grid too. A Wi
 duplicate-initializer compile error, fixed in that commit, NOT yet rebuilt.
 
 **To finish, in order:**
-1. `cd C:DevROTA.Client6; .	oolsbuild-client.ps1 -Target Windows -NoZip` — then write
-   `distROTAota-config.json` = `{ "useMock": true, "baseUrl": "https://api.riseoftheancients.com" }`.
+1. `cd C:\Dev\ROTA.Client6; .\tools\build-client.ps1 -Target Windows -NoZip` — then write
+   `dist\ROTA\rota-config.json` = `{ "useMock": true, "baseUrl": "https://api.riseoftheancients.com" }`.
 2. Drive it with the PowerShell helper pattern (launch windowed, Win32 click + CopyFromScreen — no
    MCP consent needed; the owner's desktop is unlocked). Mock login: click ENTER on empty fields.
    Screenshot: Bazaar → Potions, Crafting, Profile (equipped grid), Profile → Bag. Send them with
    SendUserFile.
-3. `.	oolsbuild-client.ps1 -Target WebGL`, then `.	oolspply-webgl-bg.ps1` (MUST run through
+3. `.\tools\build-client.ps1 -Target WebGL`, then `.\tools\apply-webgl-bg.ps1` (MUST run through
    the PowerShell tool, not powershell.exe — execution policy), then
    `scp -r dist\ROTA-WebGL\index.html dist\ROTA-WebGL\Build dist\ROTA-WebGL\TemplateData root@104.248.232.77:/opt/rota/web/`.
    NEVER `mv` the web dir — Caddy's bind mount follows the inode and keeps serving the old one.
