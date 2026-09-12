@@ -9143,6 +9143,12 @@
             "quantity": 1,
             "chance": 0.005,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_colossus_core",
+            "quantity": 1,
+            "chance": 0.0004,
+            "rareScaling": true
           }
         ]
       },
@@ -9165,6 +9171,12 @@
             "gearDefinitionId": "gear_pano_steed",
             "quantity": 1,
             "chance": 0.005,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_colossus_core",
+            "quantity": 1,
+            "chance": 0.00046,
             "rareScaling": true
           }
         ]
@@ -9189,6 +9201,12 @@
             "quantity": 1,
             "chance": 0.005,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_colossus_core",
+            "quantity": 1,
+            "chance": 0.00052,
+            "rareScaling": true
           }
         ]
       },
@@ -9211,6 +9229,12 @@
             "gearDefinitionId": "gear_pano_steed",
             "quantity": 1,
             "chance": 0.005,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_colossus_core",
+            "quantity": 1,
+            "chance": 0.0006,
             "rareScaling": true
           }
         ]
@@ -9309,6 +9333,12 @@
             "quantity": 1,
             "chance": 0.005,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_cold_token",
+            "quantity": 1,
+            "chance": 0.0006,
+            "rareScaling": true
           }
         ]
       },
@@ -9325,6 +9355,12 @@
             "gearDefinitionId": "gear_pano_band",
             "quantity": 1,
             "chance": 0.005,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_cold_token",
+            "quantity": 1,
+            "chance": 0.00069,
             "rareScaling": true
           }
         ]
@@ -9343,6 +9379,12 @@
             "quantity": 1,
             "chance": 0.005,
             "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_cold_token",
+            "quantity": 1,
+            "chance": 0.00078,
+            "rareScaling": true
           }
         ]
       },
@@ -9359,6 +9401,12 @@
             "gearDefinitionId": "gear_pano_band",
             "quantity": 1,
             "chance": 0.005,
+            "rareScaling": true
+          },
+          {
+            "gearDefinitionId": "gear_cold_token",
+            "quantity": 1,
+            "chance": 0.0009,
             "rareScaling": true
           }
         ]

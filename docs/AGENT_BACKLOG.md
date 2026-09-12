@@ -102,11 +102,13 @@ so mixed sets compose without hand-cut layers. Hooks already in place: `Equipped
 / `ReforgedFrom`, `FigureArt` (one figure today, a dictionary tomorrow), `PaperDoll` (docks today,
 windows tomorrow). Blocked on the 13 figures; when they land, about a day of client work.
 
-### RG1. Three relics nothing on the live server hands out  *(found 2026-09-11; Conscript settled 2026-09-12)*
-The Conscript set is now the starter kit — granted and worn at registration, `grant-starter-kit`
-backfills older accounts. Three no-set relics still have no acquisition path: `gear_cold_token`,
-`gear_colossus_core` (both listed in `wire_drop_tables.py`'s DEEP_DROPS for zones that have no
-table) and `gear_sovereign_tithe`. Owner call on where they drop, or whether they exist.
+### RG1. One relic still has no home  *(found 2026-09-11; two of three wired 2026-09-12)*
+The Colossus-Core Shard drops from the Old Guard Ruins boss (`lt_quest_q003`, 0.04% Normal → 0.06%
+Nightmare, Discernment-scaled) and the Vanguard's Cold Token from the Vanguard Approach boss
+(`lt_quest_q005`, 0.06% → 0.09%) — `tools/content/wire_deep_relics.py`, the rates DEEP_DROPS always
+meant. `gear_sovereign_tithe` (Orange Ring1, 20/10) still drops nowhere: its text says it is
+"granted by the Gauntlet", which is a shop or settlement reward, not a zone. Owner call: the Throne
+of Ancients boss beside the Unworn Crown, or the Gauntlet.
 
 ### RD1. Sweep — repeat a cleared node without replaying it  *(owner-deferred 2026-09-07)*
 Auto-battle that unlocks only AFTER a first manual clear, so the proof-of-mastery gate survives but
