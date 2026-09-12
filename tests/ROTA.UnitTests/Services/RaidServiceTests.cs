@@ -1683,6 +1683,32 @@ public class RaidServiceTests
     }
 
     [Fact]
+    public async Task GetGuildRaids_KeepsADefeatedGuildRaid_UntilTheCallerHasLooted()
+    {
+        // The guild list is the only place a guild raid is claimed, so a defeated one the caller has
+        // not looted stays on it; another guild's lootable raid does not.
+        var b = BuildService();
+        var me = Guid.NewGuid();
+        var guildId = Guid.NewGuid();
+        b.GuildMemberships.Setup(r => r.FindByPlayerAsync(me, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(GuildMembership.Create(guildId, me, GuildRank.Member));
+        b.Raids.Setup(r => r.GetAllActiveAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<ActiveRaid>());
+
+        var ours = MakeVisRaid(Guid.NewGuid(), RaidVisibility.Private);
+        ours.LinkGuild(guildId); ours.MarkDefeated();
+        var theirs = MakeVisRaid(Guid.NewGuid(), RaidVisibility.Private);
+        theirs.LinkGuild(Guid.NewGuid()); theirs.MarkDefeated();
+        b.Raids.Setup(r => r.GetLootableUnclaimedForPlayerAsync(me, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ActiveRaid> { ours, theirs });
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var list = await b.Service.GetGuildRaidsAsync(me);
+
+        list.Should().ContainSingle().Which.ActiveRaidId.Should().Be(ours.Id);
+        list[0].LifecycleState.Should().Be("Lootable");
+    }
+
+    [Fact]
     public async Task GetActiveRaids_LootableAndLooted_NeverListed()
     {
         var b = BuildService();
