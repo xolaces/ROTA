@@ -456,6 +456,43 @@ public class EquipmentServiceTests
         return (service, gearRepo, equipRepo, gearDefs);
     }
 
+    // The paper doll reads SetId and ReforgedFrom off the equipped and owned rows: the set to draw
+    // the piece from in phase 2, and the mark that says "reforged" today. Both come straight off
+    // the definition, and a plain piece carries null for the second.
+    [Fact]
+    public async Task GetEquipment_And_OwnedGear_CarryTheSetAndTheReforgeLink()
+    {
+        var (service, gearRepo, equipRepo, gearDefs) = BuildServiceForOwnedGear();
+        var playerId = Guid.NewGuid();
+
+        var reforged = HelmDef();
+        reforged.Id = "gear_conscript_helm_reforged";
+        reforged.SetId = "set_conscript_reforged";
+        reforged.ReforgedFrom = "gear_conscript_helm";
+        gearDefs.Setup(g => g.GetById("gear_conscript_helm_reforged")).Returns(reforged);
+        var plain = HelmDef();
+        plain.SetId = "set_conscript";
+        gearDefs.Setup(g => g.GetById("gear_conscript_helm")).Returns(plain);
+
+        equipRepo.Setup(r => r.GetEquippedAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerEquipment> { PlayerEquipment.Create(playerId, EquipmentSlot.Head, "gear_conscript_helm_reforged") });
+        gearRepo.Setup(g => g.GetOwnedAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerGear>
+            {
+                PlayerGear.Create(playerId, "gear_conscript_helm_reforged", 1),
+                PlayerGear.Create(playerId, "gear_conscript_helm", 1),
+            });
+
+        var worn = (await service.GetEquipmentAsync(playerId)).Single();
+        worn.SetId.Should().Be("set_conscript_reforged");
+        worn.ReforgedFrom.Should().Be("gear_conscript_helm");
+
+        var owned = await service.GetOwnedGearAsync(playerId);
+        owned.Single(g => g.GearDefinitionId == "gear_conscript_helm_reforged").ReforgedFrom.Should().Be("gear_conscript_helm");
+        owned.Single(g => g.GearDefinitionId == "gear_conscript_helm").ReforgedFrom.Should().BeNull("an ordinary piece was not made from anything");
+        owned.Single(g => g.GearDefinitionId == "gear_conscript_helm").SetId.Should().Be("set_conscript");
+    }
+
     [Fact]
     public async Task GetOwnedGear_NoneEquipped_AvailableEqualsOwned()
     {

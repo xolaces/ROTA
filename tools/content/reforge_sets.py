@@ -202,6 +202,8 @@ def reforge_gear(gear):
         # refuses a set that claims a slot twice, and when set bonuses land a reforged set should
         # be able to carry a better one than the set it came from.
         r["setId"] = g["setId"] + "_reforged"
+        # The link back, for the client: draw me with my base piece's art, mark me reforged.
+        r["reforgedFrom"] = g["id"]
         out.append(r)
     return base + out
 

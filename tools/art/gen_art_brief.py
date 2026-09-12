@@ -221,6 +221,67 @@ def clean(text, limit=190):
     return cut[:cut.rfind(" ")] + "…"
 
 
+BODY_FRAME = """\
+Portrait format, 2:3 (1024 x 1536). One standing human figure, front-facing, weight even on both
+feet, feet a little apart, arms held slightly away from the body with the palms turned in. The
+figure fills the height with a small margin above the head and below the feet. No face — a smooth
+featureless head. No weapon, no ground, no shadow under the feet, transparent background.\
+"""
+
+SET_SLOTS = ["Head", "Neck", "Torso", "Gloves", "Boots", "Ring1", "Ring2", "Mount"]
+
+
+def figure_style(budget):
+    """The icon style block, re-aimed at a figure: the size line and the square frame are the
+    only two sentences that are about a 64px tile rather than about the style."""
+    return (STYLE.format(budget=budget)
+            .replace("It will be viewed at 64 pixels, so anything smaller than a fingernail is left "
+                     "out entirely:", "It will be viewed at about 350 pixels tall, so keep detail at "
+                     "the scale of a buckle, never a stitch:")
+            .replace("One object, centred, filling the frame. Straight-on or clean profile view.",
+                     "One figure, centred. Straight-on.")
+            .replace("Square, with no halo", "No halo"))
+
+
+def write_body_section(w, data):
+    """The paper doll's figures. Phase 1 (live) docks icons on a generated mannequin; the real
+    body replaces that file. Phase 2 wants one figure per set in the SAME pose, because the client
+    shows each worn piece through a window over its set's figure — the pose is what lets a head
+    from one set sit on a torso from another."""
+    w("## The body — the paper doll's figure\n\n")
+    w("The Profile shows a figure wearing the gear. Today it is a generated mannequin "
+      "(`assets/icons/body/mannequin.png`) with each worn piece's icon docked on the part of the "
+      "body it belongs to; the dock points live in `mannequin.json` beside it. The real figure "
+      "replaces that file at the same 2:3 framing — **keep the pose**, the docks are placed on it.\n\n")
+    w("### The mannequin — 1 image\n\n```\n%s\n\n%s\n\nThe figure is an armour stand: undyed "
+      "linen underclothes, bare hands and feet, no hair, no ornament. It exists to be dressed. "
+      "Neutral slate-and-cream palette, nothing that reads as a rarity colour.\n```\n\n"
+      "Save as `assets/icons/body/mannequin.png`.\n\n"
+      % (figure_style(BUDGET["White"]), BODY_FRAME))
+
+    w("### Phase 2 — one figure per set, same pose · 13 images\n\n")
+    w("Not wired yet; generate when convenient. Each is the mannequin above wearing the complete "
+      "set, and the pose and framing must match the mannequin exactly. Save as "
+      "`assets/icons/body/<setId>.png`.\n\n")
+    gear = load("gear.json")
+    for set_id, motif in SET_MOTIF.items():
+        pieces = [g for g in gear if g.get("setId") == set_id]
+        if not pieces:
+            continue
+        pieces.sort(key=lambda g: SET_SLOTS.index(g["slot"]) if g["slot"] in SET_SLOTS else 99)
+        rarity = pieces[0]["rarity"]
+        worn = "; ".join("%s (%s)" % (g["name"], g["slot"]) for g in pieces if g["slot"] != "Mount")
+        mount = next((g["name"] for g in pieces if g["slot"] == "Mount"), None)
+        w("**%s** — `assets/icons/body/%s.png`\n\n```\n%s\n\n%s\n\nThe same figure, same pose, "
+          "same framing, now wearing the complete set: %s. %s\n\nThis set's signature, visible "
+          "in every piece: %s\n```\n\n"
+          % (set_id.replace("set_", "").replace("_", " ").title(), set_id,
+             figure_style(BUDGET.get(rarity, BUDGET["Green"])), BODY_FRAME, worn,
+             ("The mount, %s, is NOT in this image — it is drawn separately." % mount) if mount else "",
+             motif))
+    w("---\n\n")
+
+
 def done_on_disk(fam, gid):
     """Whether real art has landed for this id. Read from the folder rather than from a checklist,
     so the brief tells the truth after every batch lands and never needs editing by hand."""
@@ -344,6 +405,8 @@ def main():
               "--grid %dx%d --out assets/icons/%s --size 512 --names %s\n```\n\n"
               % (cols, rws, fam, ",".join(g for g, _, _, _, _ in chunk)))
             w("---\n\n")
+
+        write_body_section(w, data)
 
     print("wrote %s" % OUT.relative_to(ROOT))
     print("  %d icons across %d batches; %d icons drawn, %d batches still to do"

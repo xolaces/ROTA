@@ -32,4 +32,11 @@ public class GearDefinition
     /// make a set impossible to wear.
     /// </summary>
     public string? SetId { get; set; }
+
+    /// <summary>
+    /// For a reforged twin, the id of the base piece it was made from; null for everything else.
+    /// Written by tools/content/reforge_sets.py. The client uses it to draw a reforged piece with
+    /// its base piece's art and mark it as reforged; nothing in combat reads it.
+    /// </summary>
+    public string? ReforgedFrom { get; set; }
 }

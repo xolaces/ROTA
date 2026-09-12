@@ -121,7 +121,8 @@ def write_png(path, width, height, pixels):
 
 def main():
     tiles = []
-    for family in sorted(p.name for p in ICONS.iterdir() if p.is_dir()):
+    # body/ holds the paper-doll figures — 2:3 images the client fetches whole, not tiles.
+    for family in sorted(p.name for p in ICONS.iterdir() if p.is_dir() and p.name != "body"):
         for f in sorted((ICONS / family).glob("*.png")):
             tiles.append((family, f.stem, f))
     if not tiles:

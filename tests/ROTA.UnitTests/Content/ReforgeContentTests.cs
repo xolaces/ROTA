@@ -49,6 +49,7 @@ public class ReforgeContentTests
             S(r, "slot").Should().Be(S(g, "slot"), $"{id}: the reforged piece fills the same slot");
             S(r, "rarity").Should().Be(S(g, "rarity"), $"{id}: the frame colour does not change");
             S(r, "iconPath").Should().Be(S(g, "iconPath"), $"{id}: same object, same picture");
+            S(r, "reforgedFrom").Should().Be(id, $"{id}: the twin points back at its base piece");
             long baseTotal = g.GetProperty("bonusAttack").GetInt64() + g.GetProperty("bonusDefense").GetInt64();
             long reforgedTotal = r.GetProperty("bonusAttack").GetInt64() + r.GetProperty("bonusDefense").GetInt64();
             reforgedTotal.Should().BeGreaterThan(baseTotal, $"{id}: a reforge that is not an upgrade is a scam");

@@ -2498,3 +2498,391 @@ python tools/art/split_sheet.py SHEET.png --grid 3x2 --out assets/icons/raid --s
 
 ---
 
+## The body — the paper doll's figure
+
+The Profile shows a figure wearing the gear. Today it is a generated mannequin (`assets/icons/body/mannequin.png`) with each worn piece's icon docked on the part of the body it belongs to; the dock points live in `mannequin.json` beside it. The real figure replaces that file at the same 2:3 framing — **keep the pose**, the docks are placed on it.
+
+### The mannequin — 1 image
+
+```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified: two materials, four shapes. One small functional detail at most. It will be viewed at about 350 pixels tall, so keep detail at the scale of a buckle, never a stitch:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
+
+One figure, centred. Straight-on. Flat even light with no
+implied direction. No halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+Portrait format, 2:3 (1024 x 1536). One standing human figure, front-facing, weight even on both
+feet, feet a little apart, arms held slightly away from the body with the palms turned in. The
+figure fills the height with a small margin above the head and below the feet. No face — a smooth
+featureless head. No weapon, no ground, no shadow under the feet, transparent background.
+
+The figure is an armour stand: undyed linen underclothes, bare hands and feet, no hair, no ornament. It exists to be dressed. Neutral slate-and-cream palette, nothing that reads as a rarity colour.
+```
+
+Save as `assets/icons/body/mannequin.png`.
+
+### Phase 2 — one figure per set, same pose · 13 images
+
+Not wired yet; generate when convenient. Each is the mannequin above wearing the complete set, and the pose and framing must match the mannequin exactly. Save as `assets/icons/body/<setId>.png`.
+
+**Conscript** — `assets/icons/body/set_conscript.png`
+
+```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Severely simplified: two materials, three or four shapes, no decoration at all. This is issued kit — plain, unadorned, slightly shabby. It will be viewed at about 350 pixels tall, so keep detail at the scale of a buckle, never a stitch:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
+
+One figure, centred. Straight-on. Flat even light with no
+implied direction. No halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+Portrait format, 2:3 (1024 x 1536). One standing human figure, front-facing, weight even on both
+feet, feet a little apart, arms held slightly away from the body with the palms turned in. The
+figure fills the height with a small margin above the head and below the feet. No face — a smooth
+featureless head. No weapon, no ground, no shadow under the feet, transparent background.
+
+The same figure, same pose, same framing, now wearing the complete set: Conscript Helm (Head); Conscript Collar (Neck); Conscript Chest (Torso); Conscript Gloves (Gloves); Conscript Boots (Boots); Iron Ring (Ring1); Worn Band (Ring2). The mount, Draft Horse, is NOT in this image — it is drawn separately.
+
+This set's signature, visible in every piece: Undyed brown leather and bare grey steel. No insignia, no colour, no decoration whatsoever — this is the kit a recruit is handed.
+```
+
+**Weir** — `assets/icons/body/set_weir.png`
+
+```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Simple: three materials, about five shapes, and ONE functional detail such as a strap, a buckle or a stamped mark. It will be viewed at about 350 pixels tall, so keep detail at the scale of a buckle, never a stitch:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
+
+One figure, centred. Straight-on. Flat even light with no
+implied direction. No halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+Portrait format, 2:3 (1024 x 1536). One standing human figure, front-facing, weight even on both
+feet, feet a little apart, arms held slightly away from the body with the palms turned in. The
+figure fills the height with a small margin above the head and below the feet. No face — a smooth
+featureless head. No weapon, no ground, no shadow under the feet, transparent background.
+
+The same figure, same pose, same framing, now wearing the complete set: Weir Kettle Helm (Head); Weir Gorget (Neck); Weir Brigandine (Torso); Weir Handguards (Gloves); Weir Marchboots (Boots); Causeway Seal Ring (Ring1); Marchwarden's Band (Ring2). The mount, Weir Courser, is NOT in this image — it is drawn separately.
+
+This set's signature, visible in every piece: Riveted iron bands over olive-green canvas, and a stamped square tower mark. Frontier issue: functional, squared-off, no curves. No lamps.
+```
+
+**Warrens** — `assets/icons/body/set_warrens.png`
+
+```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Simple: three materials, about five shapes, and ONE functional detail such as a strap, a buckle or a stamped mark. It will be viewed at about 350 pixels tall, so keep detail at the scale of a buckle, never a stitch:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
+
+One figure, centred. Straight-on. Flat even light with no
+implied direction. No halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+Portrait format, 2:3 (1024 x 1536). One standing human figure, front-facing, weight even on both
+feet, feet a little apart, arms held slightly away from the body with the palms turned in. The
+figure fills the height with a small margin above the head and below the feet. No face — a smooth
+featureless head. No weapon, no ground, no shadow under the feet, transparent background.
+
+The same figure, same pose, same framing, now wearing the complete set: Warrens Lamp-Hood (Head); Ratter's Choker (Neck); Warrens Jack (Torso); Ratter's Grips (Gloves); Warrens Treads (Boots); Tunnel-Warden's Seal (Ring1); Knuckle-Ring of the Weir (Ring2). The mount, Warrens Pit-Pony, is NOT in this image — it is drawn separately.
+
+This set's signature, visible in every piece: Soot-blackened leather with brass fittings, and tusk or tooth accents. Where a lamp appears it is a CAGED PIT LAMP — squat, barred, underground.
+```
+
+**Marchwatch** — `assets/icons/body/set_marchwatch.png`
+
+```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Simple: three materials, about five shapes, and ONE functional detail such as a strap, a buckle or a stamped mark. It will be viewed at about 350 pixels tall, so keep detail at the scale of a buckle, never a stitch:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
+
+One figure, centred. Straight-on. Flat even light with no
+implied direction. No halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+Portrait format, 2:3 (1024 x 1536). One standing human figure, front-facing, weight even on both
+feet, feet a little apart, arms held slightly away from the body with the palms turned in. The
+figure fills the height with a small margin above the head and below the feet. No face — a smooth
+featureless head. No weapon, no ground, no shadow under the feet, transparent background.
+
+The same figure, same pose, same framing, now wearing the complete set: Marchwatch Helm (Head); Watchman's Gorget (Neck); Long Marchwatch Coat (Torso); Watch Mitts (Gloves); Marchwatch Boots (Boots); Ring of the Standing Watch (Ring1); Tally-Ring (Ring2). The mount, Marchwatch Rounder, is NOT in this image — it is drawn separately.
+
+This set's signature, visible in every piece: Long oiled wool in slate grey and waxed storm-cloth. Draped, caped, weatherproof silhouettes. Almost no metal beyond a single pin. No lamps.
+```
+
+**Relay** — `assets/icons/body/set_relay.png`
+
+```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Three materials, about six shapes. One decorative element beyond pure function. It will be viewed at about 350 pixels tall, so keep detail at the scale of a buckle, never a stitch:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
+
+One figure, centred. Straight-on. Flat even light with no
+implied direction. No halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+Portrait format, 2:3 (1024 x 1536). One standing human figure, front-facing, weight even on both
+feet, feet a little apart, arms held slightly away from the body with the palms turned in. The
+figure fills the height with a small margin above the head and below the feet. No face — a smooth
+featureless head. No weapon, no ground, no shadow under the feet, transparent background.
+
+The same figure, same pose, same framing, now wearing the complete set: Relaykeeper's Hood (Head); Torc of the Quiet Wind (Neck); Relay Coat (Torso); Lampwright's Grips (Gloves); Frostmere Treads (Boots); Lamplighter's Seal (Ring1); Vaultkeeper's Band (Ring2). The mount, Relay Charger, is NOT in this image — it is drawn separately.
+
+This set's signature, visible in every piece: Cream canvas with blue piping and brass fittings. Where a lamp appears it is a CLEAR SIGNAL LAMP — tall, glass-sided, amber lens. Never caged.
+```
+
+**Gravewarden** — `assets/icons/body/set_gravewarden.png`
+
+```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Three materials, about six shapes. One decorative element beyond pure function. It will be viewed at about 350 pixels tall, so keep detail at the scale of a buckle, never a stitch:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
+
+One figure, centred. Straight-on. Flat even light with no
+implied direction. No halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+Portrait format, 2:3 (1024 x 1536). One standing human figure, front-facing, weight even on both
+feet, feet a little apart, arms held slightly away from the body with the palms turned in. The
+figure fills the height with a small margin above the head and below the feet. No face — a smooth
+featureless head. No weapon, no ground, no shadow under the feet, transparent background.
+
+The same figure, same pose, same framing, now wearing the complete set: Gravewarden's Hood (Head); Seal of the Quiet Ground (Neck); Gravewarden's Coat (Torso); Gravewarden's Gauntlets (Gloves); Marsh Wades (Boots); Binding Band (Ring1); Warden's Signet (Ring2). The mount, Gravewarden's Dray, is NOT in this image — it is drawn separately.
+
+This set's signature, visible in every piece: Heavy dark canvas over barrow-iron plate, black pitch seals, and one chalk-white line of gravesalt. Sombre, buried, weighted.
+```
+
+**Drowned** — `assets/icons/body/set_drowned.png`
+
+```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Three materials, about six shapes. One decorative element beyond pure function. It will be viewed at about 350 pixels tall, so keep detail at the scale of a buckle, never a stitch:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
+
+One figure, centred. Straight-on. Flat even light with no
+implied direction. No halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+Portrait format, 2:3 (1024 x 1536). One standing human figure, front-facing, weight even on both
+feet, feet a little apart, arms held slightly away from the body with the palms turned in. The
+figure fills the height with a small margin above the head and below the feet. No face — a smooth
+featureless head. No weapon, no ground, no shadow under the feet, transparent background.
+
+The same figure, same pose, same framing, now wearing the complete set: Salvager's Helm (Head); Tidewatch Torc (Neck); Salvage Harness (Torso); Salvager's Grips (Gloves); Shalewalkers (Boots); Vault-Seal Ring (Ring1); Barnacle Band (Ring2). The mount, Coastwise Courser, is NOT in this image — it is drawn separately.
+
+This set's signature, visible in every piece: Sealed collars, thick glass plate, cork-and-iron soles and green verdigris copper. Everything looks watertight.
+```
+
+**Sable Vein** — `assets/icons/body/set_sable_vein.png`
+
+```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at about 350 pixels tall, so keep detail at the scale of a buckle, never a stitch:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
+
+One figure, centred. Straight-on. Flat even light with no
+implied direction. No halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+Portrait format, 2:3 (1024 x 1536). One standing human figure, front-facing, weight even on both
+feet, feet a little apart, arms held slightly away from the body with the palms turned in. The
+figure fills the height with a small margin above the head and below the feet. No face — a smooth
+featureless head. No weapon, no ground, no shadow under the feet, transparent background.
+
+The same figure, same pose, same framing, now wearing the complete set: Sable Vein Circlet (Head); Threnody Collar (Neck); Mantle of the Sable Vein (Torso); Archivist's Grips (Gloves); Stair-Worn Boots (Boots); House Sable Seal (Ring1); Vein-Cut Band (Ring2). The mount, Sable Courser, is NOT in this image — it is drawn separately.
+
+This set's signature, visible in every piece: Matte black with a single gold lozenge and sable-thread edging. Severe, narrow, aristocratic.
+```
+
+**Wroughtbreaker** — `assets/icons/body/set_wroughtbreaker.png`
+
+```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at about 350 pixels tall, so keep detail at the scale of a buckle, never a stitch:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
+
+One figure, centred. Straight-on. Flat even light with no
+implied direction. No halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+Portrait format, 2:3 (1024 x 1536). One standing human figure, front-facing, weight even on both
+feet, feet a little apart, arms held slightly away from the body with the palms turned in. The
+figure fills the height with a small margin above the head and below the feet. No face — a smooth
+featureless head. No weapon, no ground, no shadow under the feet, transparent background.
+
+The same figure, same pose, same framing, now wearing the complete set: Breaker's Visor (Head); Siege Collar (Neck); Wroughtbreaker Plate (Torso); Wroughtbreaker Gauntlets (Gloves); Breaker's Sabatons (Boots); Sigil-Key Ring (Ring1); Breaker's Band (Ring2). The mount, Siege Destrier, is NOT in this image — it is drawn separately.
+
+This set's signature, visible in every piece: Blunt lead-grey slabs with an orange cracked-core glow in the seams. Industrial, heavy, siege equipment rather than armour.
+```
+
+**Choir** — `assets/icons/body/set_choir.png`
+
+```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at about 350 pixels tall, so keep detail at the scale of a buckle, never a stitch:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
+
+One figure, centred. Straight-on. Flat even light with no
+implied direction. No halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+Portrait format, 2:3 (1024 x 1536). One standing human figure, front-facing, weight even on both
+feet, feet a little apart, arms held slightly away from the body with the palms turned in. The
+figure fills the height with a small margin above the head and below the feet. No face — a smooth
+featureless head. No weapon, no ground, no shadow under the feet, transparent background.
+
+The same figure, same pose, same framing, now wearing the complete set: Listener's Circlet (Head); Resonant Stole (Neck); Dawnward Vestment (Torso); Cantor's Wraps (Gloves); Vigil Slippers (Boots); Ring of the First Answer (Ring1); Attendant's Band (Ring2). The mount, Choir Palfrey, is NOT in this image — it is drawn separately.
+
+This set's signature, visible in every piece: Resonant brass and pale bone-white, in bell and tuning-fork shapes. Deliberately open at the ears and throat.
+```
+
+**Pano** — `assets/icons/body/set_pano.png`
+
+```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Four or five materials, about nine shapes — the most detailed tier, and still no filigree. One distinctive silhouette flourish, and one precious or glowing inlay. It will be viewed at about 350 pixels tall, so keep detail at the scale of a buckle, never a stitch:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
+
+One figure, centred. Straight-on. Flat even light with no
+implied direction. No halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+Portrait format, 2:3 (1024 x 1536). One standing human figure, front-facing, weight even on both
+feet, feet a little apart, arms held slightly away from the body with the palms turned in. The
+figure fills the height with a small margin above the head and below the feet. No face — a smooth
+featureless head. No weapon, no ground, no shadow under the feet, transparent background.
+
+The same figure, same pose, same framing, now wearing the complete set: Pano's War Helm (Head); Pano's Amulet (Neck); Pano's Cuirass (Torso); Pano's Gauntlets (Gloves); Pano's Greaves (Boots); Pano's Signet (Ring1); Pano's Band (Ring2). The mount, Pano's Steed, is NOT in this image — it is drawn separately.
+
+This set's signature, visible in every piece: White enamel, deep blue and gold, carrying a four-pointed star.
+```
+
+**Sovereign** — `assets/icons/body/set_sovereign.png`
+
+```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Four or five materials, about nine shapes — the most detailed tier, and still no filigree. One distinctive silhouette flourish, and one precious or glowing inlay. It will be viewed at about 350 pixels tall, so keep detail at the scale of a buckle, never a stitch:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
+
+One figure, centred. Straight-on. Flat even light with no
+implied direction. No halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+Portrait format, 2:3 (1024 x 1536). One standing human figure, front-facing, weight even on both
+feet, feet a little apart, arms held slightly away from the body with the palms turned in. The
+figure fills the height with a small margin above the head and below the feet. No face — a smooth
+featureless head. No weapon, no ground, no shadow under the feet, transparent background.
+
+The same figure, same pose, same framing, now wearing the complete set: Sovereign's Diadem (Head); Collar of the Founding Pact (Neck); Regalia Cuirass (Torso); Sovereign's Gauntlets (Gloves); Regalia Greaves (Boots); Sovereign's Signet (Ring1); Tithe-Band (Ring2). The mount, Sovereign's Wyrm, is NOT in this image — it is drawn separately.
+
+This set's signature, visible in every piece: Deep crimson dragon scale and antique gold, with scale-plate edges.
+```
+
+**Stoned Devil** — `assets/icons/body/set_stoned_devil.png`
+
+```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Four or five materials, about nine shapes — the most detailed tier, and still no filigree. One distinctive silhouette flourish, and one precious or glowing inlay. It will be viewed at about 350 pixels tall, so keep detail at the scale of a buckle, never a stitch:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
+
+One figure, centred. Straight-on. Flat even light with no
+implied direction. No halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+Portrait format, 2:3 (1024 x 1536). One standing human figure, front-facing, weight even on both
+feet, feet a little apart, arms held slightly away from the body with the palms turned in. The
+figure fills the height with a small margin above the head and below the feet. No face — a smooth
+featureless head. No weapon, no ground, no shadow under the feet, transparent background.
+
+The same figure, same pose, same framing, now wearing the complete set: The Sundown Ember (Head); The Perpetual Censer (Neck); Robe of the Long Sabbatical (Torso); Mitts of Amiable Menace (Gloves); Slippers of the Unwalked Path (Boots); Signet of Declined Ascendancy (Ring1); Band of the Fourth Reconsideration (Ring2). The mount, Extremely Relaxed Hell-Goat, is NOT in this image — it is drawn separately.
+
+This set's signature, visible in every piece: Deep maroon and cream with aged brass. Soft, draped, unhurried shapes — nothing sharp anywhere in the set.
+```
+
+---
+

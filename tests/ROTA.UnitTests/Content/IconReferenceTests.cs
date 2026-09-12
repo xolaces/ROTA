@@ -104,7 +104,9 @@ public class IconReferenceTests
         using var atlas = JsonDocument.Parse(File.ReadAllText(atlasPath));
         var frames = atlas.RootElement.GetProperty("frames");
 
+        // body/ holds the paper-doll figures, fetched whole by the client — never atlas tiles.
         var missing = icons.GetDirectories()
+            .Where(d => d.Name != "body")
             .SelectMany(d => d.GetFiles("*.png"))
             .Select(f => Path.GetFileNameWithoutExtension(f.Name))
             .Where(stem => !frames.TryGetProperty(stem, out _))

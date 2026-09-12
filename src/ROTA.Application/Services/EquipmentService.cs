@@ -172,6 +172,8 @@ public sealed class EquipmentService : IEquipmentService
                 ProcChance        = def.ProcChance,
                 ProcPercent       = def.ProcPercent,
                 IconPath          = def.IconPath,
+                SetId             = def.SetId,
+                ReforgedFrom      = def.ReforgedFrom,
                 OwnedQuantity     = row.Quantity,
                 EquippedQuantity  = eq,
                 AvailableQuantity = Math.Max(0, row.Quantity - eq),
@@ -297,6 +299,8 @@ public sealed class EquipmentService : IEquipmentService
             ProcChance       = def.ProcChance,
             ProcPercent      = def.ProcPercent,
             IconPath         = def.IconPath,
+            SetId            = def.SetId,
+            ReforgedFrom     = def.ReforgedFrom,
             EquippedAt       = equippedAt,
         };
 }

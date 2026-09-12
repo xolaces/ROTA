@@ -1470,7 +1470,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_pano_helm.png",
     "setId": "set_pano_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_pano_helm"
   },
   {
     "id": "gear_pano_amulet_reforged",
@@ -1484,7 +1485,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_pano_amulet.png",
     "setId": "set_pano_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_pano_amulet"
   },
   {
     "id": "gear_pano_cuirass_reforged",
@@ -1498,7 +1500,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_pano_cuirass.png",
     "setId": "set_pano_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_pano_cuirass"
   },
   {
     "id": "gear_pano_signet_reforged",
@@ -1512,7 +1515,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_pano_signet.png",
     "setId": "set_pano_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_pano_signet"
   },
   {
     "id": "gear_pano_band_reforged",
@@ -1526,7 +1530,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_pano_band.png",
     "setId": "set_pano_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_pano_band"
   },
   {
     "id": "gear_pano_steed_reforged",
@@ -1540,7 +1545,8 @@
     "procPercent": 1.2,
     "iconPath": "icons/gear/gear_pano_steed.png",
     "setId": "set_pano_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_pano_steed"
   },
   {
     "id": "gear_pano_greaves_reforged",
@@ -1554,7 +1560,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_pano_greaves.png",
     "setId": "set_pano_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_pano_greaves"
   },
   {
     "id": "gear_pano_gauntlets_reforged",
@@ -1568,7 +1575,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_pano_gauntlets.png",
     "setId": "set_pano_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_pano_gauntlets"
   },
   {
     "id": "gear_weir_kettle_helm_reforged",
@@ -1582,7 +1590,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_weir_kettle_helm.png",
     "upgradesTo": null,
-    "setId": "set_weir_reforged"
+    "setId": "set_weir_reforged",
+    "reforgedFrom": "gear_weir_kettle_helm"
   },
   {
     "id": "gear_weir_gorget_reforged",
@@ -1596,7 +1605,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_weir_gorget.png",
     "upgradesTo": null,
-    "setId": "set_weir_reforged"
+    "setId": "set_weir_reforged",
+    "reforgedFrom": "gear_weir_gorget"
   },
   {
     "id": "gear_weir_brigandine_reforged",
@@ -1610,7 +1620,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_weir_brigandine.png",
     "upgradesTo": null,
-    "setId": "set_weir_reforged"
+    "setId": "set_weir_reforged",
+    "reforgedFrom": "gear_weir_brigandine"
   },
   {
     "id": "gear_causeway_seal_reforged",
@@ -1624,7 +1635,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_causeway_seal.png",
     "upgradesTo": null,
-    "setId": "set_weir_reforged"
+    "setId": "set_weir_reforged",
+    "reforgedFrom": "gear_causeway_seal"
   },
   {
     "id": "gear_marchwarden_band_reforged",
@@ -1638,7 +1650,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_marchwarden_band.png",
     "upgradesTo": null,
-    "setId": "set_weir_reforged"
+    "setId": "set_weir_reforged",
+    "reforgedFrom": "gear_marchwarden_band"
   },
   {
     "id": "gear_weir_courser_reforged",
@@ -1652,7 +1665,8 @@
     "procPercent": 2.5,
     "iconPath": "icons/gear/gear_weir_courser.png",
     "upgradesTo": null,
-    "setId": "set_weir_reforged"
+    "setId": "set_weir_reforged",
+    "reforgedFrom": "gear_weir_courser"
   },
   {
     "id": "gear_weir_marchboots_reforged",
@@ -1666,7 +1680,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_weir_marchboots.png",
     "upgradesTo": null,
-    "setId": "set_weir_reforged"
+    "setId": "set_weir_reforged",
+    "reforgedFrom": "gear_weir_marchboots"
   },
   {
     "id": "gear_weir_handguards_reforged",
@@ -1680,7 +1695,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_weir_handguards.png",
     "upgradesTo": null,
-    "setId": "set_weir_reforged"
+    "setId": "set_weir_reforged",
+    "reforgedFrom": "gear_weir_handguards"
   },
   {
     "id": "gear_relay_hood_reforged",
@@ -1694,7 +1710,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_relay_hood.png",
     "upgradesTo": null,
-    "setId": "set_relay_reforged"
+    "setId": "set_relay_reforged",
+    "reforgedFrom": "gear_relay_hood"
   },
   {
     "id": "gear_relay_torc_reforged",
@@ -1708,7 +1725,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_relay_torc.png",
     "upgradesTo": null,
-    "setId": "set_relay_reforged"
+    "setId": "set_relay_reforged",
+    "reforgedFrom": "gear_relay_torc"
   },
   {
     "id": "gear_relay_coat_reforged",
@@ -1722,7 +1740,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_relay_coat.png",
     "upgradesTo": null,
-    "setId": "set_relay_reforged"
+    "setId": "set_relay_reforged",
+    "reforgedFrom": "gear_relay_coat"
   },
   {
     "id": "gear_lamp_seal_reforged",
@@ -1736,7 +1755,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_lamp_seal.png",
     "upgradesTo": null,
-    "setId": "set_relay_reforged"
+    "setId": "set_relay_reforged",
+    "reforgedFrom": "gear_lamp_seal"
   },
   {
     "id": "gear_vaultkeeper_band_reforged",
@@ -1750,7 +1770,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_vaultkeeper_band.png",
     "upgradesTo": null,
-    "setId": "set_relay_reforged"
+    "setId": "set_relay_reforged",
+    "reforgedFrom": "gear_vaultkeeper_band"
   },
   {
     "id": "gear_relay_charger_reforged",
@@ -1764,7 +1785,8 @@
     "procPercent": 2.0,
     "iconPath": "icons/gear/gear_relay_charger.png",
     "upgradesTo": null,
-    "setId": "set_relay_reforged"
+    "setId": "set_relay_reforged",
+    "reforgedFrom": "gear_relay_charger"
   },
   {
     "id": "gear_relay_treads_reforged",
@@ -1778,7 +1800,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_relay_treads.png",
     "upgradesTo": null,
-    "setId": "set_relay_reforged"
+    "setId": "set_relay_reforged",
+    "reforgedFrom": "gear_relay_treads"
   },
   {
     "id": "gear_relay_grips_reforged",
@@ -1792,7 +1815,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_relay_grips.png",
     "upgradesTo": null,
-    "setId": "set_relay_reforged"
+    "setId": "set_relay_reforged",
+    "reforgedFrom": "gear_relay_grips"
   },
   {
     "id": "gear_sable_circlet_reforged",
@@ -1806,7 +1830,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_sable_circlet.png",
     "setId": "set_sable_vein_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_sable_circlet"
   },
   {
     "id": "gear_sable_collar_reforged",
@@ -1820,7 +1845,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_sable_collar.png",
     "setId": "set_sable_vein_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_sable_collar"
   },
   {
     "id": "gear_sable_mantle_reforged",
@@ -1834,7 +1860,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_sable_mantle.png",
     "setId": "set_sable_vein_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_sable_mantle"
   },
   {
     "id": "gear_sable_seal_reforged",
@@ -1848,7 +1875,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_sable_seal.png",
     "setId": "set_sable_vein_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_sable_seal"
   },
   {
     "id": "gear_sable_band_reforged",
@@ -1862,7 +1890,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_sable_band.png",
     "setId": "set_sable_vein_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_sable_band"
   },
   {
     "id": "gear_sable_courser_reforged",
@@ -1876,7 +1905,8 @@
     "procPercent": 1.6,
     "iconPath": "icons/gear/gear_sable_courser.png",
     "setId": "set_sable_vein_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_sable_courser"
   },
   {
     "id": "gear_sable_treads_reforged",
@@ -1890,7 +1920,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_sable_treads.png",
     "setId": "set_sable_vein_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_sable_treads"
   },
   {
     "id": "gear_sable_grips_reforged",
@@ -1904,7 +1935,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_sable_grips.png",
     "setId": "set_sable_vein_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_sable_grips"
   },
   {
     "id": "gear_warrens_lamp_hood_reforged",
@@ -1918,7 +1950,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_warrens_lamp_hood.png",
     "setId": "set_warrens_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_warrens_lamp_hood"
   },
   {
     "id": "gear_warrens_choker_reforged",
@@ -1932,7 +1965,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_warrens_choker.png",
     "setId": "set_warrens_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_warrens_choker"
   },
   {
     "id": "gear_warrens_jack_reforged",
@@ -1946,7 +1980,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_warrens_jack.png",
     "setId": "set_warrens_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_warrens_jack"
   },
   {
     "id": "gear_warrens_seal_reforged",
@@ -1960,7 +1995,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_warrens_seal.png",
     "setId": "set_warrens_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_warrens_seal"
   },
   {
     "id": "gear_warrens_knuckle_reforged",
@@ -1974,7 +2010,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_warrens_knuckle.png",
     "setId": "set_warrens_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_warrens_knuckle"
   },
   {
     "id": "gear_warrens_pitpony_reforged",
@@ -1988,7 +2025,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_warrens_pitpony.png",
     "setId": "set_warrens_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_warrens_pitpony"
   },
   {
     "id": "gear_warrens_treads_reforged",
@@ -2002,7 +2040,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_warrens_treads.png",
     "setId": "set_warrens_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_warrens_treads"
   },
   {
     "id": "gear_warrens_grips_reforged",
@@ -2016,7 +2055,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_warrens_grips.png",
     "setId": "set_warrens_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_warrens_grips"
   },
   {
     "id": "gear_marchwatch_helm_reforged",
@@ -2030,7 +2070,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_marchwatch_helm.png",
     "setId": "set_marchwatch_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_marchwatch_helm"
   },
   {
     "id": "gear_marchwatch_gorget_reforged",
@@ -2044,7 +2085,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_marchwatch_gorget.png",
     "setId": "set_marchwatch_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_marchwatch_gorget"
   },
   {
     "id": "gear_marchwatch_coat_reforged",
@@ -2058,7 +2100,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_marchwatch_coat.png",
     "setId": "set_marchwatch_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_marchwatch_coat"
   },
   {
     "id": "gear_marchwatch_ring_reforged",
@@ -2072,7 +2115,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_marchwatch_ring.png",
     "setId": "set_marchwatch_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_marchwatch_ring"
   },
   {
     "id": "gear_marchwatch_tally_reforged",
@@ -2086,7 +2130,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_marchwatch_tally.png",
     "setId": "set_marchwatch_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_marchwatch_tally"
   },
   {
     "id": "gear_marchwatch_rounder_reforged",
@@ -2100,7 +2145,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_marchwatch_rounder.png",
     "setId": "set_marchwatch_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_marchwatch_rounder"
   },
   {
     "id": "gear_marchwatch_boots_reforged",
@@ -2114,7 +2160,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_marchwatch_boots.png",
     "setId": "set_marchwatch_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_marchwatch_boots"
   },
   {
     "id": "gear_marchwatch_mitts_reforged",
@@ -2128,7 +2175,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_marchwatch_mitts.png",
     "setId": "set_marchwatch_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_marchwatch_mitts"
   },
   {
     "id": "gear_gravewarden_hood_reforged",
@@ -2142,7 +2190,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_gravewarden_hood.png",
     "setId": "set_gravewarden_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_gravewarden_hood"
   },
   {
     "id": "gear_gravewarden_seal_reforged",
@@ -2156,7 +2205,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_gravewarden_seal.png",
     "setId": "set_gravewarden_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_gravewarden_seal"
   },
   {
     "id": "gear_gravewarden_coat_reforged",
@@ -2170,7 +2220,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_gravewarden_coat.png",
     "setId": "set_gravewarden_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_gravewarden_coat"
   },
   {
     "id": "gear_gravewarden_band_reforged",
@@ -2184,7 +2235,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_gravewarden_band.png",
     "setId": "set_gravewarden_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_gravewarden_band"
   },
   {
     "id": "gear_gravewarden_signet_reforged",
@@ -2198,7 +2250,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_gravewarden_signet.png",
     "setId": "set_gravewarden_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_gravewarden_signet"
   },
   {
     "id": "gear_gravewarden_dray_reforged",
@@ -2212,7 +2265,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_gravewarden_dray.png",
     "setId": "set_gravewarden_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_gravewarden_dray"
   },
   {
     "id": "gear_gravewarden_wades_reforged",
@@ -2226,7 +2280,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_gravewarden_wades.png",
     "setId": "set_gravewarden_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_gravewarden_wades"
   },
   {
     "id": "gear_gravewarden_gauntlets_reforged",
@@ -2240,7 +2295,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_gravewarden_gauntlets.png",
     "setId": "set_gravewarden_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_gravewarden_gauntlets"
   },
   {
     "id": "gear_drowned_helm_reforged",
@@ -2254,7 +2310,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_drowned_helm.png",
     "setId": "set_drowned_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_drowned_helm"
   },
   {
     "id": "gear_drowned_torc_reforged",
@@ -2268,7 +2325,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_drowned_torc.png",
     "setId": "set_drowned_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_drowned_torc"
   },
   {
     "id": "gear_drowned_harness_reforged",
@@ -2282,7 +2340,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_drowned_harness.png",
     "setId": "set_drowned_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_drowned_harness"
   },
   {
     "id": "gear_drowned_seal_reforged",
@@ -2296,7 +2355,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_drowned_seal.png",
     "setId": "set_drowned_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_drowned_seal"
   },
   {
     "id": "gear_drowned_band_reforged",
@@ -2310,7 +2370,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_drowned_band.png",
     "setId": "set_drowned_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_drowned_band"
   },
   {
     "id": "gear_drowned_courser_reforged",
@@ -2324,7 +2385,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_drowned_courser.png",
     "setId": "set_drowned_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_drowned_courser"
   },
   {
     "id": "gear_drowned_boots_reforged",
@@ -2338,7 +2400,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_drowned_boots.png",
     "setId": "set_drowned_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_drowned_boots"
   },
   {
     "id": "gear_drowned_grips_reforged",
@@ -2352,7 +2415,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_drowned_grips.png",
     "setId": "set_drowned_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_drowned_grips"
   },
   {
     "id": "gear_wrought_visor_reforged",
@@ -2366,7 +2430,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_wrought_visor.png",
     "setId": "set_wroughtbreaker_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_wrought_visor"
   },
   {
     "id": "gear_wrought_collar_reforged",
@@ -2380,7 +2445,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_wrought_collar.png",
     "setId": "set_wroughtbreaker_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_wrought_collar"
   },
   {
     "id": "gear_wrought_plate_reforged",
@@ -2394,7 +2460,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_wrought_plate.png",
     "setId": "set_wroughtbreaker_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_wrought_plate"
   },
   {
     "id": "gear_wrought_keyring_reforged",
@@ -2408,7 +2475,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_wrought_keyring.png",
     "setId": "set_wroughtbreaker_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_wrought_keyring"
   },
   {
     "id": "gear_wrought_band_reforged",
@@ -2422,7 +2490,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_wrought_band.png",
     "setId": "set_wroughtbreaker_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_wrought_band"
   },
   {
     "id": "gear_wrought_destrier_reforged",
@@ -2436,7 +2505,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_wrought_destrier.png",
     "setId": "set_wroughtbreaker_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_wrought_destrier"
   },
   {
     "id": "gear_wrought_sabatons_reforged",
@@ -2450,7 +2520,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_wrought_sabatons.png",
     "setId": "set_wroughtbreaker_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_wrought_sabatons"
   },
   {
     "id": "gear_wrought_gauntlets_reforged",
@@ -2464,7 +2535,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_wrought_gauntlets.png",
     "setId": "set_wroughtbreaker_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_wrought_gauntlets"
   },
   {
     "id": "gear_choir_crown_reforged",
@@ -2478,7 +2550,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_choir_crown.png",
     "setId": "set_choir_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_choir_crown"
   },
   {
     "id": "gear_choir_stole_reforged",
@@ -2492,7 +2565,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_choir_stole.png",
     "setId": "set_choir_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_choir_stole"
   },
   {
     "id": "gear_choir_vestment_reforged",
@@ -2506,7 +2580,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_choir_vestment.png",
     "setId": "set_choir_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_choir_vestment"
   },
   {
     "id": "gear_choir_ring_reforged",
@@ -2520,7 +2595,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_choir_ring.png",
     "setId": "set_choir_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_choir_ring"
   },
   {
     "id": "gear_choir_band_reforged",
@@ -2534,7 +2610,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_choir_band.png",
     "setId": "set_choir_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_choir_band"
   },
   {
     "id": "gear_choir_palfrey_reforged",
@@ -2548,7 +2625,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_choir_palfrey.png",
     "setId": "set_choir_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_choir_palfrey"
   },
   {
     "id": "gear_choir_slippers_reforged",
@@ -2562,7 +2640,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_choir_slippers.png",
     "setId": "set_choir_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_choir_slippers"
   },
   {
     "id": "gear_choir_wraps_reforged",
@@ -2576,7 +2655,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_choir_wraps.png",
     "setId": "set_choir_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_choir_wraps"
   },
   {
     "id": "gear_sovereign_diadem_reforged",
@@ -2590,7 +2670,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_sovereign_diadem.png",
     "setId": "set_sovereign_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_sovereign_diadem"
   },
   {
     "id": "gear_sovereign_collar_reforged",
@@ -2604,7 +2685,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_sovereign_collar.png",
     "setId": "set_sovereign_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_sovereign_collar"
   },
   {
     "id": "gear_sovereign_cuirass_reforged",
@@ -2618,7 +2700,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_sovereign_cuirass.png",
     "setId": "set_sovereign_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_sovereign_cuirass"
   },
   {
     "id": "gear_sovereign_signet_reforged",
@@ -2632,7 +2715,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_sovereign_signet.png",
     "setId": "set_sovereign_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_sovereign_signet"
   },
   {
     "id": "gear_sovereign_band_reforged",
@@ -2646,7 +2730,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_sovereign_band.png",
     "setId": "set_sovereign_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_sovereign_band"
   },
   {
     "id": "gear_sovereign_wyrm_reforged",
@@ -2660,7 +2745,8 @@
     "procPercent": 1.4,
     "iconPath": "icons/gear/gear_sovereign_wyrm.png",
     "setId": "set_sovereign_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_sovereign_wyrm"
   },
   {
     "id": "gear_sovereign_greaves_reforged",
@@ -2674,7 +2760,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_sovereign_greaves.png",
     "setId": "set_sovereign_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_sovereign_greaves"
   },
   {
     "id": "gear_sovereign_gauntlets_reforged",
@@ -2688,7 +2775,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_sovereign_gauntlets.png",
     "setId": "set_sovereign_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_sovereign_gauntlets"
   },
   {
     "id": "gear_stoned_horns_reforged",
@@ -2702,7 +2790,8 @@
     "procPercent": 1.1,
     "iconPath": "icons/gear/gear_stoned_horns.png",
     "setId": "set_stoned_devil_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_stoned_horns"
   },
   {
     "id": "gear_stoned_censer_reforged",
@@ -2716,7 +2805,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_stoned_censer.png",
     "setId": "set_stoned_devil_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_stoned_censer"
   },
   {
     "id": "gear_stoned_robe_reforged",
@@ -2730,7 +2820,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_stoned_robe.png",
     "setId": "set_stoned_devil_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_stoned_robe"
   },
   {
     "id": "gear_stoned_signet_reforged",
@@ -2744,7 +2835,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_stoned_signet.png",
     "setId": "set_stoned_devil_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_stoned_signet"
   },
   {
     "id": "gear_stoned_band_reforged",
@@ -2758,7 +2850,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_stoned_band.png",
     "setId": "set_stoned_devil_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_stoned_band"
   },
   {
     "id": "gear_stoned_goat_reforged",
@@ -2772,7 +2865,8 @@
     "procPercent": 1.1,
     "iconPath": "icons/gear/gear_stoned_goat.png",
     "setId": "set_stoned_devil_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_stoned_goat"
   },
   {
     "id": "gear_stoned_slippers_reforged",
@@ -2786,7 +2880,8 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_stoned_slippers.png",
     "setId": "set_stoned_devil_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_stoned_slippers"
   },
   {
     "id": "gear_stoned_mitts_reforged",
@@ -2800,6 +2895,7 @@
     "procPercent": null,
     "iconPath": "icons/gear/gear_stoned_mitts.png",
     "setId": "set_stoned_devil_reforged",
-    "upgradesTo": null
+    "upgradesTo": null,
+    "reforgedFrom": "gear_stoned_mitts"
   }
 ]
