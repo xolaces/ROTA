@@ -29,6 +29,7 @@ public sealed class GauntletAdminService : IGauntletAdminService
     private readonly IPlayerMagicHonorRepository _magicHonors;
     private readonly IAuditLogRepository _auditLog;
     private readonly IMasteryService _mastery;
+    private readonly IEquipmentService _equipment;
     private readonly GauntletConfig _config;
 
     public GauntletAdminService(
@@ -42,7 +43,8 @@ public sealed class GauntletAdminService : IGauntletAdminService
         IPlayerMagicHonorRepository magicHonors,
         IAuditLogRepository auditLog,
         IMasteryService mastery,
-        IOptions<GauntletConfig> config)
+        IOptions<GauntletConfig> config,
+        IEquipmentService equipment)
     {
         _events      = events;
         _scoring     = scoring;
@@ -54,6 +56,7 @@ public sealed class GauntletAdminService : IGauntletAdminService
         _magicHonors = magicHonors;
         _auditLog    = auditLog;
         _mastery     = mastery;
+        _equipment   = equipment;
         _config      = config.Value;
     }
 
@@ -228,6 +231,7 @@ public sealed class GauntletAdminService : IGauntletAdminService
         long tokensGranted    = 0;
         long pitchforkGranted = 0;
         int  trophiesGranted  = 0;
+        int  gearGranted      = 0;
 
         foreach (var entry in entries)
         {
@@ -296,6 +300,14 @@ public sealed class GauntletAdminService : IGauntletAdminService
                 trophiesGranted++;
             }
 
+            // (e) Prize gear — the Tithe-Mark for rank 1. GrantGearAsync stacks, and a re-settle
+            //     never reaches here (the already-Settled fast-path above), so one copy per event.
+            if (band.GearId is not null)
+            {
+                await _equipment.GrantGearAsync(entry.PlayerId, band.GearId, 1, ct);
+                gearGranted++;
+            }
+
             // (d) Rank magic (Wrath/Blessing) — DEFERRED. The per-event consumable PlayerEventMagic
             // is scoped to the NEXT event, which does not exist yet under auto-settle-on-close. The
             // cross-event consumable hand-off (spec step 2e) is a deliberate FOLLOW-UP — settle writes
@@ -330,6 +342,7 @@ public sealed class GauntletAdminService : IGauntletAdminService
             TokensGranted    = tokensGranted,
             PitchforkGranted = pitchforkGranted,
             TrophiesGranted  = trophiesGranted,
+            GearGranted      = gearGranted,
             HonorsWritten    = honorsWritten,
         };
 

@@ -91,7 +91,7 @@ public class GauntletEventExperienceTests
                 new Mock<IPlayerGauntletTrophyRepository>().Object,
                 EventMagics.Object, new Mock<IPlayerMagicHonorRepository>().Object,
                 new Mock<IAuditLogRepository>().Object, new Mock<IMasteryService>().Object,
-                Options.Create(new GauntletConfig()));
+                Options.Create(new GauntletConfig()), new Mock<IEquipmentService>().Object);
         }
     }
 

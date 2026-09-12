@@ -1031,12 +1031,18 @@ public sealed class RaidService : IRaidService
             long preProc = charBase + legionPowerTerm;
             damageFinal  = preProc;
 
-            // Mount proc — once per hit, adds procPercent × pre-proc base damage as a bonus.
-            if (!isGauntlet && combat.MountProc is not null && _random.NextDouble() < combat.MountProc.ProcChance)
+            // Gear procs — the mount's and any other worn piece's, each rolled once per hit, each
+            // adding procPercent × pre-proc base damage. Not on the Gauntlet path (D8).
+            if (!isGauntlet)
             {
-                procBonus   = Math.Max(0, (long)(preProc * combat.MountProc.ProcPercent));
-                damageFinal += procBonus;
-                procFired   = true;
+                foreach (var proc in combat.ProcsToRoll)
+                {
+                    if (_random.NextDouble() >= proc.ProcChance) continue;
+                    var bonus = Math.Max(0, (long)(preProc * proc.ProcPercent));
+                    procBonus   += bonus;
+                    damageFinal += bonus;
+                    procFired    = true;
+                }
             }
 
             // Magic DamageProcs — each applied magic with effectType=DamageProc rolls

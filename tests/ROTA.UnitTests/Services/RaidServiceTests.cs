@@ -2364,6 +2364,35 @@ public class RaidServiceTests
     }
 
     [Fact]
+    public async Task HitRaid_EveryWornProcRolls_AndTheBonusesAdd()
+    {
+        // Two procs that cannot miss: a mount at 100% × 1.0 and a relic at 100% × 2.0. Each adds its
+        // share of the pre-proc base, so the bonus is three times the base, whatever the RNG.
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid = MakeRaid();
+
+        SetupHitScaffolding(b, player, raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+
+        var mount = new GearProcData(1.0, 1.0);
+        var relic = new GearProcData(1.0, 2.0);
+        b.Equipment.Setup(e => e.GetEffectiveCombatDataAsync(
+                player.Id, It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new EffectiveCombatData(10, 10, mount, 0.0, new[] { mount, relic }));
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.ProcFired.Should().BeTrue();
+        long preProc = result.Response.DamageDealt - result.Response.ProcBonus;
+        result.Response.ProcBonus.Should().Be(preProc * 3, "1.0× from the mount plus 2.0× from the relic");
+    }
+
+    [Fact]
     public async Task HitRaid_MountProcDoesNotFire_NoBonusDamage()
     {
         // Seed 0: call1=0.7262 (multiplier), call2=0.8173 (>=0.05 → proc does NOT fire)

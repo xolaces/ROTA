@@ -26,6 +26,7 @@ public class GauntletAdminServiceTests
         public Mock<IPlayerMagicHonorRepository> MagicHonors = new();
         public Mock<IAuditLogRepository> Audit = new();
         public Mock<IMasteryService> Mastery = new();
+        public Mock<IEquipmentService> Equipment = new();
         public GauntletConfig Config = new();
 
         public Bundle()
@@ -66,7 +67,7 @@ public class GauntletAdminServiceTests
         public GauntletAdminService Build() => new(
             Events.Object, Scoring.Object, Entries.Object, Content.Object, Currency.Object,
             Trophies.Object, EventMagics.Object, MagicHonors.Object, Audit.Object, Mastery.Object,
-            Options.Create(Config));
+            Options.Create(Config), Equipment.Object);
     }
 
     // The locked prize bands from content/gauntlet_prizes.json (rank → band).

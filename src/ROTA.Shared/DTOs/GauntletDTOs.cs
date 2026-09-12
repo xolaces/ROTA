@@ -182,6 +182,9 @@ public class GauntletSettlementSummaryResponse
     /// <summary>Number of trophy upserts performed this run.</summary>
     public int TrophiesGranted { get; init; }
 
+    /// <summary>Number of prize gear pieces granted this run.</summary>
+    public int GearGranted { get; init; }
+
     /// <summary>Number of honor-echo records written for revoked event-magic holders this run.</summary>
     public int HonorsWritten { get; init; }
 }
@@ -373,6 +376,9 @@ public class GauntletPrizeBandResponse
     /// <summary>Seasonal rank magic (Neck only) — held until the next Neck Gauntlet opens.</summary>
     public string? MagicId { get; init; }
     public string? MagicName { get; init; }
+    /// <summary>Gear granted at settlement to everyone who lands in the band.</summary>
+    public string? GearId { get; init; }
+    public string? GearName { get; init; }
 }
 
 /// <summary>

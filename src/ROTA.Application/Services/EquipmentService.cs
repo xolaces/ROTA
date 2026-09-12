@@ -190,6 +190,7 @@ public sealed class EquipmentService : IEquipmentService
         int bonusAtk = 0;
         int bonusDef = 0;
         GearProcData? mountProc = null;
+        var otherProcs = new List<GearProcData>();
 
         var allConditionalBonuses = new List<ConditionalBonus>();
         var equippedSlots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -202,11 +203,12 @@ public sealed class EquipmentService : IEquipmentService
             bonusAtk += def.BonusAttack;
             bonusDef += def.BonusDefense;
 
-            if (row.Slot == EquipmentSlot.Mount
-                && def.ProcChance is not null
-                && def.ProcPercent is not null)
+            if (def.ProcChance is not null && def.ProcPercent is not null)
             {
-                mountProc = new GearProcData(def.ProcChance.Value, def.ProcPercent.Value);
+                if (row.Slot == EquipmentSlot.Mount)
+                    mountProc = new GearProcData(def.ProcChance.Value, def.ProcPercent.Value);
+                else
+                    otherProcs.Add(new GearProcData(def.ProcChance.Value, def.ProcPercent.Value));
             }
 
             allConditionalBonuses.AddRange(def.ConditionalBonuses);
@@ -252,7 +254,11 @@ public sealed class EquipmentService : IEquipmentService
             }
         }
 
-        return new EffectiveCombatData(baseAtk + bonusAtk, baseDef + bonusDef, mountProc, flatDmgPct);
+        // The mount first (with its conditional adjustments), then every other proc-bearing piece.
+        var procs = new List<GearProcData>();
+        if (mountProc is not null) procs.Add(mountProc);
+        procs.AddRange(otherProcs);
+        return new EffectiveCombatData(baseAtk + bonusAtk, baseDef + bonusDef, mountProc, flatDmgPct, procs);
     }
 
     public async Task GrantStarterKitAsync(Guid playerId, CancellationToken ct = default)

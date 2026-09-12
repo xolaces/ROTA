@@ -258,6 +258,37 @@ public class EquipmentServiceTests
         result.MountProc!.ProcChance.Should().BeApproximately(0.05, 1e-9);
     }
 
+    // Owner, 2026-09-12: the relics carry procs, so a proc on any worn piece is real. Until then a
+    // procChance on a Head or Gloves was dead data.
+    [Fact]
+    public async Task GetEffectiveCombatData_CollectsEveryWornProc_MountFirst()
+    {
+        var (service, repo, gearDefs, _, _, _, _) = BuildService();
+        var playerId = Guid.NewGuid();
+        repo.Setup(r => r.GetEquippedAsync(playerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<PlayerEquipment>
+            {
+                PlayerEquipment.Create(playerId, EquipmentSlot.Ring1, "gear_sovereign_tithe"),
+                PlayerEquipment.Create(playerId, EquipmentSlot.Mount, "gear_draft_horse"),
+                PlayerEquipment.Create(playerId, EquipmentSlot.Head,  "gear_conscript_helm"),
+            });
+        gearDefs.Setup(g => g.GetById("gear_draft_horse")).Returns(MountDef());
+        gearDefs.Setup(g => g.GetById("gear_conscript_helm")).Returns(HelmDef());
+        gearDefs.Setup(g => g.GetById("gear_sovereign_tithe")).Returns(new GearDefinition
+        {
+            Id = "gear_sovereign_tithe", Name = "Sovereign's Tithe-Mark", Rarity = ItemRarity.Orange, Slot = "Ring1",
+            BonusAttack = 95, BonusDefense = 55, ProcChance = 0.15, ProcPercent = 2.0,
+        });
+
+        var result = await service.GetEffectiveCombatDataAsync(playerId, 10, 10);
+
+        result.GearProcs.Should().HaveCount(2, "the mount and the ring proc; the helm has none");
+        result.GearProcs![0].Should().Be(result.MountProc, "the mount comes first, carrying its conditional adjustments");
+        result.GearProcs[1].ProcChance.Should().BeApproximately(0.15, 1e-9);
+        result.GearProcs[1].ProcPercent.Should().BeApproximately(2.0, 1e-9);
+        result.EffectiveAttack.Should().Be(10 + 95 + MountDef().BonusAttack + HelmDef().BonusAttack);
+    }
+
     [Fact]
     public async Task GetEffectiveCombatData_ConditionalFlatAttack_AddsToEffectiveAttack()
     {

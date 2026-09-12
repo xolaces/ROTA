@@ -37,7 +37,8 @@ public sealed class GauntletContentProvider : IGauntletContentProvider
     public GauntletContentProvider(
         string contentRootPath,
         IMagicDefinitionProvider magicProvider,
-        IOptions<GauntletConfig> config)
+        IOptions<GauntletConfig> config,
+        IGearDefinitionProvider? gearProvider = null)
     {
         _config = config.Value;
 
@@ -51,7 +52,7 @@ public sealed class GauntletContentProvider : IGauntletContentProvider
         ValidateGauntletMagics(magicProvider);
         ValidateNamingGuard(magicProvider);
         ValidateRaids(raids);
-        ValidatePrizes(prizeTable, _config, trophies, magicProvider);
+        ValidatePrizes(prizeTable, _config, trophies, magicProvider, gearProvider);
 
         _trophies = trophies.ToDictionary(t => t.Id, t => t, StringComparer.Ordinal);
         _prizeTable = prizeTable;
@@ -136,6 +137,7 @@ public sealed class GauntletContentProvider : IGauntletContentProvider
         Pitchfork = neck.Pitchfork,
         TrophyId  = neck.TrophyId,
         MagicId   = null,
+        GearId    = neck.GearId,   // the piece is a placement prize, not a rank magic; both kinds pay it
     };
 
     public IReadOnlyList<GauntletTrophyDefinition> GetAllTrophies() => _trophies.Values.ToList();
@@ -307,7 +309,8 @@ public sealed class GauntletContentProvider : IGauntletContentProvider
         GauntletPrizeTable table,
         GauntletConfig config,
         List<GauntletTrophyDefinition> trophies,
-        IMagicDefinitionProvider magicProvider)
+        IMagicDefinitionProvider magicProvider,
+        IGearDefinitionProvider? gearProvider)
     {
         if (table.Bands.Count == 0)
             throw new InvalidOperationException("gauntlet_prizes.json: no prize bands defined.");
@@ -329,6 +332,13 @@ public sealed class GauntletContentProvider : IGauntletContentProvider
                 throw new InvalidOperationException(
                     $"gauntlet_prizes.json: band [{band.RankFrom}..{band.RankTo}] references " +
                     $"magicId '{band.MagicId}' which is not defined in magics.json.");
+
+            // The gear provider is optional only for tests that build this without one; the app
+            // always passes it, so a band naming a piece that does not exist fails the boot.
+            if (band.GearId is not null && gearProvider is not null && gearProvider.GetById(band.GearId) is null)
+                throw new InvalidOperationException(
+                    $"gauntlet_prizes.json: band [{band.RankFrom}..{band.RankTo}] references " +
+                    $"gearId '{band.GearId}' which is not defined in gear.json.");
         }
 
         // Bands must be non-overlapping, contiguous, and cover exactly 1..PrizeRankCount.

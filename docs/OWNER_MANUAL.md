@@ -518,13 +518,20 @@ real mistakes.
   "slot": "Head",                Head | Neck | Torso | Gloves | Boots | Ring1 | Ring2 | Mount
   "bonusAttack": 0,
   "bonusDefense": 1,
-  "procChance": null,            0.0–1.0, or null for no proc
-  "procPercent": null,
+  "procChance": null,            0.0–1.0, or null for no proc — on ANY slot (see below)
+  "procPercent": null,           the proc adds procPercent × pre-proc base damage
   "iconPath": "icons/gear/conscript_helm.png",
   "setId": "set_conscript",      groups pieces into a set
   "starter": true                granted and worn at registration (the Conscript set; one per slot)
 }
 ```
+
+**Procs roll on every worn piece, not only the mount** (since 2026-09-12). Each piece with a
+`procChance` rolls once per hit, independently, and every proc that fires adds `procPercent ×` the
+pre-proc base; the bonuses add. Not on the Gauntlet path. The three relics carry the biggest
+procs in the game (10–15% × 1.4–2.0) and stats near 100 — the Colossus-Core Shard and the
+Vanguard's Cold Token drop from the chapter-1 and -2 zone bosses at 0.04–0.09%, the Sovereign's
+Tithe-Mark is the rank-1 Gauntlet prize (`gauntlet_prizes.json`, band `gearId`).
 
 **`starter`** marks the kit every new account is dressed in before its first screen — the eight
 Conscript pieces (owner call, 2026-09-12). The boot validator refuses two starter pieces in one
@@ -659,6 +666,11 @@ editable without touching code.
 > With the Pano base of 0.5%: zero Discernment gives 0.5%, 100k gives about 3.5%, and it approaches 5%
 > without reaching it. `RareDropDiscernmentCap` gives the ladder a stated end rather than an asymptote
 > nobody arrives at.
+
+> **Gauntlet prize bands** (`gauntlet_prizes.json`) carry `tokens`, `pitchfork`, a `trophyId`, a
+> `magicId` (Neck only) and, since 2026-09-12, a `gearId` — a piece granted to everyone in the band
+> at settlement, one copy per event. Rank 1 pays the Sovereign's Tithe-Mark. The boot validator
+> refuses a `gearId` that is not in `gear.json`.
 
 ### 8.3 Combat and crit — `CombatConfig`
 

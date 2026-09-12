@@ -23,4 +23,6 @@ public class GauntletPrizeBand
     public int     Pitchfork { get; set; }
     public string? TrophyId  { get; set; }
     public string? MagicId   { get; set; }
+    /// <summary>A gear piece granted to everyone in the band at settlement (the Tithe-Mark, rank 1).</summary>
+    public string? GearId    { get; set; }
 }

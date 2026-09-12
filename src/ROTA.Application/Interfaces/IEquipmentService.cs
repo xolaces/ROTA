@@ -26,10 +26,22 @@ public interface IEquipmentService
 }
 
 // Lives in this file alongside the interface.
+//
+// GearProcs is every worn piece that carries a proc, the mount included, each rolled on its own
+// per hit (owner, 2026-09-12: the relics carry procs, and until then a proc on anything but a
+// mount was dead data — the Cinder Cuff's and the Stoned Horns' never fired). MountProc stays as
+// the mount's own, with the conditional ProcChanceFlat/ProcAmountFlat folded into it, and is
+// what a caller that passes no GearProcs still rolls.
 public sealed record EffectiveCombatData(
     long          EffectiveAttack,
     long          EffectiveDefense,
     GearProcData? MountProc,           // null when no mount is equipped
-    double        FlatDamagePercent);  // accumulated from conditional bonuses; 0.0 when none
+    double        FlatDamagePercent,   // accumulated from conditional bonuses; 0.0 when none
+    IReadOnlyList<GearProcData>? GearProcs = null)
+{
+    /// <summary>Every proc a hit rolls: GearProcs when given, else the mount's alone.</summary>
+    public IEnumerable<GearProcData> ProcsToRoll
+        => GearProcs ?? (MountProc is null ? Array.Empty<GearProcData>() : new[] { MountProc });
+}
 
 public sealed record GearProcData(double ProcChance, double ProcPercent);

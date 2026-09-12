@@ -70,8 +70,23 @@ public class GauntletSettlementTests : IAsyncLifetime
         var audit    = new AuditLogRepository(db);
         // Mastery rank-counter hook is best-effort + not under test here — stub it.
         var mastery  = new Moq.Mock<ROTA.Application.Interfaces.IMasteryService>().Object;
+        // Real equipment service over the same context: rank 1's prize gear lands in player_gear.
+        var apiRoot  = FindApiContentRoot();
+        var equipment = new EquipmentService(
+            new PlayerEquipmentRepository(db), new GearDefinitionProvider(apiRoot), audit,
+            new PlayerInventoryRepository(db), new ItemDefinitionProvider(apiRoot),
+            new PlayerGearRepository(db), new Moq.Mock<ROTA.Application.Interfaces.IAchievementService>().Object,
+            new PlayerCommanderGearRepository(db));
         return new GauntletAdminService(
-            events, scoring, entries, content, currency, trophies, evMagics, honors, audit, mastery, ConfigOpts());
+            events, scoring, entries, content, currency, trophies, evMagics, honors, audit, mastery, ConfigOpts(), equipment);
+    }
+
+    private async Task<int> GearQuantityAsync(Guid playerId, string gearId)
+    {
+        await using var db = NewDbContext();
+        return await db.PlayerGear.AsNoTracking()
+            .Where(g => g.PlayerId == playerId && g.GearDefinitionId == gearId && !g.IsDeleted)
+            .Select(g => g.Quantity).FirstOrDefaultAsync();
     }
 
     private async Task<Guid> SeedPlayerAsync()
@@ -145,10 +160,12 @@ public class GauntletSettlementTests : IAsyncLifetime
             result.Success.Should().BeTrue();
         }
 
-        // Rank 1 → 50 tokens + 10 pitchfork + Aureate trophy.
+        // Rank 1 → 50 tokens + 10 pitchfork + Aureate trophy + the Sovereign's Tithe-Mark.
         (await TokenBalanceAsync(rank1)).Should().Be(50);
         (await PitchforkBalanceAsync(rank1)).Should().Be(10);
         (await TrophyCountAsync(rank1)).Should().Be(1);
+        (await GearQuantityAsync(rank1, "gear_sovereign_tithe")).Should().Be(1, "the Tithe-Mark is the placement prize (owner, 2026-09-12)");
+        (await GearQuantityAsync(rank2, "gear_sovereign_tithe")).Should().Be(0, "only rank 1 pays it");
 
         // Ranks 2 & 3 fall in the 2–10 band → 25 tokens + 5 pitchfork + Argent trophy.
         (await TokenBalanceAsync(rank2)).Should().Be(25);

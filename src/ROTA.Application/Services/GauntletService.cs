@@ -30,6 +30,7 @@ public sealed class GauntletService : IGauntletService
     private readonly IRaidService _raidService;
     // magic display names for the prize preview / settlement summary
     private readonly IMagicDefinitionProvider _magics;
+    private readonly IGearDefinitionProvider _gearDefs;
     private readonly IPlayerMutationLock _mutationLock;   // exploit audit 2026-06-14 (H)
 
     public GauntletService(
@@ -48,7 +49,8 @@ public sealed class GauntletService : IGauntletService
         IActiveRaidRepository raids,
         IRaidService raidService,
         IMagicDefinitionProvider magics,
-        IPlayerMutationLock mutationLock)
+        IPlayerMutationLock mutationLock,
+        IGearDefinitionProvider gearDefs)
     {
         _events      = events;
         _entries     = entries;
@@ -65,6 +67,7 @@ public sealed class GauntletService : IGauntletService
         _raids       = raids;
         _raidService = raidService;
         _magics      = magics;
+        _gearDefs    = gearDefs;
         _mutationLock = mutationLock;
     }
 
@@ -533,6 +536,8 @@ public sealed class GauntletService : IGauntletService
         TrophyName = b.TrophyId is null ? null : _content.GetTrophyById(b.TrophyId)?.Name,
         MagicId    = b.MagicId,
         MagicName  = b.MagicId is null ? null : _magics.GetById(b.MagicId)?.Name,
+        GearId     = b.GearId,
+        GearName   = b.GearId is null ? null : _gearDefs.GetById(b.GearId)?.Name,
     };
 
     // ── Mapping ──────────────────────────────────────────────────────────────

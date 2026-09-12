@@ -102,14 +102,6 @@ so mixed sets compose without hand-cut layers. Hooks already in place: `Equipped
 / `ReforgedFrom`, `FigureArt` (one figure today, a dictionary tomorrow), `PaperDoll` (docks today,
 windows tomorrow). Blocked on the 13 figures; when they land, about a day of client work.
 
-### RG1. One relic still has no home  *(found 2026-09-11; two of three wired 2026-09-12)*
-The Colossus-Core Shard drops from the Old Guard Ruins boss (`lt_quest_q003`, 0.04% Normal → 0.06%
-Nightmare, Discernment-scaled) and the Vanguard's Cold Token from the Vanguard Approach boss
-(`lt_quest_q005`, 0.06% → 0.09%) — `tools/content/wire_deep_relics.py`, the rates DEEP_DROPS always
-meant. `gear_sovereign_tithe` (Orange Ring1, 20/10) still drops nowhere: its text says it is
-"granted by the Gauntlet", which is a shop or settlement reward, not a zone. Owner call: the Throne
-of Ancients boss beside the Unworn Crown, or the Gauntlet.
-
 ### RD1. Sweep — repeat a cleared node without replaying it  *(owner-deferred 2026-09-07)*
 Auto-battle that unlocks only AFTER a first manual clear, so the proof-of-mastery gate survives but
 the repetition does not. The paper calls this table stakes for 2026 and names the precedents (Raid:
@@ -414,6 +406,12 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- **RG1 closed — the three relics have homes and teeth** *(2026-09-12, owner calls)*. Colossus-Core
+  Shard and the Cold Token drop from their deep-zone bosses (`wire_deep_relics.py`); the Sovereign's
+  Tithe-Mark is the rank-1 Gauntlet prize (`gauntlet_prizes.json` band `gearId`, paid at settlement,
+  validated at boot). All three buffed to near-100 stats with procs (10–15% × 1.4–2.0). Procs now
+  roll on every worn piece, not only the mount — the Cinder Cuff's and Stoned Horns' procs were
+  dead data until this. Unit tests on both, the settlement integration test pays the ring.
 - **Conscript is the starter kit** *(2026-09-12, owner call)*. `starter: true` on the eight pieces in
   `gear.json`; `EquipmentService.GrantStarterKitAsync` grants and wears them inside the registration
   transaction, idempotently (a piece owned is not granted twice, a worn slot keeps what it wears);

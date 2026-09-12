@@ -48,7 +48,8 @@ public class GauntletServiceTests
                    Content.Object, Players.Object, Gems.Object, Audit.Object,
                    Options.Create(Config), Shop.Object, Legions.Object, Equipment.Object,
                    Raids.Object, RaidService.Object, Magics.Object,
-                   new ROTA.UnitTests.TestSupport.PassThroughPlayerMutationLock());
+                   new ROTA.UnitTests.TestSupport.PassThroughPlayerMutationLock(),
+                   new Mock<IGearDefinitionProvider>().Object);
     }
 
     // Builds a player at an exact level: each level costs exactly 1 XP, so AddExperience(level-1)
