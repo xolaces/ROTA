@@ -209,7 +209,7 @@ services:
   api:
     environment:
       ForwardedHeaders__Enabled: "true"
-      ForwardedHeaders__TrustedProxies__0: "CADDY_IP"   # see below — the API refuses to boot without it
+      ForwardedHeaders__TrustedProxies__0: "172.18.0.0/16"   # the compose network — see below
       Cors__AllowedOrigins__0: "https://play.example.com"
 volumes:
   caddy_data:
@@ -223,21 +223,18 @@ behaving exactly like disabled, and every player's rate-limit bucket and audit I
 onto Caddy. An earlier revision of this step omitted the line and deferred it as "not a launch
 blocker"; the 2026-09-10 deploy crash-looped on it.
 
-Caddy has to exist before you can read its IP, so bring it up once, then fill the value in:
+The value may be a single address or a CIDR. Use the CIDR of the compose network: Docker hands a
+recreated Caddy container a new address, and a stale single address leaves the list non-empty — so
+the boot guard is satisfied and the API starts — while every forwarded header is silently ignored.
+The only things on that network are postgres, redis, Caddy and the API itself, none of which an
+attacker can source packets from. To confirm the subnet:
 
 ```bash
-cd /opt/rota
-docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d caddy
-CADDY_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' rota-caddy)
-sed -i "s/\"CADDY_IP\"/\"$CADDY_IP\"/" docker-compose.caddy.yml
-grep TrustedProxies docker-compose.caddy.yml     # should now show a real 172.x address
+docker network inspect rota_default -f '{{range .IPAM.Config}}{{.Subnet}}{{end}}'   # 172.18.0.0/16
 ```
 
-> The value is a single IP, not a CIDR — `Program.cs` parses it with `IPAddress.Parse`. If Caddy's
-> container is ever recreated and lands on a different address, the API will still boot (the list is
-> non-empty) but will silently stop honouring forwarded headers. Re-run the three lines above after
-> any `up --build` that touches the caddy service, and check `docker logs rota-api` for the client IP
-> on a request rather than `172.18.x.x`.
+> After any change, check `docker logs rota-api` shows a real client IP on a request rather than
+> `172.18.x.x`.
 
 ### 7c. Stop the API publishing a public port
 

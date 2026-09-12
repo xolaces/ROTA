@@ -442,7 +442,7 @@ if (!app.Environment.IsDevelopment())
             "ForwardedHeaders:Enabled is true but ForwardedHeaders:TrustedProxies is empty. The known-"
             + "proxy lists are cleared for safety, so this combination trusts nothing and honours no "
             + "X-Forwarded-For header — it reads as configured while behaving exactly like disabled. "
-            + "List the proxy IP the API actually sees, or set Enabled to false.");
+            + "List the proxy IP the API actually sees (or its network as a CIDR), or set Enabled to false.");
 }
 
 if (app.Configuration.GetValue("ForwardedHeaders:Enabled", false))
@@ -456,8 +456,8 @@ if (app.Configuration.GetValue("ForwardedHeaders:Enabled", false))
     // KnownIPNetworks, not the obsolete KnownNetworks — same list, renamed in ASP.NET Core. Cleared so
     // the framework's default loopback trust cannot widen who may set X-Forwarded-For.
     fwd.KnownIPNetworks.Clear();
-    foreach (var proxy in app.Configuration.GetSection("ForwardedHeaders:TrustedProxies").Get<string[]>() ?? [])
-        fwd.KnownProxies.Add(System.Net.IPAddress.Parse(proxy));
+    // An address is one proxy; a CIDR is the compose network, which survives Caddy being recreated.
+    TrustedProxies.Apply(fwd, app.Configuration.GetSection("ForwardedHeaders:TrustedProxies").Get<string[]>() ?? []);
     app.UseForwardedHeaders(fwd);
 }
 

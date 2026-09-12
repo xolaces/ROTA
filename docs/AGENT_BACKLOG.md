@@ -114,22 +114,6 @@ obvious one is a starter grant at registration or the chapter-1 quest pools. Own
 *(The "unequip, reforge, re-equip" wrinkle this entry first carried is gone: reforges happen in
 place as of the same day.)*
 
-### RF1. TrustedProxies should accept a CIDR, so a recreated Caddy cannot silently break it  *(found in the 2026-09-10 deploy)*
-`Program.cs` parses each `ForwardedHeaders:TrustedProxies` entry with `IPAddress.Parse` and adds it to
-`KnownProxies`. That forces the operator to list Caddy's exact container IP — `172.18.0.5` today —
-which Docker reassigns whenever the caddy service is recreated. When that happens the list is still
-non-empty, so the boot guard is satisfied and the API starts; it just stops honouring
-`X-Forwarded-For`, and every rate-limit bucket and audit IP collapses back onto the proxy. That is
-the exact quiet failure the guard was built to catch, moved one step along.
-
-The fix is ~6 lines: if an entry contains `/`, parse it as `IPNetwork` and add to `KnownIPNetworks`
-instead. Then the override can say `172.18.0.0/16` — the compose network — and never go stale.
-Trusting the whole compose subnet is safe here: the only things on it are postgres, redis, caddy and
-the API itself, none of which an attacker can source packets from.
-
-Verifiable by the standard gate: a unit test that a CIDR entry lands in `KnownIPNetworks` and a bare
-IP still lands in `KnownProxies`. Update 7b in `BETA_DEPLOY.md` to use the CIDR once it ships.
-
 ### RD1. Sweep — repeat a cleared node without replaying it  *(owner-deferred 2026-09-07)*
 Auto-battle that unlocks only AFTER a first manual clear, so the proof-of-mastery gate survives but
 the repetition does not. The paper calls this table stakes for 2026 and names the precedents (Raid:
@@ -438,6 +422,23 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 ---
 
 ## Done
+
+- **RF1 — TrustedProxies accepts a CIDR** *(2026-09-12)*. `TrustedProxies.Apply` puts an entry with a
+  `/` in `KnownIPNetworks` and a bare address in `KnownProxies`; the droplet override now names
+  `172.18.0.0/16`, so a recreated Caddy on a new address keeps X-Forwarded-For honoured. Four unit
+  tests; `BETA_DEPLOY.md` §7b carries the CIDR.
+- **A looted raid is not stored** *(2026-09-12)*. Loot deletes the participation in the grant's
+  transaction, the last claimant's conditional delete takes the raid; the sweeper purges Lootable
+  raids past `RaidConfig.LootClaimDays`, failed health-pool raids past their clock, and legacy Looted
+  rows. The completed-raid history (endpoint, DTO, query) is gone. Client: Raid lands on the Raids
+  tab (loot / yours / open), Public is only unjoined raids, Completed tab gone, sigil summon opens
+  the raid, guild raids are lootable from the guild list.
+- **Security sweep** *(2026-09-12)*. `EndpointAuthorizationSweepTests` walks the live action table
+  (every route protected or on a named anonymous list; admin prefixes carry their policy; 401 with
+  no token, 403 as a plain player, live). play.riseoftheancients.com now sends HSTS / nosniff /
+  DENY / referrer / permissions / a CSP (`'wasm-unsafe-eval'` is all Unity needs) and serves Build/
+  precompressed (.gz/.zst twins made by `tools/deploy-webgl.ps1`). API: no `Server` header, 64 KB
+  body cap, `/icons/body` revalidates. Client: rich text off on chat, PMs, guild text.
 
 - **Player model, phase 1** *(2026-09-11)*. `tools/art/gen_body.py` → a mannequin + dock map served
   at `/icons/body/`; `EquippedItemResponse`/`OwnedGearResponse` carry `SetId` and `ReforgedFrom`
