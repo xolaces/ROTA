@@ -15,6 +15,7 @@ the commits named; nothing in this note is still live.
 | 5 | API | `TrustedProxies` took only a bare address, so a recreated Caddy on a new address left forwarded headers silently ignored (rate-limit buckets and audit IPs collapsed onto the proxy). | CIDR entries → `KnownIPNetworks`; the override names `172.18.0.0/16`. RF1, `070c28a`, four unit tests. Verified live: the anon rate-limit key carries the real client IP. |
 | 6 | Client | UI Toolkit labels parse rich-text tags by default, so `<size=300>` in chat or a guild description rendered as such for everyone. | `enableRichText = false` on chat bodies, private messages, guild description and MOTD. `accdb17` |
 | 7 | API | `/icons/body` cached a day, so a player who saw the placeholder figure kept it a day after the real one shipped. | `no-cache` (revalidate), like the atlas. `8377ed6` |
+| 8 | API | HSTS was the framework's 30-day default. | A year, like the game page. |
 
 ## New standing test
 
@@ -52,6 +53,4 @@ policy; then real requests — no token → 401 on every protected route, a sign
 - `script-src 'unsafe-inline'` on the game page: the Unity template's boot script is inline. A
   nonce would need `apply-webgl-bg.ps1` to stamp one per deploy and Caddy to serve it; low value
   while nothing else on the page runs script.
-- HSTS on the API is 30 days; the game page's is a year. Raising the API's to match is a config
-  edit whenever wanted.
 - `baby.riseoftheancients.com` shares the Caddy but is not part of this system and was not reviewed.
