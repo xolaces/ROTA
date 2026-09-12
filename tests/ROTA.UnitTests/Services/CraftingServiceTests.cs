@@ -414,6 +414,127 @@ public class CraftingServiceTests
         result.FailureCode.Should().Be(CraftFailureCode.IngredientInUse);
     }
 
+    // REFORGE — the one craft that may take a worn piece, because the slot gets the better one back.
+    // Owner 2026-09-11: "reforge in place". Before this, reforging the helm on your head meant
+    // unequip → craft → re-equip, and D-020 said so in the catalogue.
+
+    private static CraftingRecipe ReforgeRecipe() => new()
+    {
+        Id = "craft_weir_kettle_helm_reforged",
+        Name = "Weir Kettle Helm (Reforged)",
+        Category = CraftRecipeCategory.Reforge,
+        OutputKind = CraftOutputKind.Gear,
+        OutputId = "gear_weir_kettle_helm_reforged",
+        OutputQuantity = 1,
+        GoldCost = 0,
+        Ingredients =
+        [
+            new CraftIngredient { Kind = CraftIngredientKind.Gear, Id = "gear_weir_kettle_helm", Quantity = 1 },
+            new CraftIngredient { Kind = CraftIngredientKind.Item, Id = "mat_weir_scrap",        Quantity = 3 },
+        ],
+    };
+
+    private static PlayerGear GiveReforgeIngredients(Bundle b, int helms)
+    {
+        var helm = PlayerGear.Create(PlayerId, "gear_weir_kettle_helm", helms);
+        b.Gear.Setup(r => r.GetOwnedAsync(PlayerId, It.IsAny<CancellationToken>())).ReturnsAsync([helm]);
+        b.Gear.Setup(r => r.GetAsync(PlayerId, "gear_weir_kettle_helm", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(helm);
+        var scrap = PlayerInventoryItem.Create(PlayerId, "mat_weir_scrap", 3);
+        b.Inventory.Setup(r => r.GetAllForPlayerAsync(PlayerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([scrap]);
+        b.Inventory.Setup(r => r.GetAsync(PlayerId, "mat_weir_scrap", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(scrap);
+        b.Players.Setup(r => r.FindByIdAsync(PlayerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Player?)null);
+        return helm;
+    }
+
+    [Fact]
+    public async Task CraftAsync_reforges_a_worn_piece_in_place_and_the_slot_wears_the_reforged_one()
+    {
+        var b = BuildService(ReforgeRecipe());
+        var helm = GiveReforgeIngredients(b, helms: 1);
+        var head = PlayerEquipment.Create(PlayerId, EquipmentSlot.Head, "gear_weir_kettle_helm");
+        b.Equipped.Setup(r => r.GetEquippedAsync(PlayerId, It.IsAny<CancellationToken>())).ReturnsAsync([head]);
+        b.Equipped.Setup(r => r.UpdateAsync(It.IsAny<PlayerEquipment>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var result = await b.Service.CraftAsync(PlayerId, "craft_weir_kettle_helm_reforged");
+
+        result.Success.Should().BeTrue(result.FailureReason);
+        result.ReforgedInPlace.Should().BeTrue("the only copy was on the player's head");
+        helm.Quantity.Should().Be(0, "the worn copy is the one consumed");
+        head.GearDefinitionId.Should().Be("gear_weir_kettle_helm_reforged", "the slot keeps the reforged piece");
+        head.IsDeleted.Should().BeFalse();
+        b.Equipped.Verify(r => r.UpdateAsync(head, It.IsAny<CancellationToken>()), Times.Once);
+        b.EquipmentSvc.Verify(s => s.GrantGearAsync(PlayerId, "gear_weir_kettle_helm_reforged", 1, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task CraftAsync_reforges_a_piece_worn_by_the_commander_in_place()
+    {
+        var b = BuildService(ReforgeRecipe());
+        GiveReforgeIngredients(b, helms: 1);
+        var commander = PlayerCommanderGear.Create(PlayerId, "gear_weir_kettle_helm");
+        b.CommanderGear.Setup(r => r.FindAsync(PlayerId, It.IsAny<CancellationToken>())).ReturnsAsync(commander);
+        b.CommanderGear.Setup(r => r.UpdateAsync(It.IsAny<PlayerCommanderGear>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var result = await b.Service.CraftAsync(PlayerId, "craft_weir_kettle_helm_reforged");
+
+        result.Success.Should().BeTrue(result.FailureReason);
+        result.ReforgedInPlace.Should().BeTrue();
+        commander.GearDefinitionId.Should().Be("gear_weir_kettle_helm_reforged");
+    }
+
+    [Fact]
+    public async Task CraftAsync_reforge_of_an_unworn_piece_goes_to_the_bag_and_touches_no_slot()
+    {
+        var b = BuildService(ReforgeRecipe());
+        GiveReforgeIngredients(b, helms: 1);
+
+        var result = await b.Service.CraftAsync(PlayerId, "craft_weir_kettle_helm_reforged");
+
+        result.Success.Should().BeTrue(result.FailureReason);
+        result.ReforgedInPlace.Should().BeFalse();
+        b.Equipped.Verify(r => r.UpdateAsync(It.IsAny<PlayerEquipment>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CraftAsync_an_ordinary_recipe_still_refuses_the_only_worn_copy()
+    {
+        // The D-020 rule is unchanged for everything that is not a reforge: an ordinary craft that
+        // would strip a slot is refused, because nothing goes back into that slot.
+        var b = BuildService(GearRecipe());
+        GiveGear(b, quantity: 1);
+        b.Equipped.Setup(r => r.GetEquippedAsync(PlayerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([PlayerEquipment.Create(PlayerId, EquipmentSlot.Head, "gear_conscript_helm")]);
+
+        var result = await b.Service.CraftAsync(PlayerId, "craft_oathsteel_helm");
+
+        result.FailureCode.Should().Be(CraftFailureCode.IngredientInUse);
+    }
+
+    [Fact]
+    public async Task GetCatalogueAsync_offers_a_worn_reforge_and_says_it_happens_on_the_body()
+    {
+        var b = BuildService(ReforgeRecipe());
+        GiveReforgeIngredients(b, helms: 1);
+        b.Equipped.Setup(r => r.GetEquippedAsync(PlayerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([PlayerEquipment.Create(PlayerId, EquipmentSlot.Head, "gear_weir_kettle_helm")]);
+        b.Players.Setup(r => r.FindByIdAsync(PlayerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Player.Create("u", "u@rota.test", "hash"));
+
+        var catalogue = await b.Service.GetCatalogueAsync(PlayerId);
+        var row = catalogue.Recipes.Single();
+
+        row.CanCraft.Should().BeTrue("a worn base piece no longer blocks a reforge");
+        row.Ingredients.Single(i => i.Kind == "Gear").BlockedBecauseEquipped.Should().BeNull();
+        row.Warning.Should().Contain("reforged where it sits");
+    }
+
     // LEGIONS — dissolving one clears its slot rows so nothing dangles
 
     private static CraftingRecipe LegionRecipe() => new()

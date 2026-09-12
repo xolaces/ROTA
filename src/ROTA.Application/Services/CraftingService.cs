@@ -135,9 +135,10 @@ public sealed class CraftingService : ICraftingService
         if (IsOwnOnce(recipe.OutputKind) && OwnsOutput(recipe, h))
             return Fail(CraftFailureCode.AlreadyOwned, $"You already own {outName}.");
 
+        bool reforge = IsReforge(recipe);
         foreach (var ing in recipe.Ingredients)
         {
-            var (owned, blocked) = Evaluate(ing, h);
+            var (owned, blocked) = Evaluate(ing, h, reforge);
             var (ingName, _) = DescribeIngredient(ing);
 
             if (blocked is not null)
@@ -181,16 +182,22 @@ public sealed class CraftingService : ICraftingService
 
         await GrantOutputAsync(playerId, recipe, ct);
 
+        // A reforge of a worn piece happens on the body: whichever slot wore the base piece now
+        // wears the reforged one. Consumption already took one copy off the stack; without this
+        // the slot would keep pointing at a piece the player may no longer hold.
+        bool reforgedInPlace = reforge && await MoveWearerAsync(playerId, recipe, h, ct);
+
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, "ItemCrafted", null,
             $"Crafted {recipe.OutputQuantity}x {outName} ({recipe.OutputKind} {recipe.OutputId}) " +
             $"via '{recipe.Id}' for {recipe.GoldCost} gold. Consumed: " +
             string.Join(", ", consumed.Select(c => $"{c.Quantity}x {c.Id}")) +
-            $". Gold now {newGold}.", null), ct);
+            $". Gold now {newGold}." + (reforgedInPlace ? " Reforged in place." : ""), null), ct);
 
         return new CraftResponse
         {
             Success            = true,
+            ReforgedInPlace    = reforgedInPlace,
             RecipeId           = recipe.Id,
             OutputKind         = recipe.OutputKind.ToString(),
             OutputId           = recipe.OutputId,
@@ -289,6 +296,47 @@ public sealed class CraftingService : ICraftingService
             default:
                 throw new InvalidOperationException($"Craft grant: unhandled output kind {r.OutputKind}.");
         }
+    }
+
+    /// <summary>
+    /// A reforge takes one piece of gear and gives back its better twin for the same slot. The
+    /// category says so and the shape confirms it — one Gear ingredient, one Gear output — so a
+    /// Reforge-categorised recipe of any other shape is treated as an ordinary craft.
+    /// </summary>
+    private static bool IsReforge(CraftingRecipe r)
+        => r.Category == CraftRecipeCategory.Reforge
+           && r.OutputKind == CraftOutputKind.Gear
+           && r.OutputQuantity == 1
+           && r.Ingredients.Count(i => i.Kind == CraftIngredientKind.Gear && i.Quantity == 1) == 1;
+
+    /// <summary>
+    /// Hands the reforged piece to the slot that wore the base piece — one slot, the first found —
+    /// and reports whether there was one. The body's equipment slots come first, then the commander
+    /// slot. Nothing to do when the base piece was not worn: the output is in the bag and the
+    /// player equips it when they like.
+    /// </summary>
+    private async Task<bool> MoveWearerAsync(Guid playerId, CraftingRecipe r, Holdings h, CancellationToken ct)
+    {
+        var baseId = r.Ingredients.First(i => i.Kind == CraftIngredientKind.Gear).Id;
+        if (h.GearEquipped.GetValueOrDefault(baseId) == 0) return false;
+
+        foreach (var row in await _equipped.GetEquippedAsync(playerId, ct))
+        {
+            if (!string.Equals(row.GearDefinitionId, baseId, StringComparison.Ordinal)) continue;
+            row.Equip(r.OutputId);
+            await _equipped.UpdateAsync(row, ct);
+            return true;
+        }
+
+        var commander = await _commanderGear.FindAsync(playerId, ct);
+        if (commander is not null && !commander.IsDeleted
+            && string.Equals(commander.GearDefinitionId, baseId, StringComparison.Ordinal))
+        {
+            commander.Equip(r.OutputId);
+            await _commanderGear.UpdateAsync(commander, ct);
+            return true;
+        }
+        return false;
     }
 
     // ---------------------------------------------------------------- shared state
@@ -411,7 +459,7 @@ public sealed class CraftingService : ICraftingService
     /// catalogue AND to authorise the craft, so the two cannot drift apart. Returns how many the player
     /// holds and, when the holding exists but cannot be taken, why.
     /// </summary>
-    private static (int Owned, string? Blocked) Evaluate(CraftIngredient ing, Holdings h)
+    private static (int Owned, string? Blocked) Evaluate(CraftIngredient ing, Holdings h, bool reforge = false)
     {
         switch (ing.Kind)
         {
@@ -423,8 +471,10 @@ public sealed class CraftingService : ICraftingService
                 int owned = h.Gear.GetValueOrDefault(ing.Id);
                 int worn  = h.GearEquipped.GetValueOrDefault(ing.Id);
                 // Only a craft that would eat into the equipped copies is blocked; spare copies craft
-                // freely, which is why this counts rather than treating "equipped" as a flag.
-                bool blocked = worn > 0 && owned - ing.Quantity < worn;
+                // freely, which is why this counts rather than treating "equipped" as a flag. A
+                // reforge is the exception: it may take the worn copy, because the slot that wore it
+                // is handed the reforged piece in the same transaction (MoveWearerAsync).
+                bool blocked = !reforge && worn > 0 && owned - ing.Quantity < worn;
                 return (owned, blocked
                     ? $"equipped ({worn} in use, {owned} held) — unequip a copy or find another"
                     : null);
@@ -453,11 +503,12 @@ public sealed class CraftingService : ICraftingService
 
     private CraftRecipeResponse BuildRow(CraftingRecipe r, Holdings h, long gold)
     {
+        bool reforge = IsReforge(r);
         var ingredients = new List<CraftIngredientResponse>(r.Ingredients.Count);
         foreach (var ing in r.Ingredients)
         {
             var (name, rarity) = DescribeIngredient(ing);
-            var (owned, blocked) = Evaluate(ing, h);
+            var (owned, blocked) = Evaluate(ing, h, reforge);
 
             ingredients.Add(new CraftIngredientResponse
             {
@@ -510,6 +561,12 @@ public sealed class CraftingService : ICraftingService
     /// <summary>A consequence worth knowing before committing — never a block.</summary>
     private string? BuildWarning(CraftingRecipe r, Holdings h)
     {
+        if (IsReforge(r))
+        {
+            var basePiece = r.Ingredients.First(i => i.Kind == CraftIngredientKind.Gear);
+            if (h.GearEquipped.GetValueOrDefault(basePiece.Id) > 0)
+                return "You are wearing this piece. It is reforged where it sits — the slot keeps the reforged one.";
+        }
         foreach (var ing in r.Ingredients.Where(i => i.Kind == CraftIngredientKind.Legion))
         {
             if (!h.Legions.Contains(ing.Id)) continue;

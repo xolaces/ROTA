@@ -84,6 +84,8 @@ public class CraftResponse
     public string OutputId { get; set; } = string.Empty;
     public string OutputName { get; set; } = string.Empty;
     public int OutputQuantity { get; set; }
+    /// <summary>True when the base piece was worn and the slot now wears the reforged one.</summary>
+    public bool ReforgedInPlace { get; set; }
 
     /// <summary>Exactly what the craft took, so the client can show it without a second read.</summary>
     public List<CraftConsumedResponse> Consumed { get; set; } = new();

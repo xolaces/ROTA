@@ -101,9 +101,8 @@ Conscript is deliberately outside the reforge (no twin, no recipe) until it has 
 obvious one is a starter grant at registration or the chapter-1 quest pools. Owner call on which.
 `ReforgeContentTests.Quest_zone_pools_…` will start covering Conscript the day `ExcludedSets` loses it.
 
-**Also worth knowing:** a reforge consumes the base piece, and D-020 refuses to consume a worn
-copy — so the player unequips, reforges, re-equips. Correct, and a little rude. A "reforge in
-place" that swaps the worn piece for its twin would be a CraftingService change, not content.
+*(The "unequip, reforge, re-equip" wrinkle this entry first carried is gone: reforges happen in
+place as of the same day.)*
 
 ### RF1. TrustedProxies should accept a CIDR, so a recreated Caddy cannot silently break it  *(found in the 2026-09-10 deploy)*
 `Program.cs` parses each `ForwardedHeaders:TrustedProxies` entry with `IPAddress.Parse` and adds it to

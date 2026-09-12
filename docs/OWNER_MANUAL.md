@@ -326,7 +326,8 @@ and crafting makes it:
   pieces and a **Tack** (`mat_weir_tack`) for the mount.
 - Every piece has a **Reforge recipe** in `recipes.json` (the client's Reforge tab): the base piece
   + 3/4/5/6 scraps by rarity (or 3 tack for the mount) + gold. The base piece is consumed. A piece
-  that is *worn* cannot be consumed (D-020) — unequip it, reforge, re-equip.
+  that is *worn* is reforged **in place**: the slot that wore it wears the reforged one when the
+  craft returns (the one exception to D-020, and the catalogue says so on the row).
 - Every raid drops the parts of the sets whose pieces fall in its chapter, on **every rung** of its
   ladder at a per-rung chance that compounds to the top-of-ladder targets below. The more of the
   fight you carried, the more rungs you roll. Guild raids have tables now (they had none); the
