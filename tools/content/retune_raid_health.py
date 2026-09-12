@@ -43,6 +43,8 @@ START, END = 4_000, 2_000_000
 PERSONAL_DIVISOR = 4
 # The same ladder the tables were built with, so the rungs keep their meaning.
 FRACTIONS = [0.0005, 0.002, 0.005, 0.012, 0.03, 0.07, 0.15, 0.40]
+# No rung under this much damage: a threshold of 2 is not a rung, it is the first hit.
+FLOOR = 100
 
 
 def tidy(v):
@@ -50,6 +52,22 @@ def tidy(v):
     if v < 1000:
         return int(round(v, -1))
     return int(round(v, -(int(math.log10(v)) - 2)))
+
+
+def ladder(base):
+    """The eight rungs for a pool of `base` health.
+
+    Fractions of the pool, floored at FLOOR. On a small pool the floor lands on several rungs at
+    once — 4,000 health gave 2 / 8 / 20 / 48, so four rungs sat at 100 and one hit collected all
+    four. When that happens the ladder is spaced geometrically from the floor to the top rung
+    instead, so every rung is a step; a pool whose fractions clear the floor is left as it is.
+    """
+    raw = [max(FLOOR, int(base * f)) for f in FRACTIONS]
+    # A rung is a step when it is at least a third again the one below; 100 → 101 is not.
+    if all(raw[i] >= raw[i - 1] * 1.3 for i in range(1, len(raw))):
+        return raw
+    top, n = raw[-1], len(raw) - 1
+    return [tidy(FLOOR * (top / FLOOR) ** (i / n)) for i in range(n + 1)]
 
 
 def main():
@@ -84,11 +102,11 @@ def main():
         rid = t["id"][3:]
         if rid not in new_hp:
             continue
-        base = new_hp[rid]
+        steps = ladder(new_hp[rid])
         for diff, v in t["difficulties"].items():
             rungs = v["thresholdRewards"]
             for i, rung in enumerate(rungs):
-                rung["damageThreshold"] = max(100, int(base * FRACTIONS[i]))
+                rung["damageThreshold"] = steps[i]
         moved += 1
 
     io.open(rp, "w", encoding="utf-8", newline="\n").write(
