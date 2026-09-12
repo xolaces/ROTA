@@ -92,6 +92,16 @@ owner's own confirmation. Everything else RE1 asked for is done.
 > R0's actual fix is also an Inspector checkbox, which is not a code change at all. Both need the
 > owner, or a tick with a Unity headless-compile gate added to the protocol.~~
 
+### RP2. The player model, phase 2 — real worn gear on the figure  *(owner go 2026-09-11; art-gated)*
+Phase 1 is live: the Profile's EQUIPPED card is a mannequin with every worn piece's icon docked on
+the body (`ROTA.Client6` `39e5920`, server `be9a126`). Phase 2 draws the gear ON the body: one
+full-figure image per set in the mannequin's exact pose (`assets/icons/body/<setId>.png`, prompts in
+the brief's last section), plus a one-time JSON of slot regions on that pose; the client shows each
+worn piece through a window over its set's figure — head window from set A, torso from set B —
+so mixed sets compose without hand-cut layers. Hooks already in place: `EquippedItemResponse.SetId`
+/ `ReforgedFrom`, `FigureArt` (one figure today, a dictionary tomorrow), `PaperDoll` (docks today,
+windows tomorrow). Blocked on the 13 figures; when they land, about a day of client work.
+
 ### RG1. Twelve gear pieces nothing on the live server hands out  *(found 2026-09-11, wiring the reforge)*
 The reforge pass mapped every acquisition path and these have none — no quest pool, no raid rung,
 no recipe, no shop: the whole **Conscript** set (8 pieces; the mock seeds it, live never does),
@@ -428,6 +438,12 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 ---
 
 ## Done
+
+- **Player model, phase 1** *(2026-09-11)*. `tools/art/gen_body.py` → a mannequin + dock map served
+  at `/icons/body/`; `EquippedItemResponse`/`OwnedGearResponse` carry `SetId` and `ReforgedFrom`
+  (`be9a126`). Client `FigureArt` + `PaperDoll`: the Profile's EQUIPPED card is the body with each
+  worn piece's icon docked where it is worn, gilt for reforged, + for empty (`39e5920`). Live.
+  Also `tools/ledger/build.py` now writes complete DotD-shaped raid loot pages (`d2c08a7`).
 
 - **Raid loot, proper** *(2026-09-11)*. Three server fixes and one content pass. `b8884cd`: the
   live profile's ATK/DEF chips were always 0 (Stats never loaded with the profile). `9d8cfd9`:
