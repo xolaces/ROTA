@@ -92,6 +92,19 @@ owner's own confirmation. Everything else RE1 asked for is done.
 > R0's actual fix is also an Inspector checkbox, which is not a code change at all. Both need the
 > owner, or a tick with a Unity headless-compile gate added to the protocol.~~
 
+### RG1. Twelve gear pieces nothing on the live server hands out  *(found 2026-09-11, wiring the reforge)*
+The reforge pass mapped every acquisition path and these have none — no quest pool, no raid rung,
+no recipe, no shop: the whole **Conscript** set (8 pieces; the mock seeds it, live never does),
+and three no-set relics — `gear_cold_token`, `gear_colossus_core` (both listed in
+`wire_drop_tables.py`'s DEEP_DROPS for zones that have no table) and `gear_sovereign_tithe`.
+Conscript is deliberately outside the reforge (no twin, no recipe) until it has a source; the
+obvious one is a starter grant at registration or the chapter-1 quest pools. Owner call on which.
+`ReforgeContentTests.Quest_zone_pools_…` will start covering Conscript the day `ExcludedSets` loses it.
+
+**Also worth knowing:** a reforge consumes the base piece, and D-020 refuses to consume a worn
+copy — so the player unequips, reforges, re-equips. Correct, and a little rude. A "reforge in
+place" that swaps the worn piece for its twin would be a CraftingService change, not content.
+
 ### RF1. TrustedProxies should accept a CIDR, so a recreated Caddy cannot silently break it  *(found in the 2026-09-10 deploy)*
 `Program.cs` parses each `ForwardedHeaders:TrustedProxies` entry with `IPAddress.Parse` and adds it to
 `KnownProxies`. That forces the operator to list Caddy's exact container IP — `172.18.0.5` today —
@@ -416,6 +429,15 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 ---
 
 ## Done
+
+- **Raid loot, proper** *(2026-09-11)*. Three server fixes and one content pass. `b8884cd`: the
+  live profile's ATK/DEF chips were always 0 (Stats never loaded with the profile). `9d8cfd9`:
+  campaign raids paid every rung to everyone — damage-keyed rungs were only honoured on World
+  raids. `4f7920c`: Reforge recipe category; the crafting catalogue carries art references.
+  `02563af`: `tools/content/reforge_sets.py` — 96 reforged pieces, 24 parts, 96 recipes, parts on
+  every raid ladder (scrap 12→30%, tack 4→10% at the top by difficulty), guild raids get tables,
+  quest gear pools re-rated to 1/50-and-rarer per piece, equal within a pool. Manual §5.3–5.5.
+  Client: Reforge tab, art from the DTO.
 
 - **RE1 — client art pipeline** *(2026-09-10 → 11)*. `ROTA.Client6` `c281c77`: `IconAtlas` fetches
   `/icons/atlas.json` + `atlas.png` once at boot, `Sprite.Create` per frame cached by stem, one
