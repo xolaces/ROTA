@@ -1760,26 +1760,26 @@ public sealed class RaidService : IRaidService
                         ? (double)p.TotalDamageDealt / totalDamage * 100.0
                         : 0;
 
-                    // A timer-only raid (no collective health) pays on ABSOLUTE damage instead of a
-                    // share of the total, because there is no total to take a share of until it ends.
-                    // Detected from the definition rather than a flag on the raid row: baseHp 0 IS the
-                    // marker, and RaidDefinitionProvider.Validate guarantees only World raids carry it.
-                    bool timerOnly = definition.BaseHp <= 0;
-
                     // System 22 Phase A follow-up — only the killer's chance drops are Hoard-scaled
                     // (see ScaleDropChance). Every other participant keeps their base chance.
                     double hoardForThisPlayer = p.PlayerId == callerPlayerId ? callerHoardDropMultiplier : 1.0;
 
+                    // A rung keyed on absolute damage pays on damage, whatever raid it sits in; one
+                    // keyed on a share pays on the share. Until 2026-09-11 only timer-only (World)
+                    // raids honoured the damage key, while every campaign table had carried damage
+                    // rungs since wire_drop_tables.py wrote them as fractions of the HP pool — so on
+                    // a campaign raid every participant cleared every rung, guaranteed mount
+                    // included, off a single hit. The key each rung carries is the key it pays on.
+                    //
                     // Cumulative either way: a player banks every rung they passed, not just the
                     // highest. On the damage ladder that is the point — nothing is lost when the
                     // timer beats you to the next rung.
-                    var qualified = timerOnly
-                        ? diffLoot.ThresholdRewards
-                            .OrderBy(t => t.DamageThreshold)
-                            .Where(t => p.TotalDamageDealt >= t.DamageThreshold)
-                        : diffLoot.ThresholdRewards
-                            .OrderBy(t => t.ContributionPercent)
-                            .Where(t => contribPct >= t.ContributionPercent);
+                    var qualified = diffLoot.ThresholdRewards
+                        .Where(t => t.DamageThreshold > 0
+                            ? p.TotalDamageDealt >= t.DamageThreshold
+                            : contribPct >= t.ContributionPercent)
+                        .OrderBy(t => t.DamageThreshold)
+                        .ThenBy(t => t.ContributionPercent);
 
                     foreach (var threshold in qualified)
                     {

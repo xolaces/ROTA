@@ -763,6 +763,76 @@ public class RaidServiceTests
             "T57 — stat points are computed on the kill but granted when the participant presses Loot");
     }
 
+    // Kill rewards — a damage-keyed rung pays on damage on a raid WITH a health pool. The shipped
+    // campaign tables have carried damage rungs since 2026-09-04 while the service honoured them
+    // only on timer-only (baseHp 0) raids, so every participant banked every rung — guaranteed
+    // mount included — off one hit. This raid has BaseHp 100000, so it is NOT timer-only.
+    //
+    // HOW TO VERIFY THIS TEST REQUIRES THE FIX: key the qualification on `definition.BaseHp <= 0`
+    // again — the 30,000-damage attacker collects the 50,000 rung too and lands on 10, not 4.
+    [Fact]
+    public async Task Hit_Kill_DamageKeyedRungs_PayOnDamage_EvenWhenTheRaidHasAHealthPool()
+    {
+        var b = BuildService(new Random(0));
+        var attacker = MakePlayer();
+        var raid = MakeRaid(currentHp: 1);
+
+        var lootTable = new LootTableDefinition
+        {
+            Id = "lt_raid_ironcolossus", Type = "Raid",
+            Difficulties = new Dictionary<string, LootTableDifficulty>
+            {
+                ["Normal"] = new()
+                {
+                    MinContributionPercent = 0.0,
+                    ThresholdRewards = new List<ThresholdReward>
+                    {
+                        // Written the way wire_drop_tables.py writes them: damage set, share zero.
+                        new() { DamageThreshold = 100,    ContributionPercent = 0.0, UnassignedStatPoints = 1, ItemDrops = new() },
+                        new() { DamageThreshold = 10_000, ContributionPercent = 0.0, UnassignedStatPoints = 1, ItemDrops = new() },
+                        new() { DamageThreshold = 50_000, ContributionPercent = 0.0, UnassignedStatPoints = 4, ItemDrops = new() },
+                    },
+                },
+            },
+        };
+        b.LootTables.Setup(l => l.GetById("lt_raid_ironcolossus")).Returns(lootTable);
+
+        // 30,000 damage: past the first two rungs, short of the 50,000 one.
+        var attackerPart = RaidParticipant.Create(raid.Id, attacker.Id);
+        for (int i = 0; i < 3; i++) attackerPart.RecordHit(10000);
+
+        b.Raids.Setup(r => r.FindByIdAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
+        b.Raids.Setup(r => r.AtomicApplyHitAsync(
+                raid.Id,
+                It.IsAny<Func<ActiveRaid, Task<bool>>>(),
+                It.IsAny<CancellationToken>()))
+            .Returns<Guid, Func<ActiveRaid, Task<bool>>, CancellationToken>(
+                (_, mutate, _) => mutate(raid));
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+        b.Energy.Setup(e => e.SpendEnergyAsync(attacker.Id, ResourceType.Stamina, It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        b.Players.Setup(p => p.FindByIdWithStatsAsync(attacker.Id, It.IsAny<CancellationToken>())).ReturnsAsync(attacker);
+        b.Players.Setup(p => p.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        b.Resources.Setup(r => r.GetAsync(attacker.Id, ResourceType.Stamina, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(MakeStaminaResource());
+        b.Energy.Setup(e => e.GetCurrentEnergyAsync(attacker.Id, ResourceType.Stamina, It.IsAny<CancellationToken>())).ReturnsAsync(4);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, attacker.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(attackerPart);
+        b.Participants.Setup(p => p.UpdateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipant> { attackerPart });
+        b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var result = await b.Service.HitRaidAsync(attacker.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        // Two rungs banked, each rounded after the Legendary1 1.5× — round(1.5) = 2 twice = 4. The
+        // unreached 50,000 rung would have added round(4 × 1.5) = 6 and made it 10.
+        result.Response!.Rewards!.UnassignedStatPointsGranted.Should().Be(4,
+            "a damage-keyed rung above the participant's damage must not pay, health pool or not");
+    }
+
     // Kill — gem idempotency key format
 
     [Fact]
