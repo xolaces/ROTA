@@ -1,14 +1,14 @@
 # ROTA — art brief
 
-**359 icons, in 49 batches.** Generated from the shipped content, so it cannot drift from what the game actually contains.
+**383 icons, in 52 batches.** Generated from the shipped content, so it cannot drift from what the game actually contains.
 
 ## Progress
 
-**127 of 359 icons have real art. 16 of 49 batches are done; 33 remain (232 icons).**
+**127 of 383 icons have real art. 15 of 52 batches are done; 37 remain (256 icons).**
 
 A batch is done when every file it names in `assets/icons/<family>/` is delivered art (512px). Everything not yet drawn ships the generated placeholder — a 64px glyph tile with the rarity colour and a slot mark — so nothing is blank in the game; the placeholders are exactly what the remaining batches replace. This section is read from disk, not maintained by hand: land a sheet with `split_sheet.py`, re-run `python tools/art/gen_art_brief.py`, and the batch moves itself to done.
 
-**Next up: Batch 17 — items — Material (3 of 6).** Remaining, in order: 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49.
+**Next up: Batch 16 — items — Material (2 of 9).** Remaining, in order: 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52.
 
 | Batch | Group | Icons | Status |
 |---|---|---|---|
@@ -26,41 +26,44 @@ A batch is done when every file it names in `assets/icons/<family>/` is delivere
 | 12 | set_choir | 8 | done — real art |
 | 13 | set_sovereign | 8 | done — real art |
 | 14 | set_stoned_devil | 8 | done — real art |
-| 15 | items — Material (1 of 6) | 8 | done — real art |
-| 16 | items — Material (2 of 6) | 8 | done — real art |
-| 17 | items — Material (3 of 6) | 8 | **to do** — placeholders in game |
-| 18 | items — Material (4 of 6) | 8 | **to do** — placeholders in game |
-| 19 | items — Material (5 of 6) | 8 | **to do** — placeholders in game |
-| 20 | items — Material (6 of 6) | 7 | **to do** — placeholders in game |
-| 21 | items — StatBag | 6 | **to do** — placeholders in game |
-| 22 | items — Sigil (one per raid, shared by all four tiers) (1 of 4) | 8 | **to do** — placeholders in game |
-| 23 | items — Sigil (one per raid, shared by all four tiers) (2 of 4) | 8 | **to do** — placeholders in game |
-| 24 | items — Sigil (one per raid, shared by all four tiers) (3 of 4) | 8 | **to do** — placeholders in game |
-| 25 | items — Sigil (one per raid, shared by all four tiers) (4 of 4) | 2 | **to do** — placeholders in game |
-| 26 | items — Consumable (1 of 3) | 8 | **to do** — placeholders in game |
-| 27 | items — Consumable (2 of 3) | 8 | **to do** — placeholders in game |
-| 28 | items — Consumable (3 of 3) | 3 | **to do** — placeholders in game |
-| 29 | magics (1 of 6) | 8 | **to do** — placeholders in game |
-| 30 | magics (2 of 6) | 8 | **to do** — placeholders in game |
-| 31 | magics (3 of 6) | 8 | **to do** — placeholders in game |
-| 32 | magics (4 of 6) | 8 | **to do** — placeholders in game |
-| 33 | magics (5 of 6) | 8 | **to do** — placeholders in game |
-| 34 | magics (6 of 6) | 3 | **to do** — placeholders in game |
-| 35 | units (1 of 5) | 8 | **to do** — placeholders in game |
-| 36 | units (2 of 5) | 8 | **to do** — placeholders in game |
-| 37 | units (3 of 5) | 8 | **to do** — placeholders in game |
-| 38 | units (4 of 5) | 8 | **to do** — placeholders in game |
-| 39 | units (5 of 5) | 5 | **to do** — placeholders in game |
-| 40 | legions (1 of 2) | 8 | **to do** — placeholders in game |
-| 41 | legions (2 of 2) | 2 | **to do** — placeholders in game |
-| 42 | crafting recipes (1 of 3) | 8 | **to do** — placeholders in game |
-| 43 | crafting recipes (2 of 3) | 8 | **to do** — placeholders in game |
-| 44 | crafting recipes (3 of 3) | 7 | **to do** — placeholders in game |
-| 45 | raid bosses (1 of 5) | 8 | **to do** — placeholders in game |
-| 46 | raid bosses (2 of 5) | 8 | **to do** — placeholders in game |
-| 47 | raid bosses (3 of 5) | 8 | **to do** — placeholders in game |
-| 48 | raid bosses (4 of 5) | 8 | **to do** — placeholders in game |
-| 49 | raid bosses (5 of 5) | 5 | **to do** — placeholders in game |
+| 15 | items — Material (1 of 9) | 8 | done — real art |
+| 16 | items — Material (2 of 9) | 8 | **partial** — still placeholders: `mat_choir_scrap`, `mat_choir_tack` |
+| 17 | items — Material (3 of 9) | 8 | **partial** — still placeholders: `mat_drowned_scrap`, `mat_drowned_tack`, `mat_glutbound_core`, `mat_gravesalt`, `mat_gravewarden_scrap`, `mat_gravewarden_tack` |
+| 18 | items — Material (4 of 9) | 8 | **to do** — placeholders in game |
+| 19 | items — Material (5 of 9) | 8 | **to do** — placeholders in game |
+| 20 | items — Material (6 of 9) | 8 | **to do** — placeholders in game |
+| 21 | items — Material (7 of 9) | 8 | **to do** — placeholders in game |
+| 22 | items — Material (8 of 9) | 8 | **to do** — placeholders in game |
+| 23 | items — Material (9 of 9) | 7 | **to do** — placeholders in game |
+| 24 | items — StatBag | 6 | **to do** — placeholders in game |
+| 25 | items — Sigil (one per raid, shared by all four tiers) (1 of 4) | 8 | **to do** — placeholders in game |
+| 26 | items — Sigil (one per raid, shared by all four tiers) (2 of 4) | 8 | **to do** — placeholders in game |
+| 27 | items — Sigil (one per raid, shared by all four tiers) (3 of 4) | 8 | **to do** — placeholders in game |
+| 28 | items — Sigil (one per raid, shared by all four tiers) (4 of 4) | 2 | **to do** — placeholders in game |
+| 29 | items — Consumable (1 of 3) | 8 | **to do** — placeholders in game |
+| 30 | items — Consumable (2 of 3) | 8 | **to do** — placeholders in game |
+| 31 | items — Consumable (3 of 3) | 3 | **to do** — placeholders in game |
+| 32 | magics (1 of 6) | 8 | **to do** — placeholders in game |
+| 33 | magics (2 of 6) | 8 | **to do** — placeholders in game |
+| 34 | magics (3 of 6) | 8 | **to do** — placeholders in game |
+| 35 | magics (4 of 6) | 8 | **to do** — placeholders in game |
+| 36 | magics (5 of 6) | 8 | **to do** — placeholders in game |
+| 37 | magics (6 of 6) | 3 | **to do** — placeholders in game |
+| 38 | units (1 of 5) | 8 | **to do** — placeholders in game |
+| 39 | units (2 of 5) | 8 | **to do** — placeholders in game |
+| 40 | units (3 of 5) | 8 | **to do** — placeholders in game |
+| 41 | units (4 of 5) | 8 | **to do** — placeholders in game |
+| 42 | units (5 of 5) | 5 | **to do** — placeholders in game |
+| 43 | legions (1 of 2) | 8 | **to do** — placeholders in game |
+| 44 | legions (2 of 2) | 2 | **to do** — placeholders in game |
+| 45 | crafting recipes (1 of 3) | 8 | **to do** — placeholders in game |
+| 46 | crafting recipes (2 of 3) | 8 | **to do** — placeholders in game |
+| 47 | crafting recipes (3 of 3) | 7 | **to do** — placeholders in game |
+| 48 | raid bosses (1 of 5) | 8 | **to do** — placeholders in game |
+| 49 | raid bosses (2 of 5) | 8 | **to do** — placeholders in game |
+| 50 | raid bosses (3 of 5) | 8 | **to do** — placeholders in game |
+| 51 | raid bosses (4 of 5) | 8 | **to do** — placeholders in game |
+| 52 | raid bosses (5 of 5) | 5 | **to do** — placeholders in game |
 
 ---
 
@@ -799,7 +802,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/gear --s
 
 ---
 
-## Batch 15 — items — Material (1 of 6) · 8 icons · DONE
+## Batch 15 — items — Material (1 of 9) · 8 icons · DONE
 
 Real art is on disk for all 8. The prompt stays for re-rolls.
 
@@ -846,9 +849,9 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 
 ---
 
-## Batch 16 — items — Material (2 of 6) · 8 icons · DONE
+## Batch 16 — items — Material (2 of 9) · 8 icons · PARTIAL
 
-Real art is on disk for all 8. The prompt stays for re-rolls.
+Still placeholders: `mat_choir_scrap`, `mat_choir_tack`. Re-run the whole sheet — a set drawn in one sitting matches itself.
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -856,7 +859,7 @@ shape with a hard edge — never a gradient, never an airbrush, never a gloss or
 No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
 colour.
 
-Four or five materials, about nine shapes — the most detailed tier, and still no filigree. One distinctive silhouette flourish, and one precious or glowing inlay. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
 no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
 
 One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
@@ -876,114 +879,26 @@ Reading order is left to right, top to bottom, matching the list below.
 Draw these 8, in this order:
 
 Perpetual Censer Resin — crafting material. Scraped from the inside of a censer lit during the Age of Dawn. There is still some left. There has always been some left.
+Choir Scrap — crafting material. Resonant brass and pale bone. Strike it and it holds a note for too long.
+Choir Tack — crafting material. Palfrey tack in brass and bone, cut open at the ears so the animal can hear the choir.
 Cinder-Salt — crafting material. Scraped off the Ashen Throne, where the heat drove everything out of the stone but this. Tastes of iron. Nobody tastes it twice.
 Coarse Thread — crafting material. Spun thick enough to sew canvas and cheap enough to waste. The frontier repairs more than it replaces, and this is what it repairs with.
 Colossus Filament — crafting material. Sigil-wire from the Iron Colossus's commanding core. Still carrying an order. Still trying to deliver it to a chain of command four hundred years dead.
 Cracked Command Sigil — crafting material. Prised off a Wrought mid-order. It is still trying to finish the sentence.
 Cork-and-Iron Sole — crafting material. Salvager's stock. Buoyant enough to float a boot and heavy enough to keep it down.
-Deepwood Heart — crafting material. Cut from an apex that had been growing since before the Sundering. Still warm four days out.
-Emberfall Slag — crafting material. A cold clinker, crusted over in pale ash-grey and chalky white, its surface matte and porous like pumice. It is NOT black rock and it has NO bright orange cracks. Only a single deep fracture shows any heat at all, and there the colour is a dull banked red, the darkest red on the icon — a fire remembered, not a fire burning.
 ```
 
 Then cut it up:
 
 ```bash
-python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --size 512 --names mat_censer_resin,mat_cinder_salt,mat_coarse_thread,mat_colossus_filament,mat_command_sigil,mat_cork_iron,mat_deepwood_heart,mat_emberfall_slag
+python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --size 512 --names mat_censer_resin,mat_choir_scrap,mat_choir_tack,mat_cinder_salt,mat_coarse_thread,mat_colossus_filament,mat_command_sigil,mat_cork_iron
 ```
 
 ---
 
-## Batch 17 — items — Material (3 of 6) · 8 icons · TO DO
+## Batch 17 — items — Material (3 of 9) · 8 icons · PARTIAL
 
-```
-Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
-shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
-No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
-colour.
-
-Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
-no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
-
-One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Square, with no halo or glow around the cutout.
-
-Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
-the grey-and-white chequer is how an editor displays transparency, not something to paint.
-
-Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
-
-Every object sits centred in its own cell and stays entirely inside it, with equal margins all
-round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells.
-
-Reading order is left to right, top to bottom, matching the list below.
-
-Draw these 8, in this order:
-
-Glutbound Core — crafting material. The dense part of a thing that had nearly finished becoming something else.
-Gravesalt — crafting material. The Watch packs it around anything it has to move twice. It works, and nobody has asked how.
-Haft of Gravewend — crafting material. A farm tool from a village whose name is not written down, carried by a man whose name is not written down, who used it to kill a thing that should have killed him. The village is gone. The…
-Hollow Marches Reed — crafting material. Grows only where the ground is too wet to bury anything. The Marches are full of them.
-Iron Shard — crafting material. A fragment of the Iron Colossus. Used in crafting.
-Keepwall Mortar — crafting material. Prised from a wall Malachar's masons raised in one night. Nobody has explained the speed.
-Kronarch's Broken Seal — crafting material. From the muster-rolls of the army that won against nothing. Most of the names are legible.
-Lamp-Black — crafting material. Soot off a relay lamp, ground fine. The Watch hems its hoods with it so a courier does not shine in a doorway.
-```
-
-Then cut it up:
-
-```bash
-python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --size 512 --names mat_glutbound_core,mat_gravesalt,mat_gravewend_haft,mat_hollow_reed,mat_iron_shard,mat_keepwall_mortar,mat_kronarch_seal,mat_lamp_black
-```
-
----
-
-## Batch 18 — items — Material (4 of 6) · 8 icons · TO DO
-
-```
-Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
-shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
-No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
-colour.
-
-Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
-no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
-
-One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
-implied direction. Square, with no halo or glow around the cutout.
-
-Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
-the grey-and-white chequer is how an editor displays transparency, not something to paint.
-
-Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
-
-Every object sits centred in its own cell and stays entirely inside it, with equal margins all
-round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
-may cross a cell boundary. Leave clear empty space between cells.
-
-Reading order is left to right, top to bottom, matching the list below.
-
-Draw these 8, in this order:
-
-Leviathan Baleen — crafting material. Cut from a Primordial that was never killed, only out-waited. It filters things out of air that air was not known to contain.
-Leviathan Tooth — crafting material. One of very many, and still the largest object most people will ever hold.
-Mire-Ichor — crafting material. Pale, luminous, foul. Bled from the Brood-things of the drowned shallows. Useless alone; the basis of half the alchemy on the Drowned Coast.
-Null-Sigil Ink — crafting material. The medium the Sealwrights wrote closure in. It does not dry so much as decide to stop.
-Oathsteel Ingot — crafting material. Steel quenched in a spoken oath. The forge remembers what was promised.
-Marsh Pitch — crafting material. Boiled down over three days. Gravewardens seal their wades with it and their coffins too.
-Quiet Lamp Oil — crafting material. Drawn from a Last Watch relay lamp that has burned unattended since the fall. The Watch does not know what it burns and has stopped asking.
-Resonant Brass — crafting material. Cast to hum at one note and no other. The Choir orders it by the tone, never the weight.
-```
-
-Then cut it up:
-
-```bash
-python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --size 512 --names mat_leviathan_baleen,mat_leviathan_tooth,mat_mire_ichor,mat_null_sigil_ink,mat_oathsteel,mat_pitch_seal,mat_quiet_lamp_oil,mat_resonant_brass
-```
-
----
-
-## Batch 19 — items — Material (5 of 6) · 8 icons · TO DO
+Still placeholders: `mat_drowned_scrap`, `mat_drowned_tack`, `mat_glutbound_core`, `mat_gravesalt`, `mat_gravewarden_scrap`, `mat_gravewarden_tack`. Re-run the whole sheet — a set drawn in one sitting matches itself.
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1010,12 +925,192 @@ Reading order is left to right, top to bottom, matching the list below.
 
 Draw these 8, in this order:
 
+Deepwood Heart — crafting material. Cut from an apex that had been growing since before the Sundering. Still warm four days out.
+Drowned Scrap — crafting material. Verdigris copper and sealed cork. It came up out of the water and is still wet.
+Drowned Tack — crafting material. Tack from a drowned courser: glass-beaded, copper-buckled, and it does not rust.
+Emberfall Slag — crafting material. A cold clinker, crusted over in pale ash-grey and chalky white, its surface matte and porous like pumice. It is NOT black rock and it has NO bright orange cracks. Only a single deep fracture shows any heat at all, and there the colour is a dull banked red, the darkest red on the icon — a fire remembered, not a fire burning.
+Glutbound Core — crafting material. The dense part of a thing that had nearly finished becoming something else.
+Gravesalt — crafting material. The Watch packs it around anything it has to move twice. It works, and nobody has asked how.
+Gravewarden Scrap — crafting material. Barrow-iron plate and pitch-sealed canvas, with a line of gravesalt in every fold.
+Gravewarden Tack — crafting material. Dray harness, black pitch on iron. It was made to pull weight out of the ground.
+```
+
+Then cut it up:
+
+```bash
+python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --size 512 --names mat_deepwood_heart,mat_drowned_scrap,mat_drowned_tack,mat_emberfall_slag,mat_glutbound_core,mat_gravesalt,mat_gravewarden_scrap,mat_gravewarden_tack
+```
+
+---
+
+## Batch 18 — items — Material (4 of 9) · 8 icons · TO DO
+
+```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Four materials, about seven shapes. A simple repeating motif, and one inlay or set stone. Still flat and readable, never filigree. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
+
+Every object sits centred in its own cell and stays entirely inside it, with equal margins all
+round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
+may cross a cell boundary. Leave clear empty space between cells.
+
+Reading order is left to right, top to bottom, matching the list below.
+
+Draw these 8, in this order:
+
+Haft of Gravewend — crafting material. A farm tool from a village whose name is not written down, carried by a man whose name is not written down, who used it to kill a thing that should have killed him. The village is gone. The…
+Hollow Marches Reed — crafting material. Grows only where the ground is too wet to bury anything. The Marches are full of them.
+Iron Shard — crafting material. A fragment of the Iron Colossus. Used in crafting.
+Keepwall Mortar — crafting material. Prised from a wall Malachar's masons raised in one night. Nobody has explained the speed.
+Kronarch's Broken Seal — crafting material. From the muster-rolls of the army that won against nothing. Most of the names are legible.
+Lamp-Black — crafting material. Soot off a relay lamp, ground fine. The Watch hems its hoods with it so a courier does not shine in a doorway.
+Leviathan Baleen — crafting material. Cut from a Primordial that was never killed, only out-waited. It filters things out of air that air was not known to contain.
+Leviathan Tooth — crafting material. One of very many, and still the largest object most people will ever hold.
+```
+
+Then cut it up:
+
+```bash
+python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --size 512 --names mat_gravewend_haft,mat_hollow_reed,mat_iron_shard,mat_keepwall_mortar,mat_kronarch_seal,mat_lamp_black,mat_leviathan_baleen,mat_leviathan_tooth
+```
+
+---
+
+## Batch 19 — items — Material (5 of 9) · 8 icons · TO DO
+
+```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Simple: three materials, about five shapes, and ONE functional detail such as a strap, a buckle or a stamped mark. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
+
+Every object sits centred in its own cell and stays entirely inside it, with equal margins all
+round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
+may cross a cell boundary. Leave clear empty space between cells.
+
+Reading order is left to right, top to bottom, matching the list below.
+
+Draw these 8, in this order:
+
+Marchwatch Scrap — crafting material. Oiled wool and storm-cloth cut from Marchwatch kit, still smelling of rain.
+Marchwatch Tack — crafting material. Harness leather from a Marchwatch rounder, waxed against a weather that never let up.
+Mire-Ichor — crafting material. Pale, luminous, foul. Bled from the Brood-things of the drowned shallows. Useless alone; the basis of half the alchemy on the Drowned Coast.
+Null-Sigil Ink — crafting material. The medium the Sealwrights wrote closure in. It does not dry so much as decide to stop.
+Oathsteel Ingot — crafting material. Steel quenched in a spoken oath. The forge remembers what was promised.
+Vanguard Scrap — crafting material. White enamel, deep blue and gold, four-pointed star. Pano's line wore this and did not come back.
+Vanguard Tack — crafting material. Barding from Pano's own steed, star still bright on the chamfron.
+Marsh Pitch — crafting material. Boiled down over three days. Gravewardens seal their wades with it and their coffins too.
+```
+
+Then cut it up:
+
+```bash
+python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --size 512 --names mat_marchwatch_scrap,mat_marchwatch_tack,mat_mire_ichor,mat_null_sigil_ink,mat_oathsteel,mat_pano_scrap,mat_pano_tack,mat_pitch_seal
+```
+
+---
+
+## Batch 20 — items — Material (6 of 9) · 8 icons · TO DO
+
+```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Three materials, about six shapes. One decorative element beyond pure function. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
+
+Every object sits centred in its own cell and stays entirely inside it, with equal margins all
+round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
+may cross a cell boundary. Leave clear empty space between cells.
+
+Reading order is left to right, top to bottom, matching the list below.
+
+Draw these 8, in this order:
+
+Quiet Lamp Oil — crafting material. Drawn from a Last Watch relay lamp that has burned unattended since the fall. The Watch does not know what it burns and has stopped asking.
+Relay Scrap — crafting material. Cream canvas, blue piping, brass. Last Watch relay kit, taken off a relay runner.
+Relay Tack — crafting material. A relay charger's tack, signal-lamp bracket still on the saddle.
+Resonant Brass — crafting material. Cast to hum at one note and no other. The Choir orders it by the tone, never the weight.
 Rime-Glass — crafting material. Frostmere water frozen so slowly it set clear. It does not melt in the hand. It does not melt in a forge either, which is the difficulty.
 Road Flint — crafting material. Picked off any causeway by anyone who bothers to look down. It has started every fire the frontier has ever needed and it has never once been remarkable.
 Sable Vein Thread — crafting material. The Houses dye it twice and will not discuss the second dye.
+Sable Vein Scrap — crafting material. Matte black cloth with a single gold lozenge. House work; the seam is invisible.
+```
+
+Then cut it up:
+
+```bash
+python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --size 512 --names mat_quiet_lamp_oil,mat_relay_scrap,mat_relay_tack,mat_resonant_brass,mat_rime_glass,mat_road_flint,mat_sable_thread,mat_sable_vein_scrap
+```
+
+---
+
+## Batch 21 — items — Material (7 of 9) · 8 icons · TO DO
+
+```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Four or five materials, about nine shapes — the most detailed tier, and still no filigree. One distinctive silhouette flourish, and one precious or glowing inlay. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
+
+Every object sits centred in its own cell and stays entirely inside it, with equal margins all
+round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
+may cross a cell boundary. Leave clear empty space between cells.
+
+Reading order is left to right, top to bottom, matching the list below.
+
+Draw these 8, in this order:
+
+Sable Vein Tack — crafting material. A Sable courser's tack, narrow and severe, gold at one point only.
 Siege Lead — crafting material. Backing for a breaker's visor. A Wrought does not aim, which makes shielding a guess everywhere at once.
 Sounding-Horn of the Sunken Leviathan — crafting material. It still holds one note. The Old Guard who took it never agreed on what the note does, only that the sea answered the one time it was sounded.
 Sovereign's Shed Scale — crafting material. The Gauntlet collects them. It has never said what for and has never been asked twice.
+Sovereign Scrap — crafting material. Crimson scale on antique gold, edge-plated. Regalia; it wants a throne under it.
+Sovereign Tack — crafting material. Wyrm tack. There is no word for what it is made of that anyone will say aloud.
 Ashen Stag Ash — crafting material. What is left where one lay down. The Heartmarch hunters do not collect it and will not say why.
 Ashen Stag Heart-Tendon — crafting material. The Heartmarch hunters string bows with it and say an arrow loosed from one arrives before the sound does.
 ```
@@ -1023,12 +1118,57 @@ Ashen Stag Heart-Tendon — crafting material. The Heartmarch hunters string bow
 Then cut it up:
 
 ```bash
-python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --size 512 --names mat_rime_glass,mat_road_flint,mat_sable_thread,mat_siege_lead,mat_sounding_horn,mat_sovereign_scale,mat_stag_ash,mat_stag_tendon
+python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --size 512 --names mat_sable_vein_tack,mat_siege_lead,mat_sounding_horn,mat_sovereign_scale,mat_sovereign_scrap,mat_sovereign_tack,mat_stag_ash,mat_stag_tendon
 ```
 
 ---
 
-## Batch 20 — items — Material (6 of 6) · 7 icons · TO DO
+## Batch 22 — items — Material (8 of 9) · 8 icons · TO DO
+
+```
+Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
+shape with a hard edge — never a gradient, never an airbrush, never a gloss or specular highlight.
+No black keyline; where an edge is needed use a thin line in a darker tone of the object's own
+colour.
+
+Simple: three materials, about five shapes, and ONE functional detail such as a strap, a buckle or a stamped mark. It will be viewed at 64 pixels, so anything smaller than a fingernail is left out entirely:
+no stitching, no rivets, no scratches, no wood grain, no hairline engraving.
+
+One object, centred, filling the frame. Straight-on or clean profile view. Flat even light with no
+implied direction. Square, with no halo or glow around the cutout.
+
+Save with a genuinely transparent background — real alpha in the PNG. Do not DRAW a checkerboard;
+the grey-and-white chequer is how an editor displays transparency, not something to paint.
+
+Arrange them on ONE landscape image, 1536 x 1024, as a strict 4 x 2 grid.
+
+Every object sits centred in its own cell and stays entirely inside it, with equal margins all
+round. Nothing touches or overlaps a neighbour, and nothing — no smoke, no trailing strap, no tail —
+may cross a cell boundary. Leave clear empty space between cells.
+
+Reading order is left to right, top to bottom, matching the list below.
+
+Draw these 8, in this order:
+
+Star Hollow Dust — crafting material. Collected where the sky is closest and least reliable. It settles upward if left alone, so it is never left alone.
+Stoned Devil Scrap — crafting material. Maroon and cream with aged brass, soft to the touch. Nothing about it is sharp.
+Stoned Devil Tack — crafting material. A goat's tack. Someone hung a small brass censer off it and it is still smoking.
+Rendered Tallow — crafting material. Every relay lamp in the Watch burns it, every boot in the Weir is greased with it, and nobody has ever written a sentence about it before this one.
+Unwalked Leather — crafting material. Cut for slippers that were never worn outdoors. Immaculate, and faintly reproachful.
+Vanguard Banner — crafting material. Carried at the front until the front moved. Proof of a line that held.
+Warren Teeth — crafting material. Goblins replace them constantly and leave the old ones where they fall. A tunnel floor is half gravel and half this.
+Warrens Scrap — crafting material. Soot-black leather and brass fittings out of the pits. Every piece was worn down there.
+```
+
+Then cut it up:
+
+```bash
+python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --size 512 --names mat_starhollow_dust,mat_stoned_devil_scrap,mat_stoned_devil_tack,mat_tallow,mat_unwalked_leather,mat_vanguard_banner,mat_warren_teeth,mat_warrens_scrap
+```
+
+---
+
+## Batch 23 — items — Material (9 of 9) · 7 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1057,24 +1197,24 @@ There are 7 objects and 8 cells, so leave the last 1 cell of the bottom row comp
 
 Draw these 7, in this order:
 
-Star Hollow Dust — crafting material. Collected where the sky is closest and least reliable. It settles upward if left alone, so it is never left alone.
-Rendered Tallow — crafting material. Every relay lamp in the Watch burns it, every boot in the Weir is greased with it, and nobody has ever written a sentence about it before this one.
-Unwalked Leather — crafting material. Cut for slippers that were never worn outdoors. Immaculate, and faintly reproachful.
-Vanguard Banner — crafting material. Carried at the front until the front moved. Proof of a line that held.
-Warren Teeth — crafting material. Goblins replace them constantly and leave the old ones where they fall. A tunnel floor is half gravel and half this.
+Warrens Tack — crafting material. A pit pony's tack — squat brass rings and a lamp-hook, black to the core.
+Weir Scrap — crafting material. Rivets and strap-iron off Iron Weir issue. Enough of it reforges a piece.
+Weir Tack — crafting material. Bit, buckle and shoe-iron from a Weir courser's tack. They do not come off easily.
 Wrath-Slag — crafting material. The cooled residue of a Manifestation. Still faintly warm an Age later, and still, very slightly, trying to qualify whoever holds it.
+Wroughtbreaker Scrap — crafting material. Lead-grey slab iron with a cracked orange core. Siege metal, not armour.
+Wroughtbreaker Tack — crafting material. A destrier's barding off a siege line — heavy enough to need two hands.
 Wyrm Scale — crafting material. Prised from a raid boss that did not part with it willingly.
 ```
 
 Then cut it up:
 
 ```bash
-python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --size 512 --names mat_starhollow_dust,mat_tallow,mat_unwalked_leather,mat_vanguard_banner,mat_warren_teeth,mat_wrathslag,mat_wyrm_scale
+python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --size 512 --names mat_warrens_tack,mat_weir_scrap,mat_weir_tack,mat_wrathslag,mat_wroughtbreaker_scrap,mat_wroughtbreaker_tack,mat_wyrm_scale
 ```
 
 ---
 
-## Batch 21 — items — StatBag · 6 icons · TO DO
+## Batch 24 — items — StatBag · 6 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1117,7 +1257,7 @@ python tools/art/split_sheet.py SHEET.png --grid 3x2 --out assets/icons/item --s
 
 ---
 
-## Batch 22 — items — Sigil (one per raid, shared by all four tiers) (1 of 4) · 8 icons · TO DO
+## Batch 25 — items — Sigil (one per raid, shared by all four tiers) (1 of 4) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1162,7 +1302,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 
 ---
 
-## Batch 23 — items — Sigil (one per raid, shared by all four tiers) (2 of 4) · 8 icons · TO DO
+## Batch 26 — items — Sigil (one per raid, shared by all four tiers) (2 of 4) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1207,7 +1347,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 
 ---
 
-## Batch 24 — items — Sigil (one per raid, shared by all four tiers) (3 of 4) · 8 icons · TO DO
+## Batch 27 — items — Sigil (one per raid, shared by all four tiers) (3 of 4) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1252,7 +1392,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 
 ---
 
-## Batch 25 — items — Sigil (one per raid, shared by all four tiers) (4 of 4) · 2 icons · TO DO
+## Batch 28 — items — Sigil (one per raid, shared by all four tiers) (4 of 4) · 2 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1291,7 +1431,7 @@ python tools/art/split_sheet.py SHEET.png --grid 2x1 --out assets/icons/item --s
 
 ---
 
-## Batch 26 — items — Consumable (1 of 3) · 8 icons · TO DO
+## Batch 29 — items — Consumable (1 of 3) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1336,7 +1476,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 
 ---
 
-## Batch 27 — items — Consumable (2 of 3) · 8 icons · TO DO
+## Batch 30 — items — Consumable (2 of 3) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1381,7 +1521,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/item --s
 
 ---
 
-## Batch 28 — items — Consumable (3 of 3) · 3 icons · TO DO
+## Batch 31 — items — Consumable (3 of 3) · 3 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1423,7 +1563,7 @@ python tools/art/split_sheet.py SHEET.png --grid 2x2 --out assets/icons/item --s
 
 ---
 
-## Batch 29 — magics (1 of 6) · 8 icons · TO DO
+## Batch 32 — magics (1 of 6) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1468,7 +1608,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/magic --
 
 ---
 
-## Batch 30 — magics (2 of 6) · 8 icons · TO DO
+## Batch 33 — magics (2 of 6) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1513,7 +1653,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/magic --
 
 ---
 
-## Batch 31 — magics (3 of 6) · 8 icons · TO DO
+## Batch 34 — magics (3 of 6) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1558,7 +1698,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/magic --
 
 ---
 
-## Batch 32 — magics (4 of 6) · 8 icons · TO DO
+## Batch 35 — magics (4 of 6) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1603,7 +1743,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/magic --
 
 ---
 
-## Batch 33 — magics (5 of 6) · 8 icons · TO DO
+## Batch 36 — magics (5 of 6) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1648,7 +1788,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/magic --
 
 ---
 
-## Batch 34 — magics (6 of 6) · 3 icons · TO DO
+## Batch 37 — magics (6 of 6) · 3 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1690,7 +1830,7 @@ python tools/art/split_sheet.py SHEET.png --grid 2x2 --out assets/icons/magic --
 
 ---
 
-## Batch 35 — units (1 of 5) · 8 icons · TO DO
+## Batch 38 — units (1 of 5) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1735,7 +1875,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/unit --s
 
 ---
 
-## Batch 36 — units (2 of 5) · 8 icons · TO DO
+## Batch 39 — units (2 of 5) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1780,7 +1920,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/unit --s
 
 ---
 
-## Batch 37 — units (3 of 5) · 8 icons · TO DO
+## Batch 40 — units (3 of 5) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1825,7 +1965,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/unit --s
 
 ---
 
-## Batch 38 — units (4 of 5) · 8 icons · TO DO
+## Batch 41 — units (4 of 5) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1870,7 +2010,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/unit --s
 
 ---
 
-## Batch 39 — units (5 of 5) · 5 icons · TO DO
+## Batch 42 — units (5 of 5) · 5 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1914,7 +2054,7 @@ python tools/art/split_sheet.py SHEET.png --grid 3x2 --out assets/icons/unit --s
 
 ---
 
-## Batch 40 — legions (1 of 2) · 8 icons · TO DO
+## Batch 43 — legions (1 of 2) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1959,7 +2099,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/legion -
 
 ---
 
-## Batch 41 — legions (2 of 2) · 2 icons · TO DO
+## Batch 44 — legions (2 of 2) · 2 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -1998,7 +2138,7 @@ python tools/art/split_sheet.py SHEET.png --grid 2x1 --out assets/icons/legion -
 
 ---
 
-## Batch 42 — crafting recipes (1 of 3) · 8 icons · TO DO
+## Batch 45 — crafting recipes (1 of 3) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -2043,7 +2183,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/recipe -
 
 ---
 
-## Batch 43 — crafting recipes (2 of 3) · 8 icons · TO DO
+## Batch 46 — crafting recipes (2 of 3) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -2088,7 +2228,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/recipe -
 
 ---
 
-## Batch 44 — crafting recipes (3 of 3) · 7 icons · TO DO
+## Batch 47 — crafting recipes (3 of 3) · 7 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -2134,7 +2274,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/recipe -
 
 ---
 
-## Batch 45 — raid bosses (1 of 5) · 8 icons · TO DO
+## Batch 48 — raid bosses (1 of 5) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -2179,7 +2319,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/raid --s
 
 ---
 
-## Batch 46 — raid bosses (2 of 5) · 8 icons · TO DO
+## Batch 49 — raid bosses (2 of 5) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -2224,7 +2364,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/raid --s
 
 ---
 
-## Batch 47 — raid bosses (3 of 5) · 8 icons · TO DO
+## Batch 50 — raid bosses (3 of 5) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -2269,7 +2409,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/raid --s
 
 ---
 
-## Batch 48 — raid bosses (4 of 5) · 8 icons · TO DO
+## Batch 51 — raid bosses (4 of 5) · 8 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat
@@ -2314,7 +2454,7 @@ python tools/art/split_sheet.py SHEET.png --grid 4x2 --out assets/icons/raid --s
 
 ---
 
-## Batch 49 — raid bosses (5 of 5) · 5 icons · TO DO
+## Batch 52 — raid bosses (5 of 5) · 5 icons · TO DO
 
 ```
 Flat vector game icon. Solid colour fills only. Where a form needs shading, use ONE darker flat

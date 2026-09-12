@@ -504,9 +504,18 @@ ITEM_GLYPH = {
 }
 
 
+def borrows_art(entry):
+    """An entry whose iconPath names another id's file shares that art and gets no tile of its
+    own. Reforged gear points at its base piece; a reforge recipe points at the piece it makes."""
+    stem = pathlib.PurePosixPath(entry.get("iconPath") or "").stem
+    return bool(stem) and stem != entry["id"]
+
+
 def jobs():
     out = []
     for g in load("gear.json"):
+        if borrows_art(g):
+            continue
         out.append((g["id"], "gear", SLOT_GLYPH.get(g.get("slot"), "torso"), g.get("rarity", "Grey"),
                     g.get("name", ""), g.get("description", ""), g.get("slot", ""), g.get("setId") or ""))
     # Items address art through artKey, not id: the 104 sigils share 29 pictures because a sigil's
@@ -528,6 +537,8 @@ def jobs():
         out.append((l["id"], "legion", "legion", l.get("rarity", "Blue"), l.get("name", ""),
                     l.get("description", ""), "Legion", ""))
     for r in load("recipes.json"):
+        if borrows_art(r):
+            continue
         out.append((r["id"], "recipe", "recipe", "Grey", r.get("name", ""), r.get("description", ""),
                     r.get("category", ""), ""))
     for fn in ("raids.json", "guild_raids.json", "gauntlet_raids.json"):

@@ -690,5 +690,2309 @@
     "goldCost": 260000,
     "eventKey": null,
     "iconPath": "icons/recipe/craft_hell_goat.png"
+  },
+  {
+    "id": "craft_pano_helm_reforged",
+    "name": "Pano's War Helm (Reforged)",
+    "description": "Reforge the Pano's War Helm around 6 Vanguard Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_pano_helm_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_pano_helm",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_pano_scrap",
+        "quantity": 6
+      }
+    ],
+    "goldCost": 75000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_pano_helm.png"
+  },
+  {
+    "id": "craft_pano_amulet_reforged",
+    "name": "Pano's Amulet (Reforged)",
+    "description": "Reforge the Pano's Amulet around 6 Vanguard Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_pano_amulet_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_pano_amulet",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_pano_scrap",
+        "quantity": 6
+      }
+    ],
+    "goldCost": 75000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_pano_amulet.png"
+  },
+  {
+    "id": "craft_pano_cuirass_reforged",
+    "name": "Pano's Cuirass (Reforged)",
+    "description": "Reforge the Pano's Cuirass around 6 Vanguard Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_pano_cuirass_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_pano_cuirass",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_pano_scrap",
+        "quantity": 6
+      }
+    ],
+    "goldCost": 75000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_pano_cuirass.png"
+  },
+  {
+    "id": "craft_pano_signet_reforged",
+    "name": "Pano's Signet (Reforged)",
+    "description": "Reforge the Pano's Signet around 6 Vanguard Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_pano_signet_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_pano_signet",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_pano_scrap",
+        "quantity": 6
+      }
+    ],
+    "goldCost": 75000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_pano_signet.png"
+  },
+  {
+    "id": "craft_pano_band_reforged",
+    "name": "Pano's Band (Reforged)",
+    "description": "Reforge the Pano's Band around 6 Vanguard Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_pano_band_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_pano_band",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_pano_scrap",
+        "quantity": 6
+      }
+    ],
+    "goldCost": 75000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_pano_band.png"
+  },
+  {
+    "id": "craft_pano_steed_reforged",
+    "name": "Pano's Steed (Reforged)",
+    "description": "Reforge the Pano's Steed around 3 Vanguard Tack. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_pano_steed_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_pano_steed",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_pano_tack",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 150000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_pano_steed.png"
+  },
+  {
+    "id": "craft_pano_greaves_reforged",
+    "name": "Pano's Greaves (Reforged)",
+    "description": "Reforge the Pano's Greaves around 6 Vanguard Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_pano_greaves_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_pano_greaves",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_pano_scrap",
+        "quantity": 6
+      }
+    ],
+    "goldCost": 75000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_pano_greaves.png"
+  },
+  {
+    "id": "craft_pano_gauntlets_reforged",
+    "name": "Pano's Gauntlets (Reforged)",
+    "description": "Reforge the Pano's Gauntlets around 6 Vanguard Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_pano_gauntlets_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_pano_gauntlets",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_pano_scrap",
+        "quantity": 6
+      }
+    ],
+    "goldCost": 75000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_pano_gauntlets.png"
+  },
+  {
+    "id": "craft_weir_kettle_helm_reforged",
+    "name": "Weir Kettle Helm (Reforged)",
+    "description": "Reforge the Weir Kettle Helm around 3 Weir Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_weir_kettle_helm_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_weir_kettle_helm",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_weir_scrap",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 2000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_weir_kettle_helm.png"
+  },
+  {
+    "id": "craft_weir_gorget_reforged",
+    "name": "Weir Gorget (Reforged)",
+    "description": "Reforge the Weir Gorget around 3 Weir Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_weir_gorget_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_weir_gorget",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_weir_scrap",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 2000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_weir_gorget.png"
+  },
+  {
+    "id": "craft_weir_brigandine_reforged",
+    "name": "Weir Brigandine (Reforged)",
+    "description": "Reforge the Weir Brigandine around 3 Weir Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_weir_brigandine_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_weir_brigandine",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_weir_scrap",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 2000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_weir_brigandine.png"
+  },
+  {
+    "id": "craft_causeway_seal_reforged",
+    "name": "Causeway Seal Ring (Reforged)",
+    "description": "Reforge the Causeway Seal Ring around 3 Weir Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_causeway_seal_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_causeway_seal",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_weir_scrap",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 2000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_causeway_seal.png"
+  },
+  {
+    "id": "craft_marchwarden_band_reforged",
+    "name": "Marchwarden's Band (Reforged)",
+    "description": "Reforge the Marchwarden's Band around 3 Weir Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_marchwarden_band_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_marchwarden_band",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_weir_scrap",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 2000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_marchwarden_band.png"
+  },
+  {
+    "id": "craft_weir_courser_reforged",
+    "name": "Weir Courser (Reforged)",
+    "description": "Reforge the Weir Courser around 3 Weir Tack. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_weir_courser_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_weir_courser",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_weir_tack",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 4000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_weir_courser.png"
+  },
+  {
+    "id": "craft_weir_marchboots_reforged",
+    "name": "Weir Marchboots (Reforged)",
+    "description": "Reforge the Weir Marchboots around 3 Weir Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_weir_marchboots_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_weir_marchboots",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_weir_scrap",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 2000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_weir_marchboots.png"
+  },
+  {
+    "id": "craft_weir_handguards_reforged",
+    "name": "Weir Handguards (Reforged)",
+    "description": "Reforge the Weir Handguards around 3 Weir Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_weir_handguards_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_weir_handguards",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_weir_scrap",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 2000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_weir_handguards.png"
+  },
+  {
+    "id": "craft_relay_hood_reforged",
+    "name": "Relaykeeper's Hood (Reforged)",
+    "description": "Reforge the Relaykeeper's Hood around 4 Relay Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_relay_hood_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_relay_hood",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_relay_scrap",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 8000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_relay_hood.png"
+  },
+  {
+    "id": "craft_relay_torc_reforged",
+    "name": "Torc of the Quiet Wind (Reforged)",
+    "description": "Reforge the Torc of the Quiet Wind around 4 Relay Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_relay_torc_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_relay_torc",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_relay_scrap",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 8000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_relay_torc.png"
+  },
+  {
+    "id": "craft_relay_coat_reforged",
+    "name": "Relay Coat (Reforged)",
+    "description": "Reforge the Relay Coat around 4 Relay Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_relay_coat_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_relay_coat",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_relay_scrap",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 8000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_relay_coat.png"
+  },
+  {
+    "id": "craft_lamp_seal_reforged",
+    "name": "Lamplighter's Seal (Reforged)",
+    "description": "Reforge the Lamplighter's Seal around 4 Relay Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_lamp_seal_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_lamp_seal",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_relay_scrap",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 8000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_lamp_seal.png"
+  },
+  {
+    "id": "craft_vaultkeeper_band_reforged",
+    "name": "Vaultkeeper's Band (Reforged)",
+    "description": "Reforge the Vaultkeeper's Band around 4 Relay Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_vaultkeeper_band_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_vaultkeeper_band",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_relay_scrap",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 8000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_vaultkeeper_band.png"
+  },
+  {
+    "id": "craft_relay_charger_reforged",
+    "name": "Relay Charger (Reforged)",
+    "description": "Reforge the Relay Charger around 3 Relay Tack. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_relay_charger_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_relay_charger",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_relay_tack",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 16000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_relay_charger.png"
+  },
+  {
+    "id": "craft_relay_treads_reforged",
+    "name": "Frostmere Treads (Reforged)",
+    "description": "Reforge the Frostmere Treads around 4 Relay Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_relay_treads_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_relay_treads",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_relay_scrap",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 8000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_relay_treads.png"
+  },
+  {
+    "id": "craft_relay_grips_reforged",
+    "name": "Lampwright's Grips (Reforged)",
+    "description": "Reforge the Lampwright's Grips around 4 Relay Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_relay_grips_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_relay_grips",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_relay_scrap",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 8000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_relay_grips.png"
+  },
+  {
+    "id": "craft_sable_circlet_reforged",
+    "name": "Sable Vein Circlet (Reforged)",
+    "description": "Reforge the Sable Vein Circlet around 5 Sable Vein Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_sable_circlet_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_sable_circlet",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_sable_vein_scrap",
+        "quantity": 5
+      }
+    ],
+    "goldCost": 25000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_sable_circlet.png"
+  },
+  {
+    "id": "craft_sable_collar_reforged",
+    "name": "Threnody Collar (Reforged)",
+    "description": "Reforge the Threnody Collar around 5 Sable Vein Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_sable_collar_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_sable_collar",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_sable_vein_scrap",
+        "quantity": 5
+      }
+    ],
+    "goldCost": 25000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_sable_collar.png"
+  },
+  {
+    "id": "craft_sable_mantle_reforged",
+    "name": "Mantle of the Sable Vein (Reforged)",
+    "description": "Reforge the Mantle of the Sable Vein around 5 Sable Vein Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_sable_mantle_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_sable_mantle",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_sable_vein_scrap",
+        "quantity": 5
+      }
+    ],
+    "goldCost": 25000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_sable_mantle.png"
+  },
+  {
+    "id": "craft_sable_seal_reforged",
+    "name": "House Sable Seal (Reforged)",
+    "description": "Reforge the House Sable Seal around 5 Sable Vein Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_sable_seal_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_sable_seal",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_sable_vein_scrap",
+        "quantity": 5
+      }
+    ],
+    "goldCost": 25000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_sable_seal.png"
+  },
+  {
+    "id": "craft_sable_band_reforged",
+    "name": "Vein-Cut Band (Reforged)",
+    "description": "Reforge the Vein-Cut Band around 5 Sable Vein Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_sable_band_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_sable_band",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_sable_vein_scrap",
+        "quantity": 5
+      }
+    ],
+    "goldCost": 25000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_sable_band.png"
+  },
+  {
+    "id": "craft_sable_courser_reforged",
+    "name": "Sable Courser (Reforged)",
+    "description": "Reforge the Sable Courser around 3 Sable Vein Tack. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_sable_courser_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_sable_courser",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_sable_vein_tack",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 50000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_sable_courser.png"
+  },
+  {
+    "id": "craft_sable_treads_reforged",
+    "name": "Stair-Worn Boots (Reforged)",
+    "description": "Reforge the Stair-Worn Boots around 5 Sable Vein Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_sable_treads_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_sable_treads",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_sable_vein_scrap",
+        "quantity": 5
+      }
+    ],
+    "goldCost": 25000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_sable_treads.png"
+  },
+  {
+    "id": "craft_sable_grips_reforged",
+    "name": "Archivist's Grips (Reforged)",
+    "description": "Reforge the Archivist's Grips around 5 Sable Vein Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_sable_grips_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_sable_grips",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_sable_vein_scrap",
+        "quantity": 5
+      }
+    ],
+    "goldCost": 25000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_sable_grips.png"
+  },
+  {
+    "id": "craft_warrens_lamp_hood_reforged",
+    "name": "Warrens Lamp-Hood (Reforged)",
+    "description": "Reforge the Warrens Lamp-Hood around 3 Warrens Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_warrens_lamp_hood_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_warrens_lamp_hood",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_warrens_scrap",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 2000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_warrens_lamp_hood.png"
+  },
+  {
+    "id": "craft_warrens_choker_reforged",
+    "name": "Ratter's Choker (Reforged)",
+    "description": "Reforge the Ratter's Choker around 3 Warrens Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_warrens_choker_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_warrens_choker",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_warrens_scrap",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 2000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_warrens_choker.png"
+  },
+  {
+    "id": "craft_warrens_jack_reforged",
+    "name": "Warrens Jack (Reforged)",
+    "description": "Reforge the Warrens Jack around 3 Warrens Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_warrens_jack_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_warrens_jack",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_warrens_scrap",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 2000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_warrens_jack.png"
+  },
+  {
+    "id": "craft_warrens_seal_reforged",
+    "name": "Tunnel-Warden's Seal (Reforged)",
+    "description": "Reforge the Tunnel-Warden's Seal around 3 Warrens Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_warrens_seal_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_warrens_seal",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_warrens_scrap",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 2000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_warrens_seal.png"
+  },
+  {
+    "id": "craft_warrens_knuckle_reforged",
+    "name": "Knuckle-Ring of the Weir (Reforged)",
+    "description": "Reforge the Knuckle-Ring of the Weir around 3 Warrens Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_warrens_knuckle_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_warrens_knuckle",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_warrens_scrap",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 2000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_warrens_knuckle.png"
+  },
+  {
+    "id": "craft_warrens_pitpony_reforged",
+    "name": "Warrens Pit-Pony (Reforged)",
+    "description": "Reforge the Warrens Pit-Pony around 3 Warrens Tack. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_warrens_pitpony_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_warrens_pitpony",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_warrens_tack",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 4000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_warrens_pitpony.png"
+  },
+  {
+    "id": "craft_warrens_treads_reforged",
+    "name": "Warrens Treads (Reforged)",
+    "description": "Reforge the Warrens Treads around 3 Warrens Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_warrens_treads_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_warrens_treads",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_warrens_scrap",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 2000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_warrens_treads.png"
+  },
+  {
+    "id": "craft_warrens_grips_reforged",
+    "name": "Ratter's Grips (Reforged)",
+    "description": "Reforge the Ratter's Grips around 3 Warrens Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_warrens_grips_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_warrens_grips",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_warrens_scrap",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 2000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_warrens_grips.png"
+  },
+  {
+    "id": "craft_marchwatch_helm_reforged",
+    "name": "Marchwatch Helm (Reforged)",
+    "description": "Reforge the Marchwatch Helm around 3 Marchwatch Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_marchwatch_helm_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_marchwatch_helm",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_marchwatch_scrap",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 2000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_marchwatch_helm.png"
+  },
+  {
+    "id": "craft_marchwatch_gorget_reforged",
+    "name": "Watchman's Gorget (Reforged)",
+    "description": "Reforge the Watchman's Gorget around 3 Marchwatch Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_marchwatch_gorget_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_marchwatch_gorget",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_marchwatch_scrap",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 2000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_marchwatch_gorget.png"
+  },
+  {
+    "id": "craft_marchwatch_coat_reforged",
+    "name": "Long Marchwatch Coat (Reforged)",
+    "description": "Reforge the Long Marchwatch Coat around 3 Marchwatch Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_marchwatch_coat_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_marchwatch_coat",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_marchwatch_scrap",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 2000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_marchwatch_coat.png"
+  },
+  {
+    "id": "craft_marchwatch_ring_reforged",
+    "name": "Ring of the Standing Watch (Reforged)",
+    "description": "Reforge the Ring of the Standing Watch around 3 Marchwatch Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_marchwatch_ring_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_marchwatch_ring",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_marchwatch_scrap",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 2000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_marchwatch_ring.png"
+  },
+  {
+    "id": "craft_marchwatch_tally_reforged",
+    "name": "Tally-Ring (Reforged)",
+    "description": "Reforge the Tally-Ring around 3 Marchwatch Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_marchwatch_tally_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_marchwatch_tally",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_marchwatch_scrap",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 2000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_marchwatch_tally.png"
+  },
+  {
+    "id": "craft_marchwatch_rounder_reforged",
+    "name": "Marchwatch Rounder (Reforged)",
+    "description": "Reforge the Marchwatch Rounder around 3 Marchwatch Tack. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_marchwatch_rounder_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_marchwatch_rounder",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_marchwatch_tack",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 4000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_marchwatch_rounder.png"
+  },
+  {
+    "id": "craft_marchwatch_boots_reforged",
+    "name": "Marchwatch Boots (Reforged)",
+    "description": "Reforge the Marchwatch Boots around 3 Marchwatch Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_marchwatch_boots_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_marchwatch_boots",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_marchwatch_scrap",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 2000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_marchwatch_boots.png"
+  },
+  {
+    "id": "craft_marchwatch_mitts_reforged",
+    "name": "Watch Mitts (Reforged)",
+    "description": "Reforge the Watch Mitts around 3 Marchwatch Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_marchwatch_mitts_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_marchwatch_mitts",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_marchwatch_scrap",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 2000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_marchwatch_mitts.png"
+  },
+  {
+    "id": "craft_gravewarden_hood_reforged",
+    "name": "Gravewarden's Hood (Reforged)",
+    "description": "Reforge the Gravewarden's Hood around 4 Gravewarden Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_gravewarden_hood_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_gravewarden_hood",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_gravewarden_scrap",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 8000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_gravewarden_hood.png"
+  },
+  {
+    "id": "craft_gravewarden_seal_reforged",
+    "name": "Seal of the Quiet Ground (Reforged)",
+    "description": "Reforge the Seal of the Quiet Ground around 4 Gravewarden Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_gravewarden_seal_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_gravewarden_seal",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_gravewarden_scrap",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 8000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_gravewarden_seal.png"
+  },
+  {
+    "id": "craft_gravewarden_coat_reforged",
+    "name": "Gravewarden's Coat (Reforged)",
+    "description": "Reforge the Gravewarden's Coat around 4 Gravewarden Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_gravewarden_coat_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_gravewarden_coat",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_gravewarden_scrap",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 8000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_gravewarden_coat.png"
+  },
+  {
+    "id": "craft_gravewarden_band_reforged",
+    "name": "Binding Band (Reforged)",
+    "description": "Reforge the Binding Band around 4 Gravewarden Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_gravewarden_band_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_gravewarden_band",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_gravewarden_scrap",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 8000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_gravewarden_band.png"
+  },
+  {
+    "id": "craft_gravewarden_signet_reforged",
+    "name": "Warden's Signet (Reforged)",
+    "description": "Reforge the Warden's Signet around 4 Gravewarden Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_gravewarden_signet_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_gravewarden_signet",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_gravewarden_scrap",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 8000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_gravewarden_signet.png"
+  },
+  {
+    "id": "craft_gravewarden_dray_reforged",
+    "name": "Gravewarden's Dray (Reforged)",
+    "description": "Reforge the Gravewarden's Dray around 3 Gravewarden Tack. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_gravewarden_dray_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_gravewarden_dray",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_gravewarden_tack",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 16000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_gravewarden_dray.png"
+  },
+  {
+    "id": "craft_gravewarden_wades_reforged",
+    "name": "Marsh Wades (Reforged)",
+    "description": "Reforge the Marsh Wades around 4 Gravewarden Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_gravewarden_wades_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_gravewarden_wades",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_gravewarden_scrap",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 8000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_gravewarden_wades.png"
+  },
+  {
+    "id": "craft_gravewarden_gauntlets_reforged",
+    "name": "Gravewarden's Gauntlets (Reforged)",
+    "description": "Reforge the Gravewarden's Gauntlets around 4 Gravewarden Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_gravewarden_gauntlets_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_gravewarden_gauntlets",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_gravewarden_scrap",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 8000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_gravewarden_gauntlets.png"
+  },
+  {
+    "id": "craft_drowned_helm_reforged",
+    "name": "Salvager's Helm (Reforged)",
+    "description": "Reforge the Salvager's Helm around 4 Drowned Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_drowned_helm_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_drowned_helm",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_drowned_scrap",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 8000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_drowned_helm.png"
+  },
+  {
+    "id": "craft_drowned_torc_reforged",
+    "name": "Tidewatch Torc (Reforged)",
+    "description": "Reforge the Tidewatch Torc around 4 Drowned Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_drowned_torc_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_drowned_torc",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_drowned_scrap",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 8000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_drowned_torc.png"
+  },
+  {
+    "id": "craft_drowned_harness_reforged",
+    "name": "Salvage Harness (Reforged)",
+    "description": "Reforge the Salvage Harness around 4 Drowned Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_drowned_harness_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_drowned_harness",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_drowned_scrap",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 8000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_drowned_harness.png"
+  },
+  {
+    "id": "craft_drowned_seal_reforged",
+    "name": "Vault-Seal Ring (Reforged)",
+    "description": "Reforge the Vault-Seal Ring around 4 Drowned Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_drowned_seal_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_drowned_seal",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_drowned_scrap",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 8000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_drowned_seal.png"
+  },
+  {
+    "id": "craft_drowned_band_reforged",
+    "name": "Barnacle Band (Reforged)",
+    "description": "Reforge the Barnacle Band around 4 Drowned Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_drowned_band_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_drowned_band",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_drowned_scrap",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 8000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_drowned_band.png"
+  },
+  {
+    "id": "craft_drowned_courser_reforged",
+    "name": "Coastwise Courser (Reforged)",
+    "description": "Reforge the Coastwise Courser around 3 Drowned Tack. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_drowned_courser_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_drowned_courser",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_drowned_tack",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 16000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_drowned_courser.png"
+  },
+  {
+    "id": "craft_drowned_boots_reforged",
+    "name": "Shalewalkers (Reforged)",
+    "description": "Reforge the Shalewalkers around 4 Drowned Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_drowned_boots_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_drowned_boots",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_drowned_scrap",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 8000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_drowned_boots.png"
+  },
+  {
+    "id": "craft_drowned_grips_reforged",
+    "name": "Salvager's Grips (Reforged)",
+    "description": "Reforge the Salvager's Grips around 4 Drowned Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_drowned_grips_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_drowned_grips",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_drowned_scrap",
+        "quantity": 4
+      }
+    ],
+    "goldCost": 8000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_drowned_grips.png"
+  },
+  {
+    "id": "craft_wrought_visor_reforged",
+    "name": "Breaker's Visor (Reforged)",
+    "description": "Reforge the Breaker's Visor around 5 Wroughtbreaker Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_wrought_visor_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_wrought_visor",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_wroughtbreaker_scrap",
+        "quantity": 5
+      }
+    ],
+    "goldCost": 25000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_wrought_visor.png"
+  },
+  {
+    "id": "craft_wrought_collar_reforged",
+    "name": "Siege Collar (Reforged)",
+    "description": "Reforge the Siege Collar around 5 Wroughtbreaker Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_wrought_collar_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_wrought_collar",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_wroughtbreaker_scrap",
+        "quantity": 5
+      }
+    ],
+    "goldCost": 25000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_wrought_collar.png"
+  },
+  {
+    "id": "craft_wrought_plate_reforged",
+    "name": "Wroughtbreaker Plate (Reforged)",
+    "description": "Reforge the Wroughtbreaker Plate around 5 Wroughtbreaker Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_wrought_plate_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_wrought_plate",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_wroughtbreaker_scrap",
+        "quantity": 5
+      }
+    ],
+    "goldCost": 25000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_wrought_plate.png"
+  },
+  {
+    "id": "craft_wrought_keyring_reforged",
+    "name": "Sigil-Key Ring (Reforged)",
+    "description": "Reforge the Sigil-Key Ring around 5 Wroughtbreaker Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_wrought_keyring_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_wrought_keyring",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_wroughtbreaker_scrap",
+        "quantity": 5
+      }
+    ],
+    "goldCost": 25000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_wrought_keyring.png"
+  },
+  {
+    "id": "craft_wrought_band_reforged",
+    "name": "Breaker's Band (Reforged)",
+    "description": "Reforge the Breaker's Band around 5 Wroughtbreaker Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_wrought_band_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_wrought_band",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_wroughtbreaker_scrap",
+        "quantity": 5
+      }
+    ],
+    "goldCost": 25000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_wrought_band.png"
+  },
+  {
+    "id": "craft_wrought_destrier_reforged",
+    "name": "Siege Destrier (Reforged)",
+    "description": "Reforge the Siege Destrier around 3 Wroughtbreaker Tack. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_wrought_destrier_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_wrought_destrier",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_wroughtbreaker_tack",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 50000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_wrought_destrier.png"
+  },
+  {
+    "id": "craft_wrought_sabatons_reforged",
+    "name": "Breaker's Sabatons (Reforged)",
+    "description": "Reforge the Breaker's Sabatons around 5 Wroughtbreaker Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_wrought_sabatons_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_wrought_sabatons",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_wroughtbreaker_scrap",
+        "quantity": 5
+      }
+    ],
+    "goldCost": 25000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_wrought_sabatons.png"
+  },
+  {
+    "id": "craft_wrought_gauntlets_reforged",
+    "name": "Wroughtbreaker Gauntlets (Reforged)",
+    "description": "Reforge the Wroughtbreaker Gauntlets around 5 Wroughtbreaker Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_wrought_gauntlets_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_wrought_gauntlets",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_wroughtbreaker_scrap",
+        "quantity": 5
+      }
+    ],
+    "goldCost": 25000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_wrought_gauntlets.png"
+  },
+  {
+    "id": "craft_choir_crown_reforged",
+    "name": "Listener's Circlet (Reforged)",
+    "description": "Reforge the Listener's Circlet around 5 Choir Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_choir_crown_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_choir_crown",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_choir_scrap",
+        "quantity": 5
+      }
+    ],
+    "goldCost": 25000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_choir_crown.png"
+  },
+  {
+    "id": "craft_choir_stole_reforged",
+    "name": "Resonant Stole (Reforged)",
+    "description": "Reforge the Resonant Stole around 5 Choir Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_choir_stole_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_choir_stole",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_choir_scrap",
+        "quantity": 5
+      }
+    ],
+    "goldCost": 25000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_choir_stole.png"
+  },
+  {
+    "id": "craft_choir_vestment_reforged",
+    "name": "Dawnward Vestment (Reforged)",
+    "description": "Reforge the Dawnward Vestment around 5 Choir Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_choir_vestment_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_choir_vestment",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_choir_scrap",
+        "quantity": 5
+      }
+    ],
+    "goldCost": 25000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_choir_vestment.png"
+  },
+  {
+    "id": "craft_choir_ring_reforged",
+    "name": "Ring of the First Answer (Reforged)",
+    "description": "Reforge the Ring of the First Answer around 5 Choir Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_choir_ring_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_choir_ring",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_choir_scrap",
+        "quantity": 5
+      }
+    ],
+    "goldCost": 25000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_choir_ring.png"
+  },
+  {
+    "id": "craft_choir_band_reforged",
+    "name": "Attendant's Band (Reforged)",
+    "description": "Reforge the Attendant's Band around 5 Choir Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_choir_band_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_choir_band",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_choir_scrap",
+        "quantity": 5
+      }
+    ],
+    "goldCost": 25000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_choir_band.png"
+  },
+  {
+    "id": "craft_choir_palfrey_reforged",
+    "name": "Choir Palfrey (Reforged)",
+    "description": "Reforge the Choir Palfrey around 3 Choir Tack. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_choir_palfrey_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_choir_palfrey",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_choir_tack",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 50000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_choir_palfrey.png"
+  },
+  {
+    "id": "craft_choir_slippers_reforged",
+    "name": "Vigil Slippers (Reforged)",
+    "description": "Reforge the Vigil Slippers around 5 Choir Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_choir_slippers_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_choir_slippers",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_choir_scrap",
+        "quantity": 5
+      }
+    ],
+    "goldCost": 25000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_choir_slippers.png"
+  },
+  {
+    "id": "craft_choir_wraps_reforged",
+    "name": "Cantor's Wraps (Reforged)",
+    "description": "Reforge the Cantor's Wraps around 5 Choir Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_choir_wraps_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_choir_wraps",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_choir_scrap",
+        "quantity": 5
+      }
+    ],
+    "goldCost": 25000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_choir_wraps.png"
+  },
+  {
+    "id": "craft_sovereign_diadem_reforged",
+    "name": "Sovereign's Diadem (Reforged)",
+    "description": "Reforge the Sovereign's Diadem around 6 Sovereign Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_sovereign_diadem_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_sovereign_diadem",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_sovereign_scrap",
+        "quantity": 6
+      }
+    ],
+    "goldCost": 75000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_sovereign_diadem.png"
+  },
+  {
+    "id": "craft_sovereign_collar_reforged",
+    "name": "Collar of the Founding Pact (Reforged)",
+    "description": "Reforge the Collar of the Founding Pact around 6 Sovereign Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_sovereign_collar_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_sovereign_collar",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_sovereign_scrap",
+        "quantity": 6
+      }
+    ],
+    "goldCost": 75000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_sovereign_collar.png"
+  },
+  {
+    "id": "craft_sovereign_cuirass_reforged",
+    "name": "Regalia Cuirass (Reforged)",
+    "description": "Reforge the Regalia Cuirass around 6 Sovereign Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_sovereign_cuirass_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_sovereign_cuirass",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_sovereign_scrap",
+        "quantity": 6
+      }
+    ],
+    "goldCost": 75000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_sovereign_cuirass.png"
+  },
+  {
+    "id": "craft_sovereign_signet_reforged",
+    "name": "Sovereign's Signet (Reforged)",
+    "description": "Reforge the Sovereign's Signet around 6 Sovereign Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_sovereign_signet_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_sovereign_signet",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_sovereign_scrap",
+        "quantity": 6
+      }
+    ],
+    "goldCost": 75000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_sovereign_signet.png"
+  },
+  {
+    "id": "craft_sovereign_band_reforged",
+    "name": "Tithe-Band (Reforged)",
+    "description": "Reforge the Tithe-Band around 6 Sovereign Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_sovereign_band_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_sovereign_band",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_sovereign_scrap",
+        "quantity": 6
+      }
+    ],
+    "goldCost": 75000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_sovereign_band.png"
+  },
+  {
+    "id": "craft_sovereign_wyrm_reforged",
+    "name": "Sovereign's Wyrm (Reforged)",
+    "description": "Reforge the Sovereign's Wyrm around 3 Sovereign Tack. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_sovereign_wyrm_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_sovereign_wyrm",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_sovereign_tack",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 150000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_sovereign_wyrm.png"
+  },
+  {
+    "id": "craft_sovereign_greaves_reforged",
+    "name": "Regalia Greaves (Reforged)",
+    "description": "Reforge the Regalia Greaves around 6 Sovereign Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_sovereign_greaves_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_sovereign_greaves",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_sovereign_scrap",
+        "quantity": 6
+      }
+    ],
+    "goldCost": 75000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_sovereign_greaves.png"
+  },
+  {
+    "id": "craft_sovereign_gauntlets_reforged",
+    "name": "Sovereign's Gauntlets (Reforged)",
+    "description": "Reforge the Sovereign's Gauntlets around 6 Sovereign Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_sovereign_gauntlets_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_sovereign_gauntlets",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_sovereign_scrap",
+        "quantity": 6
+      }
+    ],
+    "goldCost": 75000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_sovereign_gauntlets.png"
+  },
+  {
+    "id": "craft_stoned_horns_reforged",
+    "name": "The Sundown Ember (Reforged)",
+    "description": "Reforge the The Sundown Ember around 6 Stoned Devil Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_stoned_horns_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_stoned_horns",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_stoned_devil_scrap",
+        "quantity": 6
+      }
+    ],
+    "goldCost": 75000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_stoned_horns.png"
+  },
+  {
+    "id": "craft_stoned_censer_reforged",
+    "name": "The Perpetual Censer (Reforged)",
+    "description": "Reforge the The Perpetual Censer around 6 Stoned Devil Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_stoned_censer_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_stoned_censer",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_stoned_devil_scrap",
+        "quantity": 6
+      }
+    ],
+    "goldCost": 75000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_stoned_censer.png"
+  },
+  {
+    "id": "craft_stoned_robe_reforged",
+    "name": "Robe of the Long Sabbatical (Reforged)",
+    "description": "Reforge the Robe of the Long Sabbatical around 6 Stoned Devil Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_stoned_robe_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_stoned_robe",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_stoned_devil_scrap",
+        "quantity": 6
+      }
+    ],
+    "goldCost": 75000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_stoned_robe.png"
+  },
+  {
+    "id": "craft_stoned_signet_reforged",
+    "name": "Signet of Declined Ascendancy (Reforged)",
+    "description": "Reforge the Signet of Declined Ascendancy around 6 Stoned Devil Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_stoned_signet_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_stoned_signet",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_stoned_devil_scrap",
+        "quantity": 6
+      }
+    ],
+    "goldCost": 75000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_stoned_signet.png"
+  },
+  {
+    "id": "craft_stoned_band_reforged",
+    "name": "Band of the Fourth Reconsideration (Reforged)",
+    "description": "Reforge the Band of the Fourth Reconsideration around 6 Stoned Devil Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_stoned_band_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_stoned_band",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_stoned_devil_scrap",
+        "quantity": 6
+      }
+    ],
+    "goldCost": 75000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_stoned_band.png"
+  },
+  {
+    "id": "craft_stoned_goat_reforged",
+    "name": "Extremely Relaxed Hell-Goat (Reforged)",
+    "description": "Reforge the Extremely Relaxed Hell-Goat around 3 Stoned Devil Tack. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_stoned_goat_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_stoned_goat",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_stoned_devil_tack",
+        "quantity": 3
+      }
+    ],
+    "goldCost": 150000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_stoned_goat.png"
+  },
+  {
+    "id": "craft_stoned_slippers_reforged",
+    "name": "Slippers of the Unwalked Path (Reforged)",
+    "description": "Reforge the Slippers of the Unwalked Path around 6 Stoned Devil Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_stoned_slippers_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_stoned_slippers",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_stoned_devil_scrap",
+        "quantity": 6
+      }
+    ],
+    "goldCost": 75000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_stoned_slippers.png"
+  },
+  {
+    "id": "craft_stoned_mitts_reforged",
+    "name": "Mitts of Amiable Menace (Reforged)",
+    "description": "Reforge the Mitts of Amiable Menace around 6 Stoned Devil Scrap. The piece is consumed; what comes back is the same piece with nothing left out.",
+    "category": "Reforge",
+    "outputKind": "Gear",
+    "outputId": "gear_stoned_mitts_reforged",
+    "outputQuantity": 1,
+    "ingredients": [
+      {
+        "kind": "Gear",
+        "id": "gear_stoned_mitts",
+        "quantity": 1
+      },
+      {
+        "kind": "Item",
+        "id": "mat_stoned_devil_scrap",
+        "quantity": 6
+      }
+    ],
+    "goldCost": 75000,
+    "eventKey": null,
+    "iconPath": "icons/gear/gear_stoned_mitts.png"
   }
 ]

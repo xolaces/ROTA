@@ -286,6 +286,30 @@ mat_bog_cotton,item,Material,Grey,,Bog Cotton,"Grows in standing water and pulls
 mat_road_flint,item,Material,Grey,,Road Flint,Picked off any causeway by anyone who bothers to look down. It has started every fire the frontier has ever needed and it has never once been remarkable.,item/mat_road_flint.png
 mat_tallow,item,Material,White,,Rendered Tallow,"Every relay lamp in the Watch burns it, every boot in the Weir is greased with it, and nobody has ever written a sentence about it before this one.",item/mat_tallow.png
 mat_coarse_thread,item,Material,White,,Coarse Thread,"Spun thick enough to sew canvas and cheap enough to waste. The frontier repairs more than it replaces, and this is what it repairs with.",item/mat_coarse_thread.png
+mat_weir_scrap,item,Material,Green,,Weir Scrap,Rivets and strap-iron off Iron Weir issue. Enough of it reforges a piece.,item/mat_weir_scrap.png
+mat_weir_tack,item,Material,Green,,Weir Tack,"Bit, buckle and shoe-iron from a Weir courser's tack. They do not come off easily.",item/mat_weir_tack.png
+mat_marchwatch_scrap,item,Material,Green,,Marchwatch Scrap,"Oiled wool and storm-cloth cut from Marchwatch kit, still smelling of rain.",item/mat_marchwatch_scrap.png
+mat_marchwatch_tack,item,Material,Green,,Marchwatch Tack,"Harness leather from a Marchwatch rounder, waxed against a weather that never let up.",item/mat_marchwatch_tack.png
+mat_warrens_scrap,item,Material,Green,,Warrens Scrap,Soot-black leather and brass fittings out of the pits. Every piece was worn down there.,item/mat_warrens_scrap.png
+mat_warrens_tack,item,Material,Green,,Warrens Tack,"A pit pony's tack — squat brass rings and a lamp-hook, black to the core.",item/mat_warrens_tack.png
+mat_relay_scrap,item,Material,Blue,,Relay Scrap,"Cream canvas, blue piping, brass. Last Watch relay kit, taken off a relay runner.",item/mat_relay_scrap.png
+mat_relay_tack,item,Material,Blue,,Relay Tack,"A relay charger's tack, signal-lamp bracket still on the saddle.",item/mat_relay_tack.png
+mat_gravewarden_scrap,item,Material,Blue,,Gravewarden Scrap,"Barrow-iron plate and pitch-sealed canvas, with a line of gravesalt in every fold.",item/mat_gravewarden_scrap.png
+mat_gravewarden_tack,item,Material,Blue,,Gravewarden Tack,"Dray harness, black pitch on iron. It was made to pull weight out of the ground.",item/mat_gravewarden_tack.png
+mat_drowned_scrap,item,Material,Blue,,Drowned Scrap,Verdigris copper and sealed cork. It came up out of the water and is still wet.,item/mat_drowned_scrap.png
+mat_drowned_tack,item,Material,Blue,,Drowned Tack,"Tack from a drowned courser: glass-beaded, copper-buckled, and it does not rust.",item/mat_drowned_tack.png
+mat_sable_vein_scrap,item,Material,Purple,,Sable Vein Scrap,Matte black cloth with a single gold lozenge. House work; the seam is invisible.,item/mat_sable_vein_scrap.png
+mat_sable_vein_tack,item,Material,Purple,,Sable Vein Tack,"A Sable courser's tack, narrow and severe, gold at one point only.",item/mat_sable_vein_tack.png
+mat_wroughtbreaker_scrap,item,Material,Purple,,Wroughtbreaker Scrap,"Lead-grey slab iron with a cracked orange core. Siege metal, not armour.",item/mat_wroughtbreaker_scrap.png
+mat_wroughtbreaker_tack,item,Material,Purple,,Wroughtbreaker Tack,A destrier's barding off a siege line — heavy enough to need two hands.,item/mat_wroughtbreaker_tack.png
+mat_choir_scrap,item,Material,Purple,,Choir Scrap,Resonant brass and pale bone. Strike it and it holds a note for too long.,item/mat_choir_scrap.png
+mat_choir_tack,item,Material,Purple,,Choir Tack,"Palfrey tack in brass and bone, cut open at the ears so the animal can hear the choir.",item/mat_choir_tack.png
+mat_sovereign_scrap,item,Material,Orange,,Sovereign Scrap,"Crimson scale on antique gold, edge-plated. Regalia; it wants a throne under it.",item/mat_sovereign_scrap.png
+mat_sovereign_tack,item,Material,Orange,,Sovereign Tack,Wyrm tack. There is no word for what it is made of that anyone will say aloud.,item/mat_sovereign_tack.png
+mat_stoned_devil_scrap,item,Material,Orange,,Stoned Devil Scrap,"Maroon and cream with aged brass, soft to the touch. Nothing about it is sharp.",item/mat_stoned_devil_scrap.png
+mat_stoned_devil_tack,item,Material,Orange,,Stoned Devil Tack,A goat's tack. Someone hung a small brass censer off it and it is still smoking.,item/mat_stoned_devil_tack.png
+mat_pano_scrap,item,Material,Orange,,Vanguard Scrap,"White enamel, deep blue and gold, four-pointed star. Pano's line wore this and did not come back.",item/mat_pano_scrap.png
+mat_pano_tack,item,Material,Orange,,Vanguard Tack,"Barding from Pano's own steed, star still bright on the chamfron.",item/mat_pano_tack.png
 magic_whetstone,magic,Damage,White,,Whetstone,Sharpens every blow; a guaranteed small bonus on every hit.,magic/magic_whetstone.png
 magic_lesser_poison,magic,Damage,White,,Lesser Poison,A weak venom that occasionally laces attacks.,magic/magic_lesser_poison.png
 magic_poison,magic,Damage,Green,,Poison,A reliable venom that procs with moderate frequency.,magic/magic_poison.png

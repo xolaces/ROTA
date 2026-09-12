@@ -2852,5 +2852,413 @@
     "restoreToMax": false,
     "goldPrice": 0,
     "tags": []
+  },
+  {
+    "id": "mat_weir_scrap",
+    "name": "Weir Scrap",
+    "description": "Rivets and strap-iron off Iron Weir issue. Enough of it reforges a piece.",
+    "rarity": "Green",
+    "type": "Material",
+    "artKey": "mat_weir_scrap",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_weir_tack",
+    "name": "Weir Tack",
+    "description": "Bit, buckle and shoe-iron from a Weir courser's tack. They do not come off easily.",
+    "rarity": "Green",
+    "type": "Material",
+    "artKey": "mat_weir_tack",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_marchwatch_scrap",
+    "name": "Marchwatch Scrap",
+    "description": "Oiled wool and storm-cloth cut from Marchwatch kit, still smelling of rain.",
+    "rarity": "Green",
+    "type": "Material",
+    "artKey": "mat_marchwatch_scrap",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_marchwatch_tack",
+    "name": "Marchwatch Tack",
+    "description": "Harness leather from a Marchwatch rounder, waxed against a weather that never let up.",
+    "rarity": "Green",
+    "type": "Material",
+    "artKey": "mat_marchwatch_tack",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_warrens_scrap",
+    "name": "Warrens Scrap",
+    "description": "Soot-black leather and brass fittings out of the pits. Every piece was worn down there.",
+    "rarity": "Green",
+    "type": "Material",
+    "artKey": "mat_warrens_scrap",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_warrens_tack",
+    "name": "Warrens Tack",
+    "description": "A pit pony's tack — squat brass rings and a lamp-hook, black to the core.",
+    "rarity": "Green",
+    "type": "Material",
+    "artKey": "mat_warrens_tack",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_relay_scrap",
+    "name": "Relay Scrap",
+    "description": "Cream canvas, blue piping, brass. Last Watch relay kit, taken off a relay runner.",
+    "rarity": "Blue",
+    "type": "Material",
+    "artKey": "mat_relay_scrap",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_relay_tack",
+    "name": "Relay Tack",
+    "description": "A relay charger's tack, signal-lamp bracket still on the saddle.",
+    "rarity": "Blue",
+    "type": "Material",
+    "artKey": "mat_relay_tack",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_gravewarden_scrap",
+    "name": "Gravewarden Scrap",
+    "description": "Barrow-iron plate and pitch-sealed canvas, with a line of gravesalt in every fold.",
+    "rarity": "Blue",
+    "type": "Material",
+    "artKey": "mat_gravewarden_scrap",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_gravewarden_tack",
+    "name": "Gravewarden Tack",
+    "description": "Dray harness, black pitch on iron. It was made to pull weight out of the ground.",
+    "rarity": "Blue",
+    "type": "Material",
+    "artKey": "mat_gravewarden_tack",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_drowned_scrap",
+    "name": "Drowned Scrap",
+    "description": "Verdigris copper and sealed cork. It came up out of the water and is still wet.",
+    "rarity": "Blue",
+    "type": "Material",
+    "artKey": "mat_drowned_scrap",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_drowned_tack",
+    "name": "Drowned Tack",
+    "description": "Tack from a drowned courser: glass-beaded, copper-buckled, and it does not rust.",
+    "rarity": "Blue",
+    "type": "Material",
+    "artKey": "mat_drowned_tack",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_sable_vein_scrap",
+    "name": "Sable Vein Scrap",
+    "description": "Matte black cloth with a single gold lozenge. House work; the seam is invisible.",
+    "rarity": "Purple",
+    "type": "Material",
+    "artKey": "mat_sable_vein_scrap",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_sable_vein_tack",
+    "name": "Sable Vein Tack",
+    "description": "A Sable courser's tack, narrow and severe, gold at one point only.",
+    "rarity": "Purple",
+    "type": "Material",
+    "artKey": "mat_sable_vein_tack",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_wroughtbreaker_scrap",
+    "name": "Wroughtbreaker Scrap",
+    "description": "Lead-grey slab iron with a cracked orange core. Siege metal, not armour.",
+    "rarity": "Purple",
+    "type": "Material",
+    "artKey": "mat_wroughtbreaker_scrap",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_wroughtbreaker_tack",
+    "name": "Wroughtbreaker Tack",
+    "description": "A destrier's barding off a siege line — heavy enough to need two hands.",
+    "rarity": "Purple",
+    "type": "Material",
+    "artKey": "mat_wroughtbreaker_tack",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_choir_scrap",
+    "name": "Choir Scrap",
+    "description": "Resonant brass and pale bone. Strike it and it holds a note for too long.",
+    "rarity": "Purple",
+    "type": "Material",
+    "artKey": "mat_choir_scrap",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_choir_tack",
+    "name": "Choir Tack",
+    "description": "Palfrey tack in brass and bone, cut open at the ears so the animal can hear the choir.",
+    "rarity": "Purple",
+    "type": "Material",
+    "artKey": "mat_choir_tack",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_sovereign_scrap",
+    "name": "Sovereign Scrap",
+    "description": "Crimson scale on antique gold, edge-plated. Regalia; it wants a throne under it.",
+    "rarity": "Orange",
+    "type": "Material",
+    "artKey": "mat_sovereign_scrap",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_sovereign_tack",
+    "name": "Sovereign Tack",
+    "description": "Wyrm tack. There is no word for what it is made of that anyone will say aloud.",
+    "rarity": "Orange",
+    "type": "Material",
+    "artKey": "mat_sovereign_tack",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_stoned_devil_scrap",
+    "name": "Stoned Devil Scrap",
+    "description": "Maroon and cream with aged brass, soft to the touch. Nothing about it is sharp.",
+    "rarity": "Orange",
+    "type": "Material",
+    "artKey": "mat_stoned_devil_scrap",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_stoned_devil_tack",
+    "name": "Stoned Devil Tack",
+    "description": "A goat's tack. Someone hung a small brass censer off it and it is still smoking.",
+    "rarity": "Orange",
+    "type": "Material",
+    "artKey": "mat_stoned_devil_tack",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_pano_scrap",
+    "name": "Vanguard Scrap",
+    "description": "White enamel, deep blue and gold, four-pointed star. Pano's line wore this and did not come back.",
+    "rarity": "Orange",
+    "type": "Material",
+    "artKey": "mat_pano_scrap",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
+  },
+  {
+    "id": "mat_pano_tack",
+    "name": "Vanguard Tack",
+    "description": "Barding from Pano's own steed, star still bright on the chamfron.",
+    "rarity": "Orange",
+    "type": "Material",
+    "artKey": "mat_pano_tack",
+    "statPointsOnUse": 0,
+    "isCraftingIngredient": true,
+    "summonRaidId": null,
+    "summonDifficulty": null,
+    "summonSize": null,
+    "upgradesTo": null,
+    "tags": [
+      "Reforge"
+    ]
   }
 ]

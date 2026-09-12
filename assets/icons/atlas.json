@@ -2,14 +2,14 @@
   "image": "atlas.png",
   "size": {
     "w": 2600,
-    "h": 2470
+    "h": 2600
   },
   "cell": {
     "w": 128,
     "h": 128,
     "padding": 2
   },
-  "count": 362,
+  "count": 386,
   "frames": {
     "gear_causeway_seal": {
       "x": 0,
@@ -872,1675 +872,1843 @@
       "h": 128,
       "family": "item"
     },
-    "mat_cinder_salt": {
+    "mat_choir_scrap": {
       "x": 390,
+      "y": 780,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_choir_tack": {
+      "x": 520,
+      "y": 780,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_cinder_salt": {
+      "x": 650,
       "y": 780,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_coarse_thread": {
-      "x": 520,
+      "x": 780,
       "y": 780,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_colossus_filament": {
-      "x": 650,
+      "x": 910,
       "y": 780,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_command_sigil": {
-      "x": 780,
+      "x": 1040,
       "y": 780,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_cork_iron": {
-      "x": 910,
+      "x": 1170,
       "y": 780,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_deepwood_heart": {
-      "x": 1040,
+      "x": 1300,
+      "y": 780,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_drowned_scrap": {
+      "x": 1430,
+      "y": 780,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_drowned_tack": {
+      "x": 1560,
       "y": 780,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_emberfall_slag": {
-      "x": 1170,
+      "x": 1690,
       "y": 780,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_glutbound_core": {
-      "x": 1300,
+      "x": 1820,
       "y": 780,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_gravesalt": {
-      "x": 1430,
+      "x": 1950,
+      "y": 780,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_gravewarden_scrap": {
+      "x": 2080,
+      "y": 780,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_gravewarden_tack": {
+      "x": 2210,
       "y": 780,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_gravewend_haft": {
-      "x": 1560,
+      "x": 2340,
       "y": 780,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_hollow_reed": {
-      "x": 1690,
+      "x": 2470,
       "y": 780,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_iron_shard": {
-      "x": 1820,
-      "y": 780,
+      "x": 0,
+      "y": 910,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_keepwall_mortar": {
-      "x": 1950,
-      "y": 780,
+      "x": 130,
+      "y": 910,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_kronarch_seal": {
-      "x": 2080,
-      "y": 780,
+      "x": 260,
+      "y": 910,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_lamp_black": {
-      "x": 2210,
-      "y": 780,
+      "x": 390,
+      "y": 910,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_leviathan_baleen": {
-      "x": 2340,
-      "y": 780,
+      "x": 520,
+      "y": 910,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_leviathan_tooth": {
-      "x": 2470,
-      "y": 780,
+      "x": 650,
+      "y": 910,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_marchwatch_scrap": {
+      "x": 780,
+      "y": 910,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_marchwatch_tack": {
+      "x": 910,
+      "y": 910,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_mire_ichor": {
-      "x": 0,
+      "x": 1040,
       "y": 910,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_null_sigil_ink": {
-      "x": 130,
+      "x": 1170,
       "y": 910,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_oathsteel": {
-      "x": 260,
+      "x": 1300,
+      "y": 910,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_pano_scrap": {
+      "x": 1430,
+      "y": 910,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_pano_tack": {
+      "x": 1560,
       "y": 910,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_pitch_seal": {
-      "x": 390,
+      "x": 1690,
       "y": 910,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_quiet_lamp_oil": {
-      "x": 520,
+      "x": 1820,
+      "y": 910,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_relay_scrap": {
+      "x": 1950,
+      "y": 910,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_relay_tack": {
+      "x": 2080,
       "y": 910,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_resonant_brass": {
-      "x": 650,
+      "x": 2210,
       "y": 910,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_rime_glass": {
-      "x": 780,
+      "x": 2340,
       "y": 910,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_road_flint": {
-      "x": 910,
+      "x": 2470,
       "y": 910,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_sable_thread": {
-      "x": 1040,
-      "y": 910,
+      "x": 0,
+      "y": 1040,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_sable_vein_scrap": {
+      "x": 130,
+      "y": 1040,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_sable_vein_tack": {
+      "x": 260,
+      "y": 1040,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_siege_lead": {
-      "x": 1170,
-      "y": 910,
+      "x": 390,
+      "y": 1040,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_sounding_horn": {
-      "x": 1300,
-      "y": 910,
+      "x": 520,
+      "y": 1040,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_sovereign_scale": {
-      "x": 1430,
-      "y": 910,
+      "x": 650,
+      "y": 1040,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_sovereign_scrap": {
+      "x": 780,
+      "y": 1040,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_sovereign_tack": {
+      "x": 910,
+      "y": 1040,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_stag_ash": {
-      "x": 1560,
-      "y": 910,
+      "x": 1040,
+      "y": 1040,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_stag_tendon": {
-      "x": 1690,
-      "y": 910,
+      "x": 1170,
+      "y": 1040,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_starhollow_dust": {
-      "x": 1820,
-      "y": 910,
+      "x": 1300,
+      "y": 1040,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_stoned_devil_scrap": {
+      "x": 1430,
+      "y": 1040,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_stoned_devil_tack": {
+      "x": 1560,
+      "y": 1040,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_tallow": {
-      "x": 1950,
-      "y": 910,
+      "x": 1690,
+      "y": 1040,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_unwalked_leather": {
-      "x": 2080,
-      "y": 910,
+      "x": 1820,
+      "y": 1040,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_vanguard_banner": {
-      "x": 2210,
-      "y": 910,
+      "x": 1950,
+      "y": 1040,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_warren_teeth": {
+      "x": 2080,
+      "y": 1040,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_warrens_scrap": {
+      "x": 2210,
+      "y": 1040,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_warrens_tack": {
       "x": 2340,
-      "y": 910,
+      "y": 1040,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_weir_scrap": {
+      "x": 2470,
+      "y": 1040,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_weir_tack": {
+      "x": 0,
+      "y": 1170,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_wrathslag": {
-      "x": 2470,
-      "y": 910,
+      "x": 130,
+      "y": 1170,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_wroughtbreaker_scrap": {
+      "x": 260,
+      "y": 1170,
+      "w": 128,
+      "h": 128,
+      "family": "item"
+    },
+    "mat_wroughtbreaker_tack": {
+      "x": 390,
+      "y": 1170,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "mat_wyrm_scale": {
-      "x": 0,
-      "y": 1040,
+      "x": 520,
+      "y": 1170,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "potion_devils_tea": {
-      "x": 130,
-      "y": 1040,
+      "x": 650,
+      "y": 1170,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "potion_energy_grand": {
-      "x": 260,
-      "y": 1040,
+      "x": 780,
+      "y": 1170,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "potion_energy_greater": {
-      "x": 390,
-      "y": 1040,
+      "x": 910,
+      "y": 1170,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "potion_energy_major": {
-      "x": 520,
-      "y": 1040,
+      "x": 1040,
+      "y": 1170,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "potion_energy_minor": {
-      "x": 650,
-      "y": 1040,
+      "x": 1170,
+      "y": 1170,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "potion_energy_relay": {
-      "x": 780,
-      "y": 1040,
+      "x": 1300,
+      "y": 1170,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "potion_health_grand": {
-      "x": 910,
-      "y": 1040,
+      "x": 1430,
+      "y": 1170,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "potion_health_greater": {
-      "x": 1040,
-      "y": 1040,
+      "x": 1560,
+      "y": 1170,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "potion_health_major": {
-      "x": 1170,
-      "y": 1040,
+      "x": 1690,
+      "y": 1170,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "potion_health_minor": {
-      "x": 1300,
-      "y": 1040,
+      "x": 1820,
+      "y": 1170,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "potion_long_afternoon": {
-      "x": 1430,
-      "y": 1040,
+      "x": 1950,
+      "y": 1170,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "potion_stamina_grand": {
-      "x": 1560,
-      "y": 1040,
+      "x": 2080,
+      "y": 1170,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "potion_stamina_greater": {
-      "x": 1690,
-      "y": 1040,
+      "x": 2210,
+      "y": 1170,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "potion_stamina_major": {
-      "x": 1820,
-      "y": 1040,
+      "x": 2340,
+      "y": 1170,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "potion_stamina_minor": {
-      "x": 1950,
-      "y": 1040,
+      "x": 2470,
+      "y": 1170,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "potion_stamina_relay": {
-      "x": 2080,
-      "y": 1040,
+      "x": 0,
+      "y": 1300,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c1z1b": {
-      "x": 2210,
-      "y": 1040,
+      "x": 130,
+      "y": 1300,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c1z2b": {
-      "x": 2340,
-      "y": 1040,
+      "x": 260,
+      "y": 1300,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c2z1b": {
-      "x": 2470,
-      "y": 1040,
+      "x": 390,
+      "y": 1300,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c2z2b": {
-      "x": 0,
-      "y": 1170,
+      "x": 520,
+      "y": 1300,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c2z3b": {
-      "x": 130,
-      "y": 1170,
+      "x": 650,
+      "y": 1300,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c3z0b": {
-      "x": 260,
-      "y": 1170,
+      "x": 780,
+      "y": 1300,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c3z1b": {
-      "x": 390,
-      "y": 1170,
+      "x": 910,
+      "y": 1300,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c3z2b": {
-      "x": 520,
-      "y": 1170,
+      "x": 1040,
+      "y": 1300,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c3z3b": {
-      "x": 650,
-      "y": 1170,
+      "x": 1170,
+      "y": 1300,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c4z0b": {
-      "x": 780,
-      "y": 1170,
+      "x": 1300,
+      "y": 1300,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c4z1b": {
-      "x": 910,
-      "y": 1170,
+      "x": 1430,
+      "y": 1300,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c4z2b": {
-      "x": 1040,
-      "y": 1170,
+      "x": 1560,
+      "y": 1300,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c4z3b": {
-      "x": 1170,
-      "y": 1170,
+      "x": 1690,
+      "y": 1300,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c5z0b": {
-      "x": 1300,
-      "y": 1170,
+      "x": 1820,
+      "y": 1300,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c5z1b": {
-      "x": 1430,
-      "y": 1170,
+      "x": 1950,
+      "y": 1300,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c5z2b": {
-      "x": 1560,
-      "y": 1170,
+      "x": 2080,
+      "y": 1300,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c5z3b": {
-      "x": 1690,
-      "y": 1170,
+      "x": 2210,
+      "y": 1300,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c5z4b": {
-      "x": 1820,
-      "y": 1170,
+      "x": 2340,
+      "y": 1300,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c6z0b": {
-      "x": 1950,
-      "y": 1170,
+      "x": 2470,
+      "y": 1300,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c6z1b": {
-      "x": 2080,
-      "y": 1170,
+      "x": 0,
+      "y": 1430,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c6z2b": {
-      "x": 2210,
-      "y": 1170,
+      "x": 130,
+      "y": 1430,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c6z3b": {
-      "x": 2340,
-      "y": 1170,
+      "x": 260,
+      "y": 1430,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_c6z4b": {
-      "x": 2470,
-      "y": 1170,
+      "x": 390,
+      "y": 1430,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_ironcolossus": {
-      "x": 0,
-      "y": 1300,
+      "x": 520,
+      "y": 1430,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_lastwatch_lamp_hard": {
-      "x": 130,
-      "y": 1300,
+      "x": 650,
+      "y": 1430,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_lastwatch_lamp_legendary": {
-      "x": 260,
-      "y": 1300,
+      "x": 780,
+      "y": 1430,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_lastwatch_lamp_nightmare": {
-      "x": 390,
-      "y": 1300,
+      "x": 910,
+      "y": 1430,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_lastwatch_lamp_normal": {
-      "x": 520,
-      "y": 1300,
+      "x": 1040,
+      "y": 1430,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "sigil_malachar": {
-      "x": 650,
-      "y": 1300,
+      "x": 1170,
+      "y": 1430,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "statbag_ancient": {
-      "x": 780,
-      "y": 1300,
+      "x": 1300,
+      "y": 1430,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "statbag_greater": {
-      "x": 910,
-      "y": 1300,
+      "x": 1430,
+      "y": 1430,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "statbag_major": {
-      "x": 1040,
-      "y": 1300,
+      "x": 1560,
+      "y": 1430,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "statbag_minor": {
-      "x": 1170,
-      "y": 1300,
+      "x": 1690,
+      "y": 1430,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "statbag_oathsworn": {
-      "x": 1300,
-      "y": 1300,
+      "x": 1820,
+      "y": 1430,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "statbag_reconsideration": {
-      "x": 1430,
-      "y": 1300,
+      "x": 1950,
+      "y": 1430,
       "w": 128,
       "h": 128,
       "family": "item"
     },
     "legion_anvilkeep": {
-      "x": 1560,
-      "y": 1300,
+      "x": 2080,
+      "y": 1430,
       "w": 128,
       "h": 128,
       "family": "legion"
     },
     "legion_bargained": {
-      "x": 1690,
-      "y": 1300,
+      "x": 2210,
+      "y": 1430,
       "w": 128,
       "h": 128,
       "family": "legion"
     },
     "legion_deepwatch": {
-      "x": 1820,
-      "y": 1300,
+      "x": 2340,
+      "y": 1430,
       "w": 128,
       "h": 128,
       "family": "legion"
     },
     "legion_houndsmen": {
-      "x": 1950,
-      "y": 1300,
+      "x": 2470,
+      "y": 1430,
       "w": 128,
       "h": 128,
       "family": "legion"
     },
     "legion_ironlegion": {
-      "x": 2080,
-      "y": 1300,
+      "x": 0,
+      "y": 1560,
       "w": 128,
       "h": 128,
       "family": "legion"
     },
     "legion_sovereigns_climb": {
-      "x": 2210,
-      "y": 1300,
+      "x": 130,
+      "y": 1560,
       "w": 128,
       "h": 128,
       "family": "legion"
     },
     "legion_vanguard": {
-      "x": 2340,
-      "y": 1300,
+      "x": 260,
+      "y": 1560,
       "w": 128,
       "h": 128,
       "family": "legion"
     },
     "legion_vanguard_ii": {
-      "x": 2470,
-      "y": 1300,
+      "x": 390,
+      "y": 1560,
       "w": 128,
       "h": 128,
       "family": "legion"
     },
     "legion_warband": {
-      "x": 0,
-      "y": 1430,
+      "x": 520,
+      "y": 1560,
       "w": 128,
       "h": 128,
       "family": "legion"
     },
     "legion_warrenguard": {
-      "x": 130,
-      "y": 1430,
+      "x": 650,
+      "y": 1560,
       "w": 128,
       "h": 128,
       "family": "legion"
     },
     "magic_age_of_dawn_fragment": {
-      "x": 260,
-      "y": 1430,
+      "x": 780,
+      "y": 1560,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_blessing_of_might": {
-      "x": 390,
-      "y": 1430,
+      "x": 910,
+      "y": 1560,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_blessing_of_the_ancients": {
-      "x": 520,
-      "y": 1430,
+      "x": 1040,
+      "y": 1560,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_coinsense": {
-      "x": 650,
-      "y": 1430,
+      "x": 1170,
+      "y": 1560,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_considered_inaction": {
-      "x": 780,
-      "y": 1430,
+      "x": 1300,
+      "y": 1560,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_drillmasters_cant": {
-      "x": 910,
-      "y": 1430,
+      "x": 1430,
+      "y": 1560,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_expose_weakness": {
-      "x": 1040,
-      "y": 1430,
+      "x": 1560,
+      "y": 1560,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_field_commission": {
-      "x": 1170,
-      "y": 1430,
+      "x": 1690,
+      "y": 1560,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_gamblers_sigil": {
-      "x": 1300,
-      "y": 1430,
+      "x": 1820,
+      "y": 1560,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_greater_poison": {
-      "x": 1430,
-      "y": 1430,
+      "x": 1950,
+      "y": 1560,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_hoarders_eye": {
-      "x": 1560,
-      "y": 1430,
+      "x": 2080,
+      "y": 1560,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_hollowpoint": {
-      "x": 1690,
-      "y": 1430,
+      "x": 2210,
+      "y": 1560,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_impending_doom": {
-      "x": 1820,
-      "y": 1430,
+      "x": 2340,
+      "y": 1560,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_keen_eye": {
-      "x": 1950,
-      "y": 1430,
+      "x": 2470,
+      "y": 1560,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_kindling": {
-      "x": 2080,
-      "y": 1430,
+      "x": 0,
+      "y": 1690,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_kronarchs_last_order": {
-      "x": 2210,
-      "y": 1430,
+      "x": 130,
+      "y": 1690,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_last_lamp_wick": {
-      "x": 2340,
-      "y": 1430,
+      "x": 260,
+      "y": 1690,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_lesser_poison": {
-      "x": 2470,
-      "y": 1430,
+      "x": 390,
+      "y": 1690,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_metronome": {
-      "x": 0,
-      "y": 1560,
+      "x": 520,
+      "y": 1690,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_midas_touch": {
-      "x": 130,
-      "y": 1560,
+      "x": 650,
+      "y": 1690,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_one_true_swing": {
-      "x": 260,
-      "y": 1560,
+      "x": 780,
+      "y": 1690,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_pinnacle_1000": {
-      "x": 390,
-      "y": 1560,
+      "x": 910,
+      "y": 1690,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_pinnacle_10000": {
-      "x": 520,
-      "y": 1560,
+      "x": 1040,
+      "y": 1690,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_pinnacle_15000": {
-      "x": 650,
-      "y": 1560,
+      "x": 1170,
+      "y": 1690,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_pinnacle_2500": {
-      "x": 780,
-      "y": 1560,
+      "x": 1300,
+      "y": 1690,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_pinnacle_25000": {
-      "x": 910,
-      "y": 1560,
+      "x": 1430,
+      "y": 1690,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_pinnacle_5000": {
-      "x": 1040,
-      "y": 1560,
+      "x": 1560,
+      "y": 1690,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_pinnacle_7500": {
-      "x": 1170,
-      "y": 1560,
+      "x": 1690,
+      "y": 1690,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_poison": {
-      "x": 1300,
-      "y": 1560,
+      "x": 1820,
+      "y": 1690,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_readers_mark": {
-      "x": 1430,
-      "y": 1560,
+      "x": 1950,
+      "y": 1690,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_rimefang": {
-      "x": 1560,
-      "y": 1560,
+      "x": 2080,
+      "y": 1690,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_sealwrights_measure": {
-      "x": 1690,
-      "y": 1560,
+      "x": 2210,
+      "y": 1690,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_smite": {
-      "x": 1820,
-      "y": 1560,
+      "x": 2340,
+      "y": 1690,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_sovereigns_cut": {
-      "x": 1950,
-      "y": 1560,
+      "x": 2470,
+      "y": 1690,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_spoils_of_the_march": {
-      "x": 2080,
-      "y": 1560,
+      "x": 0,
+      "y": 1820,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_steady_hand": {
-      "x": 2210,
-      "y": 1560,
+      "x": 130,
+      "y": 1820,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_sunder": {
-      "x": 2340,
-      "y": 1560,
+      "x": 260,
+      "y": 1820,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_the_long_watch": {
-      "x": 2470,
-      "y": 1560,
+      "x": 390,
+      "y": 1820,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_tithe_ledger": {
-      "x": 0,
-      "y": 1690,
+      "x": 520,
+      "y": 1820,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_veiled_eye": {
-      "x": 130,
-      "y": 1690,
+      "x": 650,
+      "y": 1820,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_whetstone": {
-      "x": 260,
-      "y": 1690,
+      "x": 780,
+      "y": 1820,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_wrath_of_the_ancients": {
-      "x": 390,
-      "y": 1690,
+      "x": 910,
+      "y": 1820,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "magic_wrathslag_ember": {
-      "x": 520,
-      "y": 1690,
+      "x": 1040,
+      "y": 1820,
       "w": 128,
       "h": 128,
       "family": "magic"
     },
     "gauntlet_stage_1": {
-      "x": 650,
-      "y": 1690,
+      "x": 1170,
+      "y": 1820,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "gauntlet_stage_2": {
-      "x": 780,
-      "y": 1690,
+      "x": 1300,
+      "y": 1820,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "gauntlet_stage_3": {
-      "x": 910,
-      "y": 1690,
+      "x": 1430,
+      "y": 1820,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "gauntlet_stage_4": {
-      "x": 1040,
-      "y": 1690,
+      "x": 1560,
+      "y": 1820,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "gauntlet_stage_5": {
-      "x": 1170,
-      "y": 1690,
+      "x": 1690,
+      "y": 1820,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "gauntlet_stage_6": {
-      "x": 1300,
-      "y": 1690,
+      "x": 1820,
+      "y": 1820,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "guild_raid_leviathan": {
-      "x": 1430,
-      "y": 1690,
+      "x": 1950,
+      "y": 1820,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "guild_raid_titan": {
-      "x": 1560,
-      "y": 1690,
+      "x": 2080,
+      "y": 1820,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "guild_raid_warlord": {
-      "x": 1690,
-      "y": 1690,
+      "x": 2210,
+      "y": 1820,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c1z1b": {
-      "x": 1820,
-      "y": 1690,
+      "x": 2340,
+      "y": 1820,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c1z2b": {
-      "x": 1950,
-      "y": 1690,
+      "x": 2470,
+      "y": 1820,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c2z1b": {
-      "x": 2080,
-      "y": 1690,
+      "x": 0,
+      "y": 1950,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c2z2b": {
-      "x": 2210,
-      "y": 1690,
+      "x": 130,
+      "y": 1950,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c2z3b": {
-      "x": 2340,
-      "y": 1690,
+      "x": 260,
+      "y": 1950,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c3z0b": {
-      "x": 2470,
-      "y": 1690,
+      "x": 390,
+      "y": 1950,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c3z1b": {
-      "x": 0,
-      "y": 1820,
+      "x": 520,
+      "y": 1950,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c3z2b": {
-      "x": 130,
-      "y": 1820,
+      "x": 650,
+      "y": 1950,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c3z3b": {
-      "x": 260,
-      "y": 1820,
+      "x": 780,
+      "y": 1950,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c4z0b": {
-      "x": 390,
-      "y": 1820,
+      "x": 910,
+      "y": 1950,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c4z1b": {
-      "x": 520,
-      "y": 1820,
+      "x": 1040,
+      "y": 1950,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c4z2b": {
-      "x": 650,
-      "y": 1820,
+      "x": 1170,
+      "y": 1950,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c4z3b": {
-      "x": 780,
-      "y": 1820,
+      "x": 1300,
+      "y": 1950,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c5z0b": {
-      "x": 910,
-      "y": 1820,
+      "x": 1430,
+      "y": 1950,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c5z1b": {
-      "x": 1040,
-      "y": 1820,
+      "x": 1560,
+      "y": 1950,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c5z2b": {
-      "x": 1170,
-      "y": 1820,
+      "x": 1690,
+      "y": 1950,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c5z3b": {
-      "x": 1300,
-      "y": 1820,
+      "x": 1820,
+      "y": 1950,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c5z4b": {
-      "x": 1430,
-      "y": 1820,
+      "x": 1950,
+      "y": 1950,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c6z0b": {
-      "x": 1560,
-      "y": 1820,
+      "x": 2080,
+      "y": 1950,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c6z1b": {
-      "x": 1690,
-      "y": 1820,
+      "x": 2210,
+      "y": 1950,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c6z2b": {
-      "x": 1820,
-      "y": 1820,
+      "x": 2340,
+      "y": 1950,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c6z3b": {
-      "x": 1950,
-      "y": 1820,
+      "x": 2470,
+      "y": 1950,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_c6z4b": {
-      "x": 2080,
-      "y": 1820,
+      "x": 0,
+      "y": 2080,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_ironcolossus": {
-      "x": 2210,
-      "y": 1820,
+      "x": 130,
+      "y": 2080,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_lastwatch_lamp": {
-      "x": 2340,
-      "y": 1820,
+      "x": 260,
+      "y": 2080,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_lastwatch_relay": {
-      "x": 2470,
-      "y": 1820,
+      "x": 390,
+      "y": 2080,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_lastwatch_vault": {
-      "x": 0,
-      "y": 1950,
+      "x": 520,
+      "y": 2080,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "raid_malachar": {
-      "x": 130,
-      "y": 1950,
+      "x": 650,
+      "y": 2080,
       "w": 128,
       "h": 128,
       "family": "raid"
     },
     "craft_ashblade_ii": {
-      "x": 260,
-      "y": 1950,
+      "x": 780,
+      "y": 2080,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "craft_censer": {
-      "x": 390,
-      "y": 1950,
+      "x": 910,
+      "y": 2080,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "craft_choir_crown": {
-      "x": 520,
-      "y": 1950,
+      "x": 1040,
+      "y": 2080,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "craft_choir_stole": {
-      "x": 650,
-      "y": 1950,
+      "x": 1170,
+      "y": 2080,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "craft_deepwatch_gauntlets": {
-      "x": 780,
-      "y": 1950,
+      "x": 1300,
+      "y": 2080,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "craft_drowned_helm": {
-      "x": 910,
-      "y": 1950,
+      "x": 1430,
+      "y": 2080,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "craft_durn_sigilwise": {
-      "x": 1040,
-      "y": 1950,
+      "x": 1560,
+      "y": 2080,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "craft_gorruk_oathbound": {
-      "x": 1170,
-      "y": 1950,
+      "x": 1690,
+      "y": 2080,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "craft_gravesalt_batch": {
-      "x": 1300,
-      "y": 1950,
+      "x": 1820,
+      "y": 2080,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "craft_gravewarden_coat": {
-      "x": 1430,
-      "y": 1950,
+      "x": 1950,
+      "y": 2080,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "craft_gravewarden_dray": {
-      "x": 1560,
-      "y": 1950,
+      "x": 2080,
+      "y": 2080,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "craft_hell_goat": {
-      "x": 1690,
-      "y": 1950,
+      "x": 2210,
+      "y": 2080,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "craft_ironward_ii": {
-      "x": 1820,
-      "y": 1950,
+      "x": 2340,
+      "y": 2080,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "craft_marchwatch_coat": {
-      "x": 1950,
-      "y": 1950,
+      "x": 2470,
+      "y": 2080,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "craft_oathsteel_helm": {
-      "x": 2080,
-      "y": 1950,
+      "x": 0,
+      "y": 2210,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "craft_pikemen_ii": {
-      "x": 2210,
-      "y": 1950,
+      "x": 130,
+      "y": 2210,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "craft_sovereign_signet": {
-      "x": 2340,
-      "y": 1950,
+      "x": 260,
+      "y": 2210,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "craft_stoned_slippers": {
-      "x": 2470,
-      "y": 1950,
+      "x": 390,
+      "y": 2210,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "craft_vanguard_ii": {
-      "x": 0,
-      "y": 2080,
+      "x": 520,
+      "y": 2210,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "craft_warrens_helm": {
-      "x": 130,
-      "y": 2080,
+      "x": 650,
+      "y": 2210,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "craft_warrens_pitpony": {
-      "x": 260,
-      "y": 2080,
+      "x": 780,
+      "y": 2210,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "craft_wrought_visor": {
-      "x": 390,
-      "y": 2080,
+      "x": 910,
+      "y": 2210,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "craft_wroughtbreaker_gauntlets": {
-      "x": 520,
-      "y": 2080,
+      "x": 1040,
+      "y": 2210,
       "w": 128,
       "h": 128,
       "family": "recipe"
     },
     "gen_ashblade": {
-      "x": 650,
-      "y": 2080,
+      "x": 1170,
+      "y": 2210,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "gen_ashblade_ii": {
-      "x": 780,
-      "y": 2080,
+      "x": 1300,
+      "y": 2210,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "gen_ashen_stag": {
-      "x": 910,
-      "y": 2080,
+      "x": 1430,
+      "y": 2210,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "gen_brannoc": {
-      "x": 1040,
-      "y": 2080,
+      "x": 1560,
+      "y": 2210,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "gen_choirmaster": {
-      "x": 1170,
-      "y": 2080,
+      "x": 1690,
+      "y": 2210,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "gen_durn": {
-      "x": 1300,
-      "y": 2080,
+      "x": 1820,
+      "y": 2210,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "gen_gorruk": {
-      "x": 1430,
-      "y": 2080,
+      "x": 1950,
+      "y": 2210,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "gen_ironward": {
-      "x": 1560,
-      "y": 2080,
+      "x": 2080,
+      "y": 2210,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "gen_ironward_ii": {
-      "x": 1690,
-      "y": 2080,
+      "x": 2210,
+      "y": 2210,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "gen_makh": {
-      "x": 1820,
-      "y": 2080,
+      "x": 2340,
+      "y": 2210,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "gen_morvath": {
-      "x": 1950,
-      "y": 2080,
+      "x": 2470,
+      "y": 2210,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "gen_pano": {
-      "x": 2080,
-      "y": 2080,
+      "x": 0,
+      "y": 2340,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "gen_sentinel_prime": {
-      "x": 2210,
-      "y": 2080,
+      "x": 130,
+      "y": 2340,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "gen_sister_arveth": {
-      "x": 2340,
-      "y": 2080,
+      "x": 260,
+      "y": 2340,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "gen_sylvaire": {
-      "x": 2470,
-      "y": 2080,
+      "x": 390,
+      "y": 2340,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "gen_the_reconsidered": {
-      "x": 0,
-      "y": 2210,
+      "x": 520,
+      "y": 2340,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "gen_vaskarr": {
-      "x": 130,
-      "y": 2210,
+      "x": 650,
+      "y": 2340,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "troop_acolytes": {
-      "x": 260,
-      "y": 2210,
+      "x": 780,
+      "y": 2340,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "troop_archers": {
-      "x": 390,
-      "y": 2210,
+      "x": 910,
+      "y": 2340,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "troop_choir_attendants": {
-      "x": 520,
-      "y": 2210,
+      "x": 1040,
+      "y": 2340,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "troop_dwarf_hammers": {
-      "x": 650,
-      "y": 2210,
+      "x": 1170,
+      "y": 2340,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "troop_dwarf_sappers": {
-      "x": 780,
-      "y": 2210,
+      "x": 1300,
+      "y": 2340,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "troop_emberpan_imps": {
-      "x": 910,
-      "y": 2210,
+      "x": 1430,
+      "y": 2340,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "troop_field_chirurgeons": {
-      "x": 1040,
-      "y": 2210,
+      "x": 1560,
+      "y": 2340,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "troop_glacier_bears": {
-      "x": 1170,
-      "y": 2210,
+      "x": 1690,
+      "y": 2340,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "troop_lamp_walkers": {
-      "x": 1300,
-      "y": 2210,
+      "x": 1820,
+      "y": 2340,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "troop_militia": {
-      "x": 1430,
-      "y": 2210,
+      "x": 1950,
+      "y": 2340,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "troop_mire_brood": {
-      "x": 1560,
-      "y": 2210,
+      "x": 2080,
+      "y": 2340,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "troop_oroc_maulers": {
-      "x": 1690,
-      "y": 2210,
+      "x": 2210,
+      "y": 2340,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "troop_oroc_shieldline": {
-      "x": 1820,
-      "y": 2210,
+      "x": 2340,
+      "y": 2340,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "troop_pikemen": {
-      "x": 1950,
-      "y": 2210,
+      "x": 2470,
+      "y": 2340,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "troop_pikemen_ii": {
-      "x": 2080,
-      "y": 2210,
+      "x": 0,
+      "y": 2470,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "troop_rime_wolves": {
-      "x": 2210,
-      "y": 2210,
+      "x": 130,
+      "y": 2470,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "troop_sable_witnesses": {
-      "x": 2340,
-      "y": 2210,
+      "x": 260,
+      "y": 2470,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "troop_slagborn": {
-      "x": 2470,
-      "y": 2210,
+      "x": 390,
+      "y": 2470,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "troop_vanguard_oathsworn": {
-      "x": 0,
-      "y": 2340,
+      "x": 520,
+      "y": 2470,
       "w": 128,
       "h": 128,
       "family": "unit"
     },
     "troop_wrought_automata": {
-      "x": 130,
-      "y": 2340,
+      "x": 650,
+      "y": 2470,
       "w": 128,
       "h": 128,
       "family": "unit"

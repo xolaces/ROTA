@@ -157,9 +157,17 @@ TYPE_NOUN = {
 }
 
 
+def borrows_art(entry):
+    """Shares another id's file (reforged gear, reforge recipes): nothing to draw."""
+    stem = pathlib.PurePosixPath(entry.get("iconPath") or "").stem
+    return bool(stem) and stem != entry["id"]
+
+
 def rows():
     out = []
     for g in load("gear.json"):
+        if borrows_art(g):
+            continue
         out.append(("gear", g.get("setId") or "gear (no set)", g["id"], g["name"],
                     SLOT_NOUN.get(g.get("slot"), "piece of equipment"), g.get("description", ""),
                     g.get("rarity", "Green")))
@@ -193,6 +201,8 @@ def rows():
                     "military banner or standard", l.get("description", ""),
                     l.get("rarity", "Green")))
     for r in load("recipes.json"):
+        if borrows_art(r):
+            continue
         out.append(("recipe", "crafting recipes", r["id"], r["name"],
                     "crafting or forging emblem for the item it produces", r.get("description", ""),
                     "Blue"))

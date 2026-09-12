@@ -267,26 +267,35 @@ reagent. If you add a chase drop, set it.
 
 ### 5.3 Raid threshold rewards — read this before retuning HP
 
-Raid loot ladders are **cumulative** and expressed as a fraction of the raid's HP pool:
+Raid loot ladders are **cumulative**. Each rung is keyed on the damage a player dealt — an
+absolute number, written as a fraction of the raid's Normal HP pool when the table was generated:
 
 ```json
 "thresholdRewards": [
-  { "damagePercent": 0.001, "goldReward": 100, "itemDrops": [...] },
-  { "damagePercent": 0.01,  "goldReward": 500, "itemDrops": [...] },
-  { "damagePercent": 0.05,  "goldReward": 2000, "itemDrops": [...] }
+  { "damageThreshold": 100,  "contributionPercent": 0.0, "unassignedStatPoints": 1, "itemDrops": [...] },
+  { "damageThreshold": 600,  "contributionPercent": 0.0, "unassignedStatPoints": 4, "itemDrops": [...] },
+  { "damageThreshold": 1600, "contributionPercent": 0.0, "unassignedStatPoints": 4, "itemDrops": [...],
+    "gearDrops": [ { "gearDefinitionId": "gear_weir_courser", "chance": 1.0 } ] }
 ]
 ```
 
-A player at 5% collects **all three rungs**, not just the last.
+A player who dealt 1,600 collects **all three rungs**, not just the last. A rung with
+`damageThreshold` 0 is keyed on `contributionPercent` — the share of the total — instead; the
+shipped tables all use damage, because a share means nothing until the raid is over and a ladder
+the player can see mid-fight is worth more.
+
+> **Until 2026-09-11 campaign raids paid every rung to everyone.** The service only read the
+> damage key on World raids and fell back to the share key elsewhere, and a share of zero is one
+> everybody clears. Fixed in `RaidService`; the ladder now pays what the catalogue shows.
 
 > **This is why HP and loot are coupled.** If you double a raid's `baseHp` without touching its
-> table, every player's damage as a *fraction* halves, and they silently fall off the ladder. Retune
-> both or neither. There is a test pinning this coupling.
+> table, every rung is twice as far up the fight. `tools/content/retune_raid_health.py` moves both.
 
-**Raid gear behaves differently from quest gear.** The raid path grants threshold gear
-*unconditionally and cumulatively*, ignoring `chance`. So on the raid side, put gear on the **last
-rung only, at `chance: 1.0`** — otherwise a single clear hands out four copies. Quest-side gear
-honours its `chance` normally.
+**Raid gear is guaranteed.** The raid path grants threshold gear *unconditionally and
+cumulatively*, ignoring `chance`. So on the raid side, put gear on the **last rung only, at
+`chance: 1.0`** — otherwise a single clear hands out four copies. Quest-side gear honours its
+`chance` normally. Each campaign raid carries one mount this way; everything else a raid gives up
+is a part (§5.5).
 
 ### 5.4 Making something rarer or more common
 
@@ -297,12 +306,42 @@ Rough calibration from the shipped tables:
 | Band | `chance` | Reads as |
 |---|---|---|
 | Reagent, common | 0.15 – 0.30 | you'll see it most sessions |
-| Set gear, early | 0.028 | a few clears |
-| Set gear, deep | 0.013 | a grind |
-| Chase (Orange set) | 0.0010 – 0.0012 | may never see it |
+| Set gear, quests (every piece in a pool, equal) | 0.020 ch.1–2 · 0.0167 ch.3–4 · 0.0125 ch.5–6 · 0.010 ch.7 | 1-in-50 and rarer per click — the grind, by design |
+| Reforge scrap, raid top rung | 0.12 → 0.30 by difficulty | a set of parts is many clears |
+| Reforge tack (the mount), raid top rung | 0.04 → 0.10 by difficulty | the rarest thing a raid gives up |
+| Deep relic | 0.0002 – 0.0010 | may never see it |
 
-The two Orange sets — Sovereign's Regalia and the Stoned Devil — sit in the chase band on purpose.
-A player should be able to finish the campaign having seen neither.
+Quest gear rates are **generated**, not hand-set: `tools/content/reforge_sets.py` writes every set
+piece in a zone pool at the chapter's rate (`QUEST_GEAR_RATE`), ×1.15 / ×1.3 / ×1.5 by difficulty,
+×2 on the boss node. Change the number there and re-run; a hand edit is overwritten on the next run.
+
+### 5.5 Reforging — what raids are for
+
+Raids do not drop gear (one mount aside). They drop **parts** for a better version of the gear,
+and crafting makes it:
+
+- Every set piece has a **reforged twin** in `gear.json` — `gear_weir_kettle_helm_reforged` —
+  same slot, same rarity, same art, bonuses ×1.5, in a set of its own (`set_weir_reforged`).
+- Every set has two materials in `items.json`: a **Scrap** (`mat_weir_scrap`) for the seven body
+  pieces and a **Tack** (`mat_weir_tack`) for the mount.
+- Every piece has a **Reforge recipe** in `recipes.json` (the client's Reforge tab): the base piece
+  + 3/4/5/6 scraps by rarity (or 3 tack for the mount) + gold. The base piece is consumed. A piece
+  that is *worn* cannot be consumed (D-020) — unequip it, reforge, re-equip.
+- Every raid drops the parts of the sets whose pieces fall in its chapter, on **every rung** of its
+  ladder at a per-rung chance that compounds to the top-of-ladder targets below. The more of the
+  fight you carried, the more rungs you roll. Guild raids have tables now (they had none); the
+  World raids carry Pano's vanguard parts.
+
+| Top of the ladder | Normal | Hard | Legendary | Nightmare |
+|---|---|---|---|---|
+| Scrap, at least one | 12% | 18% | 24% | 30% |
+| Tack, at least one | 4% | 6% | 8% | 10% |
+
+All of it comes from one file: **`tools/content/reforge_sets.py`**. The set → raid map, the
+targets, the multiplier, the scrap counts and the gold are constants at the top; re-running the
+script rewrites everything it owns and leaves everything else alone. `ReforgeContentTests` pins
+the invariants (every piece has a twin and a recipe; every part drops somewhere; tack is always
+rarer than scrap; every quest pool is one rate).
 
 ---
 
@@ -521,7 +560,7 @@ Def × 0.4`, a Troop `Atk × 1.44 + Def × 0.36`.
     { "kind": "Item", "id": "mat_oathsteel", "quantity": 2 }
   ],
   "goldCost": 15000,
-  "category": "General"          General | Special
+  "category": "General"          General | Reforge | Events | Guild | Special — Reforge is generated (§5.5)
 }
 ```
 
