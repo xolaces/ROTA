@@ -20,6 +20,9 @@ using ROTA.Infrastructure.Seeding;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// No "Server: Kestrel" on responses — it names the stack for free and says nothing a client needs.
+builder.WebHost.ConfigureKestrel(o => o.AddServerHeader = false);
+
 builder.Services.AddControllers();
 
 // Response compression (Brotli + Gzip, optimal level). EnableForHttps so payloads compress on

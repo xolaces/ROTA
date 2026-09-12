@@ -155,8 +155,38 @@ cat > /opt/rota/Caddyfile <<'EOF'
 api.example.com {
     reverse_proxy api:8080
 }
+
+play.example.com {
+    root * /srv/web
+    # Build/ carries .gz and .zst twins made at deploy time (tools/deploy-webgl.ps1 in the
+    # client repo); serving those keeps one CPU out of gzipping 41 MB of wasm per player and
+    # keeps the Content-Length the Unity loader wants.
+    file_server {
+        precompressed zstd gzip
+    }
+    encode gzip
+
+    # The API sets its own headers in middleware (SecurityHeadersMiddleware); the static host
+    # needs its own. script-src stays loose where Unity needs it — the template's inline boot
+    # script and WebAssembly compilation — and everything else is pinned to this origin and
+    # the API. 'wasm-unsafe-eval' is enough; the build needs no 'unsafe-eval'.
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://api.example.com; connect-src 'self' https://api.example.com wss://api.example.com blob: data:; font-src 'self' data:; worker-src 'self' blob:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+        -Server
+    }
+    header /Build/* Cache-Control "public, max-age=0, must-revalidate"
+    header /index.html Cache-Control "no-cache"
+}
 EOF
 ```
+
+The `play.` block is the WebGL client (§11b). After editing the file:
+`docker exec rota-caddy caddy validate --config /etc/caddy/Caddyfile && docker exec rota-caddy caddy reload --config /etc/caddy/Caddyfile`.
 
 ### 7b. Caddy compose override
 
@@ -315,6 +345,22 @@ target into the build, or ship a default build and point it with a config file (
      click *More info → Run anyway*. Tell them this up front. (Code-signing removes the warning later — a
      paid cert, post-beta.)
 4. **Tester flow**: launch → Register with the email + a beta key you gave them → play.
+
+### 11b. Ship the WebGL client
+
+The web build is served by Caddy from the bind mount `/opt/rota/web` (`./web:/srv/web:ro` in the
+Caddy override). It is a mount — copy **into** it, never `mv` it.
+
+```powershell
+cd C:\Dev\ROTA.Client6
+.\tools\build-client.ps1 -Target WebGL      # → dist\ROTA-WebGL
+.\tools\deploy-webgl.ps1                    # backdrop, web.prev backup, upload, precompress, checksum
+```
+
+`deploy-webgl.ps1` copies the live folder to `/opt/rota/web.prev` first; to roll back,
+`cp -a /opt/rota/web.prev/. /opt/rota/web/`. A WebGL build has no `rota-config.json` beside it;
+the live API base is compiled in (`AppBootstrap.ApplyConfigOverrides`), so there is nothing to
+retarget after upload.
 
 ---
 
