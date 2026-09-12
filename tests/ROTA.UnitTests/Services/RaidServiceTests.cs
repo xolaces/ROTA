@@ -237,7 +237,7 @@ public class RaidServiceTests
             trophyRepo.Object, gauntletContent.Object, playerEventMagics.Object,
             playerMagicHonors.Object, strikes.Object, gauntletScoring.Object, gauntletCfg,
             gauntletCurrency.Object, guildMemberships.Object, guildEconomy.Object, mastery.Object,
-            achievements.Object, friendships.Object, battalion.Object, questCfg, random);
+            achievements.Object, friendships.Object, battalion.Object, questCfg, Options.Create(new RaidConfig()), random);
 
         return new ServiceBundle(service, raids, participants, players, resources, energy, gems,
             stats, inventory, itemDefs, lootTables, auditLog, definitions, hitCache, equipment,
@@ -1643,6 +1643,46 @@ public class RaidServiceTests
     }
 
     [Fact]
+    public async Task GetActiveRaids_MarksJoined_ByParticipation_OrSummon()
+    {
+        var b = BuildService();
+        var me = Guid.NewGuid();
+        var mine   = MakeVisRaid(me, RaidVisibility.Private);              // summoned by me, never hit
+        var joined = MakeVisRaid(Guid.NewGuid(), RaidVisibility.Public);   // hit by me
+        var open   = MakeVisRaid(Guid.NewGuid(), RaidVisibility.Public);   // neither
+        b.Raids.Setup(r => r.GetAllActiveAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ActiveRaid> { mine, joined, open });
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(joined.Id, me, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(RaidParticipant.Create(joined.Id, me));
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var list = await b.Service.GetActiveRaidsAsync(me);
+
+        list.Single(r => r.ActiveRaidId == mine.Id).Joined.Should().BeTrue("the summoner is in their own raid");
+        list.Single(r => r.ActiveRaidId == joined.Id).Joined.Should().BeTrue("a hit creates the participation");
+        list.Single(r => r.ActiveRaidId == open.Id).Joined.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetActiveRaids_ALootableRaid_ShowsTheClaimDeadline_NotTheSummonClock()
+    {
+        var b = BuildService();
+        var me = Guid.NewGuid();
+        var lootable = MakeVisRaid(Guid.NewGuid(), RaidVisibility.Public);
+        lootable.MarkDefeated();
+        b.Raids.Setup(r => r.GetAllActiveAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<ActiveRaid>());
+        b.Raids.Setup(r => r.GetLootableUnclaimedForPlayerAsync(me, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ActiveRaid> { lootable });
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var list = await b.Service.GetActiveRaidsAsync(me);
+
+        var row = list.Single();
+        row.LifecycleState.Should().Be("Lootable");
+        row.ExpiresAt.Should().Be(lootable.ExpiresAt.AddDays(7), "unclaimed loot is forfeited LootClaimDays after the clock");
+    }
+
+    [Fact]
     public async Task GetActiveRaids_LootableAndLooted_NeverListed()
     {
         var b = BuildService();
@@ -1779,7 +1819,7 @@ public class RaidServiceTests
     // ── LootRaidAsync ────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task LootRaid_ByParticipant_GrantsDeferredRewards_AndIsIdempotent()
+    public async Task LootRaid_ByParticipant_GrantsDeferredRewards_ThenTheRowIsGone()
     {
         var b = BuildService();
         var player = MakePlayer();
@@ -1794,13 +1834,6 @@ public class RaidServiceTests
             .ReturnsAsync(raid);
         b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(part);
-        // After the claim latches, LootRaidAsync checks whether anyone is still unclaimed to flip the
-        // raid Lootable→Looted. A second still-unclaimed participant keeps the raid Lootable, so this
-        // claimant's idempotent re-press below still resolves the raid (no auto-dismiss).
-        var otherPart = RaidParticipant.Create(raid.Id, Guid.NewGuid());
-        otherPart.RecordPendingRewards("Participant", gold: 1, xp: 1, gems: 0, statPoints: 0, itemsJson: string.Empty);
-        b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<RaidParticipant> { part, otherPart });
         b.Participants.Setup(p => p.UpdateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         b.Players.Setup(p => p.FindByIdAsync(player.Id, It.IsAny<CancellationToken>()))
@@ -1817,23 +1850,29 @@ public class RaidServiceTests
         result.Rewards!.GoldGranted.Should().Be(0, "gold is an on-hit reward, not claimed at Loot");
         result.Rewards.GemsGranted.Should().Be(10);
         result.Rewards.UnassignedStatPointsGranted.Should().Be(3);
+        result.Raid!.YourTotalDamage.Should().Be(part.TotalDamageDealt, "the response maps the row it just claimed");
         part.RewardsClaimed.Should().BeTrue("the claim latches RewardedAt");
         b.Gems.Verify(g => g.GrantGemsAsync(player.Id, 10, GemTransactionType.RaidReward,
             $"raid:{raid.Id}:{player.Id}", It.IsAny<CancellationToken>()), Times.Once);
         b.Stats.Verify(s => s.AddUnassignedPointsAsync(player.Id, 3, It.IsAny<CancellationToken>()), Times.Once);
+        b.Participants.Verify(p => p.DeleteAsync(part.Id, It.IsAny<CancellationToken>()), Times.Once,
+            "a claimed participation is not kept");
 
-        // Idempotent re-press: still succeeds (returns the summary) but re-grants nothing.
+        // A second press finds no participation: the raid is gone from this player's view.
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
         var again = await b.Service.LootRaidAsync(player.Id, raid.Id);
-        again.Success.Should().BeTrue();
+        again.Success.Should().BeFalse();
+        again.FailureCode.Should().Be(LootRaidFailureCode.NotFound);
         b.Gems.Verify(g => g.GrantGemsAsync(player.Id, It.IsAny<long>(), GemTransactionType.RaidReward, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once,
             "a second Loot press must not re-grant");
     }
 
     [Fact]
-    public async Task LootRaid_LastUnclaimedParticipant_FlipsRaidToLooted()
+    public async Task LootRaid_TheClaimTakesTheRow_AndTheLastClaimantTakesTheRaid()
     {
-        // raid-loot-no-all-claimed-expiry — once the LAST participant claims (no RewardedAt == null
-        // rows remain), the raid is dismissed Lootable→Looted so it stops lingering in lootable indexes.
+        // A looted raid is not stored: the participation goes with the grants, and one conditional
+        // delete removes the raid once no participation is left. Nothing flips to Looted any more.
         var b = BuildService();
         var player = MakePlayer();
         var raid = MakeVisRaid(Guid.NewGuid(), RaidVisibility.Public);
@@ -1846,10 +1885,7 @@ public class RaidServiceTests
             .ReturnsAsync(raid);
         b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(part);
-        // The sole participant's claim latches RewardedAt on the in-memory row, so the all-claimed
-        // check sees zero unclaimed rows and the raid is dismissed.
-        b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<RaidParticipant> { part });
+        b.Raids.Setup(r => r.DeleteIfEmptyAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(true);
         b.Gems.Setup(g => g.GrantGemsAsync(It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<GemTransactionType>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
         b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
@@ -1857,8 +1893,84 @@ public class RaidServiceTests
         var result = await b.Service.LootRaidAsync(player.Id, raid.Id);
 
         result.Success.Should().BeTrue();
-        raid.LifecycleState.Should().Be(RaidLifecycleState.Looted, "the last unclaimed participant has now claimed");
-        b.Raids.Verify(r => r.UpdateAsync(It.Is<ActiveRaid>(x => x.Id == raid.Id), It.IsAny<CancellationToken>()), Times.Once);
+        b.Participants.Verify(p => p.DeleteAsync(part.Id, It.IsAny<CancellationToken>()), Times.Once);
+        b.Raids.Verify(r => r.DeleteIfEmptyAsync(raid.Id, It.IsAny<CancellationToken>()), Times.Once,
+            "the raid is removed by the claimant that empties it");
+        raid.LifecycleState.Should().Be(RaidLifecycleState.Lootable, "no state flip — the row is deleted, not dismissed");
+        b.Raids.Verify(r => r.UpdateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()), Times.Never);
+        b.Participants.Verify(p => p.GetAllForRaidAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never,
+            "the all-claimed scan is gone; the conditional delete decides");
+    }
+
+    [Fact]
+    public async Task LootRaid_GauntletStage_KeepsItsRow_AndFlipsToLooted()
+    {
+        // The ladder reads its own stage history, so a Gauntlet stage keeps the older lifecycle.
+        var b = BuildService();
+        var player = MakePlayer();
+        var raid = MakeVisRaid(player.Id, RaidVisibility.Private, RaidSize.Personal);
+        raid.LinkGauntletEvent(Guid.NewGuid());
+        raid.MarkDefeated();
+
+        var part = RaidParticipant.Create(raid.Id, player.Id);
+        part.RecordPendingRewards("Legendary", gold: 500, xp: 200, gems: 0, statPoints: 0, itemsJson: string.Empty);
+
+        b.Raids.Setup(r => r.FindByIdWithSummonerAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(raid);
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(part);
+        b.Participants.Setup(p => p.GetAllForRaidAsync(raid.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipant> { part });
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.LootRaidAsync(player.Id, raid.Id);
+
+        result.Success.Should().BeTrue();
+        b.Participants.Verify(p => p.DeleteAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        b.Raids.Verify(r => r.DeleteIfEmptyAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        raid.LifecycleState.Should().Be(RaidLifecycleState.Looted);
+    }
+
+    [Fact]
+    public async Task PurgeSpentRaids_RemovesEachRaid_AndRecordsForfeitedLoot()
+    {
+        var b = BuildService();
+        var forfeited = MakeVisRaid(Guid.NewGuid(), RaidVisibility.Public);
+        forfeited.MarkDefeated();
+        var failed = MakeVisRaid(Guid.NewGuid(), RaidVisibility.Public);   // Active, out of time, health left
+
+        var unclaimed = RaidParticipant.Create(forfeited.Id, Guid.NewGuid());
+        unclaimed.RecordPendingRewards("Rare", gold: 1, xp: 1, gems: 2, statPoints: 0, itemsJson: string.Empty);
+
+        b.Raids.Setup(r => r.GetSpentAsync(It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ActiveRaid> { forfeited, failed });
+        b.Participants.Setup(p => p.GetAllForRaidAsync(forfeited.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<RaidParticipant> { unclaimed });
+        b.Raids.Setup(r => r.DeleteAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+
+        var removed = await b.Service.PurgeSpentRaidsAsync(50);
+
+        removed.Should().Be(2);
+        b.Raids.Verify(r => r.DeleteAsync(forfeited.Id, It.IsAny<CancellationToken>()), Times.Once);
+        b.Raids.Verify(r => r.DeleteAsync(failed.Id, It.IsAny<CancellationToken>()), Times.Once);
+        b.AuditLog.Verify(a => a.AppendAsync(It.Is<AuditLog>(x => x.Action == "RaidLootForfeited"), It.IsAny<CancellationToken>()), Times.Once,
+            "only the raid with unclaimed loot is worth a line");
+    }
+
+    [Fact]
+    public async Task PurgeSpentRaids_TheClaimWindowComesFromConfig()
+    {
+        var b = BuildService();
+        DateTimeOffset? cutoff = null;
+        b.Raids.Setup(r => r.GetSpentAsync(It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .Callback<DateTimeOffset, DateTimeOffset, int, CancellationToken>((now, c, _, _) => cutoff = c)
+            .ReturnsAsync(new List<ActiveRaid>());
+
+        await b.Service.PurgeSpentRaidsAsync(50);
+
+        cutoff.Should().NotBeNull();
+        (DateTimeOffset.UtcNow - cutoff!.Value).TotalDays.Should().BeApproximately(7, 0.01,
+            "RaidConfig.LootClaimDays defaults to 7");
     }
 
     [Fact]

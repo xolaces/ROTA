@@ -13,6 +13,8 @@ public class ActiveRaidResponse
     public long TimerRemainingSeconds { get; set; }
     public string SummonedByUsername { get; set; } = string.Empty;
     public int ParticipantCount { get; set; }
+    // True when the caller has hit this raid (a participation exists) or summoned it.
+    public bool Joined { get; set; }
     public long YourTotalDamage { get; set; }
     public int YourHitCount { get; set; }
     public string Tier { get; set; } = string.Empty;
@@ -152,24 +154,6 @@ public class RaidHitRequest
 {
     public int HitSize { get; set; }
     public string IdempotencyKey { get; set; } = string.Empty;
-}
-
-public class CompletedRaidResponse
-{
-    public Guid ActiveRaidId { get; set; }
-    public string RaidDefinitionId { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
-    public string Difficulty { get; set; } = string.Empty;
-    public string DifficultyColor { get; set; } = string.Empty;
-    public DateTimeOffset DefeatedAt { get; set; }
-    public long YourTotalDamage { get; set; }
-    public string ContributionTier { get; set; } = string.Empty;
-    public long GoldEarned { get; set; }
-    // int32-overflow-audit Unit 2 — earned reward amounts widened to long (mirror RaidParticipant).
-    public long XpEarned { get; set; }
-    public long GemsEarned { get; set; }
-    public long StatPointsEarned { get; set; }
-    public List<ItemGrantDTO> ItemsEarned { get; set; } = new();
 }
 
 // --- Service result wrappers ---

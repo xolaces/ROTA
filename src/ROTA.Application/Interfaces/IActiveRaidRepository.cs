@@ -32,8 +32,23 @@ public interface IActiveRaidRepository
     Task<IReadOnlyList<ActiveRaid>> GetExpiredUnsettledTimerRaidsAsync(
         DateTimeOffset asOf, int limit, CancellationToken ct = default);
 
+    // Raids with nothing left to do, oldest first, capped: legacy Looted rows; Lootable raids whose
+    // claim window (ExpiresAt + the window, i.e. claimCutoff) has passed; ordinary health-pool raids
+    // that ran out of time with health left (failed, and failure pays nothing); and soft-deleted rows.
+    // Gauntlet stages are never spent — the ladder reads its own history.
+    Task<IReadOnlyList<ActiveRaid>> GetSpentAsync(
+        DateTimeOffset now, DateTimeOffset claimCutoff, int limit, CancellationToken ct = default);
+
     Task<ActiveRaid> CreateAsync(ActiveRaid raid, CancellationToken ct = default);
     Task UpdateAsync(ActiveRaid raid, CancellationToken ct = default);
+
+    // Removes the raid row and everything hanging off it (participants by cascade, magics by hand —
+    // raid_magics carries no FK). Returns false when the row was already gone.
+    Task<bool> DeleteAsync(Guid raidId, CancellationToken ct = default);
+
+    // Removes the raid only when no participant row remains, in one statement, so two claimants
+    // finishing together cannot both try to take it. Returns true for the caller that removed it.
+    Task<bool> DeleteIfEmptyAsync(Guid raidId, CancellationToken ct = default);
 
     // Acquires a PostgreSQL FOR UPDATE row lock on the raid row, then runs the mutate
     // delegate under that lock within a single transaction.

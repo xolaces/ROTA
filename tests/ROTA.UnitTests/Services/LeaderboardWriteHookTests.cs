@@ -618,7 +618,7 @@ public class LeaderboardWriteHookTests
             playerMagicHonors.Object, strikes.Object, gauntletScoring.Object, gauntletCfg,
             gauntletCurrency.Object, guildMemberships.Object, guildEconomy.Object, mastery.Object,
             achievements.Object, friendships.Object, battalion.Object,
-            Options.Create(new QuestConfig()), random);
+            Options.Create(new QuestConfig()), Options.Create(new RaidConfig()), random);
 
         return new RaidBundle(service, raids, participants, players, resources, energy,
             auditLog, definitions, hitCache, equipment, stats, leaderboards);

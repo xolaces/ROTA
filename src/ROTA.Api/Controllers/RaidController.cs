@@ -69,14 +69,6 @@ public sealed class RaidController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("completed")]
-    [ProducesResponseType(typeof(IReadOnlyList<CompletedRaidResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetCompleted()
-    {
-        var result = await _raids.GetCompletedRaidsAsync(GetPlayerId());
-        return Ok(result);
-    }
-
     [HttpGet("{activeRaidId}/participants")]
     [ProducesResponseType(typeof(IReadOnlyList<RaidParticipantRankDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetParticipants(
@@ -131,7 +123,8 @@ public sealed class RaidController : ControllerBase
     }
 
     // per-participant loot CLAIM of a defeated raid. Grants this player's deferred rewards
-    // (gold/gems/stat-points/items; XP was granted at kill) and returns them. Idempotent on re-press.
+    // (gems/stat-points/items; gold and XP landed on the hit) and returns them. The claim removes the
+    // participation, so a re-press is a 404 — the raid is gone from this player's view.
     // Returns the full LootRaidResult (Raid + Rewards). 404 not-found / not-a-participant, 409 not-yet-defeated.
     [HttpPost("{activeRaidId}/loot")]
     [ProducesResponseType(typeof(LootRaidResult), StatusCodes.Status200OK)]

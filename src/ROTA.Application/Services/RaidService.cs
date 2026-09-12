@@ -88,6 +88,7 @@ public sealed class RaidService : IRaidService
     // Shared boss-gem reward rules (flat amount + chapter-scaled drop chance) — unified across quest
     // bosses and raid bosses. Lives in QuestConfig; raids read it for parity.
     private readonly QuestConfig _questConfig;
+    private readonly RaidConfig _raidConfig;
     // Gauntlet combat amplifiers (trophies, off-cap auras, strikes, scoring).
     private readonly IPlayerGauntletTrophyRepository _trophyRepo;
     private readonly IGauntletContentProvider        _gauntletContent;
@@ -154,6 +155,7 @@ public sealed class RaidService : IRaidService
         IFriendshipRepository friendships,
         IGauntletBattalionService battalion,
         IOptions<QuestConfig> questConfig,
+        IOptions<RaidConfig> raidConfig,
         Random? random = null)
     {
         _raids           = raids;
@@ -185,6 +187,7 @@ public sealed class RaidService : IRaidService
         _leaderboards    = leaderboards;
         _combatConfig    = combatConfig.Value;
         _questConfig     = questConfig.Value;
+        _raidConfig      = raidConfig.Value;
         _trophyRepo        = trophyRepo;
         _gauntletContent   = gauntletContent;
         _playerEventMagics = playerEventMagics;
@@ -265,12 +268,19 @@ public sealed class RaidService : IRaidService
 
     // Shared ActiveRaidResponse projection — used by the list, get-by-id, and share paths so the
     // caller-stat mapping (YourTotalDamage/YourHitCount/YourCurrentTier) stays identical everywhere.
-    // totalParticipants only feeds the (placeholder) live-tier computation.
+    // totalParticipants only feeds the (placeholder) live-tier computation. A caller that already
+    // holds the participant row passes it, so a row deleted in the same call still maps.
     private async Task<ActiveRaidResponse> MapToResponseAsync(
-        ActiveRaid raid, Guid callerId, int totalParticipants, DateTimeOffset now, CancellationToken ct)
+        ActiveRaid raid, Guid callerId, int totalParticipants, DateTimeOffset now, CancellationToken ct,
+        RaidParticipant? participant = null)
     {
         var definition = _raidDefinitions.GetById(raid.RaidDefinitionId);
-        var participant = await _participants.FindByRaidAndPlayerAsync(raid.Id, callerId, ct);
+        participant ??= await _participants.FindByRaidAndPlayerAsync(raid.Id, callerId, ct);
+
+        // A defeated raid's clock no longer means anything; what expires now is the claim.
+        var expiresAt = raid.LifecycleState == RaidLifecycleState.Lootable
+            ? raid.ExpiresAt.AddDays(_raidConfig.LootClaimDays)
+            : raid.ExpiresAt;
 
         return new ActiveRaidResponse
         {
@@ -281,10 +291,11 @@ public sealed class RaidService : IRaidService
             MaxHp                 = raid.MaxHp,
             HpPercent             = raid.MaxHp > 0 ? (double)raid.CurrentHp / raid.MaxHp * 100.0 : 0,
             IsDefeated            = raid.IsDefeated,
-            ExpiresAt             = raid.ExpiresAt,
-            TimerRemainingSeconds = (long)Math.Max(0, (raid.ExpiresAt - now).TotalSeconds),
+            ExpiresAt             = expiresAt,
+            TimerRemainingSeconds = (long)Math.Max(0, (expiresAt - now).TotalSeconds),
             SummonedByUsername    = raid.SummonedByPlayer?.Username ?? string.Empty,
             ParticipantCount      = raid.ParticipantCount,
+            Joined                = participant is not null || raid.SummonedByPlayerId == callerId,
             YourTotalDamage       = participant?.TotalDamageDealt ?? 0,
             YourHitCount          = participant?.HitCount ?? 0,
             Tier                  = definition?.Tier ?? "Standard",
@@ -316,6 +327,13 @@ public sealed class RaidService : IRaidService
         var now = DateTimeOffset.UtcNow;
         foreach (var raid in guildRaids)
             result.Add(await MapToResponseAsync(raid, playerId, guildRaids.Count, now, ct));
+
+        // A defeated guild raid the caller has not looted yet stays on the guild screen — it is the
+        // only place a guild raid is claimed.
+        var lootable = await _raids.GetLootableUnclaimedForPlayerAsync(playerId, ct);
+        foreach (var raid in lootable)
+            if (raid.GuildId == membership.GuildId)
+                result.Add(await MapToResponseAsync(raid, playerId, raid.ParticipantCount, now, ct));
         return result;
     }
 
@@ -376,43 +394,6 @@ public sealed class RaidService : IRaidService
             DifficultyColor       = DifficultyColors[difficulty],
             Size                  = RaidSize.Large.ToString(),
         }, poolBalance);
-    }
-
-    public async Task<IReadOnlyList<CompletedRaidResponse>> GetCompletedRaidsAsync(
-        Guid playerId, CancellationToken ct = default)
-    {
-        const int Limit = 50;
-        var rows = await _participants.GetCompletedForPlayerAsync(playerId, Limit, since: null, ct);
-        var result = new List<CompletedRaidResponse>(rows.Count);
-
-        foreach (var p in rows)
-        {
-            var raid = p.ActiveRaid!;
-            var definition = _raidDefinitions.GetById(raid.RaidDefinitionId);
-
-            var items = string.IsNullOrWhiteSpace(p.ItemsEarnedJson)
-                ? new List<ItemGrantDTO>()
-                : JsonSerializer.Deserialize<List<ItemGrantDTO>>(p.ItemsEarnedJson) ?? new List<ItemGrantDTO>();
-
-            result.Add(new CompletedRaidResponse
-            {
-                ActiveRaidId     = raid.Id,
-                RaidDefinitionId = raid.RaidDefinitionId,
-                Name             = definition?.Name ?? raid.RaidDefinitionId,
-                Difficulty       = raid.Difficulty.ToString(),
-                DifficultyColor  = DifficultyColors[raid.Difficulty],
-                DefeatedAt       = p.RewardedAt!.Value,
-                YourTotalDamage  = p.TotalDamageDealt,
-                ContributionTier = p.ContributionTier,
-                GoldEarned       = p.GoldEarned,
-                XpEarned         = p.XpEarned,
-                GemsEarned       = p.GemsEarned,
-                StatPointsEarned = p.StatPointsEarned,
-                ItemsEarned      = items,
-            });
-        }
-
-        return result;
     }
 
     public async Task<SummonRaidResult> SummonRaidAsync(
@@ -562,10 +543,10 @@ public sealed class RaidService : IRaidService
     // Ticket 50 + T57 — per-PARTICIPANT loot CLAIM. T57 reverses T50's "rewards already granted on the
     // killing hit, Loot is a pure dismiss": rewards (gold/gems/stat-points/items) are now COMPUTED on the
     // killing hit but GRANTED here, when each participant presses Loot. XP/level-ups stay immediate at
-    // kill. Each participant claims exactly once (RewardedAt latches); a re-press is idempotent (the
-    // summary is returned, nothing re-granted). The raid stays Lootable while ANY participant still has
-    // an unclaimed reward; once the LAST participant claims, it flips Lootable→Looted (Loot()) so it
-    // drops out of every "lootable" index instead of lingering forever.
+    // kill. Each participant claims exactly once (RewardedAt latches), and a claimed participation is
+    // not kept: the row is deleted in the same transaction as the grants, and the last claimant takes
+    // the raid row with them. Gauntlet stages are the exception — the ladder reads its own history, so
+    // they keep the older Lootable→Looted flip.
     public async Task<LootRaidResult> LootRaidAsync(
         Guid callerId, Guid activeRaidId, CancellationToken ct = default)
     {
@@ -645,30 +626,40 @@ public sealed class RaidService : IRaidService
                     callerId, "RaidLootClaimed", null,
                     $"Claimed deferred rewards for raid {raid.Id} ({raid.RaidDefinitionId}): " +
                     $"gems +{participant.GemsEarned}, SP +{participant.StatPointsEarned}.", null), ct);
+
+                // The audit line above is the record; the row has nothing left to say.
+                if (raid.GauntletEventId is null)
+                    await _participants.DeleteAsync(participant.Id, ct);
                 return true;
             }, ct);
 
             // In-memory only, for the response below — the durable latch was the conditional UPDATE.
             participant.MarkRewardsClaimed(DateTimeOffset.UtcNow);
 
-            // Fully-claimed expiry: once no participant has an unclaimed reward, dismiss the raid
-            // (Lootable→Looted) so it no longer lingers in the lootable indexes forever. Loot() is
-            // guarded Lootable-only and does NOT soft-delete (FK/history intact). Only the caller that
-            // actually WON the latch checks this — the just-committed claim is then visible to the query.
+            // Only the caller that WON the latch tidies up — its commit is what the queries below see.
             if (claimed)
             {
-                var allParticipants = await _participants.GetAllForRaidAsync(activeRaidId, ct);
-                var stillUnclaimed  = allParticipants.Any(p => p.RewardedAt == null);
-                if (!stillUnclaimed && raid.LifecycleState == RaidLifecycleState.Lootable)
+                if (raid.GauntletEventId is null)
                 {
-                    raid.Loot();
-                    await _raids.UpdateAsync(raid, ct);
+                    // The last claimant takes the raid with them. One conditional statement, so two
+                    // claimants finishing together cannot both try.
+                    await _raids.DeleteIfEmptyAsync(activeRaidId, ct);
+                }
+                else
+                {
+                    var allParticipants = await _participants.GetAllForRaidAsync(activeRaidId, ct);
+                    var stillUnclaimed  = allParticipants.Any(p => p.RewardedAt == null);
+                    if (!stillUnclaimed && raid.LifecycleState == RaidLifecycleState.Lootable)
+                    {
+                        raid.Loot();
+                        await _raids.UpdateAsync(raid, ct);
+                    }
                 }
             }
         }
 
         var rewards  = BuildClaimedRewards(participant);
-        var response = await MapToResponseAsync(raid, callerId, totalParticipants: raid.ParticipantCount, DateTimeOffset.UtcNow, ct);
+        var response = await MapToResponseAsync(raid, callerId, totalParticipants: raid.ParticipantCount, DateTimeOffset.UtcNow, ct, participant);
         return new LootRaidResult { Success = true, Raid = response, Rewards = rewards };
     }
 
@@ -1586,6 +1577,38 @@ public sealed class RaidService : IRaidService
                 settled++;
         }
         return settled;
+    }
+
+    // Removes raids with nothing left to do (see IActiveRaidRepository.GetSpentAsync). Unclaimed loot
+    // on a Lootable raid past its claim window is forfeited, and one audit line per such raid says so;
+    // a failed raid or a legacy Looted row goes quietly. Each raid is removed under its own advisory
+    // lock so a claim landing at the same moment either finishes first or finds the raid gone.
+    public async Task<int> PurgeSpentRaidsAsync(int maxRaids = 50, CancellationToken ct = default)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var due = await _raids.GetSpentAsync(now, now.AddDays(-_raidConfig.LootClaimDays), maxRaids, ct);
+
+        int removed = 0;
+        foreach (var raid in due)
+        {
+            if (ct.IsCancellationRequested) break;
+            var gone = await _raids.AtomicWithAdvisoryLockAsync(raid.Id, async () =>
+            {
+                if (raid.LifecycleState == RaidLifecycleState.Lootable)
+                {
+                    var unclaimed = (await _participants.GetAllForRaidAsync(raid.Id, ct))
+                        .Count(p => p.RewardedAt == null);
+                    if (unclaimed > 0)
+                        await _auditLog.AppendAsync(AuditLog.Create(
+                            raid.SummonedByPlayerId, "RaidLootForfeited", null,
+                            $"Raid {raid.Id} ({raid.RaidDefinitionId}) left the claim window with " +
+                            $"{unclaimed} unclaimed participant(s); removed.", null), ct);
+                }
+                return await _raids.DeleteAsync(raid.Id, ct);
+            }, ct);
+            if (gone) removed++;
+        }
+        return removed;
     }
 
     // Returns true only for the sweep that actually settled this raid. Everything below runs inside the

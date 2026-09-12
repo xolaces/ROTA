@@ -26,25 +26,6 @@ public sealed class RaidParticipantRepository : IRaidParticipantRepository
             .Where(p => p.ActiveRaidId == activeRaidId && !p.IsDeleted)
             .ToListAsync(ct);
 
-    public async Task<IReadOnlyList<RaidParticipant>> GetCompletedForPlayerAsync(
-        Guid playerId, int limit, DateTimeOffset? since = null, CancellationToken ct = default)
-    {
-        // Default to a 30-day recency window so the Completed tab shows recent activity, not all-time
-        // history. Filters on RewardedAt (the claim/completion timestamp the rows are ordered by).
-        var cutoff = since ?? DateTimeOffset.UtcNow.AddDays(-30);
-        return await _db.RaidParticipants
-            .Include(p => p.ActiveRaid)
-            .Where(p => p.PlayerId == playerId
-                     && !p.IsDeleted
-                     && p.ActiveRaid != null
-                     && p.ActiveRaid.IsDefeated
-                     && p.RewardedAt != null
-                     && p.RewardedAt >= cutoff)
-            .OrderByDescending(p => p.RewardedAt)
-            .Take(limit)
-            .ToListAsync(ct);
-    }
-
     public async Task<RaidParticipant> CreateAsync(RaidParticipant participant, CancellationToken ct = default)
     {
         _db.RaidParticipants.Add(participant);
@@ -72,6 +53,10 @@ public sealed class RaidParticipantRepository : IRaidParticipantRepository
                AND is_deleted = false", ct);
         return rows == 1;
     }
+
+    public async Task DeleteAsync(Guid participantId, CancellationToken ct = default)
+        => await _db.Database.ExecuteSqlInterpolatedAsync(
+            $"DELETE FROM raid_participants WHERE id = {participantId}", ct);
 
     public async Task<IReadOnlyList<RaidParticipantRank>> GetTopByDamageAsync(
         Guid activeRaidId, int top, CancellationToken ct = default)

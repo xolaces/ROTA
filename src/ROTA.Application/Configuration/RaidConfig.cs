@@ -10,4 +10,9 @@ public class RaidConfig
     // Cap on raids settled per tick. Bounds both the memory a single sweep can pull in and how long one
     // tick can hold advisory locks. A backlog simply drains across the following ticks, oldest first.
     public int ExpirySweepBatchSize { get; set; } = 50;
+
+    // How long after a defeated raid's clock would have run out its unclaimed loot stays claimable.
+    // Past this the sweeper removes the raid and every participation row on it; whatever was never
+    // claimed is forfeited. A claimed row never waits for this — it is removed as it is claimed.
+    public int LootClaimDays { get; set; } = 7;
 }

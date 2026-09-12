@@ -194,7 +194,13 @@ public class WorldRaidExpirySettlementTests : IAsyncLifetime
 
         loot.Success.Should().BeTrue("a settled raid is Lootable, so the ordinary claim path works");
         loot.FailureCode.Should().Be(LootRaidFailureCode.None);
-        (await ParticipantAsync(raid.Id, player.Id)).RewardedAt.Should().NotBeNull("the claim latched");
+        ((long)loot.Rewards!.UnassignedStatPointsGranted).Should().Be(stashed.StatPointsEarned, "the claim pays what was stashed");
+
+        // A looted raid is not stored: the claim took the participation, and, being the only one,
+        // the raid with it.
+        var db = scope.ServiceProvider.GetRequiredService<RotaDbContext>();
+        (await db.RaidParticipants.AsNoTracking().AnyAsync(p => p.ActiveRaidId == raid.Id)).Should().BeFalse();
+        (await db.ActiveRaids.AsNoTracking().AnyAsync(r => r.Id == raid.Id)).Should().BeFalse();
     }
 
     [Fact]

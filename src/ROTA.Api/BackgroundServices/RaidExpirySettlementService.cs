@@ -5,7 +5,7 @@ using ROTA.Application.Interfaces;
 namespace ROTA.Api.BackgroundServices;
 
 /// <summary>
-/// Settles World (timer-only) raids whose clock has run out.
+/// Settles World (timer-only) raids whose clock has run out, and removes raids with nothing left to do.
 /// <para>
 /// A World raid carries <c>MaxHp 0</c> and is never killed by damage, so the kill branch in
 /// <see cref="IRaidService.HitRaidAsync"/> never fires for it. Expiry is its ONLY ending. Without this
@@ -67,10 +67,13 @@ public sealed class RaidExpirySettlementService : BackgroundService
             var raids = scope.ServiceProvider.GetRequiredService<IRaidService>();
 
             int settled = await raids.SettleExpiredRaidsAsync(_batchSize, ct);
+            int removed = await raids.PurgeSpentRaidsAsync(_batchSize, ct);
 
             // Silent on the overwhelmingly common no-op tick; a settlement is rare and worth a line.
             if (settled > 0)
                 _log.LogInformation("Settled {Count} expired World raid(s).", settled);
+            if (removed > 0)
+                _log.LogInformation("Removed {Count} spent raid(s).", removed);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {

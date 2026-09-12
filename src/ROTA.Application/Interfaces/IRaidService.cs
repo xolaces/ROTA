@@ -7,8 +7,6 @@ public interface IRaidService
 {
     Task<IReadOnlyList<ActiveRaidResponse>> GetActiveRaidsAsync(Guid playerId, CancellationToken ct = default);
 
-    Task<IReadOnlyList<CompletedRaidResponse>> GetCompletedRaidsAsync(Guid playerId, CancellationToken ct = default);
-
     Task<SummonRaidResult> SummonRaidAsync(
         Guid playerId, string raidDefinitionId, RaidDifficulty difficulty,
         RaidSize size = RaidSize.Large, CancellationToken ct = default);
@@ -41,8 +39,8 @@ public interface IRaidService
     // ANY participant may call it; the claim is latched by a conditional UPDATE inside a per-participant
     // advisory-lock transaction, so it is race- and crash-safe and a re-press grants nothing further.
     // Grants the DEFERRED rewards only — gems, stat points, inventory items and collection drops; gold
-    // and XP were already granted on the hit. Once no participant has an unclaimed reward the raid is
-    // dismissed (Lootable → Looted; IsDeleted untouched).
+    // and XP were already granted on the hit. A claimed participation is deleted with the grants, and
+    // the last claimant deletes the raid: nothing about a looted raid is kept.
     // Fails NotFound (missing / already-looted / caller not a participant) or NotLootable (still Active).
     // NOTE: LootRaidFailureCode.NotSummoner is now dead — still mapped to 403, never returned.
     Task<LootRaidResult> LootRaidAsync(Guid callerId, Guid activeRaidId, CancellationToken ct = default);
@@ -53,6 +51,11 @@ public interface IRaidService
     // Driven by RaidExpirySettlementService. Idempotent and safe to run concurrently: the Active → Lootable
     // transition is latched under the raid's advisory lock. Returns how many raids this call settled.
     Task<int> SettleExpiredRaidsAsync(int maxRaids = 50, CancellationToken ct = default);
+
+    // Removes raids with nothing left to do: Lootable past the claim window (RaidConfig.LootClaimDays —
+    // unclaimed loot is forfeited), ordinary raids that ran out of time with health left (failed), and
+    // legacy Looted rows. Driven by RaidExpirySettlementService. Returns how many were removed.
+    Task<int> PurgeSpentRaidsAsync(int maxRaids = 50, CancellationToken ct = default);
 
     Task<IReadOnlyList<RaidParticipantRankDto>> GetParticipantsAsync(Guid activeRaidId, int top, CancellationToken ct = default);
 }

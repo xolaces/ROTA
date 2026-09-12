@@ -295,9 +295,31 @@ the player can see mid-fight is worth more.
 cumulatively*, ignoring `chance`. So on the raid side, put gear on the **last rung only, at
 `chance: 1.0`** — otherwise a single clear hands out four copies. Quest-side gear honours its
 `chance` normally. Each campaign raid carries one mount this way; everything else a raid gives up
-is a part (§5.5).
+is a part (§5.6).
 
-### 5.4 Making something rarer or more common
+### 5.4 A raid's life, and its end
+
+A raid is one row while it runs and nothing at all once it has been looted.
+
+1. **Active** — summoned, being hit. Listed to whoever its visibility admits.
+2. **Lootable** — killed, or (a World raid) out of time and settled. Each participant's rewards are
+   computed and stashed on their participation row, unclaimed. The raid sits at the top of each
+   participant's Raids tab with a Loot button until they press it.
+3. **Gone** — pressing Loot grants the stash and deletes the participation in the same
+   transaction; the last participant to claim takes the raid row with them. There is no history
+   table and no Completed tab: the audit log (`RaidLootClaimed`) is the record.
+
+What nobody claims is not kept either. The expiry sweeper (`RaidExpirySettlementService`, every
+`ExpirySweepSeconds`) removes raids with nothing left to do: a Lootable raid whose claim window has
+closed — `LootClaimDays` after the clock it was summoned with would have run out — with one
+`RaidLootForfeited` audit line; an ordinary raid that ran out of time with health left (it failed,
+and failure pays nothing); and any legacy `Looted` row. Gauntlet stages are never swept — the
+ladder reads its own history.
+
+The client shows a Lootable raid's claim deadline where a live raid shows its clock; that is
+`ExpiresAt + LootClaimDays`, so raising the knob gives players longer and nothing else moves.
+
+### 5.5 Making something rarer or more common
 
 Find the entry, change `chance`. That is the whole operation.
 
@@ -315,7 +337,7 @@ Quest gear rates are **generated**, not hand-set: `tools/content/reforge_sets.py
 piece in a zone pool at the chapter's rate (`QUEST_GEAR_RATE`), ×1.15 / ×1.3 / ×1.5 by difficulty,
 ×2 on the boss node. Change the number there and re-run; a hand edit is overwritten on the next run.
 
-### 5.5 Reforging — what raids are for
+### 5.6 Reforging — what raids are for
 
 Raids do not drop gear (one mount aside). They drop **parts** for a better version of the gear,
 and crafting makes it:
@@ -561,7 +583,7 @@ Def × 0.4`, a Troop `Atk × 1.44 + Def × 0.36`.
     { "kind": "Item", "id": "mat_oathsteel", "quantity": 2 }
   ],
   "goldCost": 15000,
-  "category": "General"          General | Reforge | Events | Guild | Special — Reforge is generated (§5.5)
+  "category": "General"          General | Reforge | Events | Guild | Special — Reforge is generated (§5.6)
 }
 ```
 
@@ -689,7 +711,7 @@ break-even power. `GauntletCurveTests` prints the whole table if you want to see
   `BulwarkMaxGuildDamagePercent` 1.0.
 - **`ConsumableConfig`** — `InstantRefillGemCost` (Energy 20, Stamina 20, Health 15).
 - **`LeaderboardConfig`** — `MinLevel` 20, `ExcludeAdmins` true, `PageSize` 200.
-- **`RaidConfig`** — `ExpirySweepSeconds` 60.
+- **`RaidConfig`** — `ExpirySweepSeconds` 60, `LootClaimDays` 7 (§5.6).
 
 ---
 

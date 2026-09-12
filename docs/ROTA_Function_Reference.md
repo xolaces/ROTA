@@ -941,12 +941,12 @@ Implementation: `LeaderboardService` (`src/ROTA.Application/Services/Leaderboard
 | Method | Description |
 |--------|-------------|
 | `Task<IReadOnlyList<ActiveRaidResponse>> GetActiveRaidsAsync(Guid, CancellationToken)` | Active raids list |
-| `Task<IReadOnlyList<CompletedRaidResponse>> GetCompletedRaidsAsync(Guid, CancellationToken)` | Caller's completed raids with persisted reward summary; limit 50, newest first |
 | `Task<SummonRaidResult> SummonRaidAsync(Guid, string raidDefinitionId, RaidDifficulty, CancellationToken)` | Summon raid |
 | `Task<RaidHitResult> HitRaidAsync(Guid, Guid activeRaidId, int hitSize, string key, CancellationToken)` | Hit a raid |
 | `Task<ActiveRaidResponse?> GetRaidByIdAsync(Guid activeRaidId, Guid callerId, CancellationToken)` | Join-by-UID lookup (the GUID is the invite token). Null on missing/deleted/expired, others' Personal, or a defeated raid the caller didn't summon. **Ticket 50:** the summoner may resolve their own `Lootable` raid (loot screen); `Looted` resolves for no one |
 | `Task<ShareRaidResult> ShareRaidAsync(Guid callerId, Guid activeRaidId, RaidVisibility = Public, CancellationToken)` | **Ticket 50** — summoner-only publish to a visibility tier (Public/GuildOnly/FriendsOnly). Fails NotFound / NotSummoner / CannotSharePersonal / NotInGuild. `Private` target coerced to Public (no un-share). Audited |
-| `Task<LootRaidResult> LootRaidAsync(Guid callerId, Guid activeRaidId, CancellationToken)` | **Ticket 50** — summoner-only DISMISS of a defeated raid (`Lootable`→`Looted`, removes from all indexes; **not** a reward claim — rewards already granted on the killing hit). Fails NotFound / NotSummoner / NotLootable. `IsDeleted` untouched. Audited |
+| `Task<LootRaidResult> LootRaidAsync(Guid callerId, Guid activeRaidId, CancellationToken)` | Per-participant reward CLAIM on a Lootable raid: grants the stashed gems / stat points / items / collection drops (gold and XP landed on the hit), then **deletes the participation** in the same transaction; the last claimant's conditional delete removes the raid. Gauntlet stages keep the old `Lootable`→`Looted` flip. Fails NotFound (missing / not a participant / already claimed) / NotLootable. Audited (`RaidLootClaimed`) |
+| `Task<int> PurgeSpentRaidsAsync(int maxRaids, CancellationToken)` | Sweeper: removes Lootable raids past `RaidConfig.LootClaimDays` (audit `RaidLootForfeited` when loot was unclaimed), failed health-pool raids past their clock, and legacy `Looted` rows. Never a Gauntlet stage |
 | `Task<IReadOnlyList<ActiveRaidResponse>> GetGuildRaidsAsync(Guid, CancellationToken)` | The caller's guild's active raids (empty when guild-less) |
 | `Task<SummonGuildRaidResult> SummonGuildRaidAsync(Guid, string raidDefinitionId, RaidDifficulty, CancellationToken)` | Officer-gated guild-raid summon (consumes 1 pooled sigil) |
 | `Task<IReadOnlyList<RaidParticipantRankDto>> GetParticipantsAsync(Guid activeRaidId, int top, CancellationToken)` | Ranked participants by total damage (desc); `top` clamped to 1..100 |
@@ -1244,12 +1244,11 @@ FlagDeveloperAsync(sp, target, grant) (T43): CLI helper for flag-dev/unflag-dev.
 | Endpoint | Service Method | Responses |
 |----------|---------------|-----------|
 | `GET /api/raids` | `GetActiveRaidsAsync` | 200 |
-| `GET /api/raids/completed` | `GetCompletedRaidsAsync` | 200 — caller's defeated raids with reward summary; newest first, limit 50 |
 | `POST /api/raids/{raidDefinitionId}/summon` | `SummonRaidAsync` | 201, 400, 404, 422 |
 | `POST /api/raids/{activeRaidId}/hit` | `HitRaidAsync` | 200, 400, 404, 409, 410, 422 |
 | `GET /api/raids/{activeRaidId}` | `GetRaidByIdAsync` | 200, 404 — join-by-UID; summoner can open own `Lootable` raid |
 | `POST /api/raids/{activeRaidId}/share` | `ShareRaidAsync` | 200, 400, 403, 404, 409 — body `ShareRaidRequest { Visibility="Public" }` **optional** (no body → Public, back-compat). 409 = Personal **or** NotInGuild |
-| `POST /api/raids/{activeRaidId}/loot` | `LootRaidAsync` | 200, 403, 404, 409 — **Ticket 50** summoner-only dismiss of a defeated raid (409 = NotLootable) |
+| `POST /api/raids/{activeRaidId}/loot` | `LootRaidAsync` | 200, 404, 409 — per-participant claim; the participation is deleted with the grant, so a second press is 404 (409 = NotLootable) |
 | `GET /api/raids/{activeRaidId}/participants?top=` | `GetParticipantsAsync` | 200 ranked participant list |
 
 ### ItemController — `api/items` [Authorize]

@@ -8,14 +8,15 @@ public interface IRaidParticipantRepository
 {
     Task<RaidParticipant?> FindByRaidAndPlayerAsync(Guid activeRaidId, Guid playerId, CancellationToken ct = default);
     Task<IReadOnlyList<RaidParticipant>> GetAllForRaidAsync(Guid activeRaidId, CancellationToken ct = default);
-    /// <summary>
-    /// Player's looted/rewarded raid history, newest first, capped at <paramref name="limit"/>.
-    /// <paramref name="since"/> (default ~30 days ago) filters out stale history so the Completed tab
-    /// shows recent activity only; pass <see cref="DateTimeOffset.MinValue"/> for all-time.
-    /// </summary>
-    Task<IReadOnlyList<RaidParticipant>> GetCompletedForPlayerAsync(Guid playerId, int limit, DateTimeOffset? since = null, CancellationToken ct = default);
     Task<RaidParticipant> CreateAsync(RaidParticipant participant, CancellationToken ct = default);
     Task UpdateAsync(RaidParticipant participant, CancellationToken ct = default);
+
+    /// <summary>
+    /// Removes the row outright. A claimed participation has nothing left to say — the rewards are
+    /// in the player's hands and the audit log holds the record — so the loot claim deletes it in
+    /// the same transaction as the grants. Raw SQL: the claim transaction clears the change tracker.
+    /// </summary>
+    Task DeleteAsync(Guid participantId, CancellationToken ct = default);
 
     /// <summary>
     /// T57 claim latch — atomically marks the participant's deferred rewards as claimed via a

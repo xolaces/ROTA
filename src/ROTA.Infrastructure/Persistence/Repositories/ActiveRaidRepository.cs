@@ -76,11 +76,47 @@ public sealed class ActiveRaidRepository : IActiveRaidRepository
             .OrderBy(r => r.CreatedAt)
             .ToListAsync(ct);
 
+    public async Task<IReadOnlyList<ActiveRaid>> GetSpentAsync(
+        DateTimeOffset now, DateTimeOffset claimCutoff, int limit, CancellationToken ct = default)
+        => await _db.ActiveRaids
+            .Where(r => r.GauntletEventId == null
+                        && (r.IsDeleted
+                            || r.LifecycleState == Domain.Enums.RaidLifecycleState.Looted
+                            || (r.LifecycleState == Domain.Enums.RaidLifecycleState.Lootable
+                                && r.ExpiresAt <= claimCutoff)
+                            || (r.LifecycleState == Domain.Enums.RaidLifecycleState.Active
+                                && r.MaxHp > 0
+                                && r.ExpiresAt <= now)))
+            .OrderBy(r => r.ExpiresAt)
+            .Take(limit)
+            .ToListAsync(ct);
+
     public async Task<ActiveRaid> CreateAsync(ActiveRaid raid, CancellationToken ct = default)
     {
         _db.ActiveRaids.Add(raid);
         await _db.SaveChangesAsync(ct);
         return raid;
+    }
+
+    public async Task<bool> DeleteAsync(Guid raidId, CancellationToken ct = default)
+    {
+        await _db.Database.ExecuteSqlInterpolatedAsync(
+            $"DELETE FROM raid_magics WHERE active_raid_id = {raidId}", ct);
+        var rows = await _db.Database.ExecuteSqlInterpolatedAsync(
+            $"DELETE FROM active_raids WHERE id = {raidId}", ct);
+        return rows == 1;
+    }
+
+    public async Task<bool> DeleteIfEmptyAsync(Guid raidId, CancellationToken ct = default)
+    {
+        var rows = await _db.Database.ExecuteSqlInterpolatedAsync($@"
+            DELETE FROM active_raids
+             WHERE id = {raidId}
+               AND NOT EXISTS (SELECT 1 FROM raid_participants p WHERE p.active_raid_id = {raidId})", ct);
+        if (rows == 1)
+            await _db.Database.ExecuteSqlInterpolatedAsync(
+                $"DELETE FROM raid_magics WHERE active_raid_id = {raidId}", ct);
+        return rows == 1;
     }
 
     public async Task UpdateAsync(ActiveRaid raid, CancellationToken ct = default)
