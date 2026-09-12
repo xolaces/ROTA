@@ -185,6 +185,10 @@ builder.Services.AddAuthorization(options =>
                   || ctx.User.IsInRole(nameof(PlayerRoles.Moderator))));
 });
 
+// A year of HSTS, like the game page. The framework's default is 30 days, which is a hedge for a
+// site that might go back to plain HTTP; the API never will.
+builder.Services.AddHsts(o => o.MaxAge = TimeSpan.FromDays(365));
+
 builder.Services.AddSignalR();
 
 // Chat/PM delivery (T35/36/37) keys SignalR's per-user identity on the JWT "sub" claim
