@@ -154,8 +154,11 @@ public class RaidCatalogueEndpointTests : IAsyncLifetime
 
         p!.Tier.Should().Be("Standard");
         p.Grade.Should().Be("Mythic", "the last campaign raid is the top danger class");
-        p.BaseHp.Should().BeGreaterThan(100_000_000,
-            "endgame raids are goaled for mass hitters — hundreds of millions, not tens of thousands");
+        // Owner 2026-09-04 (retune_raid_health.py): the campaign curve runs 4,000 -> 2,000,000 on
+        // Normal and the last campaign raid IS the 2,000,000 anchor. This pinned the pre-retune
+        // "hundreds of millions" goal for a week after the retune and failed on every run.
+        p.BaseHp.Should().Be(2_000_000,
+            "the last campaign raid anchors the retuned health curve (4,000 -> 2,000,000)");
         p.PersonalHp.Should().BeGreaterThan(0);
         p.TimerHours.Should().BeGreaterThan(0);
     }
