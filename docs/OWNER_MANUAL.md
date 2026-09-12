@@ -290,6 +290,10 @@ the player can see mid-fight is worth more.
 
 > **This is why HP and loot are coupled.** If you double a raid's `baseHp` without touching its
 > table, every rung is twice as far up the fight. `tools/content/retune_raid_health.py` moves both.
+> Rungs are fractions of the pool floored at 100 damage; where the floor would land on several
+> rungs at once (pools under ~50,000), the script spaces the ladder geometrically from the floor to
+> the top rung instead, so every rung is a step — until 2026-09-12 a 4,000-HP raid paid its first
+> four rungs on one hit.
 
 **Raid gear is guaranteed.** The raid path grants threshold gear *unconditionally and
 cumulatively*, ignoring `chance`. So on the raid side, put gear on the **last rung only, at
