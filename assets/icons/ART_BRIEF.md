@@ -2524,7 +2524,9 @@ feet, feet a little apart, arms held slightly away from the body with the palms 
 figure fills the height with a small margin above the head and below the feet. No face — a smooth
 featureless head. No weapon, no ground, no shadow under the feet, transparent background.
 
-The figure is an armour stand: undyed linen underclothes, bare hands and feet, no hair, no ornament. It exists to be dressed. Neutral slate-and-cream palette, nothing that reads as a rarity colour.
+The figure is BARE: bare chest, bare arms, bare legs, bare hands and feet, no hair, no ornament, no jewellery. The ONLY garment is a pair of plain close-fitting shorts to mid-thigh in undyed linen — the armour will cover them. No shirt, no tunic, no sleeves, no sash, no belt, no trousers. Neutral skin tone and cream, nothing that reads as a rarity colour. It exists to be dressed.
+
+Negative prompt: thick black outline, heavy keyline, sticker cutout, white halo, gradient shading, airbrush, gloss highlight, specular, glossy, bevel, emboss, drop shadow, three-quarter perspective, pixel art, photorealistic, hyperdetailed, intricate, ornate, filigree, painterly, stitching, rivets, scratches, text, watermark, border, frame, card layout, background scene, multiple objects, collage, checkerboard, transparency grid, grey and white squares, tunic, shirt, sleeves, sash, belt, robe, trousers, boots, gloves, hat, hair, jewellery, clothing
 ```
 
 Save as `assets/icons/body/mannequin.png`.

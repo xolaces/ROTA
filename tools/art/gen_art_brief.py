@@ -253,11 +253,18 @@ def write_body_section(w, data):
       "(`assets/icons/body/mannequin.png`) with each worn piece's icon docked on the part of the "
       "body it belongs to; the dock points live in `mannequin.json` beside it. The real figure "
       "replaces that file at the same 2:3 framing — **keep the pose**, the docks are placed on it.\n\n")
-    w("### The mannequin — 1 image\n\n```\n%s\n\n%s\n\nThe figure is an armour stand: undyed "
-      "linen underclothes, bare hands and feet, no hair, no ornament. It exists to be dressed. "
-      "Neutral slate-and-cream palette, nothing that reads as a rarity colour.\n```\n\n"
+    # Owner 2026-09-11, on the first generation (a full tunic-and-sash outfit): "more just no
+    # clothing, can have some pair of shorts that will be covered by gear, but full outfit seems
+    # intrusive." The body is bare; the one garment is what the armour hides.
+    w("### The mannequin — 1 image\n\n```\n%s\n\n%s\n\nThe figure is BARE: bare chest, bare "
+      "arms, bare legs, bare hands and feet, no hair, no ornament, no jewellery. The ONLY garment "
+      "is a pair of plain close-fitting shorts to mid-thigh in undyed linen — the armour will cover "
+      "them. No shirt, no tunic, no sleeves, no sash, no belt, no trousers. Neutral skin tone and "
+      "cream, nothing that reads as a rarity colour. It exists to be dressed.\n\n"
+      "Negative prompt: %s, tunic, shirt, sleeves, sash, belt, robe, trousers, boots, gloves, "
+      "hat, hair, jewellery, clothing\n```\n\n"
       "Save as `assets/icons/body/mannequin.png`.\n\n"
-      % (figure_style(BUDGET["White"]), BODY_FRAME))
+      % (figure_style(BUDGET["White"]), BODY_FRAME, NEGATIVE))
 
     w("### Phase 2 — one figure per set, same pose · 13 images\n\n")
     w("Not wired yet; generate when convenient. Each is the mannequin above wearing the complete "
