@@ -21,7 +21,14 @@ using ROTA.Infrastructure.Seeding;
 var builder = WebApplication.CreateBuilder(args);
 
 // No "Server: Kestrel" on responses — it names the stack for free and says nothing a client needs.
-builder.WebHost.ConfigureKestrel(o => o.AddServerHeader = false);
+// And no 30 MB bodies: the largest field any validator accepts is 4,000 characters and nothing is
+// uploaded, so 64 KB is room for every request the game makes and a 3 MB login body is refused
+// before it is parsed.
+builder.WebHost.ConfigureKestrel(o =>
+{
+    o.AddServerHeader = false;
+    o.Limits.MaxRequestBodySize = 64 * 1024;
+});
 
 builder.Services.AddControllers();
 
