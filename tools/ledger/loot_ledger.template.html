@@ -1,0 +1,494 @@
+<title>ROTA Loot Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Committed single theme: the game's own obsidian-and-gilt ground. Every colour is explicit. */
+  :root {
+    --ground: #0B0E13; --panel: #12161D; --panel-2: #171C25; --line: #262C37; --line-soft: #1C212B;
+    --ink: #E8E2D2; --ink-2: #B8B2A1; --muted: #857F6C;
+    --gold: #C9A24B; --gold-2: #E3C36E; --gold-deep: #7F6118; --gold-ink: #1A1408;
+    --d-normal: #7f6118; --d-hard: #b18a2c; --d-legendary: #d9b24f; --d-nightmare: #f3dc9a;
+    --r-grey: #8f8f8f; --r-white: #e9e9e9; --r-green: #5fbf63; --r-blue: #4f8fe8; --r-purple: #b46fe3; --r-orange: #f2933b;
+    --good: #6fcf8a; --warn: #e0b04c; --bad: #e0675a;
+    --serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+    --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", Consolas, monospace;
+  }
+  html { color-scheme: dark; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
+  a { color: var(--gold-2); }
+  h1, h2, h3, h4 { font-family: var(--serif); font-weight: 600; margin: 0; text-wrap: balance; letter-spacing: 0.01em; }
+  h1 { font-size: 44px; line-height: 1.05; }
+  h2 { font-size: 30px; line-height: 1.15; }
+  h3 { font-size: 22px; }
+  h4 { font-size: 18px; font-weight: 700; }
+  p { max-width: 68ch; margin: 0; }
+  .eyebrow { font-family: var(--sans); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
+  .muted { color: var(--muted); }
+  .num { font-variant-numeric: tabular-nums; }
+  code, .mono { font-family: var(--mono); font-size: 12.5px; }
+
+  nav.top { position: sticky; top: 0; z-index: 10; background: rgba(11,14,19,0.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+  nav.top .row { max-width: 1180px; margin: 0 auto; padding: 10px 24px; display: flex; gap: 6px 18px; align-items: center; flex-wrap: wrap; }
+  nav.top .brand { font-family: var(--serif); font-weight: 700; font-size: 18px; color: var(--gold-2); margin-right: 8px; }
+  nav.top a { color: var(--ink-2); text-decoration: none; font-size: 13px; padding: 4px 2px; border-bottom: 1px solid transparent; }
+  nav.top a:hover, nav.top a:focus-visible { color: var(--gold-2); border-bottom-color: var(--gold); outline: none; }
+
+  main { max-width: 1180px; margin: 0 auto; padding: 28px 24px 80px; }
+  section { padding: 40px 0; border-top: 1px solid var(--line-soft); }
+  section:first-of-type { border-top: 0; padding-top: 16px; }
+  .sec-head { display: grid; gap: 8px; margin-bottom: 22px; }
+  .sec-head p { color: var(--ink-2); }
+
+  .hero { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(280px, 1fr); gap: 32px; align-items: end; }
+  .hero p.lede { font-size: 18px; color: var(--ink-2); margin-top: 14px; font-family: var(--serif); }
+  .tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; }
+  .tile .big { font-family: var(--serif); font-size: 34px; font-weight: 700; color: var(--gold-2); line-height: 1; }
+  .tile .lbl { font-size: 12px; color: var(--muted); margin-top: 6px; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 18px; }
+  .card h4 { margin-bottom: 8px; }
+  ul.clean { margin: 0; padding-left: 18px; }
+  ul.clean li { margin: 6px 0; }
+  .before { color: var(--muted); text-decoration: line-through; text-decoration-color: rgba(224,103,90,0.6); }
+  .after { color: var(--ink); }
+  .arrow { color: var(--gold); padding: 0 6px; }
+
+  /* chips */
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 500; border: 1px solid var(--line); background: var(--panel-2); color: var(--ink-2); white-space: nowrap; }
+  .chip.r-Grey { border-color: var(--r-grey); color: var(--r-grey); }
+  .chip.r-White { border-color: var(--r-white); color: var(--r-white); }
+  .chip.r-Green { border-color: var(--r-green); color: var(--r-green); }
+  .chip.r-Blue { border-color: var(--r-blue); color: var(--r-blue); }
+  .chip.r-Purple { border-color: var(--r-purple); color: var(--r-purple); }
+  .chip.r-Orange { border-color: var(--r-orange); color: var(--r-orange); }
+  .chip.d { color: var(--gold-ink); border-color: transparent; font-weight: 600; }
+  .chip.d-Normal { background: var(--d-normal); color: var(--ink); }
+  .chip.d-Hard { background: var(--d-hard); }
+  .chip.d-Legendary { background: var(--d-legendary); }
+  .chip.d-Nightmare { background: var(--d-nightmare); }
+
+  /* icons */
+  .ico { width: 40px; height: 40px; border-radius: 6px; border: 2px solid var(--line); background: #0d1016 center/contain no-repeat; image-rendering: auto; flex: none; }
+  .ico.lg { width: 56px; height: 56px; }
+  .ico.sm { width: 28px; height: 28px; border-width: 1px; }
+  .ico.r-Grey { border-color: var(--r-grey); } .ico.r-White { border-color: var(--r-white); } .ico.r-Green { border-color: var(--r-green); }
+  .ico.r-Blue { border-color: var(--r-blue); } .ico.r-Purple { border-color: var(--r-purple); } .ico.r-Orange { border-color: var(--r-orange); }
+
+  /* loop diagram */
+  .loop svg { width: 100%; height: auto; display: block; }
+  .loop text { font-family: var(--sans); fill: var(--ink); font-size: 13px; }
+  .loop .t-title { font-family: var(--serif); font-size: 19px; font-weight: 700; fill: var(--gold-2); }
+  .loop .t-sub { fill: var(--ink-2); font-size: 12px; }
+  .loop .box { fill: var(--panel); stroke: var(--line); }
+  .loop .edge { stroke: var(--gold); stroke-width: 1.5; fill: none; marker-end: url(#arr); }
+  .loop .t-edge { fill: var(--gold-2); font-size: 12px; font-weight: 600; }
+
+  /* sets */
+  .sets { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+  .set { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: grid; gap: 12px; }
+  .set .head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .set .pieces { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .piece { display: grid; justify-items: center; gap: 4px; text-align: center; }
+  .piece .nm { font-size: 11px; color: var(--ink-2); line-height: 1.2; min-height: 2.4em; }
+  .piece .st { font-size: 11px; color: var(--muted); }
+  .piece .st b { color: var(--gold-2); font-weight: 600; }
+  .set .parts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-top: 1px solid var(--line-soft); padding-top: 12px; }
+  .part { display: flex; gap: 10px; align-items: flex-start; }
+  .part .nm { font-weight: 600; font-size: 13px; }
+  .part .bl { font-size: 12px; color: var(--muted); line-height: 1.35; }
+  .set .where { font-size: 12px; color: var(--ink-2); }
+
+  /* tables */
+  .tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--line-soft); vertical-align: middle; white-space: nowrap; }
+  th { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; background: var(--panel-2); position: sticky; top: 0; }
+  td.num, th.num { text-align: right; }
+  tr:last-child td { border-bottom: 0; }
+  .cell-ico { display: inline-flex; align-items: center; gap: 8px; }
+
+  /* chapters */
+  .chapter { display: grid; gap: 14px; margin-bottom: 26px; }
+  .chapter-head { display: flex; align-items: baseline; gap: 14px; }
+  .zone { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; display: grid; gap: 10px; }
+  .zone .zh { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: baseline; }
+  .zone .pool { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel-2); font-size: 12px; }
+  .pill .pct { color: var(--gold-2); font-weight: 600; }
+  .raid { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; display: grid; gap: 10px; }
+  .raid .rh { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .raid .rh .nm { font-family: var(--serif); font-size: 20px; font-weight: 700; }
+  .raid .meta { font-size: 12px; color: var(--muted); }
+  .raid .ladder { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 6px; }
+  .rung { background: var(--panel-2); border: 1px solid var(--line-soft); border-radius: 4px; padding: 8px; font-size: 11px; color: var(--ink-2); display: grid; gap: 2px; }
+  .rung .th { font-family: var(--mono); font-size: 12px; color: var(--ink); }
+  .rung .cum { color: var(--gold-2); font-weight: 600; }
+  .rung .mount { color: var(--r-green); }
+  .tabs { display: inline-flex; gap: 4px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
+  .tabs button { border: 0; background: transparent; color: var(--ink-2); font: inherit; font-size: 12px; padding: 4px 12px; border-radius: 999px; cursor: pointer; }
+  .tabs button[aria-selected="true"] { background: var(--gold); color: var(--gold-ink); font-weight: 600; }
+  .tabs button:focus-visible { outline: 2px solid var(--gold-2); outline-offset: 1px; }
+  details { border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+  details > summary { cursor: pointer; padding: 12px 16px; font-family: var(--serif); font-size: 20px; font-weight: 700; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary .muted { font-family: var(--sans); font-size: 12px; font-weight: 400; }
+  details > summary::after { content: "+"; color: var(--gold); font-size: 20px; }
+  details[open] > summary::after { content: "–"; }
+  details .body { padding: 0 16px 16px; display: grid; gap: 12px; }
+
+  /* simulation */
+  .sim { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 20px; }
+  .controls { display: grid; gap: 12px; align-content: start; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 16px; }
+  .controls label { display: grid; gap: 4px; font-size: 12px; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+  .controls select, .controls input[type=range] { font: inherit; color: var(--ink); background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; }
+  .controls input[type=range] { padding: 0; accent-color: var(--gold); }
+  .controls .val { color: var(--ink); font-size: 14px; text-transform: none; letter-spacing: 0; }
+  .results { display: grid; gap: 14px; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+  .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; }
+  .kpi .big { font-family: var(--serif); font-size: 30px; font-weight: 700; color: var(--gold-2); line-height: 1.05; }
+  .kpi .lbl { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .kpi .sub { font-size: 12px; color: var(--ink-2); margin-top: 6px; }
+  .chart { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px; }
+  .chart h4 { margin-bottom: 4px; }
+  .chart .cap { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .chart svg { width: 100%; height: auto; display: block; }
+  .chart text { font-family: var(--sans); font-size: 11px; fill: var(--ink-2); }
+  .chart .grid { stroke: var(--line-soft); }
+  .chart .axis { stroke: var(--line); }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--ink-2); margin-top: 6px; }
+  .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -2px; }
+  .tip { position: absolute; pointer-events: none; background: #0d1016; border: 1px solid var(--gold-deep); border-radius: 4px; padding: 6px 8px; font-size: 12px; color: var(--ink); display: none; z-index: 5; }
+
+  /* prompt */
+  .prompt { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 16px; position: relative; }
+  .prompt pre { margin: 0; white-space: pre-wrap; font-family: var(--mono); font-size: 12.5px; line-height: 1.5; color: var(--ink-2); max-height: 560px; overflow: auto; }
+  .btn { font: inherit; font-size: 13px; font-weight: 600; background: var(--gold); color: var(--gold-ink); border: 0; border-radius: 4px; padding: 8px 14px; cursor: pointer; }
+  .btn:hover { background: var(--gold-2); }
+  .btn:focus-visible { outline: 2px solid var(--gold-2); outline-offset: 2px; }
+  .prompt .btn { position: absolute; top: 12px; right: 12px; }
+
+  @media (max-width: 820px) {
+    h1 { font-size: 34px; }
+    .hero { grid-template-columns: 1fr; }
+    .sim { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    details .body { animation: fade .18s ease-out; }
+    @keyframes fade { from { opacity: 0.4; } to { opacity: 1; } }
+  }
+</style>
+
+<nav class="top"><div class="row">
+  <span class="brand">ROTA Loot Ledger</span>
+  <a href="#changed">What changed</a>
+  <a href="#loop">The loop</a>
+  <a href="#sets">Sets</a>
+  <a href="#where">Where it drops</a>
+  <a href="#sim">Simulation</a>
+  <a href="#prompt">GPT prompt</a>
+</div></nav>
+
+<main>
+<section id="top">
+  <div class="hero">
+    <div>
+      <div class="eyebrow">Content as shipped · 2026-09-11</div>
+      <h1>Raids drop the parts. The forge makes the piece.</h1>
+      <p class="lede">Every set piece now falls from a quest at a grind rate, every raid pays scrap and tack on the damage ladder, and one Reforge recipe per piece turns the two into the better version of what you already wear. This ledger is generated from the same files the server loads.</p>
+    </div>
+    <div class="tiles" id="tiles"></div>
+  </div>
+</section>
+
+<section id="changed">
+  <div class="sec-head"><div class="eyebrow">Before → after</div><h2>What changed today</h2><p>Four server fixes and one content pass. Everything below is live on play.riseoftheancients.com.</p></div>
+  <div class="cols">
+    <div class="card"><h4>Quests</h4><ul class="clean">
+      <li><span class="before">2.5–3% early, 0.1–1.4% deep, mounts rarer than the rest</span><span class="arrow">→</span><span class="after">one rate per pool, every piece equal: 1/50 per click in ch.1–2 down to 1/100 in ch.7</span></li>
+      <li><span class="before">Marchwatch Tally and Marchwatch Boots dropped nowhere</span><span class="arrow">→</span><span class="after">in the chapter-2 pools with the rest of the set</span></li>
+      <li>Difficulty still scales ×1.15 / ×1.3 / ×1.5; the boss node still doubles. Deep relics (0.02–0.1%) untouched.</li>
+    </ul></div>
+    <div class="card"><h4>Raids</h4><ul class="clean">
+      <li><span class="before">four mounts, one guaranteed per raid, and nothing else</span><span class="arrow">→</span><span class="after">Scrap and Tack for the chapter's sets on every rung; the guaranteed mount stays on the last rung</span></li>
+      <li><span class="before">guild raids dropped nothing</span><span class="arrow">→</span><span class="after">Warlord, Leviathan and Kronarch have ladders</span></li>
+      <li><span class="before">every participant banked every rung off one hit</span><span class="arrow">→</span><span class="after">damage-keyed rungs pay on damage (the service only honoured them on World raids)</span></li>
+    </ul></div>
+    <div class="card"><h4>Forge &amp; profile</h4><ul class="clean">
+      <li><span class="after">96 reforged twins, ×1.5 bonuses, same slot and art; 96 Reforge recipes in their own tab</span></li>
+      <li><span class="before">unequip → reforge → re-equip</span><span class="arrow">→</span><span class="after">reforged in place: the slot keeps the better piece</span></li>
+      <li><span class="before">profile chips read 0 ATK / 0 DEF</span><span class="arrow">→</span><span class="after">real numbers (Stats was never loaded with the profile)</span></li>
+    </ul></div>
+  </div>
+</section>
+
+<section id="loop">
+  <div class="sec-head"><div class="eyebrow">One chapter, one set</div><h2>The loop</h2><p>A set's pieces and its parts come from the same chapter, so the ground you quest is the boss you raid.</p></div>
+  <div class="loop card">
+    <svg viewBox="0 0 1100 260" role="img" aria-label="Quest zones drop set pieces; raid ladders drop scrap and tack; the forge combines them into the reforged piece, which is worn in place.">
+      <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#C9A24B"/></marker></defs>
+      <rect class="box" x="20" y="40" width="300" height="180" rx="6"/>
+      <text class="t-title" x="40" y="74">Quest the ground</text>
+      <text class="t-sub" x="40" y="98">Energy · every piece in the pool at one rate</text>
+      <text x="40" y="132">1/50 per click in chapters 1–2</text>
+      <text x="40" y="154">1/60 · 1/80 · 1/100 deeper in</text>
+      <text x="40" y="176">×1.15 / ×1.3 / ×1.5 by difficulty, ×2 on the boss</text>
+      <text class="t-sub" x="40" y="204">→ the base piece</text>
+
+      <rect class="box" x="400" y="40" width="300" height="180" rx="6"/>
+      <text class="t-title" x="420" y="74">Raid the boss</text>
+      <text class="t-sub" x="420" y="98">Stamina · every rung of the ladder rolls</text>
+      <text x="420" y="132">Scrap: 12 → 30% at the top, by difficulty</text>
+      <text x="420" y="154">Tack: 4 → 10% — the mount's part, rarest</text>
+      <text x="420" y="176">more damage → more rungs → more rolls</text>
+      <text class="t-sub" x="420" y="204">→ Scrap × 3–6, or Tack × 3</text>
+
+      <rect class="box" x="780" y="40" width="300" height="180" rx="6"/>
+      <text class="t-title" x="800" y="74">Reforge</text>
+      <text class="t-sub" x="800" y="98">Gold · one recipe per piece</text>
+      <text x="800" y="132">base piece + parts → piece (Reforged)</text>
+      <text x="800" y="154">×1.5 attack and defence, same slot</text>
+      <text x="800" y="176">worn pieces are reforged where they sit</text>
+      <text class="t-sub" x="800" y="204">→ a set of its own, one per slot</text>
+
+      <path class="edge" d="M320,130 C360,130 360,130 398,130"/>
+      <path class="edge" d="M700,130 C740,130 740,130 778,130"/>
+      <text class="t-edge" x="336" y="120">piece</text>
+      <text class="t-edge" x="716" y="120">parts</text>
+    </svg>
+  </div>
+</section>
+
+<section id="sets">
+  <div class="sec-head"><div class="eyebrow">Twelve sets · 96 pieces</div><h2>Sets, base → reforged</h2><p>Attack / defence per piece, base then reforged. The parts each piece needs, and where the parts fall. Conscript is not here: nothing on the live server hands it out yet.</p></div>
+  <div class="sets" id="sets-grid"></div>
+</section>
+
+<section id="where">
+  <div class="sec-head"><div class="eyebrow">Chapter by chapter</div><h2>Where it drops</h2><p>Zones list their gear pool with the per-click chance at the chosen difficulty. Raids show the damage ladder: what a player who has passed that rung has banked, cumulative, plus the chance of at least one Scrap or Tack by then.</p>
+    <div class="tabs" role="tablist" id="diff-tabs"></div>
+  </div>
+  <div id="chapters"></div>
+</section>
+
+<section id="sim">
+  <div class="sec-head"><div class="eyebrow">Expected values and a dice roll</div><h2>Simulation</h2><p>How long a reforge takes, by set, difficulty and how far up the ladder you land. Expected values are exact; the histogram rolls 3,000 players so the tail is visible.</p></div>
+  <div class="sim">
+    <div class="controls">
+      <label>Set <select id="c-set"></select></label>
+      <label>Raid difficulty <select id="c-diff"><option>Normal</option><option>Hard</option><option>Legendary</option><option selected>Nightmare</option></select></label>
+      <label>Rungs you clear per kill <span class="val" id="c-rung-val"></span><input type="range" id="c-rung" min="1" max="8" value="6"></label>
+      <label>Your damage tier <select id="c-tier"><option value="Legendary1">Legendary 1 — top damage (×1.5, 2 parts a success)</option><option value="Legendary2">Legendary 2 (×1.25)</option><option value="Legendary3">Legendary 3 (×1.1)</option><option value="Epic" selected>Epic — top 10%</option><option value="Rare">Rare — above min share</option><option value="Participant">Participant (×0.25)</option></select></label>
+      <label>Quest difficulty <select id="c-qdiff"><option>Normal</option><option>Hard</option><option>Legendary</option><option selected>Nightmare</option></select></label>
+      <label>Quest node <select id="c-node"><option value="battle">Battle node</option><option value="boss">Boss node (×2)</option></select></label>
+    </div>
+    <div class="results">
+      <div class="kpis" id="kpis"></div>
+      <div class="chart" id="ladder-chart"></div>
+      <div class="chart" id="hist-chart"></div>
+    </div>
+  </div>
+</section>
+
+<section id="prompt">
+  <div class="sec-head"><div class="eyebrow">For GPT</div><h2>Prompt: DotD-style loot pages in our style, with our sets</h2><p>Paste this into GPT. It carries the facts (sets, raids, rates) and the art rules, and asks for one page per raid in the shape Dawn's raid pages had — banner, damage tiers, loot per tier — plus an image prompt per item in the style block every icon so far was drawn with.</p></div>
+  <div class="prompt"><button class="btn" id="copy-btn" type="button">Copy prompt</button><pre id="prompt-text"></pre></div>
+</section>
+</main>
+<div class="tip" id="tip"></div>
+
+<script>
+const DATA = /*DATA*/;
+const DIFFS = ["Normal", "Hard", "Legendary", "Nightmare"];
+const DCOL = { Normal: "#7f6118", Hard: "#b18a2c", Legendary: "#d9b24f", Nightmare: "#f3dc9a" };
+const SETN = Object.fromEntries(DATA.sets.map(s => [s.id, s]));
+const fmtPct = (p, d = 1) => (p * 100).toFixed(d) + "%";
+const fmtInt = n => Math.round(n).toLocaleString("en-US");
+const fmt1 = n => n.toLocaleString("en-US", { maximumFractionDigits: 1 });
+const oneIn = p => p > 0 ? "1 in " + fmtInt(1 / p) : "—";
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const ico = (uri, rarity, cls = "") => `<span class="ico ${cls} r-${rarity}" ${uri ? `style="background-image:url(${uri})"` : ""} title=""></span>`;
+
+// ---- tiles
+document.getElementById("tiles").innerHTML = [
+  [DATA.counts.reforged, "reforged pieces"], [DATA.counts.recipes, "reforge recipes"],
+  [DATA.counts.raidsWithParts, "raids paying parts"], [DATA.counts.zones, "zones with gear pools"],
+].map(([n, l]) => `<div class="tile"><div class="big num">${n}</div><div class="lbl">${l}</div></div>`).join("");
+
+// ---- sets
+const raidsForSet = {};
+for (const r of DATA.raids) for (const s of r.sets) (raidsForSet[s] ??= []).push(r);
+const chaptersForSet = s => {
+  const chs = new Set();
+  for (const z of DATA.zones) for (const p of z.pools) for (const g of p.pool) if (g.set === s) chs.add(z.chapter);
+  return [...chs].sort((a, b) => a - b);
+};
+document.getElementById("sets-grid").innerHTML = DATA.sets.map(s => {
+  const raids = raidsForSet[s.id] || [];
+  const raidTxt = raids.map(r => r.tier === "Standard" ? null : r.name).filter(Boolean);
+  const campaign = raids.filter(r => r.tier === "Standard").map(r => r.chapter);
+  const chRange = campaign.length ? "chapter " + [...new Set(campaign)].sort().join(", ") + " bosses" : null;
+  const where = [chRange, ...raidTxt].filter(Boolean).join(" · ");
+  const qch = chaptersForSet(s.id);
+  return `<div class="set">
+    <div class="head"><h3>${esc(s.name)}</h3><span class="chip r-${s.rarity}">${s.rarity}</span></div>
+    <div class="pieces">${s.pieces.map(p => `<div class="piece">${ico(p.icon, s.rarity)}<div class="nm">${esc(p.name)}</div><div class="st num">${p.atk}/${p.def} → <b>${p.ratk}/${p.rdef}</b></div><div class="st">${p.slot === "Mount" ? p.partQty + " tack" : p.partQty + " scrap"} · ${fmtInt(p.gold)}g</div></div>`).join("")}</div>
+    <div class="parts">
+      <div class="part">${ico(s.scrap.icon, s.rarity, "sm")}<div><div class="nm">${esc(s.scrap.name)}</div><div class="bl">${esc(s.scrap.blurb)}</div></div></div>
+      <div class="part">${ico(s.tack.icon, s.rarity, "sm")}<div><div class="nm">${esc(s.tack.name)}</div><div class="bl">${esc(s.tack.blurb)}</div></div></div>
+    </div>
+    <div class="where"><b>Pieces:</b> ${s.id === "set_pano" ? "the Old Guard Ruins and Vanguard Approach quest line" : "quest zones in chapter " + qch.join(", ")}<br><b>Parts:</b> ${esc(where)}</div>
+  </div>`;
+}).join("");
+
+// ---- where it drops
+let activeDiff = "Nightmare";
+const tabs = document.getElementById("diff-tabs");
+tabs.innerHTML = DIFFS.map(d => `<button role="tab" aria-selected="${d === activeDiff}" data-d="${d}">${d}</button>`).join("");
+tabs.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; activeDiff = b.dataset.d; [...tabs.children].forEach(x => x.setAttribute("aria-selected", x === b)); renderChapters(); });
+
+const cum = (q, k) => 1 - Math.pow(1 - q, k);
+function renderChapters() {
+  const chapters = [...new Set([...DATA.zones.map(z => z.chapter), ...DATA.raids.filter(r => r.chapter).map(r => r.chapter)])].sort((a, b) => a - b);
+  const html = [];
+  const chapterNames = { 1: "Chapter 1", 2: "Chapter 2", 3: "Chapter 3", 4: "Chapter 4", 5: "Chapter 5", 6: "Chapter 6", 7: "Chapter 7 — the Black Archive" };
+  for (const ch of chapters) {
+    const zones = DATA.zones.filter(z => z.chapter === ch);
+    const raids = DATA.raids.filter(r => r.chapter === ch);
+    html.push(`<details class="chapter-d" ${ch === 1 ? "open" : ""}><summary>${chapterNames[ch] || "Chapter " + ch}<span class="muted">${zones.length} zones · ${raids.length} raids</span></summary><div class="body">`);
+    for (const z of zones) html.push(zoneCard(z));
+    for (const r of raids) html.push(raidCard(r));
+    html.push(`</div></details>`);
+  }
+  const guild = DATA.raids.filter(r => r.tier === "Guild"), world = DATA.raids.filter(r => r.tier === "World");
+  html.push(`<details><summary>Guild raids<span class="muted">${guild.length} raids · 48–72 h · Drowned, Sable Vein, Stoned Devil parts</span></summary><div class="body">${guild.map(raidCard).join("")}</div></details>`);
+  html.push(`<details><summary>World raids<span class="muted">${world.length} raids · 27-rung damage ladders · Vanguard parts</span></summary><div class="body">${world.map(raidCard).join("")}</div></details>`);
+  document.getElementById("chapters").innerHTML = html.join("");
+}
+function zoneCard(z) {
+  return `<div class="zone"><div class="zh"><h4>${esc(z.name)}</h4><span class="muted">zone ${z.zone} · ${z.nodes} nodes</span></div>` +
+    z.pools.map(p => {
+      const set = p.pool.filter(g => !g.tail), tail = p.pool.filter(g => g.tail);
+      return `<div><div class="muted" style="font-size:12px;margin-bottom:6px">${p.boss ? "Boss node" : p.nodes + (p.nodes === 1 ? " node" : " nodes")} · ${p.energy} energy per click · <span class="mono">${p.table}</span></div><div class="pool">` +
+        set.map(g => `<span class="pill">${ico(g.icon, g.rarity, "sm")}<span>${esc(g.name)}</span><span class="pct num">${fmtPct(g.chance[activeDiff], 2)}</span></span>`).join("") +
+        tail.map(g => `<span class="pill" title="deep relic — hand-set odds">${ico(g.icon, g.rarity, "sm")}<span>${esc(g.name)}</span><span class="pct num" style="color:var(--r-orange)">${fmtPct(g.chance[activeDiff], 3)}</span></span>`).join("") +
+        `</div></div>`;
+    }).join("") + `</div>`;
+}
+function raidCard(r) {
+  const d = r.difficulties[activeDiff];
+  const hp = r.baseHp > 0 ? fmtInt(r.baseHp * DATA.constants.hpMult[activeDiff]) + " HP" : "timer only · " + r.timerHours + " h";
+  const sets = r.sets.map(s => `<span class="chip r-${SETN[s].rarity}">${esc(SETN[s].name)}</span>`).join(" ");
+  const rungs = d.rungs.map((rg, i) => {
+    const k = i + 1;
+    const mount = rg.gear.length ? `<div class="mount">+ ${rg.gear.map(g => g.replace("gear_", "").replace(/_/g, " ")).join(", ")} (guaranteed)</div>` : "";
+    const magic = rg.magic.length ? `<div>magic ${fmtPct(rg.magic[0][1], 0)}</div>` : "";
+    return `<div class="rung"><div class="th num">${fmtInt(rg.threshold)} dmg</div><div>${rg.sp} stat pt${rg.sp === 1 ? "" : "s"} · ${rg.reagents.slice(0, 1).map(x => esc(x.name) + " ×" + x.qty + " " + fmtPct(x.chance, 0)).join("")}</div><div class="cum">scrap ${fmtPct(cum(d.scrapQ, k), 1)} · tack ${fmtPct(cum(d.tackQ, k), 1)}</div>${magic}${mount}</div>`;
+  }).join("");
+  return `<div class="raid"><div class="rh">${ico(r.icon, "Grey", "lg")}<div><div class="nm">${esc(r.name)}</div><div class="meta">${r.tier}${r.grade ? " · " + r.grade : ""} · ${hp} · ${r.tags.join(", ") || "untagged"} · <span class="mono">${r.id}</span></div></div><div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">${sets}</div></div>
+    <div class="meta">Per rung: scrap ${fmtPct(d.scrapQ, 2)}, tack ${fmtPct(d.tackQ, 2)} per set · cumulative "at least one" for a player who has passed that rung. Rungs are damage dealt; all rungs passed are banked.</div>
+    <div class="ladder">${rungs}</div></div>`;
+}
+renderChapters();
+
+// ---- simulation
+const cSet = document.getElementById("c-set"), cDiff = document.getElementById("c-diff"), cRung = document.getElementById("c-rung"),
+      cTier = document.getElementById("c-tier"), cQ = document.getElementById("c-qdiff"), cNode = document.getElementById("c-node");
+cSet.innerHTML = DATA.sets.map(s => `<option value="${s.id}">${esc(s.name)} (${s.rarity})</option>`).join("");
+cSet.value = "set_weir";
+const TIER_QTY = { Legendary1: 2, Legendary2: 1, Legendary3: 1, Epic: 1, Rare: 1, Participant: 1 }; // max(1, round(qty × mult))
+function perRung(top, n) { return 1 - Math.pow(1 - top, 1 / n); }
+function expectedClicksForAll(k, p) { // independent per-piece rolls each click: E[max of k geometrics]
+  let e = 0; for (let j = 1; j <= k; j++) e += (j % 2 ? 1 : -1) * binom(k, j) / (1 - Math.pow(1 - p, j)); return e;
+}
+function binom(n, k) { let r = 1; for (let i = 1; i <= k; i++) r = r * (n - k + i) / i; return r; }
+let rng = mulberry32(7);
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function simulate(need, rung, q, qty, runs = 3000) {
+  const out = new Array(runs);
+  for (let i = 0; i < runs; i++) { let have = 0, kills = 0; while (have < need) { kills++; for (let r = 0; r < rung; r++) if (rng() < q) have += qty; } out[i] = kills; }
+  out.sort((a, b) => a - b); return out;
+}
+function renderSim() {
+  const set = SETN[cSet.value], diff = cDiff.value, rung = +cRung.value, tier = cTier.value, qty = TIER_QTY[tier];
+  document.getElementById("c-rung-val").textContent = rung + " of 8";
+  const scrapQ = perRung(DATA.constants.scrapTop[diff], 8), tackQ = perRung(DATA.constants.tackTop[diff], 8);
+  const body = set.pieces.find(p => p.slot !== "Mount"), mount = set.pieces.find(p => p.slot === "Mount");
+  const kScrap = body.partQty, kTack = mount.partQty;
+  const scrapPerKill = rung * scrapQ * qty, tackPerKill = rung * tackQ * qty;
+  const killsBody = kScrap / scrapPerKill, killsMount = kTack / tackPerKill;
+  const killsSet = 7 * kScrap / scrapPerKill + killsMount; // seven body pieces plus the mount, sequentially
+  // quests
+  const qch = chaptersForSet(set.id)[0];
+  const qrate = set.id === "set_pano" ? 0.005 : (DATA.constants.questRate[String(qch)] || 0.02) * DATA.constants.questDiff[cQ.value] * (cNode.value === "boss" ? DATA.constants.bossMult : 1);
+  const zone = DATA.zones.find(z => z.pools.some(p => p.pool.some(g => g.set === set.id)));
+  const pool = zone ? zone.pools.find(p => p.pool.some(g => g.set === set.id)) : null;
+  const poolPieces = pool ? pool.pool.filter(g => g.set === set.id).length : 4;
+  const energy = pool ? pool.energy : 9;
+  const clicksOne = 1 / qrate, clicksAll = expectedClicksForAll(poolPieces, qrate);
+  const sim = simulate(kScrap, rung, scrapQ, qty), simM = simulate(kTack, rung, tackQ, qty);
+  const pct = (arr, p) => arr[Math.min(arr.length - 1, Math.floor(p * arr.length))];
+  document.getElementById("kpis").innerHTML = [
+    [fmt1(killsBody), "kills per body piece", `${kScrap} ${esc(set.scrap.name)} at ${fmtPct(scrapQ, 2)} × ${rung} rungs × ${qty}/success`],
+    [fmt1(killsMount), "kills for the mount", `${kTack} ${esc(set.tack.name)} at ${fmtPct(tackQ, 2)} × ${rung} rungs — median ${simM[Math.floor(simM.length / 2)]}, 90th pct ${pct(simM, 0.9)}`],
+    [fmt1(killsSet), "kills for the whole set", `seven body pieces then the mount, ${diff}`],
+    [fmtInt(clicksOne), "clicks per quest piece", `${fmtPct(qrate, 2)} per click · ${fmtInt(clicksOne * energy)} energy`],
+    [fmtInt(clicksAll), `clicks for all ${poolPieces} pieces in ${zone ? esc(zone.name) : "the zone"}`, `${fmtInt(clicksAll * energy)} energy at ${energy}/click, ${cQ.value}${cNode.value === "boss" ? ", boss node" : ""}`],
+  ].map(([b, l, s]) => `<div class="kpi"><div class="big num">${b}</div><div class="lbl">${l}</div><div class="sub">${s}</div></div>`).join("");
+  renderLadderChart(set);
+  renderHist(sim, kScrap, set, diff, rung);
+}
+function renderLadderChart(set) {
+  const W = 720, H = 260, ml = 44, mr = 96, mt = 14, mb = 34, iw = W - ml - mr, ih = H - mt - mb;
+  const x = k => ml + (k - 1) / 7 * iw, y = v => mt + ih - v / 0.35 * ih;
+  let g = "";
+  for (const t of [0, 0.1, 0.2, 0.3]) g += `<line class="grid" x1="${ml}" x2="${ml + iw}" y1="${y(t)}" y2="${y(t)}"/><text x="${ml - 6}" y="${y(t) + 4}" text-anchor="end">${t * 100}%</text>`;
+  for (let k = 1; k <= 8; k++) g += `<text x="${x(k)}" y="${H - 12}" text-anchor="middle">${k}</text>`;
+  g += `<text x="${ml + iw / 2}" y="${H - 1}" text-anchor="middle" style="fill:#857F6C">rungs passed (damage)</text>`;
+  const series = [];
+  for (const d of DIFFS) {
+    const q = perRung(DATA.constants.scrapTop[d], 8), qt = perRung(DATA.constants.tackTop[d], 8);
+    const pts = [], ptsT = [];
+    for (let k = 1; k <= 8; k++) { pts.push([x(k), y(cum(q, k))]); ptsT.push([x(k), y(cum(qt, k))]); }
+    series.push(`<polyline fill="none" stroke="${DCOL[d]}" stroke-width="2" points="${pts.map(p => p.join(",")).join(" ")}"/>`);
+    series.push(`<polyline fill="none" stroke="${DCOL[d]}" stroke-width="2" stroke-dasharray="4 4" points="${ptsT.map(p => p.join(",")).join(" ")}"/>`);
+    series.push(`<circle cx="${pts[7][0]}" cy="${pts[7][1]}" r="4" fill="${DCOL[d]}" stroke="#12161D" stroke-width="2"/>`);
+    series.push(`<text x="${pts[7][0] + 8}" y="${pts[7][1] + 4}" style="fill:${DCOL[d]};font-weight:600">${d} ${fmtPct(DATA.constants.scrapTop[d], 0)}</text>`);
+  }
+  document.getElementById("ladder-chart").innerHTML = `<h4>Chance of at least one part, by rungs passed</h4><div class="cap">Solid: ${esc(set.scrap.name)}. Dashed: ${esc(set.tack.name)}. One kill, one set; the same shape for every raid with an 8-rung ladder. World raids spread the same totals over 27 rungs.</div>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Cumulative chance of a scrap or tack drop by rungs passed, for each difficulty"><line class="axis" x1="${ml}" x2="${ml}" y1="${mt}" y2="${mt + ih}"/><line class="axis" x1="${ml}" x2="${ml + iw}" y1="${mt + ih}" y2="${mt + ih}"/>${g}${series.join("")}</svg>
+    <div class="legend">${DIFFS.map(d => `<span><i style="background:${DCOL[d]}"></i>${d}: scrap ${fmtPct(DATA.constants.scrapTop[d], 0)} · tack ${fmtPct(DATA.constants.tackTop[d], 0)} at the top</span>`).join("")}</div>`;
+}
+function renderHist(sim, need, set, diff, rung) {
+  const W = 720, H = 220, ml = 40, mr = 16, mt = 14, mb = 34, iw = W - ml - mr, ih = H - mt - mb;
+  const max = sim[Math.floor(sim.length * 0.98)], bins = Math.min(40, max), step = Math.max(1, Math.ceil(max / bins));
+  const counts = new Array(Math.ceil(max / step) + 1).fill(0);
+  for (const v of sim) if (v <= max) counts[Math.floor((v - 1) / step)]++;
+  const peak = Math.max(...counts);
+  const med = sim[Math.floor(sim.length / 2)], p90 = sim[Math.floor(sim.length * 0.9)], mean = sim.reduce((a, b) => a + b, 0) / sim.length;
+  const bw = iw / counts.length;
+  let bars = "";
+  counts.forEach((c, i) => { const h = c / peak * ih; bars += `<rect x="${ml + i * bw + 1}" y="${mt + ih - h}" width="${Math.max(1, bw - 2)}" height="${h}" fill="#C9A24B" rx="2"><title>${i * step + 1}–${(i + 1) * step} kills: ${c} of ${sim.length}</title></rect>`; });
+  const xm = ml + ((med - 1) / step + 0.5) * bw, x9 = ml + ((p90 - 1) / step + 0.5) * bw;
+  const ticks = []; for (let t = 0; t <= max; t += Math.max(1, Math.round(max / 6))) ticks.push(`<text x="${ml + (t / step) * bw}" y="${H - 12}" text-anchor="middle">${t}</text>`);
+  document.getElementById("hist-chart").innerHTML = `<h4>3,000 players, kills until ${need} ${esc(set.scrap.name)}</h4><div class="cap">${diff}, ${rung} rungs per kill. Mean ${fmt1(mean)} · median ${med} · one in ten needs more than ${p90}. The longest 2% are off the right edge.</div>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Histogram of kills needed for one reforge"><line class="axis" x1="${ml}" x2="${ml + iw}" y1="${mt + ih}" y2="${mt + ih}"/>${bars}
+    <line x1="${xm}" x2="${xm}" y1="${mt}" y2="${mt + ih}" stroke="#E8E2D2" stroke-dasharray="3 3"/><text x="${xm + 4}" y="${mt + 10}" style="fill:#E8E2D2">median ${med}</text>
+    <line x1="${x9}" x2="${x9}" y1="${mt}" y2="${mt + ih}" stroke="#e0675a" stroke-dasharray="3 3"/><text x="${x9 + 4}" y="${mt + 24}" style="fill:#e0675a">90th ${p90}</text>
+    ${ticks.join("")}<text x="${ml + iw / 2}" y="${H - 1}" text-anchor="middle" style="fill:#857F6C">kills</text></svg>`;
+}
+for (const el of [cSet, cDiff, cRung, cTier, cQ, cNode]) el.addEventListener("input", renderSim);
+renderSim();
+
+// ---- prompt
+const PROMPT = /*PROMPT*/;
+document.getElementById("prompt-text").textContent = PROMPT;
+document.getElementById("copy-btn").addEventListener("click", async () => {
+  const b = document.getElementById("copy-btn");
+  try { await navigator.clipboard.writeText(PROMPT); b.textContent = "Copied"; } catch { b.textContent = "Select and copy"; }
+  setTimeout(() => b.textContent = "Copy prompt", 1800);
+});
+</script>
