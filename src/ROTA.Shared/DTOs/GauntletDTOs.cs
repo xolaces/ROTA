@@ -410,4 +410,7 @@ public class GauntletPlayerSettlementResponse
     /// <summary>Rank magic earned (Neck only) — granted when the NEXT Neck Gauntlet opens, held for that run.</summary>
     public string? MagicId { get; init; }
     public string? MagicName { get; init; }
+    /// <summary>Prize gear granted at settlement (the Tithe-Mark at rank 1); already in the bag.</summary>
+    public string? GearId { get; init; }
+    public string? GearName { get; init; }
 }

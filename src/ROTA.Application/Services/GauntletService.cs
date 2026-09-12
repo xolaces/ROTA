@@ -523,6 +523,8 @@ public sealed class GauntletService : IGauntletService
             TrophyName = band?.TrophyId is null ? null : _content.GetTrophyById(band.TrophyId)?.Name,
             MagicId    = band?.MagicId,
             MagicName  = band?.MagicId is null ? null : _magics.GetById(band.MagicId)?.Name,
+            GearId     = band?.GearId,
+            GearName   = band?.GearId is null ? null : _gearDefs.GetById(band.GearId)?.Name,
         };
     }
 
