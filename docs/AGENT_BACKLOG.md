@@ -102,17 +102,11 @@ so mixed sets compose without hand-cut layers. Hooks already in place: `Equipped
 / `ReforgedFrom`, `FigureArt` (one figure today, a dictionary tomorrow), `PaperDoll` (docks today,
 windows tomorrow). Blocked on the 13 figures; when they land, about a day of client work.
 
-### RG1. Twelve gear pieces nothing on the live server hands out  *(found 2026-09-11, wiring the reforge)*
-The reforge pass mapped every acquisition path and these have none — no quest pool, no raid rung,
-no recipe, no shop: the whole **Conscript** set (8 pieces; the mock seeds it, live never does),
-and three no-set relics — `gear_cold_token`, `gear_colossus_core` (both listed in
-`wire_drop_tables.py`'s DEEP_DROPS for zones that have no table) and `gear_sovereign_tithe`.
-Conscript is deliberately outside the reforge (no twin, no recipe) until it has a source; the
-obvious one is a starter grant at registration or the chapter-1 quest pools. Owner call on which.
-`ReforgeContentTests.Quest_zone_pools_…` will start covering Conscript the day `ExcludedSets` loses it.
-
-*(The "unequip, reforge, re-equip" wrinkle this entry first carried is gone: reforges happen in
-place as of the same day.)*
+### RG1. Three relics nothing on the live server hands out  *(found 2026-09-11; Conscript settled 2026-09-12)*
+The Conscript set is now the starter kit — granted and worn at registration, `grant-starter-kit`
+backfills older accounts. Three no-set relics still have no acquisition path: `gear_cold_token`,
+`gear_colossus_core` (both listed in `wire_drop_tables.py`'s DEEP_DROPS for zones that have no
+table) and `gear_sovereign_tithe`. Owner call on where they drop, or whether they exist.
 
 ### RD1. Sweep — repeat a cleared node without replaying it  *(owner-deferred 2026-09-07)*
 Auto-battle that unlocks only AFTER a first manual clear, so the proof-of-mastery gate survives but
@@ -418,6 +412,11 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- **Conscript is the starter kit** *(2026-09-12, owner call)*. `starter: true` on the eight pieces in
+  `gear.json`; `EquipmentService.GrantStarterKitAsync` grants and wears them inside the registration
+  transaction, idempotently (a piece owned is not granted twice, a worn slot keeps what it wears);
+  `grant-starter-kit <user|--all>` in the admin CLI backfills. Boot validation refuses two starter
+  pieces in a slot. Unit + content tests, and one end-to-end registration test.
 - **RF1 — TrustedProxies accepts a CIDR** *(2026-09-12)*. `TrustedProxies.Apply` puts an entry with a
   `/` in `KnownIPNetworks` and a bare address in `KnownProxies`; the droplet override now names
   `172.18.0.0/16`, so a recreated Caddy on a new address keeps X-Forwarded-For honoured. Four unit

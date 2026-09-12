@@ -32,6 +32,7 @@ public sealed class AuthService : IAuthService
     private readonly IAchievementService _achievements;
     private readonly IPasswordResetTokenRepository _resetTokens;
     private readonly IEmailNotificationService _emails;
+    private readonly IEquipmentService _equipment;
 
     public AuthService(
         IPlayerRepository players,
@@ -42,7 +43,8 @@ public sealed class AuthService : IAuthService
         IBetaKeyRepository betaKeys,
         IAchievementService achievements,
         IPasswordResetTokenRepository resetTokens,
-        IEmailNotificationService emails)
+        IEmailNotificationService emails,
+        IEquipmentService equipment)
     {
         _players = players;
         _refreshTokens = refreshTokens;
@@ -53,6 +55,7 @@ public sealed class AuthService : IAuthService
         _achievements = achievements;
         _resetTokens = resetTokens;
         _emails = emails;
+        _equipment = equipment;
     }
 
     public async Task<AuthResponse?> RegisterAsync(RegisterRequest request, string ipAddress)
@@ -120,6 +123,9 @@ public sealed class AuthService : IAuthService
         // the validator already required the CURRENT version; stamp it on the new account.
         player.AcceptTerms(request.AcceptedTermsVersion);
         await _players.CreateAsync(player, ct);
+
+        // Dressed before the first screen: the starter set (content marks it) is granted and worn.
+        await _equipment.GrantStarterKitAsync(player.Id, ct);
 
         await _auditLog.AppendAsync(AuditLog.Create(
             player.Id, "Register", null,

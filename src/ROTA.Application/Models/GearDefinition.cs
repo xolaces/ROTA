@@ -39,4 +39,10 @@ public class GearDefinition
     /// its base piece's art and mark it as reforged; nothing in combat reads it.
     /// </summary>
     public string? ReforgedFrom { get; set; }
+
+    /// <summary>
+    /// Granted and worn from registration (owner, 2026-09-12: the Conscript set). One piece per
+    /// slot; the boot validator refuses a starter kit that claims a slot twice.
+    /// </summary>
+    public bool Starter { get; set; }
 }

@@ -121,7 +121,7 @@ public class PlayerRoleTests
               .ReturnsAsync((RefreshToken t, CancellationToken _) => t);
 
         return new AuthService(players.Object, tokens.Object, BuildConfig(privateKey), lockout.Object, auditLog.Object, betaKeys.Object, new Mock<IAchievementService>().Object,
-            new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object);
+            new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object, new Mock<IEquipmentService>().Object);
     }
 
     [Fact]
@@ -170,7 +170,7 @@ public class PlayerRoleTests
 
         var betaKeysMock = new Mock<IBetaKeyRepository>();
         var service = new AuthService(players.Object, tokens.Object, BuildConfig(key), lockout.Object, auditLog.Object, betaKeysMock.Object, new Mock<IAchievementService>().Object,
-            new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object);
+            new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object, new Mock<IEquipmentService>().Object);
 
         var result = await service.LoginAsync(
             new LoginRequest { Email = "admin@rota.test", Password = "Secure1Pass" },

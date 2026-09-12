@@ -27,8 +27,23 @@ public class ReforgeContentTests
     private static string S(JsonElement e, string name) =>
         e.TryGetProperty(name, out var p) && p.ValueKind == JsonValueKind.String ? p.GetString() ?? "" : "";
 
-    // Conscript is not reforgeable: nothing on the live server drops or sells it.
+    // Conscript is not reforgeable: it is the starter kit, granted and worn at registration
+    // (owner, 2026-09-12), and a Grey 0/1 piece has nothing to reforge into.
     private static readonly HashSet<string> ExcludedSets = new() { "set_conscript" };
+
+    [Fact]
+    public void The_starter_kit_is_the_Conscript_set_one_piece_per_slot()
+    {
+        using var doc = Content("gear.json");
+        var starters = doc.RootElement.EnumerateArray()
+            .Where(g => g.TryGetProperty("starter", out var s) && s.ValueKind == JsonValueKind.True)
+            .ToList();
+
+        starters.Select(g => S(g, "setId")).Distinct().Should().Equal("set_conscript");
+        starters.Select(g => S(g, "slot")).Should().BeEquivalentTo(
+            new[] { "Head", "Neck", "Torso", "Gloves", "Ring1", "Ring2", "Boots", "Mount" },
+            "a new player is dressed head to mount, and no slot twice — the second grant would fail");
+    }
 
     [Fact]
     public void Every_set_piece_has_a_reforged_twin_that_is_strictly_better_and_shares_its_art()

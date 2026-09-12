@@ -255,6 +255,42 @@ public sealed class EquipmentService : IEquipmentService
         return new EffectiveCombatData(baseAtk + bonusAtk, baseDef + bonusDef, mountProc, flatDmgPct);
     }
 
+    public async Task GrantStarterKitAsync(Guid playerId, CancellationToken ct = default)
+    {
+        var kit = _gearDefs.GetAll().Where(g => g.Starter).ToList();
+        if (kit.Count == 0) return;
+
+        // Idempotent, so the admin CLI can run it over an existing account: a piece already owned
+        // is not granted again, and a slot already worn keeps what it wears.
+        var granted = new List<string>();
+        var worn = new List<string>();
+        foreach (var def in kit)
+        {
+            var owned = await _gearRepo.GetAsync(playerId, def.Id, ct);
+            if (owned is null || owned.IsDeleted || owned.Quantity < 1)
+            {
+                await GrantGearAsync(playerId, def.Id, 1, ct);
+                granted.Add(def.Id);
+            }
+
+            if (!Enum.TryParse<EquipmentSlot>(def.Slot, ignoreCase: true, out var slot))
+                throw new InvalidOperationException($"Starter kit: '{def.Id}' names unknown slot '{def.Slot}'.");
+            if (await _repo.FindBySlotAsync(playerId, slot, ct) is not null) continue;
+
+            var result = await EquipAsync(playerId, def.Slot, def.Id, ct);
+            if (!result.Success)
+                throw new InvalidOperationException(
+                    $"Starter kit: could not equip '{def.Id}' in {def.Slot}: {result.FailureReason}");
+            worn.Add(def.Id);
+        }
+
+        if (granted.Count == 0 && worn.Count == 0) return;
+        await _auditLog.AppendAsync(AuditLog.Create(
+            playerId, "StarterKitGranted", null,
+            "Granted: " + (granted.Count > 0 ? string.Join(", ", granted) : "nothing")
+            + ". Worn: " + (worn.Count > 0 ? string.Join(", ", worn) : "nothing") + ".", null), ct);
+    }
+
     public async Task GrantGearAsync(
         Guid playerId, string gearDefinitionId, int quantity, CancellationToken ct = default)
     {

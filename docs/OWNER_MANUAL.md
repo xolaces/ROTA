@@ -521,9 +521,15 @@ real mistakes.
   "procChance": null,            0.0–1.0, or null for no proc
   "procPercent": null,
   "iconPath": "icons/gear/conscript_helm.png",
-  "setId": "set_conscript"       groups pieces into a set
+  "setId": "set_conscript",      groups pieces into a set
+  "starter": true                granted and worn at registration (the Conscript set; one per slot)
 }
 ```
+
+**`starter`** marks the kit every new account is dressed in before its first screen — the eight
+Conscript pieces (owner call, 2026-09-12). The boot validator refuses two starter pieces in one
+slot. Accounts that predate the kit get it with `grant-starter-kit` (§10); that command is
+idempotent — owned pieces are not granted twice and a worn slot keeps what it wears.
 
 **`setId` is currently descriptive only.** Set *bonuses* are not implemented — that is the largest
 piece of already-paid-for design sitting unused, and it is the headline of the next planned update.
@@ -751,6 +757,7 @@ dotnet run --project src/ROTA.Api -- demote  <user> Moderator
 dotnet run --project src/ROTA.Api -- flag-dev <user>        # Developer flag + Dev guild
 dotnet run --project src/ROTA.Api -- seed-admin             # reads Seed:AdminPassword
 dotnet run --project src/ROTA.Api -- grant-gear <user> <gearId> [qty]
+dotnet run --project src/ROTA.Api -- grant-starter-kit <user|--all>   # the Conscript kit, idempotent
 dotnet run --project src/ROTA.Api -- gauntlet-open <name> <startsAt> <endsAt> [neck|ring]
 dotnet run --project src/ROTA.Api -- gauntlet-close <eventId>
 dotnet run --project src/ROTA.Api -- gauntlet-settle <eventId>

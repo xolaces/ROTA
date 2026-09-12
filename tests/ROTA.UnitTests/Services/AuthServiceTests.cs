@@ -82,7 +82,7 @@ public class AuthServiceTests
             betaKeys.Object,
             achievements.Object,
             resetTokens.Object,
-            emails.Object);
+            emails.Object, new Mock<IEquipmentService>().Object);
 
         return (service, players, tokens, lockout, auditLog);
     }
@@ -213,7 +213,7 @@ public class AuthServiceTests
             players.Object, tokens.Object,
             BuildConfig(betaGateEnabled: true),
             lockout.Object, auditLog.Object, betaKeys.Object, achievements.Object,
-            new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object);
+            new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object, new Mock<IEquipmentService>().Object);
 
         var result = await service.RegisterAsync(
             new RegisterRequest
@@ -279,7 +279,7 @@ public class AuthServiceTests
 
         var service = new AuthService(players.Object, tokens.Object, BuildConfig(key),
             lockout.Object, auditLog.Object, betaKeys.Object, achievements.Object,
-            new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object);
+            new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object, new Mock<IEquipmentService>().Object);
 
         // First login on a fresh player → counts the day.
         await service.LoginAsync(new LoginRequest { Email = player.Email, Password = "Correct1" }, "127.0.0.1");
@@ -318,7 +318,7 @@ public class AuthServiceTests
 
         var service = new AuthService(players.Object, tokens.Object, BuildConfig(key),
             lockout.Object, auditLog.Object, betaKeys.Object, achievements.Object,
-            new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object);
+            new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object, new Mock<IEquipmentService>().Object);
 
         var result = await service.LoginAsync(new LoginRequest { Email = player.Email, Password = "Correct1" }, "127.0.0.1");
 

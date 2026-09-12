@@ -44,7 +44,7 @@ public class TermsAcceptanceAuthTests
             players.Object, tokens.Object, Config(currentTermsVersion), lockout.Object,
             new Mock<IAuditLogRepository>().Object, new Mock<IBetaKeyRepository>().Object,
             new Mock<IAchievementService>().Object,
-            new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object);
+            new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object, new Mock<IEquipmentService>().Object);
         return (service, players, tokens);
     }
 

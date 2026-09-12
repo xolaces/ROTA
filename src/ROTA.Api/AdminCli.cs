@@ -25,6 +25,7 @@ namespace ROTA.Api;
 ///   dotnet run --project src/ROTA.Api -- leaderboard-refresh-stat
 ///   dotnet run --project src/ROTA.Api -- mastery-refresh-rating
 ///   dotnet run --project src/ROTA.Api -- grant-gear {user|guid} {gearDefId} [qty]
+///   dotnet run --project src/ROTA.Api -- grant-starter-kit {user|guid|--all}
 ///   dotnet run --project src/ROTA.Api -- gauntlet-open {name} {startsAt} {endsAt}
 ///   dotnet run --project src/ROTA.Api -- gauntlet-close {eventId}
 ///   dotnet run --project src/ROTA.Api -- gauntlet-settle {eventId}
@@ -45,6 +46,7 @@ public static class AdminCli
             "leaderboard-refresh-stat",
             "mastery-refresh-rating",
             "grant-gear",
+            "grant-starter-kit",
             "gauntlet-open",
             "gauntlet-close",
             "gauntlet-settle",
@@ -85,6 +87,7 @@ public static class AdminCli
                 "leaderboard-refresh-stat" => await RunLeaderboardRefreshStat(app.Services),
                 "mastery-refresh-rating"   => await RunMasteryRefreshRating(app.Services),
                 "grant-gear"               => await RunGrantGear(app.Services, args),
+                "grant-starter-kit"        => await RunGrantStarterKit(app.Services, args),
                 "gauntlet-open"            => await RunGauntletOpen(app.Services, args),
                 "gauntlet-close"           => await RunGauntletClose(app.Services, args),
                 "gauntlet-settle"          => await RunGauntletSettle(app.Services, args),
@@ -212,6 +215,48 @@ public static class AdminCli
         var count = await masteryService.SnapshotRatingBoardAsync();
 
         Console.WriteLine($"mastery-refresh-rating: complete. {count} player(s) snapshotted onto the MasteryRating boards.");
+        return 0;
+    }
+
+    // The starter kit for accounts that predate it (registration grants it from 2026-09-12).
+    // Idempotent: owned pieces are not granted again and worn slots keep what they wear.
+    private static async Task<int> RunGrantStarterKit(IServiceProvider services, string[] args)
+    {
+        if (args.Length < 2)
+        {
+            Console.Error.WriteLine("grant-starter-kit: usage: grant-starter-kit <username|guid|--all>");
+            return 1;
+        }
+
+        using var scope = services.CreateScope();
+        var playerRepo = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
+        var equipment  = scope.ServiceProvider.GetRequiredService<IEquipmentService>();
+
+        if (args[1] == "--all")
+        {
+            var db = scope.ServiceProvider.GetRequiredService<RotaDbContext>();
+            var ids = await db.Players.AsNoTracking().Where(p => !p.IsDeleted).Select(p => p.Id).ToListAsync();
+            int n = 0;
+            foreach (var pid in ids)
+            {
+                await equipment.GrantStarterKitAsync(pid);
+                n++;
+            }
+            Console.WriteLine($"grant-starter-kit: {n} player(s) checked; missing pieces granted, empty slots dressed.");
+            return 0;
+        }
+
+        Player? player = Guid.TryParse(args[1], out var id)
+            ? await playerRepo.FindByIdAsync(id)
+            : await playerRepo.FindByUsernameAsync(args[1]);
+        if (player is null)
+        {
+            Console.Error.WriteLine($"grant-starter-kit: player '{args[1]}' not found.");
+            return 1;
+        }
+
+        await equipment.GrantStarterKitAsync(player.Id);
+        Console.WriteLine($"grant-starter-kit: '{player.Username}' ({player.Id}) — missing pieces granted, empty slots dressed.");
         return 0;
     }
 

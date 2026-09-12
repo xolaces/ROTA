@@ -62,7 +62,7 @@ public class PasswordResetTests
             Service = new AuthService(
                 Players.Object, Tokens.Object, BuildConfig(), lockout.Object, AuditLog.Object,
                 new Mock<IBetaKeyRepository>().Object, new Mock<IAchievementService>().Object,
-                ResetTokens.Object, Emails.Object);
+                ResetTokens.Object, Emails.Object, new Mock<IEquipmentService>().Object);
         }
     }
 

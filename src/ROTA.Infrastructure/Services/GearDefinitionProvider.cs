@@ -67,6 +67,14 @@ public sealed class GearDefinitionProvider : IGearDefinitionProvider
                     $"gear.json: set '{grp.Key}' mixes rarities ({string.Join(", ", rarities)}). "
                     + "A set is one tier; a mixed one is a naming accident.");
         }
+
+        // The starter kit is granted and WORN at registration, one piece per slot; two pieces in a
+        // slot would make the second grant fail on every new account.
+        var starterSlots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var piece in list.Where(g => g.Starter))
+            if (!starterSlots.Add(piece.Slot))
+                throw new InvalidOperationException(
+                    $"gear.json: two starter pieces claim the '{piece.Slot}' slot ('{piece.Id}' is the second).");
     }
 
     public GearDefinition? GetById(string id)

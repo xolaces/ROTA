@@ -65,7 +65,7 @@ public class BetaKeyServiceTests
             players.Object, tokens.Object,
             BuildConfig(privateKey, betaGateEnabled),
             lockout.Object, auditLog.Object, betaKeys.Object, new Mock<IAchievementService>().Object,
-            new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object);
+            new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object, new Mock<IEquipmentService>().Object);
 
         return (service, players, tokens, betaKeys, auditLog);
     }

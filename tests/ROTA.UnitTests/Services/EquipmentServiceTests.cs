@@ -584,6 +584,86 @@ public class EquipmentServiceTests
         return (service, gearRepo);
     }
 
+    // The starter kit (owner, 2026-09-12): every definition marked Starter is granted once and put
+    // on at registration, one per slot, so a new player is dressed before their first screen.
+    [Fact]
+    public async Task GrantStarterKitAsync_GrantsAndWears_EveryStarterPiece()
+    {
+        var (service, repo, gearDefs, auditLog, _, _, gearRepo) = BuildService();
+        var playerId = Guid.NewGuid();
+        var helm = HelmDef(); helm.Starter = true;
+        var ring = new GearDefinition { Id = "gear_iron_ring", Name = "Iron Ring", Rarity = ItemRarity.Grey, Slot = "Ring1", BonusAttack = 1, Starter = true };
+        var notStarter = new GearDefinition { Id = "gear_pano_helm", Name = "Pano", Rarity = ItemRarity.Orange, Slot = "Head" };
+        gearDefs.Setup(d => d.GetAll()).Returns(new List<GearDefinition> { helm, notStarter, ring });
+        gearDefs.Setup(d => d.GetById("gear_conscript_helm")).Returns(helm);
+        gearDefs.Setup(d => d.GetById("gear_iron_ring")).Returns(ring);
+
+        // Nothing owned before; the grant creates the row and the equip then finds it.
+        var owned = new Dictionary<string, PlayerGear>();
+        gearRepo.Setup(g => g.GetAsync(playerId, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid _, string id, CancellationToken _) => owned.TryGetValue(id, out var pg) ? pg : null);
+        gearRepo.Setup(g => g.CreateAsync(It.IsAny<PlayerGear>(), It.IsAny<CancellationToken>()))
+            .Callback<PlayerGear, CancellationToken>((pg, _) => owned[pg.GearDefinitionId] = pg)
+            .Returns(Task.CompletedTask);
+        repo.Setup(r => r.FindBySlotAsync(playerId, It.IsAny<EquipmentSlot>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerEquipment?)null);
+
+        await service.GrantStarterKitAsync(playerId);
+
+        owned.Keys.Should().BeEquivalentTo(new[] { "gear_conscript_helm", "gear_iron_ring" }, "only starter pieces are granted");
+        repo.Verify(r => r.CreateAsync(It.Is<PlayerEquipment>(e => e.Slot == EquipmentSlot.Head && e.GearDefinitionId == "gear_conscript_helm"), It.IsAny<CancellationToken>()), Times.Once);
+        repo.Verify(r => r.CreateAsync(It.Is<PlayerEquipment>(e => e.Slot == EquipmentSlot.Ring1 && e.GearDefinitionId == "gear_iron_ring"), It.IsAny<CancellationToken>()), Times.Once);
+        auditLog.Verify(a => a.AppendAsync(It.Is<AuditLog>(x => x.Action == "StarterKitGranted"), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task GrantStarterKitAsync_OverAnExistingAccount_GrantsOnlyWhatIsMissing_AndKeepsWornSlots()
+    {
+        // The admin CLI runs it over accounts that predate the kit: a helm already owned is not
+        // granted twice, and a head already wearing something better keeps it.
+        var (service, repo, gearDefs, auditLog, _, _, gearRepo) = BuildService();
+        var playerId = Guid.NewGuid();
+        var helm = HelmDef(); helm.Starter = true;
+        var ring = new GearDefinition { Id = "gear_iron_ring", Name = "Iron Ring", Rarity = ItemRarity.Grey, Slot = "Ring1", Starter = true };
+        gearDefs.Setup(d => d.GetAll()).Returns(new List<GearDefinition> { helm, ring });
+        gearDefs.Setup(d => d.GetById("gear_conscript_helm")).Returns(helm);
+        gearDefs.Setup(d => d.GetById("gear_iron_ring")).Returns(ring);
+
+        var owned = new Dictionary<string, PlayerGear> { ["gear_conscript_helm"] = PlayerGear.Create(playerId, "gear_conscript_helm", 1) };
+        gearRepo.Setup(g => g.GetAsync(playerId, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid _, string id, CancellationToken _) => owned.TryGetValue(id, out var pg) ? pg : null);
+        gearRepo.Setup(g => g.CreateAsync(It.IsAny<PlayerGear>(), It.IsAny<CancellationToken>()))
+            .Callback<PlayerGear, CancellationToken>((pg, _) => owned[pg.GearDefinitionId] = pg)
+            .Returns(Task.CompletedTask);
+        // The head already wears a Pano helm; the ring finger is bare.
+        repo.Setup(r => r.FindBySlotAsync(playerId, EquipmentSlot.Head, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(PlayerEquipment.Create(playerId, EquipmentSlot.Head, "gear_pano_helm"));
+        repo.Setup(r => r.FindBySlotAsync(playerId, EquipmentSlot.Ring1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PlayerEquipment?)null);
+
+        await service.GrantStarterKitAsync(playerId);
+
+        gearRepo.Verify(g => g.CreateAsync(It.Is<PlayerGear>(pg => pg.GearDefinitionId == "gear_iron_ring"), It.IsAny<CancellationToken>()), Times.Once);
+        gearRepo.Verify(g => g.CreateAsync(It.Is<PlayerGear>(pg => pg.GearDefinitionId == "gear_conscript_helm"), It.IsAny<CancellationToken>()), Times.Never);
+        repo.Verify(r => r.CreateAsync(It.Is<PlayerEquipment>(e => e.Slot == EquipmentSlot.Ring1), It.IsAny<CancellationToken>()), Times.Once);
+        repo.Verify(r => r.CreateAsync(It.Is<PlayerEquipment>(e => e.Slot == EquipmentSlot.Head), It.IsAny<CancellationToken>()), Times.Never);
+        repo.Verify(r => r.UpdateAsync(It.Is<PlayerEquipment>(e => e.Slot == EquipmentSlot.Head), It.IsAny<CancellationToken>()), Times.Never,
+            "the Pano helm stays on");
+    }
+
+    [Fact]
+    public async Task GrantStarterKitAsync_NothingMarked_DoesNothing()
+    {
+        var (service, repo, gearDefs, auditLog, _, _, gearRepo) = BuildService();
+        gearDefs.Setup(d => d.GetAll()).Returns(new List<GearDefinition> { HelmDef() });
+
+        await service.GrantStarterKitAsync(Guid.NewGuid());
+
+        gearRepo.Verify(g => g.CreateAsync(It.IsAny<PlayerGear>(), It.IsAny<CancellationToken>()), Times.Never);
+        repo.Verify(r => r.CreateAsync(It.IsAny<PlayerEquipment>(), It.IsAny<CancellationToken>()), Times.Never);
+        auditLog.Verify(a => a.AppendAsync(It.Is<AuditLog>(x => x.Action == "StarterKitGranted"), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
     [Fact]
     public async Task GrantGearAsync_NewGear_CreatesRow()
     {

@@ -10,7 +10,8 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/gear_conscript_helm.png",
-    "setId": "set_conscript"
+    "setId": "set_conscript",
+    "starter": true
   },
   {
     "id": "gear_conscript_collar",
@@ -23,7 +24,8 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/gear_conscript_collar.png",
-    "setId": "set_conscript"
+    "setId": "set_conscript",
+    "starter": true
   },
   {
     "id": "gear_conscript_chest",
@@ -36,7 +38,8 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/gear_conscript_chest.png",
-    "setId": "set_conscript"
+    "setId": "set_conscript",
+    "starter": true
   },
   {
     "id": "gear_iron_ring",
@@ -49,7 +52,8 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/gear_iron_ring.png",
-    "setId": "set_conscript"
+    "setId": "set_conscript",
+    "starter": true
   },
   {
     "id": "gear_worn_band",
@@ -62,7 +66,8 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/gear_worn_band.png",
-    "setId": "set_conscript"
+    "setId": "set_conscript",
+    "starter": true
   },
   {
     "id": "gear_draft_horse",
@@ -75,7 +80,8 @@
     "procChance": 0.05,
     "procPercent": 2.0,
     "iconPath": "icons/gear/gear_draft_horse.png",
-    "setId": "set_conscript"
+    "setId": "set_conscript",
+    "starter": true
   },
   {
     "id": "gear_conscript_boots",
@@ -88,7 +94,8 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/gear_conscript_boots.png",
-    "setId": "set_conscript"
+    "setId": "set_conscript",
+    "starter": true
   },
   {
     "id": "gear_conscript_gloves",
@@ -101,7 +108,8 @@
     "procChance": null,
     "procPercent": null,
     "iconPath": "icons/gear/gear_conscript_gloves.png",
-    "setId": "set_conscript"
+    "setId": "set_conscript",
+    "starter": true
   },
   {
     "id": "gear_pano_helm",

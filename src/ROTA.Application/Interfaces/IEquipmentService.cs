@@ -17,6 +17,12 @@ public interface IEquipmentService
     /// Safe to call from loot reward distribution (duplicate = quantity increase, never error).
     /// </summary>
     Task GrantGearAsync(Guid playerId, string gearDefinitionId, int quantity, CancellationToken ct = default);
+
+    /// <summary>
+    /// Registration: every gear definition marked Starter is granted once and put on, so a new
+    /// player is dressed before their first screen. Nothing to do when content marks none.
+    /// </summary>
+    Task GrantStarterKitAsync(Guid playerId, CancellationToken ct = default);
 }
 
 // Lives in this file alongside the interface.
