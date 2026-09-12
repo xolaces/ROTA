@@ -118,6 +118,20 @@ public class SecurityHeadersTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task AnOversizedBody_Is413_BeforeAnythingReadsIt_AndStillCarriesTheHeaders()
+    {
+        // The largest field any validator accepts is 4,000 characters; a body far past that is
+        // refused on its declared length, ahead of the audit middleware's body hash and the model
+        // binder, and never reaches a controller. The headers middleware sits in front of it.
+        var body = new StringContent("{\"email\":\"" + new string('a', 200_000) + "\"}",
+            System.Text.Encoding.UTF8, "application/json");
+        var response = await _factory.CreateClient().PostAsync("/api/auth/login", body);
+
+        response.StatusCode.Should().Be(HttpStatusCode.RequestEntityTooLarge);
+        AssertBaselineHeaders(response);
+    }
+
+    [Fact]
     public async Task TheStrictCsp_IsNotAppliedInDevelopment()
     {
         // Swagger UI is registered in Development and cannot load under default-src 'none'. The tests

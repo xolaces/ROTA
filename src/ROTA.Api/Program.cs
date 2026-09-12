@@ -24,10 +24,11 @@ var builder = WebApplication.CreateBuilder(args);
 // And no 30 MB bodies: the largest field any validator accepts is 4,000 characters and nothing is
 // uploaded, so 64 KB is room for every request the game makes and a 3 MB login body is refused
 // before it is parsed.
+const long MaxRequestBodyBytes = 64 * 1024;
 builder.WebHost.ConfigureKestrel(o =>
 {
     o.AddServerHeader = false;
-    o.Limits.MaxRequestBodySize = 64 * 1024;
+    o.Limits.MaxRequestBodySize = MaxRequestBodyBytes;
 });
 
 builder.Services.AddControllers();
@@ -411,6 +412,20 @@ app.Map("/error", (HttpContext ctx) =>
 // [1a] Security response headers — early, so they also land on the 500 from the handler above,
 // the 429 from the rate limiter and the 403 from the ban gate.
 app.UseMiddleware<SecurityHeadersMiddleware>();
+
+// [1a'] A declared body over the cap is answered 413 here, before anything reads it. Kestrel
+// enforces the same cap at the first read, but that surfaces as an exception thrown through the
+// audit middleware's body hash and then again through the error handler's re-execution — two stack
+// traces in the log per oversized request. Bodies with no declared length still meet Kestrel's cap.
+app.Use(async (ctx, next) =>
+{
+    if (ctx.Request.ContentLength > MaxRequestBodyBytes)
+    {
+        ctx.Response.StatusCode = StatusCodes.Status413PayloadTooLarge;
+        return;
+    }
+    await next();
+});
 
 // [1b] Reverse-proxy client IPs (T66, host-agnostic deploys)
 // OFF by default. When the API sits behind a TLS-terminating proxy/load balancer, every
