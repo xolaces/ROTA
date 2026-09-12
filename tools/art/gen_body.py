@@ -33,17 +33,20 @@ FILL = (86, 92, 104, 255)
 EDGE = (52, 56, 66, 255)
 SHADE = (72, 77, 88, 255)
 
-# Where a worn piece's icon docks, as fractions of the figure. Rings share the left hand; gloves
-# take the right; the mount stands at the figure's side, off the body, larger than the rest.
+# Where a worn piece's icon docks, as fractions of the figure. MEASURED ON THE REAL BODY (the
+# 1024 x 1536 figure generated 2026-09-11 from the brief): head widest at y 0.09, shoulders at
+# 0.20, hands at 0.53 out at x 0.23 / 0.77, feet 0.90-0.98 either side of x 0.5. Rings share the
+# left hand (the second one below it, clear of the thigh); gloves take the right; the mount stands
+# at the figure's side, off the body, larger than the rest. Re-measure if the figure is redrawn.
 DOCKS = {
-    "Head":   (0.50, 0.115),
-    "Neck":   (0.50, 0.255),
-    "Torso":  (0.50, 0.415),
-    "Gloves": (0.815, 0.605),
-    "Ring1":  (0.185, 0.605),
-    "Ring2":  (0.135, 0.735),
-    "Boots":  (0.50, 0.925),
-    "Mount":  (0.855, 0.855),
+    "Head":   (0.50, 0.085),
+    "Neck":   (0.50, 0.215),
+    "Torso":  (0.50, 0.370),
+    "Gloves": (0.775, 0.535),
+    "Ring1":  (0.225, 0.535),
+    "Ring2":  (0.185, 0.660),
+    "Boots":  (0.50, 0.945),
+    "Mount":  (0.860, 0.850),
 }
 ORDER = ["Mount", "Boots", "Torso", "Gloves", "Ring1", "Ring2", "Neck", "Head"]
 
@@ -149,10 +152,18 @@ def render():
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    pnglib.write(OUT / "mannequin.png", W, H, render())
-    spec = {"w": W, "h": H, "docks": {k: [round(v[0], 3), round(v[1], 3)] for k, v in DOCKS.items()}, "order": ORDER}
+    png = OUT / "mannequin.png"
+    # The real body, once generated from the brief, is never overwritten by the placeholder — the
+    # same rule the icon placeholders follow. The placeholder is 512 wide; the real one is 1024.
+    if png.exists() and pnglib.dims(png)[0] > W:
+        w, h = pnglib.dims(png)
+        print("real body on disk (%dx%d) — kept; only the dock map is rewritten" % (w, h))
+    else:
+        pnglib.write(png, W, H, render())
+        w, h = W, H
+    spec = {"w": w, "h": h, "docks": {k: [round(v[0], 3), round(v[1], 3)] for k, v in DOCKS.items()}, "order": ORDER}
     io.open(OUT / "mannequin.json", "w", encoding="utf-8", newline="\n").write(json.dumps(spec, indent=2) + "\n")
-    print("wrote", OUT / "mannequin.png", "and mannequin.json")
+    print("wrote", OUT / "mannequin.json")
 
 
 if __name__ == "__main__":
