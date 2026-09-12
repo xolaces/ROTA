@@ -184,8 +184,9 @@ uncheck **Use Mock**. The log line becomes `[ROTA] client started (http://localh
 
 Worth doing properly rather than leaving as a checkbox: `ApplyConfigOverrides()` already reads
 `ROTA_USE_MOCK` / `ROTA_BASE_URL` and a `rota-config.json`, but neither reaches the Editor
-conveniently. Consider an editor-only default of live-when-a-backend-answers, or a visible on-screen
-badge when mock is active — the current failure mode is silent and cost a whole playtest window.
+conveniently. Consider an editor-only default of live-when-a-backend-answers. *(The visible badge
+shipped 2026-09-12: a red MOCK chip on the login foot and beside the header buttons whenever the
+client is not talking to a server — `8024717` in the client repo.)*
 
 ### R1c. The Gauntlet shop is the last untested economy seam — BLOCKED on an owner call
 Gems (`216c985`), raid loot (`a9ad926`) and quest rewards (`3adb93a`) are all now proven under
@@ -195,12 +196,6 @@ happens to exist rather than the intended one, which is worse than no test.
 
 **BLOCKED on Owner decision 2.** Once settled, reuse the QuestRewardConcurrencyTests shape and
 neuter the guard to confirm the test fails for the right reason.
-
-### R4. Client support for nine-rung ladders
-The zone ladder went 6 → 9 rungs and raids gained a 9-rung per-raid ladder
-(`AchievementCategory.RaidMastery`). Check `C:\Dev\ROTA.Client6` for anything that assumes six tiers,
-a rarity-keyed achievement id, or a fixed-height achievement list. The ids changed shape:
-`ach_zonererun_c1z0_grey` → `ach_zonererun_c1z0_t10`.
 
 ### R10. Is 2,000,000 Discernment reachable near level 7,500?
 Open tuning question left by the pacing eval. If quest cost tracks the pool, R depends only on
@@ -433,6 +428,13 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
   rows. The completed-raid history (endpoint, DTO, query) is gone. Client: Raid lands on the Raids
   tab (loot / yours / open), Public is only unjoined raids, Completed tab gone, sigil summon opens
   the raid, guild raids are lootable from the guild list.
+- **R4 — nine-rung ladders in the client** *(2026-09-12)*. The achievements screen was already
+  data-driven (no six-tier assumption), but it rendered every rung as a card — ~500 rows. A mastery
+  ladder is now one card: the rung being worked on and how many are earned; ZoneMastery and
+  RaidMastery have names; the mock ladder matches the server's nine rungs with threshold-keyed ids
+  (`1902a54`). Same day: the combat header shows the damage rung you are on and what the next costs,
+  the summon ledger shows a rung's damage rather than `0%+`, and the mock seed is regenerated from
+  the live tables (`a52f6e6`); the Raids nav dot is live (`cc1658f`).
 - **Security sweep** *(2026-09-12)*. `EndpointAuthorizationSweepTests` walks the live action table
   (every route protected or on a named anonymous list; admin prefixes carry their policy; 401 with
   no token, 403 as a plain player, live). play.riseoftheancients.com now sends HSTS / nosniff /
