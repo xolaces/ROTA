@@ -37,7 +37,7 @@ SHADE = (72, 77, 88, 255)
 # take the right; the mount stands at the figure's side, off the body, larger than the rest.
 DOCKS = {
     "Head":   (0.50, 0.115),
-    "Neck":   (0.50, 0.235),
+    "Neck":   (0.50, 0.255),
     "Torso":  (0.50, 0.415),
     "Gloves": (0.815, 0.605),
     "Ring1":  (0.185, 0.605),
