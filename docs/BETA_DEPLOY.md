@@ -167,16 +167,17 @@ play.example.com {
     encode gzip
 
     # The API sets its own headers in middleware (SecurityHeadersMiddleware); the static host
-    # needs its own. script-src stays loose where Unity needs it — the template's inline boot
-    # script and WebAssembly compilation — and everything else is pinned to this origin and
-    # the API. 'wasm-unsafe-eval' is enough; the build needs no 'unsafe-eval'.
+    # needs its own. The template's one inline boot script is admitted by its SHA-256 —
+    # tools/deploy-webgl.ps1 recomputes it and rewrites this line on every deploy — and
+    # WebAssembly by 'wasm-unsafe-eval'; no 'unsafe-inline' anywhere. Everything else is pinned
+    # to this origin and the API.
     header {
         Strict-Transport-Security "max-age=31536000; includeSubDomains"
         X-Content-Type-Options "nosniff"
         X-Frame-Options "DENY"
         Referrer-Policy "strict-origin-when-cross-origin"
         Permissions-Policy "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
-        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://api.example.com; connect-src 'self' https://api.example.com wss://api.example.com blob: data:; font-src 'self' data:; worker-src 'self' blob:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-REPLACED-ON-DEPLOY' 'wasm-unsafe-eval' blob:; style-src 'self'; img-src 'self' data: blob: https://api.example.com; connect-src 'self' https://api.example.com wss://api.example.com blob: data:; font-src 'self' data:; worker-src 'self' blob:; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
         -Server
     }
     header /Build/* Cache-Control "public, max-age=0, must-revalidate"
@@ -369,10 +370,12 @@ retarget after upload.
   # if the release added migrations: regenerate migrate.sql [local], scp, re-apply (Step 8)
   docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d --build
   ```
-- **Backup the database (do this before each release + on a daily cron):**
+- **Backups.** `/usr/local/bin/rota-backup.sh` runs from root's crontab at 04:17 UTC daily,
+  dumps to `/root/backups/rota-<date>.sql.gz`, keeps 14 days, and appends a line to
+  `/root/backups/backup.log`. Run it by hand before a release. They live on the same disk as the
+  database — copy one off-box now and then. Restore:
   ```bash
-  docker compose -f docker-compose.prod.yml exec -T postgres \
-    pg_dump -U rota_user rota | gzip > ~/rota-backup-$(date +%F).sql.gz
+  gunzip -c /root/backups/rota-YYYY-MM-DD-HHMM.sql.gz | docker exec -i rota-postgres-prod psql -U rota_user -d rota
   ```
 - **Restart / stop:** `docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml restart`
   (or `down` to stop; data persists in named volumes).

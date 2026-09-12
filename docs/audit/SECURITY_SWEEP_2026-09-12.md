@@ -16,6 +16,8 @@ the commits named; nothing in this note is still live.
 | 6 | Client | UI Toolkit labels parse rich-text tags by default, so `<size=300>` in chat or a guild description rendered as such for everyone. | `enableRichText = false` on chat bodies, private messages, guild description and MOTD. `accdb17` |
 | 7 | API | `/icons/body` cached a day, so a player who saw the placeholder figure kept it a day after the real one shipped. | `no-cache` (revalidate), like the atlas. `8377ed6` |
 | 8 | API | HSTS was the framework's 30-day default. | A year, like the game page. |
+| 9 | play. (Caddy) | `script-src 'unsafe-inline'` and `style-src 'unsafe-inline'` for the Unity template. | The one inline boot script is admitted by its SHA-256, recomputed by `deploy-webgl.ps1` on every deploy; the page has no inline styles. No `'unsafe-inline'` anywhere; boots clean. |
+| 10 | droplet | Database backups were ad hoc. | Nightly cron, 14 days kept, `/root/backups`; restore line in `BETA_DEPLOY.md` §12. Still on the same disk as the database. |
 
 ## New standing test
 
@@ -48,9 +50,14 @@ policy; then real requests — no token → 401 on every protected route, a sign
   open (a protection layer, not a dependency) and each breach is audited once per window.
 - Ban gate runs on every mutating request, ahead of the 15-minute access-token lifetime.
 
+## Host
+
+`ufw` admits 22/80/443 only; SSH is key-only (password and keyboard-interactive off); Postgres,
+Redis and the API publish no host port; the API container runs as `app`, not root;
+`unattended-upgrades` is active. `fail2ban` is off, which key-only SSH makes moot.
+
 ## Left as is, with reasons
 
-- `script-src 'unsafe-inline'` on the game page: the Unity template's boot script is inline. A
-  nonce would need `apply-webgl-bg.ps1` to stamp one per deploy and Caddy to serve it; low value
-  while nothing else on the page runs script.
+- Backups stay on the droplet's own disk: there is no off-box destination configured. Copying one
+  down now and then is a one-line `scp`.
 - `baby.riseoftheancients.com` shares the Caddy but is not part of this system and was not reviewed.
