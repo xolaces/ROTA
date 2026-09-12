@@ -21,11 +21,16 @@ public enum CraftOutputKind
     Gear   = 2,
 }
 
-/// <summary>Dawn's own recipe grouping — General / Events / Guild / Special.</summary>
+/// <summary>
+/// Dawn's own recipe grouping — General / Events / Guild / Special — plus Reforge, ROTA's: a set
+/// piece rebuilt around parts that only raids drop. Its own tab because there is one recipe per
+/// piece, and ninety-odd of them in General would bury the sixteen recipes that were there.
+/// </summary>
 public enum CraftRecipeCategory
 {
     General = 0,
     Events  = 1,
     Guild   = 2,
     Special = 3,
+    Reforge = 4,
 }

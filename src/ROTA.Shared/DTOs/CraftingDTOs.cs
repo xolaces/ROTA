@@ -9,6 +9,12 @@ public class CraftIngredientResponse
     public string Id { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string Rarity { get; set; } = string.Empty;
+    /// <summary>
+    /// The art reference — an item's artKey or a gear/unit/legion iconPath — so the client draws
+    /// the definition's picture rather than guessing a picture from the id. A reforged piece shares
+    /// its base piece's art, and its id is not a file.
+    /// </summary>
+    public string? Art { get; set; }
     public int Required { get; set; }
     public int Owned { get; set; }
     public bool Satisfied { get; set; }
@@ -25,12 +31,14 @@ public class CraftRecipeResponse
     public string RecipeId { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public string Category { get; set; } = string.Empty;   // General | Events | Guild | Special
+    public string Category { get; set; } = string.Empty;   // General | Events | Guild | Special | Reforge
 
     public string OutputKind { get; set; } = string.Empty;
     public string OutputId { get; set; } = string.Empty;
     public string OutputName { get; set; } = string.Empty;
     public string OutputRarity { get; set; } = string.Empty;
+    /// <summary>The output's art reference — see <see cref="CraftIngredientResponse.Art"/>.</summary>
+    public string? OutputArt { get; set; }
     public int OutputQuantity { get; set; }
 
     public List<CraftIngredientResponse> Ingredients { get; set; } = new();

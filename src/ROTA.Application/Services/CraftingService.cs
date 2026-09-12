@@ -465,6 +465,7 @@ public sealed class CraftingService : ICraftingService
                 Id        = ing.Id,
                 Name      = name,
                 Rarity    = rarity,
+                Art       = ArtOf(ing.Kind, ing.Id),
                 Required  = ing.Quantity,
                 Owned     = owned,
                 Satisfied = owned >= ing.Quantity && blocked is null,
@@ -495,6 +496,7 @@ public sealed class CraftingService : ICraftingService
             OutputId       = r.OutputId,
             OutputName     = outName,
             OutputRarity   = outRarity,
+            OutputArt      = ArtOf(r.OutputKind, r.OutputId),
             OutputQuantity = r.OutputQuantity,
             Ingredients    = ingredients,
             GoldCost       = r.GoldCost,
@@ -542,6 +544,26 @@ public sealed class CraftingService : ICraftingService
     // through degrades to showing the id rather than throwing at a player.
     private static (string, string) Describe(string? name, ItemRarity? rarity)
         => (name ?? "(unknown)", rarity?.ToString() ?? string.Empty);
+
+    // The definition's own art reference. Items address art by artKey, everything else by iconPath;
+    // the client reduces either to the atlas key. Null when the definition is unknown, and the client
+    // then keeps its rarity swatch.
+    private string? ArtOf(CraftIngredientKind kind, string id) => kind switch
+    {
+        CraftIngredientKind.Item   => _itemDefs.GetById(id)?.ArtKey,
+        CraftIngredientKind.Unit   => _unitDefs.GetById(id)?.IconPath,
+        CraftIngredientKind.Legion => _legionDefs.GetById(id)?.IconPath,
+        CraftIngredientKind.Gear   => _gearDefs.GetById(id)?.IconPath,
+        _ => null,
+    };
+
+    private string? ArtOf(CraftOutputKind kind, string id) => kind switch
+    {
+        CraftOutputKind.Unit   => _unitDefs.GetById(id)?.IconPath,
+        CraftOutputKind.Legion => _legionDefs.GetById(id)?.IconPath,
+        CraftOutputKind.Gear   => _gearDefs.GetById(id)?.IconPath,
+        _ => null,
+    };
 
     private static CraftResponse Fail(CraftFailureCode code, string reason)
         => new() { FailureCode = code, FailureReason = reason };
