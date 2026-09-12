@@ -482,7 +482,9 @@ app.UseResponseCompression();
 // Caching splits by what the file is. A named icon is addressed by content id and changes only when
 // that item is redrawn, so it earns a day. The atlas is one file that is rebuilt every time ANY of
 // the 362 change, and a client holding a stale one shows stale art everywhere at once, so it
-// revalidates each load — one conditional request, almost always answered 304 and empty.
+// revalidates each load — one conditional request, almost always answered 304 and empty. The
+// figure under body/ is the same shape of thing: one file, replaced wholesale, seen on every
+// Profile — so it revalidates too.
 // BaseDirectory, not ContentRootPath. Content JSON lives in the source tree AND is copied to the
 // output, so ContentRootPath finds it either way; icons only exist in the output, because the
 // csproj LINKS them in from the repo root rather than keeping 28 MB of PNGs inside the project.
@@ -499,8 +501,9 @@ if (Directory.Exists(iconRoot))
         OnPrepareResponse = ctx =>
         {
             var name = ctx.File.Name;
-            ctx.Context.Response.Headers.CacheControl =
-                name is "atlas.png" or "atlas.json" ? "public, no-cache" : "public, max-age=86400";
+            var wholesale = name is "atlas.png" or "atlas.json"
+                            || ctx.Context.Request.Path.StartsWithSegments("/icons/body");
+            ctx.Context.Response.Headers.CacheControl = wholesale ? "public, no-cache" : "public, max-age=86400";
         },
     });
 }
