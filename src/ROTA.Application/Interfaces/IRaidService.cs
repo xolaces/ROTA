@@ -11,8 +11,12 @@ public interface IRaidService
         Guid playerId, string raidDefinitionId, RaidDifficulty difficulty,
         RaidSize size = RaidSize.Large, CancellationToken ct = default);
 
+    // resource: the pool to pay from. Null is the raid's default (Stamina; GuildStamina on guild
+    // raids; Strikes on the Gauntlet). World raids also take Energy and GuildStamina at the same
+    // per-hit cost; naming a pool a raid does not take fails with InvalidResource.
     Task<RaidHitResult> HitRaidAsync(
-        Guid playerId, Guid activeRaidId, int hitSize, string idempotencyKey, CancellationToken ct = default);
+        Guid playerId, Guid activeRaidId, int hitSize, string idempotencyKey,
+        ResourceType? resource = null, CancellationToken ct = default);
 
     // System 21 Slice 3b — the caller's guild's active raids (empty when guild-less; guild resolved
     // server-side). Hits go through the existing HitRaidAsync (gated on guild_id).

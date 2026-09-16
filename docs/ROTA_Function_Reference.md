@@ -1245,7 +1245,7 @@ FlagDeveloperAsync(sp, target, grant) (T43): CLI helper for flag-dev/unflag-dev.
 |----------|---------------|-----------|
 | `GET /api/raids` | `GetActiveRaidsAsync` | 200 |
 | `POST /api/raids/{raidDefinitionId}/summon` | `SummonRaidAsync` | 201, 400, 404, 422 |
-| `POST /api/raids/{activeRaidId}/hit` | `HitRaidAsync` | 200, 400, 404, 409, 410, 422 |
+| `POST /api/raids/{activeRaidId}/hit` | `HitRaidAsync` | 200, 400, 404, 409, 410, 422 — body `RaidHitRequest { HitSize, IdempotencyKey, Resource? }`; `Resource` = `Stamina` (default) / `Energy` / `GuildStamina`, the last two on **World** raids only (else 400 `InvalidResource`). Response `ResourceSpent` names the pool `NewStaminaValue/Max` describe |
 | `GET /api/raids/{activeRaidId}` | `GetRaidByIdAsync` | 200, 404 — join-by-UID; summoner can open own `Lootable` raid |
 | `POST /api/raids/{activeRaidId}/share` | `ShareRaidAsync` | 200, 400, 403, 404, 409 — body `ShareRaidRequest { Visibility="Public" }` **optional** (no body → Public, back-compat). 409 = Personal **or** NotInGuild |
 | `POST /api/raids/{activeRaidId}/loot` | `LootRaidAsync` | 200, 404, 409 — per-participant claim; the participation is deleted with the grant, so a second press is 404 (409 = NotLootable) |
@@ -1664,7 +1664,7 @@ Eval rule: `floor(owned / perCount) × bonusAmount`
 - **ItemType** — `Equipment, Material, StatBag, Sigil, Consumable`
 - **ItemRarity** — `Grey=0, White=1, Green=2, Blue=3, Purple=4, Orange=5`
 - **QuestFailureCode** — `None=0, QuestNotFound=1, PrerequisiteNotMet=2, InsufficientEnergy=3, PlayerNotFound=4, PlayerBanned=5, DifficultyLocked=6, NodeCleared=7, ZoneBossLocked=8` (NodeCleared/ZoneBossLocked → HTTP 409)
-- **RaidHitFailureCode** — `RaidNotFound, RaidExpired, RaidAlreadyDefeated, InvalidHitSize, InsufficientStamina, AccessDenied, RaidFull`
+- **RaidHitFailureCode** — `RaidNotFound, RaidExpired, RaidAlreadyDefeated, InvalidHitSize, InsufficientStamina, AccessDenied, RaidFull, InsufficientStrikes, InsufficientGuildStamina, InsufficientEnergy, InvalidResource`
 - **SummonRaidFailureCode** — `DefinitionNotFound, PlayerNotFound`
 - **UseItemFailureCode** — `ItemNotFound, InsufficientItems, ItemNotUsable`
 

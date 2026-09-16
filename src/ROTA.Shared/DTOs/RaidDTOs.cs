@@ -44,9 +44,11 @@ public class RaidHitResponse
     // ParticipantCount is on ActiveRaidResponse (list screen) — not exposed per-hit.
     public int NewStaminaValue { get; set; }
     public int NewStaminaMax { get; set; }
+    // The pool the two fields above describe — Stamina | Energy | GuildStamina — i.e. what this hit
+    // spent. Guild raids report GuildStamina; World raids report whichever the request chose.
+    public string ResourceSpent { get; set; } = "Stamina";
     // live Health after the per-hit drain, so the client can patch the health bar without a
-    // profile re-fetch (otherwise it freezes after the first hit). On guild raids the stamina fields
-    // above carry GuildStamina, not regular Stamina.
+    // profile re-fetch (otherwise it freezes after the first hit).
     public int NewHealthValue { get; set; }
     public int NewHealthMax { get; set; }
     public RaidRewards? Rewards { get; set; }
@@ -154,6 +156,10 @@ public class RaidHitRequest
 {
     public int HitSize { get; set; }
     public string IdempotencyKey { get; set; } = string.Empty;
+    // Owner, 2026-09-16: World raids take Energy or GuildStamina as well as Stamina, the player's
+    // choice per hit — Stamina | Energy | GuildStamina. Null/empty is Stamina. Every other raid
+    // ignores it (guild raids always spend GuildStamina, the Gauntlet strikes).
+    public string? Resource { get; set; }
 }
 
 // --- Service result wrappers ---
@@ -220,6 +226,8 @@ public enum RaidHitFailureCode
     RaidFull            = 7,  // Participant cap reached for this raid size
     InsufficientStrikes = 8,  // BETA (System 16 Slice 4) — Gauntlet raid: not enough Strikes for this hit size
     InsufficientGuildStamina = 9, // System 21 Slice 3b — guild raid: not enough GuildStamina for this hit size (→ 422)
+    InsufficientEnergy  = 10, // World raid hit paid in Energy: not enough for this hit size (→ 422)
+    InvalidResource     = 11, // the requested pool is not one this raid takes (→ 400)
 }
 
 public enum ShareRaidFailureCode

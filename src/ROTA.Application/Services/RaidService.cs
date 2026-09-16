@@ -688,7 +688,7 @@ public sealed class RaidService : IRaidService
 
     public async Task<RaidHitResult> HitRaidAsync(
         Guid playerId, Guid activeRaidId, int hitSize, string idempotencyKey,
-        CancellationToken ct = default)
+        ResourceType? resource = null, CancellationToken ct = default)
     {
         // 1. Load raid — fast pre-check before any expensive work.
         var raid = await _raids.FindByIdAsync(activeRaidId, ct);
@@ -770,12 +770,28 @@ public sealed class RaidService : IRaidService
         //    even though the actual deduction happens inside the advisory-lock transaction.
         int staminaCost = hitSize * definition.StaminaCostPerHit;
 
+        // 6b. Which pool pays. Guild raids: GuildStamina. World raids (owner, 2026-09-16): Stamina,
+        //     Energy or GuildStamina, the player's pick, all at the same per-hit cost — so the XP and
+        //     gold basis (staminaCost) is the same whichever pool drains. Everything else: Stamina.
+        //     The Gauntlet spends Strikes and never reads this.
+        bool isWorldRaid = string.Equals(definition.Tier, "World", StringComparison.OrdinalIgnoreCase);
+        var pool = raid.GuildId is not null ? ResourceType.GuildStamina : resource ?? ResourceType.Stamina;
+        bool poolAllowed = pool switch
+        {
+            ResourceType.Stamina      => raid.GuildId is null,
+            ResourceType.GuildStamina => raid.GuildId is not null || isWorldRaid,
+            ResourceType.Energy       => isWorldRaid,
+            _                         => false,
+        };
+        if (!isGauntlet && !poolAllowed)
+            return HitFail(RaidHitFailureCode.InvalidResource,
+                isWorldRaid ? "World raids take Stamina, Energy or Guild Stamina."
+                            : "This raid takes Stamina only.");
+
         // 6a. Gauntlet fork (System 16 Slice 4 / D6) — Gauntlet raids spend a FLAT 1 STRIKE per hit
-        //     (hitSize forced to 1 at step 4) instead of Stamina; non-Gauntlet raids keep the stamina
-        //     path. The debit happens inside the advisory-lock tx (atomic with the hit). isGauntlet is
+        //     (hitSize forced to 1 at step 4) instead of a pool; non-Gauntlet raids spend `pool`.
+        //     The debit happens inside the advisory-lock tx (atomic with the hit). isGauntlet is
         //     resolved at step 4.
-        // System 21 Slice 3b — guild raids spend GuildStamina (= hit size) instead of Stamina/Strikes.
-        bool isGuildRaid = raid.GuildId is not null;
         // Gauntlet strikes are a FLAT 1 ticket: hit sizes don't apply on the
         // Gauntlet fork, and strikeCost is only ever read on the Gauntlet (strike-spend) path.
         int strikeCost = 1;
@@ -801,6 +817,7 @@ public sealed class RaidService : IRaidService
         bool staminaInsufficient = false;
         bool strikesInsufficient = false;   // System 16 Slice 4 — Gauntlet strike spend failed
         bool guildStaminaInsufficient = false; // System 21 Slice 3b — guild-raid GuildStamina spend failed
+        bool energyInsufficient  = false;   // World raid paid in Energy — spend failed
         long offCapBonus         = 0;       // System 16 Slice 4 — off-cap Wrath/Blessing aura bonus
         long damageFinal         = 0;
         long finalHp             = 0;
@@ -855,26 +872,21 @@ public sealed class RaidService : IRaidService
                 }
                 // Charged (debited now) or AlreadyCharged (idempotent replay within the tx) → proceed.
             }
-            else if (isGuildRaid)
-            {
-                // System 21 Slice 3b — guild raids spend GuildStamina (cost = hit size, since
-                // guild_raids.json sets StaminaCostPerHit=1). Same tx-safe AtomicUpdateAsync path as
-                // Stamina, so the debit commits/rolls back atomically with the hit. Strikes never apply.
-                var guildStaminaSpent = await _energy.SpendEnergyAsync(
-                    playerId, ResourceType.GuildStamina, staminaCost, ct);
-                if (!guildStaminaSpent)
-                {
-                    guildStaminaInsufficient = true;
-                    return false;
-                }
-            }
             else
             {
-                var staminaSpent = await _energy.SpendEnergyAsync(
-                    playerId, ResourceType.Stamina, staminaCost, ct);
-                if (!staminaSpent)
+                // The chosen pool (step 6b) — GuildStamina on guild raids (System 21 Slice 3b, cost =
+                // hit size since guild_raids.json sets StaminaCostPerHit=1), the player's pick on World
+                // raids, Stamina elsewhere. Same tx-safe AtomicUpdateAsync path for all three, so the
+                // debit commits/rolls back atomically with the hit. Strikes never apply.
+                var spent = await _energy.SpendEnergyAsync(playerId, pool, staminaCost, ct);
+                if (!spent)
                 {
-                    staminaInsufficient = true;
+                    switch (pool)
+                    {
+                        case ResourceType.GuildStamina: guildStaminaInsufficient = true; break;
+                        case ResourceType.Energy:       energyInsufficient       = true; break;
+                        default:                        staminaInsufficient      = true; break;
+                    }
                     return false;
                 }
             }
@@ -1433,6 +1445,9 @@ public sealed class RaidService : IRaidService
             if (guildStaminaInsufficient)
                 return HitFail(RaidHitFailureCode.InsufficientGuildStamina, "Insufficient guild stamina.");
 
+            if (energyInsufficient)
+                return HitFail(RaidHitFailureCode.InsufficientEnergy, "Insufficient energy.");
+
             return raceCondition
                 ? HitFail(RaidHitFailureCode.RaidAlreadyDefeated,
                     "The creature fell just before your strike landed. The battle is over.")
@@ -1449,19 +1464,18 @@ public sealed class RaidService : IRaidService
         string commanderSuffix = commanderProcFired ? $" CMDR +{commanderProcBonus}" : string.Empty;
         // Gauntlet off-cap aura + strike-spend audit suffixes (Gauntlet raids only).
         string offCapSuffix    = offCapBonus > 0 ? $" OFFCAP +{offCapBonus}" : string.Empty;
-        string strikeSuffix    = isGauntlet ? $" STRIKES -{strikeCost}" : string.Empty;
+        string strikeSuffix    = isGauntlet ? $" STRIKES -{strikeCost}" : $" {pool.ToString().ToUpperInvariant()} -{staminaCost}";
         await _auditLog.AppendAsync(AuditLog.Create(
             playerId, "RaidHit", null,
             $"Hit raid {activeRaidId} ({definition.Name}) [{raid.Difficulty}] for {damageFinal} dmg (x{hitSize}){critSuffix}{procSuffix}{magicSuffix}{legionSuffix}{unitSuffix}{commanderSuffix}{offCapSuffix}{strikeSuffix}. " +
             $"HP: {finalHp}/{raid.MaxHp}. Kill: {finalDefeated}",
             null), ct);
 
-        // Guild raids spend GuildStamina (not Stamina), so the hit response's stamina fields must
-        // report the pool that actually decremented — otherwise the "Guild Stamina" label shows the
-        // untouched regular Stamina and the bar appears frozen until a profile re-fetch.
-        var staminaResourceType = isGuildRaid ? ResourceType.GuildStamina : ResourceType.Stamina;
-        var newStaminaValue = await _energy.GetCurrentEnergyAsync(playerId, staminaResourceType, ct);
-        var staminaResource = await _resources.GetAsync(playerId, staminaResourceType, ct);
+        // The hit response's stamina fields report the pool that actually decremented (GuildStamina
+        // on guild raids, the player's pick on World raids) — otherwise the bar for the drained pool
+        // appears frozen until a profile re-fetch. ResourceSpent names it for the client.
+        var newStaminaValue = await _energy.GetCurrentEnergyAsync(playerId, pool, ct);
+        var staminaResource = await _resources.GetAsync(playerId, pool, ct);
         int newStaminaMax   = staminaResource?.MaxValue ?? 0;
         // Health is drained per hit; surface the live value/max so the client can patch the
         // health bar without a profile re-fetch (otherwise it freezes after the first hit).
@@ -1484,6 +1498,7 @@ public sealed class RaidService : IRaidService
             YourHitCount    = participantFinal.HitCount,
             NewStaminaValue = newStaminaValue,
             NewStaminaMax   = newStaminaMax,
+            ResourceSpent   = pool.ToString(),
             NewHealthValue  = newHealthValue,
             NewHealthMax    = newHealthMax,
             Rewards         = rewards,

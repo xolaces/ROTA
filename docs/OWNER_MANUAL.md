@@ -161,7 +161,8 @@ end on their timer, not on damage.
   "baseHp": 4000,                  Normal-difficulty shared pool
   "personalBaseHp": 1000,          Normal-difficulty solo pool
   "timerHours": 48,                how long before it expires
-  "staminaCostPerHit": 1,          multiplied by hit size (1 / 5 / 20)
+  "staminaCostPerHit": 1,          multiplied by hit size (1 / 5 / 20); World raids take it from
+                                   Stamina, Energy OR Guild Stamina — the player picks per hit
   "goldPerStamina": 1,             gold yield per stamina spent
   "lootTableId": "lt_raid_c1z1b",  "" = tier rewards only (gold/XP/gems, no items)
   "baseGoldReward": 600,           on kill, before tier + difficulty multipliers

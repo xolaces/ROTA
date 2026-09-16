@@ -397,6 +397,104 @@ public class RaidServiceTests
     /// this weak player's damage by more than ten, and would move a level-1,000 player's by about two
     /// percent. It is the only power in the game that helps the weakest participant most.
     /// </remarks>
+    // Owner, 2026-09-16: World raids take Energy or Guild Stamina as well as Stamina, the player's
+    // pick per hit, at the same per-hit cost. Every other raid still takes Stamina only.
+
+    private static void SetupPool(ServiceBundle b, Player player, ResourceType pool, bool success, int left = 7)
+    {
+        b.Energy.Setup(e => e.SpendEnergyAsync(player.Id, pool, It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(success);
+        b.Energy.Setup(e => e.GetCurrentEnergyAsync(player.Id, pool, It.IsAny<CancellationToken>())).ReturnsAsync(left);
+        b.Resources.Setup(r => r.GetAsync(player.Id, pool, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(PlayerResource.Create(player.Id, pool, 20, regenPerMinute: 1));
+    }
+
+    private static void SetupFreshParticipant(ServiceBundle b, Player player, ActiveRaid raid)
+    {
+        b.Participants.Setup(p => p.FindByRaidAndPlayerAsync(raid.Id, player.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant?)null);
+        b.Participants.Setup(p => p.CreateAsync(It.IsAny<RaidParticipant>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RaidParticipant p, CancellationToken _) => p);
+    }
+
+    [Theory]
+    [InlineData(ResourceType.Energy)]
+    [InlineData(ResourceType.GuildStamina)]
+    public async Task Hit_WorldRaid_TakesTheChosenPool_AndReportsIt(ResourceType pool)
+    {
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid = MakeRaid();
+        SetupHitScaffolding(b, player, raid);
+        SetupFreshParticipant(b, player, raid);
+        SetupPool(b, player, pool, success: true, left: 7);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 5, Guid.NewGuid().ToString(), pool);
+
+        result.Success.Should().BeTrue(result.FailureReason);
+        result.Response!.ResourceSpent.Should().Be(pool.ToString());
+        result.Response.NewStaminaValue.Should().Be(7, "the stamina fields describe the pool that drained");
+        result.Response.NewStaminaMax.Should().Be(20);
+        b.Energy.Verify(e => e.SpendEnergyAsync(player.Id, pool, 5, It.IsAny<CancellationToken>()), Times.Once);
+        b.Energy.Verify(e => e.SpendEnergyAsync(player.Id, ResourceType.Stamina, It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Hit_WorldRaid_DefaultsToStamina()
+    {
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid = MakeRaid();
+        SetupHitScaffolding(b, player, raid);
+        SetupFreshParticipant(b, player, raid);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeTrue();
+        result.Response!.ResourceSpent.Should().Be("Stamina");
+        b.Energy.Verify(e => e.SpendEnergyAsync(player.Id, ResourceType.Stamina, 1, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Hit_WorldRaid_EnergyShort_FailsWithInsufficientEnergy()
+    {
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid = MakeRaid();
+        SetupHitScaffolding(b, player, raid);
+        SetupFreshParticipant(b, player, raid);
+        SetupPool(b, player, ResourceType.Energy, success: false);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 20, Guid.NewGuid().ToString(), ResourceType.Energy);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(RaidHitFailureCode.InsufficientEnergy);
+        raid.CurrentHp.Should().Be(100000, "a failed spend lands no damage");
+        b.Energy.Verify(e => e.SpendEnergyAsync(player.Id, ResourceType.Stamina, It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData(ResourceType.Energy)]
+    [InlineData(ResourceType.GuildStamina)]
+    public async Task Hit_StandardRaid_TakesStaminaOnly(ResourceType pool)
+    {
+        var b = BuildService(new Random(0));
+        var player = MakePlayer();
+        var raid = MakeRaid();
+        SetupHitScaffolding(b, player, raid);
+        var standard = IronColossus();
+        standard.Tier = "Standard";
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(standard);
+        SetupFreshParticipant(b, player, raid);
+        SetupPool(b, player, pool, success: true);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString(), pool);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(RaidHitFailureCode.InvalidResource);
+        b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
     [Fact]
     public async Task Hit_FlatAttackAura_AddsFlatAttackForEveryone()
     {

@@ -183,7 +183,16 @@ public sealed class RaidController : ControllerBase
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> Hit([FromRoute] Guid activeRaidId, [FromBody] RaidHitRequest request)
     {
-        var result = await _raids.HitRaidAsync(GetPlayerId(), activeRaidId, request.HitSize, request.IdempotencyKey);
+        ResourceType? resource = null;
+        if (!string.IsNullOrWhiteSpace(request.Resource))
+        {
+            if (!Enum.TryParse<ResourceType>(request.Resource, ignoreCase: true, out var parsed)
+                || parsed is not (ResourceType.Stamina or ResourceType.Energy or ResourceType.GuildStamina))
+                return BadRequest(new { message = "Resource must be Stamina, Energy or GuildStamina." });
+            resource = parsed;
+        }
+
+        var result = await _raids.HitRaidAsync(GetPlayerId(), activeRaidId, request.HitSize, request.IdempotencyKey, resource);
 
         if (result.Success)
             return Ok(result.Response);
@@ -195,6 +204,7 @@ public sealed class RaidController : ControllerBase
             RaidHitFailureCode.RaidAlreadyDefeated => Conflict(new { message = result.FailureReason }),
             RaidHitFailureCode.RaidFull            => Conflict(new { message = result.FailureReason }),
             RaidHitFailureCode.InvalidHitSize      => BadRequest(new { message = result.FailureReason }),
+            RaidHitFailureCode.InvalidResource     => BadRequest(new { message = result.FailureReason }),
             RaidHitFailureCode.AccessDenied        => StatusCode(StatusCodes.Status403Forbidden, new { message = result.FailureReason }),
             // InsufficientStamina + InsufficientStrikes (System 16 Slice 4) both map to 422.
             RaidHitFailureCode.InsufficientStrikes => UnprocessableEntity(new { message = result.FailureReason }),
