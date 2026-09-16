@@ -406,6 +406,15 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- **WebGL lost every glyph outside ASCII** *(2026-09-16, owner report: "no crafting / profile icons")*.
+  The player ships Unity's 332-glyph Liberation Sans; Windows borrows OS fonts, WebGL cannot, so
+  the nav icons, em dashes, arrows and every emoji were blank on the website. Four Noto subsets
+  (OFL, `tools/fonts/subset-fonts.py`, ~1.2 MB) are registered as panel fallbacks at boot
+  (`FontFallbacks.cs`); the script fails if a client source uses a glyph no subset carries. Found
+  by running the WebGL build locally in mock mode (memory: `webgl-local-mock-test-surface`).
+- **World raids take Energy or Guild Stamina** *(2026-09-16, owner call)*. `RaidHitRequest.Resource`,
+  same per-hit cost, `ResourceSpent` in the response; the combat view grows a pool picker on World
+  raids only. Guild raids still force GuildStamina; everything else is Stamina-only (400).
 - **RG1 closed — the three relics have homes and teeth** *(2026-09-12, owner calls)*. Colossus-Core
   Shard and the Cold Token drop from their deep-zone bosses (`wire_deep_relics.py`); the Sovereign's
   Tithe-Mark is the rank-1 Gauntlet prize (`gauntlet_prizes.json` band `gearId`, paid at settlement,
