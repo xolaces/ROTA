@@ -88,8 +88,8 @@ owner's own confirmation. Everything else RE1 asked for is done.
 > **Resume here (stopped 2026-10-12 at owner's request).** Server: everything above marked ✅ is
 > deployed (`f0f6c36` + `10385f6` pushed; API live, /health/ready Healthy). Client: refresh part 1 is
 > committed and pushed on `feat/mock-playtest-accounts` (`43f253d`) and verified in a local WebGL mock
-> build, **not deployed to play.\*** — deploy with `.	oolsuild-client.ps1 -Target WebGL` then
-> `.	ools\deploy-webgl.ps1`. Open: emoji-presentation glyphs (🏠 💬 🎁) still draw blank on WebGL
+> build, **not deployed to play.riseoftheancients.com** — deploy with `tools/build-client.ps1 -Target WebGL` then
+> `tools/deploy-webgl.ps1`. Open: emoji-presentation glyphs (🏠 💬 🎁) still draw blank on WebGL
 > even with NotoEmoji off the emoji list — header/raid buttons use text symbols meanwhile; next
 > suspect is `TextElement.emojiFallbackSupport` (search emoji list first, then stop). Next items:
 > U2 shared classes, U6, S8 (change password / log out everywhere), S9, S10.
