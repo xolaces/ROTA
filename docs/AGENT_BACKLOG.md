@@ -86,15 +86,16 @@ owner's own confirmation. Everything else RE1 asked for is done.
 > `[migration]` = needs a schema change, so it ships behind the owner applying the migration.
 
 ### Lane U — UI refresh (client)
-- **U1. Top bar + tab strip.** Rail → horizontal tabs (Home · Campaign · Raids · Guild · Legion ·
+- ✅ **U1. Top bar + tab strip.** *(client, 2026-10-12)* Rail → horizontal tabs (Home · Campaign · Raids · Guild · Legion ·
   Profile · Crafting · Bazaar · Gauntlet) with counters; bars get names, numbers, regen timers.
-- **U2. Fonts + shared classes.** Barlow / Barlow Semi Condensed (OFL) through the font pipeline;
+- 🔶 **U2. Fonts + shared classes.** Fonts done: Outfit (headings) + Nunito Sans (text), OFL, owner
+  asked for softer than Barlow; `GameFonts.cs`. Still to do:
   `.card` / `.chip` / `.seg` / `.btn-ghost` classes per the mockup. Login stays pixel-stable.
-- **U3. Campaign map.** Zone map with nodes on a road, progress rings, difficulty strip, node detail
+- ✅ **U3. Campaign map.** *(client, 2026-10-12 — auto-layout; content positions still open)* Zone map with nodes on a road, progress rings, difficulty strip, node detail
   panel; node positions in content (fallback auto-layout when absent).
-- **U4. Raid screen.** Art card with health on its foot, rising damage numbers, named strikes
+- ✅ **U4. Raid screen.** *(client, 2026-10-12 — tier pills wait on a rank DTO field)* Art card with health on its foot, rising damage numbers, named strikes
   (Strike / Power / Onslaught), ranks with tier pills, ladder strip, kill table.
-- **U5. Raid links in World chat only** *(owner, 2026-10-12)*. A raid posted to World chat renders as
+- ✅ **U5. Raid links in World chat only** *(owner, 2026-10-12)*. A raid posted to World chat renders as
   a card with Join; guild and raid chat never render cards. "Copy raid link" and "Call for help"
   (posts to World) on the raid screen.
 - **U6. Remaining screens adopt the classes.** Guild, Legion, Profile, Crafting, Bazaar, Gauntlet,
@@ -102,21 +103,21 @@ owner's own confirmation. Everything else RE1 asked for is done.
 - **U7. Keyboard shortcuts.** 1 / 5 / 20 strike, Q attempt, Esc closes overlays.
 
 ### Lane Q — quest pacing (server + client)
-- **Q1. Quest result carries resources.** `NewEnergyValue/Max` etc. on `QuestResultResponse`; the
+- ✅ **Q1. Quest result carries resources.** *(`7c1c1e0`)* `NewEnergyValue/Max` etc. on `QuestResultResponse`; the
   client stops re-fetching the whole profile after every attempt (halves request rate).
-- **Q2. Server minimum interval.** 0.8 s per player between quest attempts (Redis `SET NX PX`),
+- ✅ **Q2. Server minimum interval.** *(`7c1c1e0`)* 0.8 s per player between quest attempts (Redis `SET NX PX`),
   429 + `Retry-After` when early. Config-driven.
-- **Q3. Client cooldown.** 0.8 s drain strip on Attempt; a 429 waits out `Retry-After` silently.
+- ✅ **Q3. Client cooldown.** 0.8 s drain strip on Attempt; a 429 waits out `Retry-After` silently.
 
 ### Lane S — security / backend (no owner input needed)
 - **S1. Readiness check.** `/health/ready` probes Postgres + Redis; `/health` stays liveness.
-- **S2. Chat hygiene.** Strip zero-width and bidi control characters from chat and names; throttle
+- ✅ **S2. Chat hygiene.** *(`3fa06ca`)* Strip zero-width and bidi control characters from chat and names; throttle
   hub `JoinRaid` / `JoinGuildChannel` / `LeaveGuildChannel` on the chat budget.
-- **S3. Raid in-flight duplicate answers 409**, not 404 "Raid not found".
-- **S4. Password ≤ 72 UTF-8 bytes** on register / reset (bcrypt ignores the rest).
+- ✅ **S3. Raid in-flight duplicate answers 409**, not 404 "Raid not found".
+- ✅ **S4. Password ≤ 72 UTF-8 bytes** on register / reset (bcrypt ignores the rest).
 - **S5. Guild roster presence.** Non-members see "active today / this week / earlier", not the
   timestamp.
-- **S6. Mastery Rating boards default to `Live`** (today a bare GET is 400).
+- ✅ **S6. Mastery Rating boards default to `Live`** (today a bare GET is 400).
 - **S7. Supply chain.** Pin package versions + lock files; Dependabot (NuGet + Actions) and CodeQL.
 - **S8. Change password while logged in** (revokes other sessions) + **log out everywhere**.
 - **S9. Maintenance mode + message of the day.** Config flag → 503 with message; banner in client.
@@ -125,7 +126,8 @@ owner's own confirmation. Everything else RE1 asked for is done.
 - **S11. EF Core / JwtBearer 9 → 10.**
 
 ### Lane F — features (non-core)
-- **F1. Floating damage, crit flash, boss shake, kill fanfare** (folds into U4).
+- 🔶 **F1. Floating damage, crit flash, boss shake, kill fanfare** — damage numbers + crit edge flash
+  shipped with U4; shake and fanfare still open.
 - **F2. Raid list filters** — boss, difficulty, size; favourite bosses.
 - **F3. Name cards** — level, class, guild, best gear, add friend (extends `UsernameContextMenu`).
 - **F4. Raid codex** — every boss met, kills per difficulty, best hit. `[migration]`

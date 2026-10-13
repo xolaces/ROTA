@@ -330,7 +330,9 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     ConnectionMultiplexer.Connect(
         sp.GetRequiredService<IConfiguration>().GetConnectionString("Redis")!));
 
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+    .AddCheck<ROTA.Api.Health.PostgresReadyCheck>("postgres", tags: new[] { "ready" })
+    .AddCheck<ROTA.Api.Health.RedisReadyCheck>("redis", tags: new[] { "ready" });
 
 // MIDDLEWARE PIPELINE - ORDER IS SECURITY-CRITICAL
 // 1. Exception handler   - catches anything that escapes lower layers
@@ -573,7 +575,9 @@ if (app.Environment.IsDevelopment())
 
 // [10] Endpoints
 app.MapControllers();
-app.MapHealthChecks("/health");
+// Liveness (no checks — the container healthcheck) and readiness (Postgres + Redis — uptime monitors).
+app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { Predicate = _ => false });
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { Predicate = c => c.Tags.Contains("ready") });
 
 // SignalR hubs (T35 raid chat, T36 world chat, T37 PM delivery)
 app.MapHub<ChatHub>("/hubs/chat");
