@@ -85,6 +85,15 @@ owner's own confirmation. Everything else RE1 asked for is done.
 > each lane; lanes U and Q interleave. `[owner]` = needs a human input before it can finish;
 > `[migration]` = needs a schema change, so it ships behind the owner applying the migration.
 
+> **Resume here (stopped 2026-10-12 at owner's request).** Server: everything above marked ✅ is
+> deployed (`f0f6c36` + `10385f6` pushed; API live, /health/ready Healthy). Client: refresh part 1 is
+> committed and pushed on `feat/mock-playtest-accounts` (`43f253d`) and verified in a local WebGL mock
+> build, **not deployed to play.\*** — deploy with `.	oolsuild-client.ps1 -Target WebGL` then
+> `.	ools\deploy-webgl.ps1`. Open: emoji-presentation glyphs (🏠 💬 🎁) still draw blank on WebGL
+> even with NotoEmoji off the emoji list — header/raid buttons use text symbols meanwhile; next
+> suspect is `TextElement.emojiFallbackSupport` (search emoji list first, then stop). Next items:
+> U2 shared classes, U6, S8 (change password / log out everywhere), S9, S10.
+
 ### Lane U — UI refresh (client)
 - ✅ **U1. Top bar + tab strip.** *(client, 2026-10-12)* Rail → horizontal tabs (Home · Campaign · Raids · Guild · Legion ·
   Profile · Crafting · Bazaar · Gauntlet) with counters; bars get names, numbers, regen timers.
@@ -110,7 +119,7 @@ owner's own confirmation. Everything else RE1 asked for is done.
 - ✅ **Q3. Client cooldown.** 0.8 s drain strip on Attempt; a 429 waits out `Retry-After` silently.
 
 ### Lane S — security / backend (no owner input needed)
-- **S1. Readiness check.** `/health/ready` probes Postgres + Redis; `/health` stays liveness.
+- ✅ **S1. Readiness check.** *(`f0f6c36`)* — point an uptime monitor at `/health/ready`.
 - ✅ **S2. Chat hygiene.** *(`3fa06ca`)* Strip zero-width and bidi control characters from chat and names; throttle
   hub `JoinRaid` / `JoinGuildChannel` / `LeaveGuildChannel` on the chat budget.
 - ✅ **S3. Raid in-flight duplicate answers 409**, not 404 "Raid not found".
@@ -118,7 +127,7 @@ owner's own confirmation. Everything else RE1 asked for is done.
 - **S5. Guild roster presence.** Non-members see "active today / this week / earlier", not the
   timestamp.
 - ✅ **S6. Mastery Rating boards default to `Live`** (today a bare GET is 400).
-- **S7. Supply chain.** Pin package versions + lock files; Dependabot (NuGet + Actions) and CodeQL.
+- ✅ **S7. Supply chain.** *(`10385f6`; secret-scanning push protection is a repo setting — owner)* Pin package versions + lock files; Dependabot (NuGet + Actions) and CodeQL.
 - **S8. Change password while logged in** (revokes other sessions) + **log out everywhere**.
 - **S9. Maintenance mode + message of the day.** Config flag → 503 with message; banner in client.
 - **S10. Client version gate.** API publishes a minimum client build; a stale cached WebGL build
