@@ -1,0 +1,26 @@
+# Weekly dependency PRs. Versions are pinned in the csproj files (2026-10-12), so nothing moves
+# until one of these is reviewed and merged.
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      microsoft:
+        patterns: ["Microsoft.*", "System.*"]
+      tests:
+        patterns: ["Moq", "Testcontainers*", "xunit*", "coverlet*", "Microsoft.NET.Test.Sdk"]
+    ignore:
+      # FluentAssertions 7+ is commercially licensed; stay on 6.x.
+      - dependency-name: "FluentAssertions"
+        update-types: ["version-update:semver-major"]
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: weekly
