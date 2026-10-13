@@ -64,6 +64,7 @@ public sealed class ChatHub : Hub
     public async Task JoinRaid(string raidId)
     {
         if (!Guid.TryParse(raidId, out var raidGuid)) return;
+        if (await IsJoinThrottledAsync()) return;
         if (await IsCallerBannedAsync()) { await NotifyBlocked(); return; }
         if (!await IsRaidParticipantAsync(raidGuid)) { await NotifyNotInRaid(); return; }
         await Groups.AddToGroupAsync(Context.ConnectionId, RaidGroup(raidGuid));
@@ -100,6 +101,7 @@ public sealed class ChatHub : Hub
     /// </summary>
     public async Task JoinGuildChannel()
     {
+        if (await IsJoinThrottledAsync()) return;
         if (await IsCallerBannedAsync()) { await NotifyBlocked(); return; }
         var guildId = await CallerGuildIdAsync();
         if (guildId is null) { await NotifyNotInGuild(); return; }
@@ -109,6 +111,7 @@ public sealed class ChatHub : Hub
     /// <summary>Leaves the caller's guild chat group (symmetry with LeaveRaid).</summary>
     public async Task LeaveGuildChannel()
     {
+        if (await IsJoinThrottledAsync()) return;
         var guildId = await CallerGuildIdAsync();
         if (guildId is null) return;
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, GuildGroup(guildId.Value));
@@ -221,9 +224,17 @@ public sealed class ChatHub : Hub
 
     private static string Sanitize(string body)
     {
-        if (string.IsNullOrWhiteSpace(body)) return string.Empty;
-        body = body.Trim();
+        body = ROTA.Application.Services.TextHygiene.StripInvisible(body).Trim();
         return body.Length > MaxBody ? body[..MaxBody] : body;
+    }
+
+    // Join/leave frames each read the database; a looping socket could hammer it at line rate.
+    // They get their own budget so opening raid screens never eats into the send allowance.
+    private async Task<bool> IsJoinThrottledAsync()
+    {
+        if (!await _rateLimiter.IsJoinThrottledAsync(SenderId())) return false;
+        await NotifyRateLimited();
+        return true;
     }
 
     private static string RaidGroup(Guid raidId) => $"raid:{raidId:D}";

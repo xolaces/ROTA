@@ -14,4 +14,10 @@ public interface IChatRateLimiter
     /// so a flood can't spread across world/raid/guild to dodge the cap.
     /// </summary>
     Task<bool> TryConsumeAsync(Guid playerId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Counts one hub join/leave against its own budget (RateLimitConfig.ChatJoinsPerWindow per
+    /// ChatWindowSeconds). True means over the budget: drop the frame. Fails open.
+    /// </summary>
+    Task<bool> IsJoinThrottledAsync(Guid playerId, CancellationToken ct = default);
 }

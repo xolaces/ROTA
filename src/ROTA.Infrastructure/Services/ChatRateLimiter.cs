@@ -19,6 +19,7 @@ public sealed class ChatRateLimiter : IChatRateLimiter
 {
     private readonly IDatabase _redis;
     private readonly int _limit;
+    private readonly int _joinLimit;
     private readonly TimeSpan _window;
 
     public ChatRateLimiter(IConnectionMultiplexer mux, IOptions<RateLimitConfig> config)
@@ -26,18 +27,24 @@ public sealed class ChatRateLimiter : IChatRateLimiter
         _redis = mux.GetDatabase();
         var cfg = config.Value;
         _limit = cfg.ChatMessagesPerWindow;
+        _joinLimit = cfg.ChatJoinsPerWindow;
         _window = TimeSpan.FromSeconds(cfg.ChatWindowSeconds);
     }
 
     public async Task<bool> TryConsumeAsync(Guid playerId, CancellationToken ct = default)
+        => await WithinAsync($"ratelimit:chat:player:{playerId}", _limit);
+
+    public async Task<bool> IsJoinThrottledAsync(Guid playerId, CancellationToken ct = default)
+        => !await WithinAsync($"ratelimit:chatjoin:player:{playerId}", _joinLimit);
+
+    private async Task<bool> WithinAsync(string key, int limit)
     {
-        var key = $"ratelimit:chat:player:{playerId}";
         try
         {
             var count = await _redis.StringIncrementAsync(key);
             if (count == 1)
                 await _redis.KeyExpireAsync(key, _window);
-            return count <= _limit;
+            return count <= limit;
         }
         catch (RedisException)
         {

@@ -759,8 +759,9 @@ public sealed class RaidService : IRaidService
         {
             if (existingResponse is not null)
                 return new RaidHitResult { Success = true, Response = existingResponse };
-            // Concurrent in-flight duplicate — treat as duplicate-in-progress.
-            return HitFail(RaidHitFailureCode.RaidNotFound, "Request already in progress.");
+            // Concurrent in-flight duplicate. It used to answer RaidNotFound (404), which told the
+            // client the raid was gone when it was only busy.
+            return HitFail(RaidHitFailureCode.InProgress, "That strike is already being resolved.");
         }
 
         var definition = _raidDefinitions.GetById(raid.RaidDefinitionId)

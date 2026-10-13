@@ -28,4 +28,11 @@ public class RateLimitConfig
 
     /// <summary>Chat throttle window length in seconds (exploit-audit finding J). Default 10.</summary>
     public int ChatWindowSeconds { get; set; } = 10;
+
+    /// <summary>
+    /// Max hub join/leave frames (JoinRaid, JoinGuildChannel, LeaveGuildChannel) per player per
+    /// <see cref="ChatWindowSeconds"/>. Each reads the database. Default 30 — far above what opening
+    /// screens produces.
+    /// </summary>
+    public int ChatJoinsPerWindow { get; set; } = 30;
 }

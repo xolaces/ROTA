@@ -4,6 +4,17 @@ using ROTA.Shared.DTOs;
 
 namespace ROTA.Application.Validators;
 
+// bcrypt reads only the first 72 bytes of a password; anything after is ignored, so a longer
+// password is a promise the hash does not keep. Bytes, not characters: an accented letter is two.
+// Login keeps its 128-character ceiling so an existing longer password still signs in.
+public static class PasswordRules
+{
+    public const int MaxBytes = 72;
+    public const string TooLongMessage = "Password must be 72 bytes or fewer (about 72 plain letters).";
+    public static bool FitsBcrypt(string? password)
+        => password is null || System.Text.Encoding.UTF8.GetByteCount(password) <= MaxBytes;
+}
+
 // SECURITY: first line of defense against malformed input. These validators do NOT
 // check DB state (no async) - business-rule checks (duplicates) happen in the service.
 
@@ -30,7 +41,7 @@ public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest
         RuleFor(x => x.Password)
             .NotEmpty()
             .MinimumLength(8)
-            .MaximumLength(128)
+            .Must(PasswordRules.FitsBcrypt).WithMessage(PasswordRules.TooLongMessage)
             // SECURITY: enforce complexity server-side - client cannot be trusted.
             .Matches(@"[A-Z]").WithMessage("Password must contain at least one uppercase letter.")
             .Matches(@"[a-z]").WithMessage("Password must contain at least one lowercase letter.")
@@ -97,7 +108,7 @@ public sealed class ResetPasswordRequestValidator : AbstractValidator<ResetPassw
         RuleFor(x => x.NewPassword)
             .NotEmpty()
             .MinimumLength(8)
-            .MaximumLength(128)
+            .Must(PasswordRules.FitsBcrypt).WithMessage(PasswordRules.TooLongMessage)
             .Matches(@"[A-Z]").WithMessage("Password must contain at least one uppercase letter.")
             .Matches(@"[a-z]").WithMessage("Password must contain at least one lowercase letter.")
             .Matches(@"\d").WithMessage("Password must contain at least one digit.");

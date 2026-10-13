@@ -228,6 +228,7 @@ public enum RaidHitFailureCode
     InsufficientGuildStamina = 9, // System 21 Slice 3b — guild raid: not enough GuildStamina for this hit size (→ 422)
     InsufficientEnergy  = 10, // World raid hit paid in Energy: not enough for this hit size (→ 422)
     InvalidResource     = 11, // the requested pool is not one this raid takes (→ 400)
+    InProgress          = 12, // the same idempotency key is still being resolved (→ 409)
 }
 
 public enum ShareRaidFailureCode

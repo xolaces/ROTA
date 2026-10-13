@@ -579,6 +579,24 @@ public class RaidServiceTests
         b.Raids.Verify(r => r.AtomicApplyHitAsync(It.IsAny<Guid>(), It.IsAny<Func<ActiveRaid, Task<bool>>>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
+    [Fact]
+    public async Task Hit_SameKeyStillInFlight_IsInProgress_NotRaidNotFound()
+    {
+        var b = BuildService();
+        var key = Guid.NewGuid().ToString();
+        b.HitCache.Setup(c => c.TryAcquireSlotAsync(It.Is<string>(s => s.EndsWith(key)), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((false, (RaidHitResponse?)null));
+        var raid = MakeRaid();
+        b.Raids.Setup(r => r.FindByIdAsync(raid.Id, It.IsAny<CancellationToken>())).ReturnsAsync(raid);
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+
+        var result = await b.Service.HitRaidAsync(Guid.NewGuid(), raid.Id, 1, key);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(RaidHitFailureCode.InProgress);
+        b.Raids.Verify(r => r.AtomicApplyHitAsync(It.IsAny<Guid>(), It.IsAny<Func<ActiveRaid, Task<bool>>>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
     // HitRaidAsync — expired
 
     [Fact]

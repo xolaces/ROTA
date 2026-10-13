@@ -161,6 +161,8 @@ public sealed class SocialService : ISocialService
 
     public async Task<SendMessageResult> SendMessageAsync(Guid senderId, string targetUsernameOrId, string body, CancellationToken ct = default)
     {
+        body = TextHygiene.StripInvisible(body).Trim();
+        if (body.Length == 0) return SendMessageResult.Fail("Message is empty.");
         var target = await ResolveAsync(targetUsernameOrId, ct);
         if (target is null) return SendMessageResult.Fail("Recipient not found.");
         if (target.Id == senderId) return SendMessageResult.Fail("You cannot message yourself.");

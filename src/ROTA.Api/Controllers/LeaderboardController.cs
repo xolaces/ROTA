@@ -84,6 +84,9 @@ public sealed class LeaderboardController : ControllerBase
             LeaderboardBoard.StatAttack      => LeaderboardPeriod.Live,
             LeaderboardBoard.StatDefense     => LeaderboardPeriod.Live,
             LeaderboardBoard.StatDiscernment => LeaderboardPeriod.Live,
+            // Live is the only period these two support; defaulting them to Weekly was a 400.
+            LeaderboardBoard.MasteryRatingActive   => LeaderboardPeriod.Live,
+            LeaderboardBoard.MasteryRatingLifetime => LeaderboardPeriod.Live,
             LeaderboardBoard.LargestHit      => LeaderboardPeriod.Daily,
             LeaderboardBoard.EnergySpent     => LeaderboardPeriod.Weekly,
             LeaderboardBoard.DamageDealt     => LeaderboardPeriod.Weekly,

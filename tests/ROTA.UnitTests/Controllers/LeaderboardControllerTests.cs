@@ -42,6 +42,22 @@ public class LeaderboardControllerTests
         You         = null,
     };
 
+    // A bare GET on a Mastery Rating board used to default to Weekly, which those boards reject (400).
+    [Theory]
+    [InlineData("MasteryRatingActive", LeaderboardBoard.MasteryRatingActive)]
+    [InlineData("MasteryRatingLifetime", LeaderboardBoard.MasteryRatingLifetime)]
+    public async Task GetBoard_MasteryRating_DefaultsToLive(string name, LeaderboardBoard board)
+    {
+        var svc = new Mock<ILeaderboardService>();
+        svc.Setup(s => s.GetPageAsync(board, LeaderboardPeriod.Live, null, 1, It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+           .ReturnsAsync(LeaderboardPageResult.Ok(EmptyPage(name)));
+
+        var result = await BuildController(svc).GetBoard(name, period: null, periodKey: null);
+
+        result.Should().BeOfType<OkObjectResult>();
+        svc.Verify(s => s.GetPageAsync(board, LeaderboardPeriod.Live, null, 1, It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
     [Fact]
     public async Task GetBoards_Returns200WithSummaries()
     {
