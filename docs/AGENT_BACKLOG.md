@@ -77,6 +77,76 @@ owner's own confirmation. Everything else RE1 asked for is done.
 
 ---
 
+## Completion queue — owner go 2026-10-12
+
+> Owner: "do a massive work queue and just start pushing this game to a completion point." Tabs
+> across the top approved; UI direction = **revision 2** of the mockup (modern Obsidian Gilt, no
+> parchment/ribbons — https://claude.ai/artifact/JpAfZ8DNM3PPes8dLuqrYF). Work top to bottom inside
+> each lane; lanes U and Q interleave. `[owner]` = needs a human input before it can finish;
+> `[migration]` = needs a schema change, so it ships behind the owner applying the migration.
+
+### Lane U — UI refresh (client)
+- **U1. Top bar + tab strip.** Rail → horizontal tabs (Home · Campaign · Raids · Guild · Legion ·
+  Profile · Crafting · Bazaar · Gauntlet) with counters; bars get names, numbers, regen timers.
+- **U2. Fonts + shared classes.** Barlow / Barlow Semi Condensed (OFL) through the font pipeline;
+  `.card` / `.chip` / `.seg` / `.btn-ghost` classes per the mockup. Login stays pixel-stable.
+- **U3. Campaign map.** Zone map with nodes on a road, progress rings, difficulty strip, node detail
+  panel; node positions in content (fallback auto-layout when absent).
+- **U4. Raid screen.** Art card with health on its foot, rising damage numbers, named strikes
+  (Strike / Power / Onslaught), ranks with tier pills, ladder strip, kill table.
+- **U5. Raid links in chat.** A raid id posted in chat renders as a card with Join; "Copy raid link"
+  and "Call for help" on the raid screen.
+- **U6. Remaining screens adopt the classes.** Guild, Legion, Profile, Crafting, Bazaar, Gauntlet,
+  Achievements, Leaderboard, overlays.
+- **U7. Keyboard shortcuts.** 1 / 5 / 20 strike, Q attempt, Esc closes overlays.
+
+### Lane Q — quest pacing (server + client)
+- **Q1. Quest result carries resources.** `NewEnergyValue/Max` etc. on `QuestResultResponse`; the
+  client stops re-fetching the whole profile after every attempt (halves request rate).
+- **Q2. Server minimum interval.** 0.8 s per player between quest attempts (Redis `SET NX PX`),
+  429 + `Retry-After` when early. Config-driven.
+- **Q3. Client cooldown.** 0.8 s drain strip on Attempt; a 429 waits out `Retry-After` silently.
+
+### Lane S — security / backend (no owner input needed)
+- **S1. Readiness check.** `/health/ready` probes Postgres + Redis; `/health` stays liveness.
+- **S2. Chat hygiene.** Strip zero-width and bidi control characters from chat and names; throttle
+  hub `JoinRaid` / `JoinGuildChannel` / `LeaveGuildChannel` on the chat budget.
+- **S3. Raid in-flight duplicate answers 409**, not 404 "Raid not found".
+- **S4. Password ≤ 72 UTF-8 bytes** on register / reset (bcrypt ignores the rest).
+- **S5. Guild roster presence.** Non-members see "active today / this week / earlier", not the
+  timestamp.
+- **S6. Mastery Rating boards default to `Live`** (today a bare GET is 400).
+- **S7. Supply chain.** Pin package versions + lock files; Dependabot (NuGet + Actions) and CodeQL.
+- **S8. Change password while logged in** (revokes other sessions) + **log out everywhere**.
+- **S9. Maintenance mode + message of the day.** Config flag → 503 with message; banner in client.
+- **S10. Client version gate.** API publishes a minimum client build; a stale cached WebGL build
+  prompts a reload.
+- **S11. EF Core / JwtBearer 9 → 10.**
+
+### Lane F — features (non-core)
+- **F1. Floating damage, crit flash, boss shake, kill fanfare** (folds into U4).
+- **F2. Raid list filters** — boss, difficulty, size; favourite bosses.
+- **F3. Name cards** — level, class, guild, best gear, add friend (extends `UsernameContextMenu`).
+- **F4. Raid codex** — every boss met, kills per difficulty, best hit. `[migration]`
+- **F5. Inbox** — loot expiring, settlement results, announcements. `[migration]`
+- **F6. Loadout presets** — save gear + legion, swap in one click. `[migration]`
+- **F7. Per-raid stats card** — hits, crit rate, procs, best hit.
+- **F8. Audio** — zone music, hit/crit SFX, volume sliders. `[owner]` (assets)
+
+### Lane O — ops (owner input)
+- **O1. Email.** `EMAIL_ENABLED` + SMTP creds in `/opt/rota/.env` — password reset is dead without
+  it. `[owner]` (credentials)
+- **O2. Off-site backups.** rclone to Spaces/B2 + a restore drill. `[owner]` (destination)
+- **O3. Reboot window** — kernel updates pending since ~2026-06. `[owner]` (timing)
+- **O4. Docker log caps + build-cache prune** — rides along with O3 (daemon restart).
+- **O5. SSH tidy** — `PermitRootLogin prohibit-password`, `X11Forwarding no`, fail2ban.
+- **O6. Delete `SEED_ADMIN_PASSWORD` from `.env`.**
+- **O7. Rename DotD place names** — "Ruins of Kruna" (client mock), "West Kruna / Chalua Gauntlet"
+  (system-24 spec). `[owner]` (new names)
+- **O8. Landing page at the apex domain.** `[owner]` (DNS)
+
+---
+
 ## Ready — ranked
 
 > **Note for an autonomous tick, revised 2026-09-11: Unity DOES build headlessly on this machine.**
