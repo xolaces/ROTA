@@ -9,6 +9,11 @@ public class QuestConfig
     public double BattleDepletionPerAttempt { get; set; } = 5.0;   // 100 / 5  = 20 attempts to clear
     public double BossDepletionPerAttempt { get; set; } = 2.5;     // 100 / 2.5 = 40 attempts to clear
 
+    // Owner, 2026-10-12: at most one attempt per player per this many ms (0 = off). Fast clicking
+    // used to run a player into the API's 180-requests-a-minute ceiling mid-zone; a paced click
+    // never does, and the server enforces it so a modified client can't skip it.
+    public int MinAttemptIntervalMs { get; set; } = 800;
+
     // sigils are the zone-boss's final-clear reward. The FIRST clear per
     // difficulty is a guaranteed 100% drop; every later (rerun) clear drops at this FLAT rate, NOT scaled
     // by Discernment and NOT the per-boss SigilDropChance (which is now just a vestigial enable — a boss

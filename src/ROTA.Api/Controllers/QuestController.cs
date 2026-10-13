@@ -56,6 +56,12 @@ public sealed class QuestController : ControllerBase
 
         if (result.Success) return Ok(result);
 
+        if (result.FailureCode == QuestFailureCode.TooFast)
+        {
+            Response.Headers["Retry-After"] = Math.Max(1, (int)Math.Ceiling(result.RetryAfterMs / 1000.0)).ToString();
+            return StatusCode(StatusCodes.Status429TooManyRequests, result);
+        }
+
         return result.FailureCode switch
         {
             QuestFailureCode.QuestNotFound      => NotFound(new { message = result.FailureReason }),

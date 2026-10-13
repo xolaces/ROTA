@@ -94,8 +94,9 @@ owner's own confirmation. Everything else RE1 asked for is done.
   panel; node positions in content (fallback auto-layout when absent).
 - **U4. Raid screen.** Art card with health on its foot, rising damage numbers, named strikes
   (Strike / Power / Onslaught), ranks with tier pills, ladder strip, kill table.
-- **U5. Raid links in chat.** A raid id posted in chat renders as a card with Join; "Copy raid link"
-  and "Call for help" on the raid screen.
+- **U5. Raid links in World chat only** *(owner, 2026-10-12)*. A raid posted to World chat renders as
+  a card with Join; guild and raid chat never render cards. "Copy raid link" and "Call for help"
+  (posts to World) on the raid screen.
 - **U6. Remaining screens adopt the classes.** Guild, Legion, Profile, Crafting, Bazaar, Gauntlet,
   Achievements, Leaderboard, overlays.
 - **U7. Keyboard shortcuts.** 1 / 5 / 20 strike, Q attempt, Esc closes overlays.

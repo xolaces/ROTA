@@ -77,6 +77,7 @@ public sealed class QuestService : IQuestService
     private readonly IMasteryService _mastery;
     private readonly IAchievementService _achievements;
     private readonly IPlayerMutationLock _mutationLock;   // exploit audit 2026-06-14 (I)
+    private readonly IActionPacer? _pacer;                 // owner 2026-10-12 — 0.8 s between attempts
     private readonly QuestConfig _questConfig;
     private readonly Random _random;
 
@@ -99,8 +100,10 @@ public sealed class QuestService : IQuestService
         IAchievementService achievements,
         IPlayerMutationLock mutationLock,
         IOptions<QuestConfig> questConfig,
-        Random? random = null)
+        Random? random = null,
+        IActionPacer? pacer = null)
     {
+        _pacer = pacer;
         _definitions       = definitions;
         _questProgress     = questProgress;
         _difficultyProgress = difficultyProgress;
@@ -261,9 +264,24 @@ public sealed class QuestService : IQuestService
     // SECURITY (exploit audit 2026-06-14, finding I): serialize a player's concurrent attempts so the
     // depletion write can't lost-update (each attempt reading Progress=100), bypassing the
     // deplete→clear→reset throttle. Inner reward writes (MutateWithRetryAsync) ride this ambient tx.
-    public Task<QuestResultResponse> AttemptQuestAsync(
+    public async Task<QuestResultResponse> AttemptQuestAsync(
         Guid playerId, string questId, QuestDifficulty difficulty, CancellationToken ct = default)
-        => _mutationLock.RunAsync(playerId, () => AttemptQuestCoreAsync(playerId, questId, difficulty, ct), ct);
+    {
+        // Pacing runs before the lock and before anything is read or spent: an early click costs
+        // one Redis round trip and nothing else.
+        if (_pacer is not null && _questConfig.MinAttemptIntervalMs > 0)
+        {
+            var wait = await _pacer.TryBeginAsync(
+                "quest", playerId, TimeSpan.FromMilliseconds(_questConfig.MinAttemptIntervalMs), ct);
+            if (wait is { } left)
+            {
+                var fail = Fail(QuestFailureCode.TooFast, "Too fast. Your next attempt is ready in a moment.");
+                fail.RetryAfterMs = Math.Max(1, (int)Math.Ceiling(left.TotalMilliseconds));
+                return fail;
+            }
+        }
+        return await _mutationLock.RunAsync(playerId, () => AttemptQuestCoreAsync(playerId, questId, difficulty, ct), ct);
+    }
 
     private async Task<QuestResultResponse> AttemptQuestCoreAsync(
         Guid playerId, string questId, QuestDifficulty difficulty, CancellationToken ct = default)
@@ -540,9 +558,13 @@ public sealed class QuestService : IQuestService
             $"Quest {questId} [{difficulty}] completed #{progress.CompletionCount}. Gold +{goldReward}, XP +{xpReward}, Gems +{gemsGranted}",
             null), ct);
 
+        var energyPool = await _energy.GetPoolAsync(playerId, ResourceType.Energy, ct);
+
         return new QuestResultResponse
         {
             Success           = true,
+            NewEnergyValue    = energyPool?.Live ?? 0,
+            NewEnergyMax      = energyPool?.Max ?? 0,
             GoldGranted       = goldReward,
             ExperienceGranted = xpReward,
             GemsGranted       = gemsGranted,

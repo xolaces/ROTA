@@ -439,6 +439,14 @@ So there are two places to change XP, and they mean different things:
 
 **XP is not Hoard-scaled.** Only gold and drops respond to the Hoard mastery.
 
+### 6.3a Attempt pacing
+
+`QuestConfig.MinAttemptIntervalMs` (800) is the shortest gap between two attempts by one player.
+An attempt inside the gap is refused before anything is spent: HTTP 429, `Retry-After`, and
+`RetryAfterMs` in the body; the client waits it out on its own. `0` turns pacing off. The window
+lives in Redis (`pace:quest:<player>`), so it holds across API instances, and an unreachable Redis
+lets attempts through rather than blocking play.
+
 ### 6.4 Sigils — how raids become reachable
 
 **Sigils drop from zone bosses only, on a final clear.** A node drops sigils only if it carries a

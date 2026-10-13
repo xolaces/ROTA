@@ -6,6 +6,9 @@ public interface IEnergyService
 {
     Task<int> GetCurrentEnergyAsync(Guid playerId, ResourceType type, CancellationToken ct = default);
 
+    /// <summary>The pool's live value and its max, or null when the player has no such pool.</summary>
+    Task<ResourcePool?> GetPoolAsync(Guid playerId, ResourceType type, CancellationToken ct = default);
+
     Task<bool> SpendEnergyAsync(Guid playerId, ResourceType type, int amount, CancellationToken ct = default);
 
     Task RefillEnergyAsync(Guid playerId, ResourceType type, int amount, CancellationToken ct = default);
@@ -30,3 +33,5 @@ public interface IEnergyService
     /// </summary>
     double GetRegenMinutesPerPoint(PlayerClass playerClass, ResourceType type);
 }
+
+public sealed record ResourcePool(int Live, int Max);

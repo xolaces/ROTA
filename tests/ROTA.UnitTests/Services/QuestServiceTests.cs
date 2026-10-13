@@ -33,7 +33,7 @@ public class QuestServiceTests
         Mock<IMasteryService> Mastery,
         Mock<IAchievementService> Achievements);
 
-    private static ServiceBundle BuildService(Random? random = null, QuestConfig? questConfig = null)
+    private static ServiceBundle BuildService(Random? random = null, QuestConfig? questConfig = null, IActionPacer? pacer = null)
     {
         var definitions       = new Mock<IQuestDefinitionProvider>();
         // Default GetAll → empty list so the T45 zone-boss gate (which scans for in-zone siblings)
@@ -101,7 +101,7 @@ public class QuestServiceTests
             stats.Object, lootTables.Object, itemDefs.Object, inventory.Object,
             auditLog.Object, magicService.Object, legionService.Object, equipment.Object,
             mastery.Object, achievements.Object,
-            new ROTA.UnitTests.TestSupport.PassThroughPlayerMutationLock(), questConfigOptions, random);
+            new ROTA.UnitTests.TestSupport.PassThroughPlayerMutationLock(), questConfigOptions, random, pacer);
 
         return new ServiceBundle(service, definitions, questProgress, difficultyProgress,
             players, energy, gems, stats, lootTables, itemDefs, inventory, auditLog, magicService,
@@ -335,6 +335,63 @@ public class QuestServiceTests
         result.DifficultyColor.Should().Be("Green");
         b.Energy.Verify(e => e.SpendEnergyAsync(player.Id, ResourceType.Energy, 5, It.IsAny<CancellationToken>()), Times.Once);
         b.AuditLog.Verify(a => a.AppendAsync(It.IsAny<AuditLog>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    // Owner, 2026-10-12: one attempt per 0.8 s per player, enforced before anything is read or spent.
+
+    [Fact]
+    public async Task AttemptQuest_InsideThePacingWindow_IsTooFast_AndSpendsNothing()
+    {
+        var pacer = new Mock<IActionPacer>();
+        pacer.Setup(p => p.TryBeginAsync("quest", It.IsAny<Guid>(), TimeSpan.FromMilliseconds(800), It.IsAny<CancellationToken>()))
+             .ReturnsAsync(TimeSpan.FromMilliseconds(350));
+        var b = BuildService(pacer: pacer.Object);
+        var player = MakePlayer();
+        b.Definitions.Setup(d => d.GetById("q001")).Returns(TwoQuestChain()[0]);
+        SetupPlayerAndEnergy(b, player);
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q001", QuestDifficulty.Normal);
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(QuestFailureCode.TooFast);
+        result.RetryAfterMs.Should().Be(350);
+        b.Energy.Verify(e => e.SpendEnergyAsync(It.IsAny<Guid>(), It.IsAny<ResourceType>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+        b.QuestProgress.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task AttemptQuest_OutsideThePacingWindow_Proceeds_AndReportsTheEnergyPool()
+    {
+        var pacer = new Mock<IActionPacer>();
+        pacer.Setup(p => p.TryBeginAsync("quest", It.IsAny<Guid>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
+             .ReturnsAsync((TimeSpan?)null);
+        var b = BuildService(pacer: pacer.Object);
+        var player = MakePlayer();
+        b.Definitions.Setup(d => d.GetById("q001")).Returns(TwoQuestChain()[0]);
+        SetupPlayerAndEnergy(b, player);
+        b.Energy.Setup(e => e.GetPoolAsync(player.Id, ResourceType.Energy, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ResourcePool(45, 50));
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q001", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue();
+        result.NewEnergyValue.Should().Be(45);
+        result.NewEnergyMax.Should().Be(50);
+        pacer.Verify(p => p.TryBeginAsync("quest", player.Id, TimeSpan.FromMilliseconds(800), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task AttemptQuest_PacingOff_NeverAsksThePacer()
+    {
+        var pacer = new Mock<IActionPacer>(MockBehavior.Strict);
+        var b = BuildService(questConfig: new QuestConfig { MinAttemptIntervalMs = 0 }, pacer: pacer.Object);
+        var player = MakePlayer();
+        b.Definitions.Setup(d => d.GetById("q001")).Returns(TwoQuestChain()[0]);
+        SetupPlayerAndEnergy(b, player);
+
+        var result = await b.Service.AttemptQuestAsync(player.Id, "q001", QuestDifficulty.Normal);
+
+        result.Success.Should().BeTrue();
     }
 
     // AttemptQuestAsync — difficulty energy/reward multipliers

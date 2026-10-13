@@ -84,6 +84,12 @@ public class QuestResultResponse
     // back to fresh (the deplete→clear→boss→reset farming cycle, now scoped to the boss's own zone
     // rather than the whole chapter).
     public bool ZoneReset { get; set; }
+    // The Energy pool after this attempt, so the client patches its bar without re-fetching the
+    // whole profile on every click (0/0 from an older server: fall back to the profile).
+    public int NewEnergyValue { get; set; }
+    public int NewEnergyMax { get; set; }
+    // TooFast only: how long until the next attempt is accepted.
+    public int RetryAfterMs { get; set; }
 }
 
 public enum QuestFailureCode
@@ -100,4 +106,6 @@ public enum QuestFailureCode
     // a zone boss can't be attempted until every preceding NON-boss node in its zone has been
     // cleared (HasEverCleared). Guard runs before any energy spend.
     ZoneBossLocked     = 8,
+    // the previous attempt was under QuestConfig.MinAttemptIntervalMs ago (→ HTTP 429, RetryAfterMs set).
+    TooFast            = 9,
 }

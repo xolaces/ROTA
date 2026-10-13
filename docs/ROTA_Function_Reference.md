@@ -1236,7 +1236,7 @@ FlagDeveloperAsync(sp, target, grant) (T43): CLI helper for flag-dev/unflag-dev.
 | Endpoint | Service Method | Responses |
 |----------|---------------|-----------|
 | `GET /api/quests` | `GetAvailableQuestsAsync` | 200 |
-| `POST /api/quests/{questId}/attempt` | `AttemptQuestAsync` | 200, 400, 403, 404, 422 |
+| `POST /api/quests/{questId}/attempt` | `AttemptQuestAsync` | 200, 400, 403, 404, 409, 422, 429 — 429 `TooFast` inside `QuestConfig.MinAttemptIntervalMs` (`Retry-After` + body `RetryAfterMs`). 200 carries `NewEnergyValue/NewEnergyMax` |
 
 ### RaidController — `api/raids` [Authorize]
 `src/ROTA.Api/Controllers/RaidController.cs`

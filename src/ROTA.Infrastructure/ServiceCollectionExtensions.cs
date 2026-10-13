@@ -88,6 +88,7 @@ public static class ServiceCollectionExtensions
         // Short-window chat throttle for SignalR sends (exploit-audit finding J). Singleton: depends
         // only on the singleton mux + IOptions<RateLimitConfig>.
         services.AddSingleton<IChatRateLimiter, ChatRateLimiter>();
+        services.AddSingleton<IActionPacer, RedisActionPacer>();
         // World-chat ring buffer
         services.AddScoped<IWorldChatStore, RedisWorldChatStore>();
         // Guild-chat ring buffer (System 21 Slice 2) — per-guild keyed

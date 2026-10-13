@@ -39,6 +39,14 @@ public sealed class EnergyService : IEnergyService
         return ComputeLiveValue(resource, minutesPerPoint);
     }
 
+    public async Task<ResourcePool?> GetPoolAsync(Guid playerId, ResourceType type, CancellationToken ct = default)
+    {
+        var resource = await _resources.GetAsync(playerId, type, ct);
+        if (resource is null) return null;
+        var minutesPerPoint = await ResolveMinutesPerPointAsync(playerId, type, ct);
+        return new ResourcePool(ComputeLiveValue(resource, minutesPerPoint), resource.MaxValue);
+    }
+
     public async Task<bool> SpendEnergyAsync(Guid playerId, ResourceType type, int amount, CancellationToken ct = default)
     {
         // Defense-in-depth (audit fix): a negative spend would CREDIT the pool (live − (−n) = live + n).
