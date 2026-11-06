@@ -80,19 +80,16 @@ owner's own confirmation. Everything else RE1 asked for is done.
 ## Completion queue — owner go 2026-10-12
 
 > Owner: "do a massive work queue and just start pushing this game to a completion point." Tabs
-> across the top approved; UI direction = **revision 2** of the mockup (modern Obsidian Gilt, no
+> across the top approved; UI direction = **revision 3** of the mockup (modern Obsidian Gilt, soft type, no
 > parchment/ribbons — https://claude.ai/artifact/JpAfZ8DNM3PPes8dLuqrYF). Work top to bottom inside
 > each lane; lanes U and Q interleave. `[owner]` = needs a human input before it can finish;
 > `[migration]` = needs a schema change, so it ships behind the owner applying the migration.
 
-> **Resume here (stopped 2026-10-12 at owner's request).** Server: everything above marked ✅ is
-> deployed (`f0f6c36` + `10385f6` pushed; API live, /health/ready Healthy). Client: refresh part 1 is
-> committed and pushed on `feat/mock-playtest-accounts` (`43f253d`) and verified in a local WebGL mock
-> build, **not deployed to play.riseoftheancients.com** — deploy with `tools/build-client.ps1 -Target WebGL` then
-> `tools/deploy-webgl.ps1`. Open: emoji-presentation glyphs (🏠 💬 🎁) still draw blank on WebGL
-> even with NotoEmoji off the emoji list — header/raid buttons use text symbols meanwhile; next
-> suspect is `TextElement.emojiFallbackSupport` (search emoji list first, then stop). Next items:
-> U2 shared classes, U6, S8 (change password / log out everywhere), S9, S10.
+> **Resume here (2026-11-06).** Everything marked ✅ is live: API at `7812b2d`, client built from
+> `43f253d` on `feat/mock-playtest-accounts` (not merged to `master`). The integration suite has not
+> run since these changes: run it first. Open: emoji-presentation glyphs (🏠 💬 🎁) still draw blank
+> on WebGL, and the comment in `FontFallbacks.cs` wrongly says they were fixed; next suspect is
+> `TextElement.emojiFallbackSupport`. Next items: U2 shared classes, U6, S8, S5, S9, S10.
 
 ### Lane U — UI refresh (client)
 - ✅ **U1. Top bar + tab strip.** *(client, 2026-10-12)* Rail → horizontal tabs (Home · Campaign · Raids · Guild · Legion ·
@@ -127,7 +124,7 @@ owner's own confirmation. Everything else RE1 asked for is done.
 - **S5. Guild roster presence.** Non-members see "active today / this week / earlier", not the
   timestamp.
 - ✅ **S6. Mastery Rating boards default to `Live`** (today a bare GET is 400).
-- ✅ **S7. Supply chain.** *(`10385f6`; secret-scanning push protection is a repo setting — owner)* Pin package versions + lock files; Dependabot (NuGet + Actions) and CodeQL.
+- 🔶 **S7. Supply chain.** *(`10385f6`; pins done, lock files not added; secret-scanning push protection is a repo setting — owner)* Pin package versions + lock files; Dependabot (NuGet + Actions) and CodeQL.
 - **S8. Change password while logged in** (revokes other sessions) + **log out everywhere**.
 - **S9. Maintenance mode + message of the day.** Config flag → 503 with message; banner in client.
 - **S10. Client version gate.** API publishes a minimum client build; a stale cached WebGL build
@@ -146,13 +143,7 @@ owner's own confirmation. Everything else RE1 asked for is done.
 - **F8. Audio** — zone music, hit/crit SFX, volume sliders. `[owner]` (assets)
 
 ### Lane O — ops (owner input)
-- **O1. Email.** `EMAIL_ENABLED` + SMTP creds in `/opt/rota/.env` — password reset is dead without
-  it. `[owner]` (credentials)
-- **O2. Off-site backups.** rclone to Spaces/B2 + a restore drill. `[owner]` (destination)
-- **O3. Reboot window** — kernel updates pending since ~2026-06. `[owner]` (timing)
-- **O4. Docker log caps + build-cache prune** — rides along with O3 (daemon restart).
-- **O5. SSH tidy** — `PermitRootLogin prohibit-password`, `X11Forwarding no`, fail2ban.
-- **O6. Delete `SEED_ADMIN_PASSWORD` from `.env`.**
+- **O1–O6. Server operations.** Tracked privately, outside this public repo.
 - **O7. Rename DotD place names** — "Ruins of Kruna" (client mock), "West Kruna / Chalua Gauntlet"
   (system-24 spec). `[owner]` (new names)
 - **O8. Landing page at the apex domain.** `[owner]` (DNS)
