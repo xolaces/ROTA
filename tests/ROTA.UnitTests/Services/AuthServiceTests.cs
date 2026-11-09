@@ -292,7 +292,7 @@ public class AuthServiceTests
         tokens.Setup(r => r.FindByTokenHashAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
               .ReturnsAsync(MakeActiveToken(player.Id));
         players.Setup(r => r.FindByIdAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
-        tokens.Setup(r => r.TryRevokeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        tokens.Setup(r => r.TryMarkRotatedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
         tokens.Setup(r => r.CountActiveSessionsAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(0);
         tokens.Setup(r => r.CreateAsync(It.IsAny<RefreshToken>(), It.IsAny<CancellationToken>()))
               .ReturnsAsync((RefreshToken t, CancellationToken _) => t);
@@ -410,7 +410,7 @@ public class AuthServiceTests
         var checkIn = new Mock<ICheckInService>();
         var player = MakePlayer();
         SetupValidRefresh(players, tokens, player);
-        tokens.Setup(r => r.TryRevokeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+        tokens.Setup(r => r.TryMarkRotatedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
 
         var service = NewAuthService(players, tokens, key, checkIn.Object);
 
