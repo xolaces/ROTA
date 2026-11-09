@@ -31,6 +31,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IActiveRaidRepository, ActiveRaidRepository>();
         services.AddScoped<IRaidParticipantRepository, RaidParticipantRepository>();
         services.AddScoped<IPlayerInventoryRepository, PlayerInventoryRepository>();
+        services.AddScoped<IPlayerDailyChestRepository, PlayerDailyChestRepository>();   // System 29
         services.AddScoped<IBetaKeyRepository, BetaKeyRepository>();
         services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
         services.AddScoped<IPlayerEquipmentRepository, PlayerEquipmentRepository>();
@@ -101,6 +102,8 @@ public static class ServiceCollectionExtensions
             _ => new RaidDefinitionProvider(contentRootPath));
         services.AddSingleton<IItemDefinitionProvider>(
             _ => new ItemDefinitionProvider(contentRootPath));
+        services.AddSingleton<IDailyChestPoolProvider>(sp =>                       // System 29
+            new DailyChestPoolProvider(contentRootPath, sp.GetRequiredService<IItemDefinitionProvider>()));
         services.AddSingleton<ILootTableProvider>(sp =>
             new LootTableProvider(contentRootPath, sp.GetRequiredService<IRaidDefinitionProvider>()));
         services.AddSingleton<IGearDefinitionProvider>(
@@ -161,6 +164,8 @@ public static class ServiceCollectionExtensions
 
         // Application services
         services.AddScoped<IClassService, ClassService>();
+        services.AddScoped<ICheckInService, CheckInService>();   // System 29 S1 — login + refresh day tracking
+        services.AddScoped<IDailyChestService, DailyChestService>();   // System 29 S2 — the daily chest
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IBetaKeyService, BetaKeyService>();
         services.AddScoped<IAdminService, AdminService>();

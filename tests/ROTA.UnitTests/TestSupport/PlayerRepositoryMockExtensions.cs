@@ -13,10 +13,17 @@ namespace ROTA.UnitTests.TestSupport;
 public static class PlayerRepositoryMockExtensions
 {
     public static void SetupMutatePassThrough(this Mock<IPlayerRepository> players)
+        => players.SetupMutatePassThrough<IReadOnlyList<int>>();
+
+    /// <summary>
+    /// The same pass-through for any mutation result type. Moq matches a generic method per closed
+    /// type argument, so each <typeparamref name="TResult"/> a service uses needs its own setup.
+    /// </summary>
+    public static void SetupMutatePassThrough<TResult>(this Mock<IPlayerRepository> players)
     {
         players.Setup(r => r.MutateWithRetryAsync(
-                It.IsAny<Guid>(), It.IsAny<Func<Player, IReadOnlyList<int>>>(), It.IsAny<CancellationToken>()))
-            .Returns(async (Guid id, Func<Player, IReadOnlyList<int>> mutate, CancellationToken ct) =>
+                It.IsAny<Guid>(), It.IsAny<Func<Player, TResult>>(), It.IsAny<CancellationToken>()))
+            .Returns(async (Guid id, Func<Player, TResult> mutate, CancellationToken ct) =>
             {
                 // Tests stub whichever Find* variant their service path uses — fall back across them.
                 var player = await players.Object.FindByIdAsync(id, ct)

@@ -9,6 +9,7 @@ using ROTA.Application.Services;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
 using ROTA.Shared.DTOs;
+using ROTA.UnitTests.TestSupport;
 
 namespace ROTA.UnitTests.Services;
 
@@ -65,7 +66,7 @@ public class AuthServiceTests
         var lockout  = new Mock<IAuthLockoutService>();
         var auditLog = new Mock<IAuditLogRepository>();
         var betaKeys = new Mock<IBetaKeyRepository>();
-        var achievements = new Mock<IAchievementService>();
+        var checkIn = new Mock<ICheckInService>();
         var resetTokens = new Mock<IPasswordResetTokenRepository>();
         var emails = new Mock<IEmailNotificationService>();
 
@@ -80,7 +81,7 @@ public class AuthServiceTests
             lockout.Object,
             auditLog.Object,
             betaKeys.Object,
-            achievements.Object,
+            checkIn.Object,
             resetTokens.Object,
             emails.Object, new Mock<IEquipmentService>().Object);
 
@@ -202,7 +203,6 @@ public class AuthServiceTests
         var lockout  = new Mock<IAuthLockoutService>();
         var auditLog = new Mock<IAuditLogRepository>();
         var betaKeys = new Mock<IBetaKeyRepository>();
-        var achievements = new Mock<IAchievementService>();
 
         players.Setup(r => r.EmailExistsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                .ReturnsAsync(false);
@@ -212,7 +212,7 @@ public class AuthServiceTests
         var service = new AuthService(
             players.Object, tokens.Object,
             BuildConfig(betaGateEnabled: true),
-            lockout.Object, auditLog.Object, betaKeys.Object, achievements.Object,
+            lockout.Object, auditLog.Object, betaKeys.Object, new Mock<ICheckInService>().Object,
             new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object, new Mock<IEquipmentService>().Object);
 
         var result = await service.RegisterAsync(
@@ -257,6 +257,49 @@ public class AuthServiceTests
         result!.AccessToken.Should().NotBeNullOrEmpty();
     }
 
+    // ── Day tracking (TICKET 46, moved to ICheckInService by System 29 S1) ─────────────────────
+    // These run the REAL CheckInService over mocked repositories, so they cover the whole path from
+    // the auth entry point to the DaysPlayed counter and its achievement metric.
+
+    private static AuthService NewAuthService(
+        Mock<IPlayerRepository> players, Mock<IRefreshTokenRepository> tokens, string key, ICheckInService checkIn)
+    {
+        var lockout = new Mock<IAuthLockoutService>();
+        lockout.Setup(l => l.IsLockedOutAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+        return new AuthService(players.Object, tokens.Object, BuildConfig(key), lockout.Object,
+            new Mock<IAuditLogRepository>().Object, new Mock<IBetaKeyRepository>().Object, checkIn,
+            new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object,
+            new Mock<IEquipmentService>().Object);
+    }
+
+    private static CheckInService RealCheckIn(Mock<IPlayerRepository> players, Mock<IAchievementService> achievements)
+    {
+        players.SetupMutatePassThrough<CheckInResult>();
+        return new CheckInService(players.Object, achievements.Object);
+    }
+
+    private static void SetupLogin(Mock<IPlayerRepository> players, Mock<IRefreshTokenRepository> tokens, Player player)
+    {
+        players.Setup(r => r.FindByEmailAsync(player.Email, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+        players.Setup(r => r.FindByIdAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+        tokens.Setup(r => r.CountActiveSessionsAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(0);
+        tokens.Setup(r => r.CreateAsync(It.IsAny<RefreshToken>(), It.IsAny<CancellationToken>()))
+              .ReturnsAsync((RefreshToken t, CancellationToken _) => t);
+    }
+
+    private static void SetupValidRefresh(Mock<IPlayerRepository> players, Mock<IRefreshTokenRepository> tokens, Player player)
+    {
+        tokens.Setup(r => r.FindByTokenHashAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+              .ReturnsAsync(MakeActiveToken(player.Id));
+        players.Setup(r => r.FindByIdAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+        tokens.Setup(r => r.TryRevokeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        tokens.Setup(r => r.CountActiveSessionsAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(0);
+        tokens.Setup(r => r.CreateAsync(It.IsAny<RefreshToken>(), It.IsAny<CancellationToken>()))
+              .ReturnsAsync((RefreshToken t, CancellationToken _) => t);
+    }
+
+    private static readonly RefreshRequest AnyRefresh = new() { RefreshToken = "somerawtoken" };
+
     // TICKET 46 — a successful login records the DaysPlayed achievement metric exactly once per UTC
     // day (RecordLogin advances DaysPlayed only on a new calendar day), best-effort and non-blocking.
     [Fact]
@@ -265,21 +308,11 @@ public class AuthServiceTests
         var key = GenerateTestRsaPrivateKey();
         var players  = new Mock<IPlayerRepository>();
         var tokens   = new Mock<IRefreshTokenRepository>();
-        var lockout  = new Mock<IAuthLockoutService>();
-        var auditLog = new Mock<IAuditLogRepository>();
-        var betaKeys = new Mock<IBetaKeyRepository>();
         var achievements = new Mock<IAchievementService>();
-
-        lockout.Setup(l => l.IsLockedOutAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
         var player = MakePlayer();
-        players.Setup(r => r.FindByEmailAsync(player.Email, It.IsAny<CancellationToken>())).ReturnsAsync(player);
-        tokens.Setup(r => r.CountActiveSessionsAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(0);
-        tokens.Setup(r => r.CreateAsync(It.IsAny<RefreshToken>(), It.IsAny<CancellationToken>()))
-              .ReturnsAsync((RefreshToken t, CancellationToken _) => t);
+        SetupLogin(players, tokens, player);
 
-        var service = new AuthService(players.Object, tokens.Object, BuildConfig(key),
-            lockout.Object, auditLog.Object, betaKeys.Object, achievements.Object,
-            new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object, new Mock<IEquipmentService>().Object);
+        var service = NewAuthService(players, tokens, key, RealCheckIn(players, achievements));
 
         // First login on a fresh player → counts the day.
         await service.LoginAsync(new LoginRequest { Email = player.Email, Password = "Correct1" }, "127.0.0.1");
@@ -300,30 +333,90 @@ public class AuthServiceTests
         var key = GenerateTestRsaPrivateKey();
         var players  = new Mock<IPlayerRepository>();
         var tokens   = new Mock<IRefreshTokenRepository>();
-        var lockout  = new Mock<IAuthLockoutService>();
-        var auditLog = new Mock<IAuditLogRepository>();
-        var betaKeys = new Mock<IBetaKeyRepository>();
         var achievements = new Mock<IAchievementService>();
-
-        lockout.Setup(l => l.IsLockedOutAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
         var player = MakePlayer();
-        players.Setup(r => r.FindByEmailAsync(player.Email, It.IsAny<CancellationToken>())).ReturnsAsync(player);
-        tokens.Setup(r => r.CountActiveSessionsAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(0);
-        tokens.Setup(r => r.CreateAsync(It.IsAny<RefreshToken>(), It.IsAny<CancellationToken>()))
-              .ReturnsAsync((RefreshToken t, CancellationToken _) => t);
+        SetupLogin(players, tokens, player);
         // The achievement hook blows up — login must still succeed (best-effort).
         achievements.Setup(a => a.RecordProgressAsync(
             It.IsAny<Guid>(), It.IsAny<AchievementMetric>(), It.IsAny<long>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("boom"));
 
-        var service = new AuthService(players.Object, tokens.Object, BuildConfig(key),
-            lockout.Object, auditLog.Object, betaKeys.Object, achievements.Object,
-            new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object, new Mock<IEquipmentService>().Object);
+        var service = NewAuthService(players, tokens, key, RealCheckIn(players, achievements));
 
         var result = await service.LoginAsync(new LoginRequest { Email = player.Email, Password = "Correct1" }, "127.0.0.1");
 
         result.Should().NotBeNull();
         result!.AccessToken.Should().NotBeNullOrEmpty();
+    }
+
+    // System 29 S1 — THE regression. The client resumes on a persisted refresh token, so a returning
+    // player may refresh for days without ever calling LoginAsync. Before the fix, none of those days
+    // were counted. A refresh on a new UTC day must count it, once.
+    [Fact]
+    public async Task RefreshAsync_OnANewDay_CountsTheDayOnce()
+    {
+        var key = GenerateTestRsaPrivateKey();
+        var players  = new Mock<IPlayerRepository>();
+        var tokens   = new Mock<IRefreshTokenRepository>();
+        var achievements = new Mock<IAchievementService>();
+        var player = MakePlayer();
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        player.RecordLogin(today.AddDays(-3));   // last password login three days ago
+        SetupValidRefresh(players, tokens, player);
+
+        var service = NewAuthService(players, tokens, key, RealCheckIn(players, achievements));
+
+        (await service.RefreshAsync(AnyRefresh, "127.0.0.1")).Should().NotBeNull();
+        player.DaysPlayed.Should().Be(2);
+        player.LastLoginDate.Should().Be(today);
+        achievements.Verify(a => a.RecordProgressAsync(
+            player.Id, AchievementMetric.DaysPlayed, 1, $"ach:day:{player.Id}:{today:yyyy-MM-dd}",
+            It.IsAny<CancellationToken>()), Times.Once);
+
+        // Refreshing again later the same day (every ≤15 min of play) must not count again.
+        (await service.RefreshAsync(AnyRefresh, "127.0.0.1")).Should().NotBeNull();
+        player.DaysPlayed.Should().Be(2);
+        achievements.Verify(a => a.RecordProgressAsync(
+            player.Id, AchievementMetric.DaysPlayed, It.IsAny<long>(), It.IsAny<string?>(),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RefreshAsync_CheckInThrows_StillIssuesTokens()
+    {
+        var key = GenerateTestRsaPrivateKey();
+        var players = new Mock<IPlayerRepository>();
+        var tokens  = new Mock<IRefreshTokenRepository>();
+        var checkIn = new Mock<ICheckInService>();
+        checkIn.Setup(c => c.CheckInAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+               .ThrowsAsync(new InvalidOperationException("db down"));
+        var player = MakePlayer();
+        SetupValidRefresh(players, tokens, player);
+
+        var service = NewAuthService(players, tokens, key, checkIn.Object);
+
+        var result = await service.RefreshAsync(AnyRefresh, "127.0.0.1");
+
+        result.Should().NotBeNull("day tracking is best-effort and must never break a refresh");
+        result!.AccessToken.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task RefreshAsync_LostRotationRace_DoesNotCheckIn()
+    {
+        var key = GenerateTestRsaPrivateKey();
+        var players = new Mock<IPlayerRepository>();
+        var tokens  = new Mock<IRefreshTokenRepository>();
+        var checkIn = new Mock<ICheckInService>();
+        var player = MakePlayer();
+        SetupValidRefresh(players, tokens, player);
+        tokens.Setup(r => r.TryRevokeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+
+        var service = NewAuthService(players, tokens, key, checkIn.Object);
+
+        (await service.RefreshAsync(AnyRefresh, "127.0.0.1")).Should().BeNull();
+        checkIn.Verify(c => c.CheckInAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never,
+            "only a refresh that actually rotated counts as showing up");
     }
 
     [Fact]
