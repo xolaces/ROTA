@@ -14,7 +14,7 @@
 | What | Where | State |
 |---|---|---|
 | Backend + content | `C:\Dev\ROTA` | branch `main`, level with `origin/main` |
-| Unity client | `C:\Dev\ROTA.Client6` | live builds come from `feat/mock-playtest-accounts` (not merged to `master`) |
+| Unity client | `C:\Dev\ROTA.Client6` | live builds come from `feat/ui-glass-shell`, which sits on `feat/mock-playtest-accounts` (neither merged to `master`) |
 | Web client | `C:\Dev\rota-web` | branch `master`, static Stitch screens (still Obsidian Gilt) |
 | Ops dashboard | `C:\Dev\rota-ops-dashboard` | separate repo, private |
 | DotD reference | `C:\Dev\dotd-re` | decompiled DotD client (AS3) and `GAP_MAP.md`; reference only |
@@ -42,7 +42,8 @@ OneDrive — earlier docs referenced a OneDrive path and that is no longer true.
 - **API:** `8605be0`.
 - **Database:** has every migration through `AddRefreshTokenRevokeReason`. The snapshot taken just
   before is `/opt/rota/backups/rota-20261109-pre-8605be0.dump` on the droplet.
-- **WebGL client:** built from `ROTA.Client6` `65ba9e8`. `/opt/rota/web.prev` holds the previous build.
+- **WebGL client:** built from `ROTA.Client6` `ded775d` (`feat/ui-glass-shell`), the glass shell
+  and raid combat. `/opt/rota/web.prev` holds the previous build (`65ba9e8`).
 - **Email:** switched off on the droplet, so password reset answers 503 until it is configured.
 
 A deploy that adds a migration is a schema change, not just a code push. Note that **every admin CLI
@@ -75,9 +76,19 @@ Full list in `docs/AGENT_BACKLOG.md` under "Owner decisions". The two that gate 
 
 ## UI direction (approved 2026-11-09)
 
-The approved layout is a design canvas, not code yet:
+The approved layout is a design canvas:
 [ROTA UI Rework](https://claude.ai/artifact/79Uzm9i9mi1S7afZDvapku) (private to the owner). It has 10
 screens: Home, Quest, Raids, Raid combat, Leaderboards, Profile, Legion, Gauntlet, Guild, Bazaar.
+
+**In the Unity client so far** (`feat/ui-glass-shell`, live 2026-11-09):
+
+- **Shared shell:** top bar, collapsible rail, framed stage, chat dock.
+- **Raid combat.**
+- **Where it lives:** `Resources/UI/Glass.uss`, loaded after `Theme.uss`. The other screens keep
+  `Theme.uss` until they are ported.
+- **Two compromises for the 960px WebGL canvas:**
+  - Glass is translucency without blur, because UI Toolkit has no backdrop filter.
+  - Magic sits under the raid's top bar, not in its bottom bar.
 
 **Shell, the same on every screen:**
 
@@ -148,8 +159,9 @@ recolour to match. An unaffordable action reads "N short" instead of going grey.
 - **Public chat is read-only.** World and raid chat receive but cannot send (needs a Unity SignalR
   client). Private messages work — they ride REST.
 - **No achievement browse screen.** Points show on the profile and the endpoint is live.
-- **Both clients still render Obsidian Gilt.** The new layout exists only on the design canvas;
-  porting it to `ROTA.Client6` and `rota-web` has not started.
+- **Most screens still render Obsidian Gilt inside the new frame.** Only the shell and raid combat
+  are ported in `ROTA.Client6`: Home, Campaign, Guild, Legion, Profile, Crafting, Bazaar, Gauntlet
+  and the raid list are next. `rota-web` has not started.
 
 ## Read order for a new session
 
