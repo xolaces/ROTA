@@ -1046,7 +1046,7 @@ record GearProcData(double ProcChance, double ProcPercent)
 
 **IAuditLogRepository** — `AppendAsync(AuditLog, CancellationToken)` (append-only)
 
-**IRefreshTokenRepository** — find/create/revoke refresh tokens; `RevokeAllActiveAsync(Guid, CancellationToken)`
+**IRefreshTokenRepository** — find/create/revoke refresh tokens. Every revoke records a `RefreshTokenRevokeReason` (Rotated, LoggedOut, SessionLimit, PasswordReset, ReplayDetected, RoleRevoked, Banned) and `RevokedAt`; a check constraint keeps `is_revoked` and `revoked_reason` in step, and the first reason sticks. `RevokeAsync(RefreshToken, reason)`, `TryMarkRotatedAsync(tokenHash)` (the atomic rotation latch), `FindRevokeReasonAsync(tokenHash)`, `RevokeAllActiveAsync(Guid, reason)`. In `AuthService.RefreshAsync` only a **Rotated** token presented again revokes the whole family (`TokenReplayDetected`); any other revoked token is an ordinary `TokenRefreshFailed`.
 
 **IBetaKeyRepository**
 

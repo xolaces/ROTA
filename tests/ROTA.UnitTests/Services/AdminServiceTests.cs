@@ -183,14 +183,14 @@ public class AdminServiceTests
         players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
         players.Setup(r => r.FindByUsernameAsync("mod", It.IsAny<CancellationToken>())).ReturnsAsync(target);
         players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-        tokens.Setup(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        tokens.Setup(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<RefreshTokenRevokeReason>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
 
         var result = await service.RevokeRoleAsync(actor.Id, "mod", PlayerRoles.Moderator);
 
         result.Success.Should().BeTrue();
         target.HasRole(PlayerRoles.Moderator).Should().BeFalse("Moderator flag must be removed");
         target.HasRole(PlayerRoles.Player).Should().BeTrue("Player flag must never be removed");
-        tokens.Verify(r => r.RevokeAllActiveAsync(target.Id, It.IsAny<CancellationToken>()), Times.Once,
+        tokens.Verify(r => r.RevokeAllActiveAsync(target.Id, RefreshTokenRevokeReason.RoleRevoked, It.IsAny<CancellationToken>()), Times.Once,
             "revoke sessions when a privilege role is removed");
         auditLog.Verify(a => a.AppendAsync(
             It.Is<AuditLog>(l => l.Action == "RoleRevoked"),
@@ -227,13 +227,13 @@ public class AdminServiceTests
         // Audit fix: 2 admins — the atomic demotion succeeds.
         players.Setup(r => r.TryDemoteAdminAsync(target.Id, It.IsAny<CancellationToken>())).ReturnsAsync(true);
         players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-        tokens.Setup(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        tokens.Setup(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<RefreshTokenRevokeReason>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
 
         var result = await service.RevokeRoleAsync(actor.Id, "second-admin", PlayerRoles.Admin);
 
         result.Success.Should().BeTrue();
         target.HasRole(PlayerRoles.Admin).Should().BeFalse("the demotion clears the Admin flag");
-        tokens.Verify(r => r.RevokeAllActiveAsync(target.Id, It.IsAny<CancellationToken>()), Times.Once,
+        tokens.Verify(r => r.RevokeAllActiveAsync(target.Id, RefreshTokenRevokeReason.RoleRevoked, It.IsAny<CancellationToken>()), Times.Once,
             "demoting an admin must revoke their sessions");
     }
 
@@ -276,13 +276,13 @@ public class AdminServiceTests
         players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
         players.Setup(r => r.FindByUsernameAsync("baddie", It.IsAny<CancellationToken>())).ReturnsAsync(target);
         players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-        tokens.Setup(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        tokens.Setup(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<RefreshTokenRevokeReason>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
 
         var result = await service.BanPlayerAsync(actor.Id, "baddie", "cheating");
 
         result.Success.Should().BeTrue();
         target.IsBanned.Should().BeTrue();
-        tokens.Verify(r => r.RevokeAllActiveAsync(target.Id, It.IsAny<CancellationToken>()), Times.Once,
+        tokens.Verify(r => r.RevokeAllActiveAsync(target.Id, RefreshTokenRevokeReason.Banned, It.IsAny<CancellationToken>()), Times.Once,
             "a banned player's sessions are killed immediately");
         auditLog.Verify(a => a.AppendAsync(
             It.Is<AuditLog>(l => l.Action == "PlayerBanned"), It.IsAny<CancellationToken>()), Times.Once);
@@ -310,7 +310,7 @@ public class AdminServiceTests
         result.FailureReason.Should().Contain("admin");
         target.IsBanned.Should().BeFalse();
         players.Verify(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>()), Times.Never);
-        tokens.Verify(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        tokens.Verify(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<RefreshTokenRevokeReason>(), It.IsAny<CancellationToken>()), Times.Never);
         auditLog.Verify(a => a.AppendAsync(It.IsAny<AuditLog>(), It.IsAny<CancellationToken>()), Times.Never);
         emails.Verify(e => e.QueueAsync(It.IsAny<EmailPayload>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
@@ -328,7 +328,7 @@ public class AdminServiceTests
         players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
         players.Setup(r => r.FindByUsernameAsync("baddie", It.IsAny<CancellationToken>())).ReturnsAsync(target);
         players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-        tokens.Setup(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        tokens.Setup(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<RefreshTokenRevokeReason>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
 
         var result = await service.BanPlayerAsync(actor.Id, "baddie", "spam", durationDays: 3);
 
@@ -336,7 +336,7 @@ public class AdminServiceTests
         target.IsBanned.Should().BeTrue();
         target.BannedUntil.Should().NotBeNull("a moderator's ban must be dated, never permanent");
         target.BannedUntil!.Value.Should().BeCloseTo(DateTimeOffset.UtcNow.AddDays(3), TimeSpan.FromMinutes(1));
-        tokens.Verify(r => r.RevokeAllActiveAsync(target.Id, It.IsAny<CancellationToken>()), Times.Once);
+        tokens.Verify(r => r.RevokeAllActiveAsync(target.Id, RefreshTokenRevokeReason.Banned, It.IsAny<CancellationToken>()), Times.Once);
         auditLog.Verify(a => a.AppendAsync(
             It.Is<AuditLog>(l => l.Action == "PlayerBanned" && l.ResultSummary!.Contains("duration=3d")),
             It.IsAny<CancellationToken>()), Times.Once,
@@ -362,7 +362,7 @@ public class AdminServiceTests
         result.FailureReason.Should().Contain("3 days");
         target.IsBanned.Should().BeFalse();
         players.Verify(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>()), Times.Never);
-        tokens.Verify(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        tokens.Verify(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<RefreshTokenRevokeReason>(), It.IsAny<CancellationToken>()), Times.Never);
         auditLog.Verify(a => a.AppendAsync(It.IsAny<AuditLog>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -376,7 +376,7 @@ public class AdminServiceTests
         players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
         players.Setup(r => r.FindByUsernameAsync("baddie", It.IsAny<CancellationToken>())).ReturnsAsync(target);
         players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-        tokens.Setup(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        tokens.Setup(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<RefreshTokenRevokeReason>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
 
         var result = await service.BanPlayerAsync(actor.Id, "baddie", "repeat offender", durationDays: 90);
 
@@ -619,7 +619,7 @@ public class AdminServiceTests
         players.Setup(r => r.FindByIdAsync(actor.Id, It.IsAny<CancellationToken>())).ReturnsAsync(actor);
         players.Setup(r => r.FindByUsernameAsync("mod", It.IsAny<CancellationToken>())).ReturnsAsync(target);
         players.Setup(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-        tokens.Setup(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        tokens.Setup(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<RefreshTokenRevokeReason>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
 
         var result = await service.BanPlayerAsync(actor.Id, "mod", "abuse of power");
 

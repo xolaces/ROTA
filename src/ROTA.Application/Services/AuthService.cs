@@ -219,18 +219,10 @@ public sealed class AuthService : IAuthService
             return null;
         }
 
-        // Replay of an already-rotated token is the canonical theft signal: the legitimate client
-        // holds the NEW token, so whoever presents the old one (victim or thief — we can't tell
-        // which side is which) means the family is compromised. Revoke every active session so the
-        // thief is evicted; the victim re-authenticates with their password.
+        // A revoked token never refreshes. Whether presenting it is a BREACH depends on why it was
+        // revoked — see RejectRevokedTokenAsync.
         if (stored.IsRevoked)
-        {
-            await _refreshTokens.RevokeAllActiveAsync(stored.PlayerId);
-            await _auditLog.AppendAsync(AuditLog.Create(
-                stored.PlayerId, "TokenReplayDetected", null,
-                "Rotated refresh token was replayed — all sessions revoked", ipAddress));
-            return null;
-        }
+            return await RejectRevokedTokenAsync(stored.PlayerId, stored.RevokedReason, concurrent: false, ipAddress);
 
         if (!stored.IsActive) // not revoked, so: expired — ordinary failure, no breach response
         {
@@ -249,15 +241,13 @@ public sealed class AuthService : IAuthService
             return null;
         }
 
-        // Atomic rotation: a single conditional UPDATE claims the token. Losing the race means a
-        // concurrent request rotated it between our read and now — same semantics as a replay.
-        if (!await _refreshTokens.TryRevokeAsync(tokenHash))
+        // Atomic rotation: a single conditional UPDATE claims the token. Losing the race means something
+        // revoked it between our read and now. Re-read why: a concurrent rotation is a replay, but a
+        // logout or a session-limit eviction landing at the same moment is not.
+        if (!await _refreshTokens.TryMarkRotatedAsync(tokenHash))
         {
-            await _refreshTokens.RevokeAllActiveAsync(stored.PlayerId);
-            await _auditLog.AppendAsync(AuditLog.Create(
-                stored.PlayerId, "TokenReplayDetected", null,
-                "Concurrent rotation of the same refresh token — all sessions revoked", ipAddress));
-            return null;
+            var reason = await _refreshTokens.FindRevokeReasonAsync(tokenHash);
+            return await RejectRevokedTokenAsync(stored.PlayerId, reason, concurrent: true, ipAddress);
         }
 
         await _auditLog.AppendAsync(AuditLog.Create(
@@ -270,6 +260,35 @@ public sealed class AuthService : IAuthService
         return await IssueTokenPairAsync(player, ipAddress);
     }
 
+    // Presenting a ROTATED token again is the canonical theft signal: the legitimate client holds the
+    // NEW token, so whoever presents the old one (victim or thief — we can't tell which side is which)
+    // means the family is compromised. Revoke every active session so the thief is evicted; the victim
+    // re-authenticates with their password.
+    //
+    // Every other reason ended the session on purpose — a logout, the session cap pushing out the oldest
+    // device, a password reset, a ban or a role change. A stale tab or an old device presenting that
+    // token is ordinary, and must not log the player out of every other device or be filed as a breach.
+    private async Task<AuthResponse?> RejectRevokedTokenAsync(
+        Guid playerId, RefreshTokenRevokeReason? reason, bool concurrent, string ipAddress)
+    {
+        if (reason == RefreshTokenRevokeReason.Rotated)
+        {
+            await _refreshTokens.RevokeAllActiveAsync(playerId, RefreshTokenRevokeReason.ReplayDetected);
+            await _auditLog.AppendAsync(AuditLog.Create(
+                playerId, "TokenReplayDetected", null,
+                concurrent
+                    ? "Concurrent rotation of the same refresh token — all sessions revoked"
+                    : "Rotated refresh token was replayed — all sessions revoked",
+                ipAddress));
+            return null;
+        }
+
+        await _auditLog.AppendAsync(AuditLog.Create(
+            playerId, "TokenRefreshFailed", null,
+            $"Refresh token was revoked ({reason?.ToString() ?? "unknown"})", ipAddress));
+        return null;
+    }
+
     public async Task LogoutAsync(RefreshRequest request)
     {
         var tokenHash = HashToken(request.RefreshToken);
@@ -278,7 +297,7 @@ public sealed class AuthService : IAuthService
         if (stored is null)
             return;
 
-        await _refreshTokens.RevokeAsync(stored);
+        await _refreshTokens.RevokeAsync(stored, RefreshTokenRevokeReason.LoggedOut);
 
         await _auditLog.AppendAsync(AuditLog.Create(
             stored.PlayerId, "Logout", null,
@@ -359,7 +378,7 @@ public sealed class AuthService : IAuthService
         await _players.UpdateAsync(player);
 
         // SECURITY: a reset is a credential-compromise recovery path — evict every session.
-        await _refreshTokens.RevokeAllActiveAsync(player.Id);
+        await _refreshTokens.RevokeAllActiveAsync(player.Id, RefreshTokenRevokeReason.PasswordReset);
 
         await _auditLog.AppendAsync(AuditLog.Create(
             player.Id, "PasswordReset", null,
@@ -392,7 +411,7 @@ public sealed class AuthService : IAuthService
         {
             var oldest = await _refreshTokens.FindOldestActiveAsync(player.Id);
             if (oldest is null) break;
-            await _refreshTokens.RevokeAsync(oldest);
+            await _refreshTokens.RevokeAsync(oldest, RefreshTokenRevokeReason.SessionLimit);
             activeSessions--;
         }
 

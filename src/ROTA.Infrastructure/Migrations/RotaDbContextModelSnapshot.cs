@@ -3219,6 +3219,14 @@ namespace ROTA.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("player_id");
 
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
+
+                    b.Property<int?>("RevokedReason")
+                        .HasColumnType("integer")
+                        .HasColumnName("revoked_reason");
+
                     b.Property<string>("TokenHash")
                         .IsRequired()
                         .HasColumnType("text")
@@ -3231,7 +3239,10 @@ namespace ROTA.Infrastructure.Migrations
                     b.HasIndex("TokenHash")
                         .IsUnique();
 
-                    b.ToTable("refresh_tokens", (string)null);
+                    b.ToTable("refresh_tokens", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_refresh_tokens_revoked_reason", "(is_revoked AND revoked_reason IS NOT NULL) OR (NOT is_revoked AND revoked_reason IS NULL)");
+                        });
                 });
 
             modelBuilder.Entity("ROTA.Domain.Entities.StrikeTransaction", b =>

@@ -510,7 +510,7 @@ public class AuthServiceTests
         players.Setup(r => r.FindByIdAsync(player.Id, It.IsAny<CancellationToken>()))
                .ReturnsAsync(player);
         // Audit fix: rotation is now an atomic conditional UPDATE — this caller wins the latch.
-        tokens.Setup(r => r.TryRevokeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        tokens.Setup(r => r.TryMarkRotatedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
               .ReturnsAsync(true);
         tokens.Setup(r => r.CountActiveSessionsAsync(player.Id, It.IsAny<CancellationToken>()))
               .ReturnsAsync(0);
@@ -521,9 +521,9 @@ public class AuthServiceTests
             new RefreshRequest { RefreshToken = "somerawtoken" }, "127.0.0.1");
 
         result.Should().NotBeNull();
-        tokens.Verify(r => r.TryRevokeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once,
+        tokens.Verify(r => r.TryMarkRotatedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once,
             "consumed token must be revoked (atomically) on rotation");
-        tokens.Verify(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never,
+        tokens.Verify(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<RefreshTokenRevokeReason>(), It.IsAny<CancellationToken>()), Times.Never,
             "a clean rotation must not trigger the breach response");
     }
 
@@ -540,24 +540,53 @@ public class AuthServiceTests
               .ReturnsAsync(activeToken);
         players.Setup(r => r.FindByIdAsync(player.Id, It.IsAny<CancellationToken>()))
                .ReturnsAsync(player);
-        tokens.Setup(r => r.TryRevokeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        tokens.Setup(r => r.TryMarkRotatedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
               .ReturnsAsync(false);   // a concurrent request already rotated it
+        tokens.Setup(r => r.FindRevokeReasonAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+              .ReturnsAsync(RefreshTokenRevokeReason.Rotated);
 
         var result = await service.RefreshAsync(
             new RefreshRequest { RefreshToken = "somerawtoken" }, "127.0.0.1");
 
         result.Should().BeNull("the latch loser must not mint a second session");
         tokens.Verify(r => r.CreateAsync(It.IsAny<RefreshToken>(), It.IsAny<CancellationToken>()), Times.Never);
-        tokens.Verify(r => r.RevokeAllActiveAsync(player.Id, It.IsAny<CancellationToken>()), Times.Once,
+        tokens.Verify(r => r.RevokeAllActiveAsync(player.Id, RefreshTokenRevokeReason.ReplayDetected, It.IsAny<CancellationToken>()), Times.Once,
             "concurrent reuse of one refresh token is treated as theft");
     }
 
     [Fact]
-    public async Task RefreshAsync_AlreadyRevokedToken_ReturnsNull()
+    public async Task RefreshAsync_LostRotationRaceToALogout_FailsQuietly()
     {
-        var (service, _, tokens, _, _) = BuildService();
+        // The token was live when read, but a logout on the same session committed before our
+        // conditional UPDATE. That is a deliberate end of session, not a second copy of the token.
+        var (service, players, tokens, _, auditLog) = BuildService();
+        var player = MakePlayer();
+        var activeToken = MakeActiveToken(player.Id);
+
+        tokens.Setup(r => r.FindByTokenHashAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+              .ReturnsAsync(activeToken);
+        players.Setup(r => r.FindByIdAsync(player.Id, It.IsAny<CancellationToken>()))
+               .ReturnsAsync(player);
+        tokens.Setup(r => r.TryMarkRotatedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+              .ReturnsAsync(false);
+        tokens.Setup(r => r.FindRevokeReasonAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+              .ReturnsAsync(RefreshTokenRevokeReason.LoggedOut);
+
+        var result = await service.RefreshAsync(
+            new RefreshRequest { RefreshToken = "somerawtoken" }, "127.0.0.1");
+
+        result.Should().BeNull();
+        tokens.Verify(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<RefreshTokenRevokeReason>(), It.IsAny<CancellationToken>()), Times.Never,
+            "a logout racing a refresh must not log the player out of every other device");
+        auditLog.Verify(a => a.AppendAsync(It.Is<AuditLog>(l => l.Action == "TokenReplayDetected"), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task RefreshAsync_RotatedToken_RevokesEveryActiveSessionAsReplay()
+    {
+        var (service, _, tokens, _, auditLog) = BuildService();
         var revokedToken = new RefreshToken(Guid.NewGuid(), "anyhash", DateTimeOffset.UtcNow.AddDays(7), null);
-        revokedToken.Revoke();
+        revokedToken.Revoke(RefreshTokenRevokeReason.Rotated);
         tokens.Setup(r => r.FindByTokenHashAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
               .ReturnsAsync(revokedToken);
 
@@ -566,9 +595,77 @@ public class AuthServiceTests
 
         result.Should().BeNull("revoked tokens must be rejected");
         tokens.Verify(r => r.CreateAsync(It.IsAny<RefreshToken>(), It.IsAny<CancellationToken>()), Times.Never);
-        // Audit fix: replaying a rotated token is the theft signal — the whole family is revoked.
-        tokens.Verify(r => r.RevokeAllActiveAsync(revokedToken.PlayerId, It.IsAny<CancellationToken>()), Times.Once,
+        // Replaying a rotated token is the theft signal — the whole family is revoked.
+        tokens.Verify(r => r.RevokeAllActiveAsync(revokedToken.PlayerId, RefreshTokenRevokeReason.ReplayDetected, It.IsAny<CancellationToken>()), Times.Once,
             "replay of a rotated token must evict every session (breach detection)");
+        auditLog.Verify(a => a.AppendAsync(It.Is<AuditLog>(l => l.Action == "TokenReplayDetected"), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    // The bug this pins: every one of these used to be treated as a replayed rotation, so a stale tab
+    // after logout, or the oldest device after a fourth login, signed the player out everywhere and was
+    // filed as a breach.
+    [Theory]
+    [InlineData(RefreshTokenRevokeReason.LoggedOut)]
+    [InlineData(RefreshTokenRevokeReason.SessionLimit)]
+    [InlineData(RefreshTokenRevokeReason.PasswordReset)]
+    [InlineData(RefreshTokenRevokeReason.ReplayDetected)]
+    [InlineData(RefreshTokenRevokeReason.RoleRevoked)]
+    [InlineData(RefreshTokenRevokeReason.Banned)]
+    public async Task RefreshAsync_TokenEndedOnPurpose_FailsWithoutTouchingOtherSessions(RefreshTokenRevokeReason reason)
+    {
+        var (service, _, tokens, _, auditLog) = BuildService();
+        var revokedToken = new RefreshToken(Guid.NewGuid(), "anyhash", DateTimeOffset.UtcNow.AddDays(7), null);
+        revokedToken.Revoke(reason);
+        tokens.Setup(r => r.FindByTokenHashAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+              .ReturnsAsync(revokedToken);
+
+        var result = await service.RefreshAsync(
+            new RefreshRequest { RefreshToken = "somerawtoken" }, "127.0.0.1");
+
+        result.Should().BeNull("a revoked token never refreshes, whatever the reason");
+        tokens.Verify(r => r.CreateAsync(It.IsAny<RefreshToken>(), It.IsAny<CancellationToken>()), Times.Never);
+        tokens.Verify(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<RefreshTokenRevokeReason>(), It.IsAny<CancellationToken>()), Times.Never,
+            $"a session ended on purpose ({reason}) is not a theft signal");
+        auditLog.Verify(a => a.AppendAsync(It.Is<AuditLog>(l => l.Action == "TokenReplayDetected"), It.IsAny<CancellationToken>()), Times.Never);
+        auditLog.Verify(a => a.AppendAsync(It.Is<AuditLog>(l => l.Action == "TokenRefreshFailed"), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task LogoutAsync_RecordsLoggedOut()
+    {
+        var (service, _, tokens, _, _) = BuildService();
+        var token = MakeActiveToken(Guid.NewGuid());
+        tokens.Setup(r => r.FindByTokenHashAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+              .ReturnsAsync(token);
+
+        await service.LogoutAsync(new RefreshRequest { RefreshToken = "somerawtoken" });
+
+        tokens.Verify(r => r.RevokeAsync(token, RefreshTokenRevokeReason.LoggedOut, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task LoginAsync_AtSessionCap_PushesOutOldestAsSessionLimit()
+    {
+        var key = GenerateTestRsaPrivateKey();
+        var (service, players, tokens, _, _) = BuildService(key);
+        var player = MakePlayer();
+        var oldest = MakeActiveToken(player.Id);
+
+        players.Setup(r => r.FindByEmailAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+               .ReturnsAsync(player);
+        tokens.Setup(r => r.CountActiveSessionsAsync(player.Id, It.IsAny<CancellationToken>()))
+              .ReturnsAsync(3);
+        tokens.Setup(r => r.FindOldestActiveAsync(player.Id, It.IsAny<CancellationToken>()))
+              .ReturnsAsync(oldest);
+        tokens.Setup(r => r.CreateAsync(It.IsAny<RefreshToken>(), It.IsAny<CancellationToken>()))
+              .ReturnsAsync((RefreshToken t, CancellationToken _) => t);
+
+        var result = await service.LoginAsync(
+            new LoginRequest { Email = "test@rota.test", Password = "Correct1" }, "127.0.0.1");
+
+        result.Should().NotBeNull();
+        tokens.Verify(r => r.RevokeAsync(oldest, RefreshTokenRevokeReason.SessionLimit, It.IsAny<CancellationToken>()), Times.Once,
+            "the pushed-out device must later fail quietly, not read as a replay");
     }
 
     [Fact]
@@ -583,7 +680,7 @@ public class AuthServiceTests
             new RefreshRequest { RefreshToken = "somerawtoken" }, "127.0.0.1");
 
         result.Should().BeNull("expired tokens must be rejected");
-        tokens.Verify(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never,
+        tokens.Verify(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<RefreshTokenRevokeReason>(), It.IsAny<CancellationToken>()), Times.Never,
             "an expired (not replayed) token is an ordinary failure, not a breach");
     }
 
@@ -597,6 +694,6 @@ public class AuthServiceTests
         var act = async () => await service.LogoutAsync(new RefreshRequest { RefreshToken = "unknown" });
 
         await act.Should().NotThrowAsync("double-logout or unknown token must be silently ignored");
-        tokens.Verify(r => r.RevokeAsync(It.IsAny<RefreshToken>(), It.IsAny<CancellationToken>()), Times.Never);
+        tokens.Verify(r => r.RevokeAsync(It.IsAny<RefreshToken>(), It.IsAny<RefreshTokenRevokeReason>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }
