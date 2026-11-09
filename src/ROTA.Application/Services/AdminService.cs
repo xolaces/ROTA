@@ -111,7 +111,7 @@ public sealed class AdminService : IAdminService
 
         // Revoke active sessions so the removed privilege is effective immediately.
         if (role is PlayerRoles.Admin or PlayerRoles.Moderator)
-            await _refreshTokens.RevokeAllActiveAsync(target.Id, ct);
+            await _refreshTokens.RevokeAllActiveAsync(target.Id, RefreshTokenRevokeReason.RoleRevoked, ct);
 
         await _auditLog.AppendAsync(AuditLog.Create(
             actorId == Guid.Empty ? null : actorId,
@@ -183,7 +183,7 @@ public sealed class AdminService : IAdminService
         await _players.UpdateAsync(target, ct);
         // A banned player's sessions are killed immediately. Expiry does NOT restore them — the player
         // simply signs in again, which is the correct outcome either way.
-        await _refreshTokens.RevokeAllActiveAsync(target.Id, ct);
+        await _refreshTokens.RevokeAllActiveAsync(target.Id, RefreshTokenRevokeReason.Banned, ct);
 
         var durationLabel = durationDays.HasValue ? durationDays.Value + "d" : "permanent";
         await _auditLog.AppendAsync(AuditLog.Create(

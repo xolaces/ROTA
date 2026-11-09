@@ -8,7 +8,10 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 {
     public void Configure(EntityTypeBuilder<RefreshToken> builder)
     {
-        builder.ToTable("refresh_tokens");
+        // Revoked and the reason move together: a revoked row always says why, a live one never does.
+        builder.ToTable("refresh_tokens", t => t.HasCheckConstraint(
+            "ck_refresh_tokens_revoked_reason",
+            "(is_revoked AND revoked_reason IS NOT NULL) OR (NOT is_revoked AND revoked_reason IS NULL)"));
 
         builder.HasKey(t => t.Id);
         builder.Property(t => t.Id)
@@ -30,6 +33,13 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
         builder.Property(t => t.IsRevoked)
             .HasColumnName("is_revoked")
             .HasDefaultValue(false);
+
+        builder.Property(t => t.RevokedReason)
+            .HasColumnName("revoked_reason")
+            .HasConversion<int?>();
+
+        builder.Property(t => t.RevokedAt)
+            .HasColumnName("revoked_at");
 
         builder.Property(t => t.IpAddress)
             .HasColumnName("ip_address")

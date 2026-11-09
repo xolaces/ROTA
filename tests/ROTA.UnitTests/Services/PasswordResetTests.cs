@@ -154,7 +154,7 @@ public class PasswordResetTests
         player.PasswordHash.Should().NotBe(oldHash);
         BCrypt.Net.BCrypt.Verify("BrandNew1pass", player.PasswordHash).Should().BeTrue();
         h.Players.Verify(r => r.UpdateAsync(player, It.IsAny<CancellationToken>()), Times.Once);
-        h.Tokens.Verify(r => r.RevokeAllActiveAsync(player.Id, It.IsAny<CancellationToken>()), Times.Once);
+        h.Tokens.Verify(r => r.RevokeAllActiveAsync(player.Id, RefreshTokenRevokeReason.PasswordReset, It.IsAny<CancellationToken>()), Times.Once);
         h.AuditLog.Verify(a => a.AppendAsync(
             It.Is<AuditLog>(l => l.Action == "PasswordReset"), It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -199,7 +199,7 @@ public class PasswordResetTests
         ok.Should().BeFalse();
         player.PasswordHash.Should().Be(oldHash);
         h.Players.Verify(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>()), Times.Never);
-        h.Tokens.Verify(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        h.Tokens.Verify(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<RefreshTokenRevokeReason>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
