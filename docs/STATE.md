@@ -1,6 +1,6 @@
 # ROTA — where the project actually is
 
-*Single source for "what is the state of things". Updated 2026-09-07.*
+*Single source for "what is the state of things". Updated 2026-11-09.*
 
 > This file replaces three overlapping documents (`CURRENT_TASK.md`, `PROJECT_STATE.md`,
 > `SESSION_HANDOFF.md`) that had drifted into a chain of stale pointers aimed at each other, all
@@ -13,38 +13,55 @@
 
 | What | Where | State |
 |---|---|---|
-| Backend + content | `C:\Dev\ROTA` | branch `main`, **not pushed** |
-| Unity client | `C:\Dev\ROTA.Client6` | branch `master`, separate repo |
+| Backend + content | `C:\Dev\ROTA` | branch `main`, level with `origin/main` |
+| Unity client | `C:\Dev\ROTA.Client6` | live builds come from `feat/mock-playtest-accounts` (not merged to `master`) |
+| Web client | `C:\Dev\rota-web` | branch `master`, static Stitch screens (still Obsidian Gilt) |
 | Ops dashboard | `C:\Dev\rota-ops-dashboard` | separate repo, private |
+| DotD reference | `C:\Dev\dotd-re` | decompiled DotD client (AS3) and `GAP_MAP.md`; reference only |
+
+**Unmerged local branch with finished work:** `docs/system-28-daily-assignments`, the specs for
+Systems 28–32 (daily assignments, daily chest and check-in, comeback and account age, gifting, gear
+loadouts) in `docs/specs/backlog/`. Not pushed.
 
 The `C:\Dev\ROTA-Qwen` worktree was merged into `main` and removed on 2026-09-07. Nothing lives in
 OneDrive — earlier docs referenced a OneDrive path and that is no longer true.
 
 ## Build
 
-- **0 errors, 0 warnings.** `dotnet build ROTA.slnx`
-- **1,242 unit tests green.** `dotnet test tests/ROTA.UnitTests`
-- 55 migrations, all applied locally. 136 endpoints across 30 controllers.
+- **0 errors.** `dotnet build ROTA.slnx` (one known warning: CS8604 in `StarterKitRegistrationTests`)
+- **1,370 unit tests green.** `dotnet test tests/ROTA.UnitTests`
+- **229 integration tests green.** `dotnet test tests/ROTA.IntegrationTests` (needs Docker)
+- 57 migrations, all applied locally and in production. 137 endpoints across 31 controllers.
 - Content: 7 chapters / 26 zones / 139 quest nodes · 176 items · 111 gear in 13 sets · 41 magics ·
   37 units · 10 legions · 37 raids · 23 recipes · 435 placeholder icons.
 
 ## Live server vs local
 
-**The deployed server is roughly the June build — 145 commits and 5 migrations behind `main`.**
+**Production runs `main`.** Deployed 2026-11-09:
 
-Deploying is therefore a schema change, not just a code push. Note that **every admin CLI command
-calls `Database.Migrate()` before it runs**, including `beta-reset` and `gen-beta-key`, so the first
-CLI command run against production applies all five migrations whether or not that was the intent.
-Snapshot the database first.
+- **API:** `8605be0`.
+- **Database:** has every migration through `AddRefreshTokenRevokeReason`. The snapshot taken just
+  before is `/opt/rota/backups/rota-20261109-pre-8605be0.dump` on the droplet.
+- **WebGL client:** built from `ROTA.Client6` `65ba9e8`. `/opt/rota/web.prev` holds the previous build.
+- **Email:** switched off on the droplet, so password reset answers 503 until it is configured.
+
+A deploy that adds a migration is a schema change, not just a code push. Note that **every admin CLI
+command calls `Database.Migrate()` before it runs**, including `beta-reset` and `gen-beta-key`, so the
+first CLI command run against production applies any pending migration whether or not that was the
+intent. Snapshot the database first.
+
+**Build WebGL from the main `ROTA.Client6` checkout only.** A build from a second checkout (a git
+worktree with a copied `Library`) packed `Main.unity` without its `AppBootstrap`, and the game showed a
+black screen. When rolling back with `cp -a web.prev/. web/`, `touch` the restored files: `cp -a` keeps
+their older timestamps, so browsers that cached the newer `.data` keep it, and the old wasm then
+crashes with "memory access out of bounds".
 
 ## Before a public beta
 
 1. **`content/legal/terms.md` is placeholder text** and registration requires accepting it. This is
    the one blocker that is not a command to run.
-2. **Deploy, in the knowledge that it migrates.** See above.
-3. **The ForwardedHeaders fix is on `main` but not on the server.** Until it deploys, per-IP rate
-   limiting keys off the wrong address — the control that matters most for an open registration
-   endpoint.
+2. **Email is off on the droplet.** Until it sends, password reset answers 503. DigitalOcean blocks
+   SMTP on 587, so use a relay's alternate port through `EMAIL_HOST` / `EMAIL_PORT`.
 
 ## Open owner decisions
 
@@ -56,14 +73,68 @@ Full list in `docs/AGENT_BACKLOG.md` under "Owner decisions". The two that gate 
 - **0f — player market on or off for the beta.** Built, pen-tested 33/33, `MarketConfig.Enabled`
   ships `false`.
 
+## UI direction (approved 2026-11-09)
+
+The approved layout is a design canvas, not code yet:
+[ROTA UI Rework](https://claude.ai/artifact/79Uzm9i9mi1S7afZDvapku) (private to the owner). It has 10
+screens: Home, Quest, Raids, Raid combat, Leaderboards, Profile, Legion, Gauntlet, Guild, Bazaar.
+
+**Shell, the same on every screen:**
+
+- **Top bar:** name, class, level, the Energy / Stamina / Health / Honor meters with their regen
+  timers, gold and gems.
+- **Left nav rail:** collapses to a monogram strip, and the choice carries across screens.
+- **Stage:** fills the middle.
+- **Chat:** on the right, with World / Guild / Raid tabs.
+
+**The stage:**
+
+- It is one full-bleed art slot.
+- Every panel floats over it as glass. All panels share one transparency (about 65%), a 10px blur and
+  a ~10px radius, and sit 12px in from the stage edge.
+- Panels flow and wrap; they are never absolutely positioned columns sharing a fixed width (that
+  overlapped on Profile).
+- **Raid combat:** the name and health bar run across the top. Stamina, the hit buttons, magic and
+  "you" run along the bottom. Damage, Loot and Log float over the art.
+
+**Type and colour:**
+
+- Type is Barlow everywhere: one crisp, slightly bold sans.
+- The palette is "Iron & Crimson": graphite neutrals with no blue or brown tint, crimson for health,
+  and muted gold for highlights only.
+
+**Buttons take the colour of what they spend:**
+
+| Spends | Colour | Where |
+|---|---|---|
+| Stamina | orange | normal raids |
+| Energy | gold | quests and world raids |
+| Honor | blue | guild raids; the backend enum is `GuildStamina` |
+| Strikes | rose | Gauntlet |
+| Gems | coral | gem purchases |
+
+World raids get a small Energy / Stamina / Honor selector beside the hit buttons, and the buttons
+recolour to match. An unaffordable action reads "N short" instead of going grey.
+
+**Rejected on the way, so don't bring these back:**
+
+- Obsidian Gilt's blue-grey and gold
+- Cinzel and Inter
+- letter-spaced caps labels over big numbers
+- dashboard stat tiles and pill chips
+- the parchment / umber palette
+- decorative fonts
+
 ## Locked decisions — do not re-litigate
 
 - **Gauntlet battalion power** is `(pATK + ΣbATK) × 4 + (pDEF + ΣbDEF) × 1` on effective stats.
   Discernment crit is passive and never shown in power. Slots are 6 generals + 20 troops. Gauntlet
   combat is a **full replace** of the normal damage path, not an addition to it.
 - **Owner UI standards.** Pop-outs, not expansions. Rewards in one fixed replace-only slot. Action
-  buttons never move. No grey buttons. Locked options are unselectable. **Obsidian Gilt is the skin
-  and the Gauntlet page is the app-wide template.**
+  buttons never move. No grey buttons. Locked options are unselectable. **The skin is the glass
+  over stage layout above (Barlow, Iron & Crimson, buttons coloured by what they spend), and it
+  replaces Obsidian Gilt. The shared shell (top bar, nav rail, stage, chat) is the app-wide
+  template**, not the Gauntlet page.
 - **Mock fidelity.** The owner playtests in mock, so mocks stay stateful and the live path is
   verified separately.
 - **Tag affinity is highest-only, never summed** — the same rule as Gauntlet trophies. Summing would
@@ -77,6 +148,8 @@ Full list in `docs/AGENT_BACKLOG.md` under "Owner decisions". The two that gate 
 - **Public chat is read-only.** World and raid chat receive but cannot send (needs a Unity SignalR
   client). Private messages work — they ride REST.
 - **No achievement browse screen.** Points show on the profile and the endpoint is live.
+- **Both clients still render Obsidian Gilt.** The new layout exists only on the design canvas;
+  porting it to `ROTA.Client6` and `rota-web` has not started.
 
 ## Read order for a new session
 

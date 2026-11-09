@@ -85,11 +85,26 @@ owner's own confirmation. Everything else RE1 asked for is done.
 > each lane; lanes U and Q interleave. `[owner]` = needs a human input before it can finish;
 > `[migration]` = needs a schema change, so it ships behind the owner applying the migration.
 
-> **Resume here (2026-11-06).** Everything marked ✅ is live: API at `7812b2d`, client built from
-> `43f253d` on `feat/mock-playtest-accounts` (not merged to `master`). The integration suite has not
-> run since these changes: run it first. Open: emoji-presentation glyphs (🏠 💬 🎁) still draw blank
-> on WebGL, and the comment in `FontFallbacks.cs` wrongly says they were fixed; next suspect is
-> `TextElement.emojiFallbackSupport`. Next items: U2 shared classes, U6, S8, S5, S9, S10.
+> **Resume here (2026-11-09).** Everything marked ✅ is live.
+>
+> - **API:** `8605be0`. Migrations `AddDailyChest` and `AddRefreshTokenRevokeReason` are applied;
+>   the snapshot from just before is `/opt/rota/backups/rota-20261109-pre-8605be0.dump`.
+> - **Client:** built from `65ba9e8` on `feat/mock-playtest-accounts` (not merged to `master`).
+>   Logout now ends the session on the server too.
+> - **Tests:** green, 1,370 unit and 229 integration.
+> - **Server changes now live:**
+>   - Refresh tokens record why they were revoked, and only a replayed rotated token logs out every
+>     device.
+>   - The daily chest endpoints are live (no client UI yet).
+>   - `DaysPlayed` counts on refresh.
+>   - Password reset answers 503 while email is off. Email is off on the droplet.
+> - **Still uncommitted in the client working tree:** the emoji fix (`FontFallbacks.cs`,
+>   `GameFonts.cs`) and the client's 503 message for password reset (`HttpRotaApi.cs`). Both need a
+>   commit and a client deploy before players see them.
+> - **Build WebGL from the main `ROTA.Client6` checkout only.** See `docs/STATE.md` for why, and for
+>   the `touch` a rollback needs.
+>
+> Next items: U8, U2 shared classes, U6, S8, S5, S9, S10.
 
 ### Lane U — UI refresh (client)
 - ✅ **U1. Top bar + tab strip.** *(client, 2026-10-12)* Rail → horizontal tabs (Home · Campaign · Raids · Guild · Legion ·
@@ -107,6 +122,10 @@ owner's own confirmation. Everything else RE1 asked for is done.
 - **U6. Remaining screens adopt the classes.** Guild, Legion, Profile, Crafting, Bazaar, Gauntlet,
   Achievements, Leaderboard, overlays.
 - **U7. Keyboard shortcuts.** 1 / 5 / 20 strike, Q attempt, Esc closes overlays.
+- **U8. Top bar overflow.** At the 960px WebGL canvas the gold box covers the end of the Health bar
+  and its numbers. Seen on both text generators, so it comes from the bar layout, not the font.
+- **U9. Login card moves when typing.** The Email field shrinks a few pixels once it holds text and the
+  card shifts about 2px. Seen on both text generators. The card's look is locked, so this is a defect.
 
 ### Lane Q — quest pacing (server + client)
 - ✅ **Q1. Quest result carries resources.** *(`7c1c1e0`)* `NewEnergyValue/Max` etc. on `QuestResultResponse`; the
@@ -479,6 +498,25 @@ Full context in `docs/EVALUATE_LATER.md`. Summarised here so the queue is self-c
 
 ## Done
 
+- **Password reset is honest about email** *(2026-11-06)*. Request answers 503 when email cannot send
+  (`EmailConfig.CanSend`), the same for every address, and issues no code. A send skipped because email
+  is off is recorded as `Skipped`, not `Sent`, and is never retried. `EMAIL_HOST` / `EMAIL_PORT` reach
+  the production config, since many hosts block outbound 25, 465 and 587. `PasswordResetFlowTests`
+  runs the whole flow over a real SMTP conversation with a local server: the code redeemed is the one
+  in the email. Removing either fix fails its test.
+- **Emoji-presentation glyphs draw on WebGL** *(2026-11-06)*. Measured in a WebGL build, one label per
+  variation: blank on the default and on `unityTextGenerator = Advanced`, drawn on `Standard`;
+  `emojiFallbackSupport = false` changed nothing, and the glyphs were in the font all along. `GameFonts`
+  sets Standard on the app root; the login card stays on Advanced because its look is locked. Tab
+  labels run slightly wider (the strip gains about 14px at 960). The earlier claim in `2efedea` that
+  moving NotoEmoji off the emoji list fixed this was wrong; the code comment is corrected.
+- **The integration suite ran, and its gaps closed** *(2026-11-06)*. 208 of 210 first: two
+  `GauntletShopIdempotencyTests` could not boot, because the prize table has named real gear since
+  RG1 and the test swapped the whole gear catalogue for a one-item stub; the stub now adds to the
+  shipped catalogue. Nothing in the suite touched the hub or the pacer, so
+  `QuestPacingAndChatHubTests` adds them over the real pipeline: two simultaneous attempts give exactly
+  one 429, and hub auth, broadcast, hygiene and the Redis ring buffer. Removing the pacer registration
+  fails the pacing test. 215 integration, 1,322 unit.
 - **WebGL lost every glyph outside ASCII** *(2026-09-16, owner report: "no crafting / profile icons")*.
   The player ships Unity's 332-glyph Liberation Sans; Windows borrows OS fonts, WebGL cannot, so
   the nav icons, em dashes, arrows and every emoji were blank on the website. Four Noto subsets
