@@ -9,6 +9,7 @@ using ROTA.Application.Models;
 using ROTA.Domain.Entities;
 using ROTA.Domain.Enums;
 using ROTA.Infrastructure.Persistence;
+using ROTA.Infrastructure.Services;
 using System.Security.Cryptography;
 using Testcontainers.PostgreSql;
 using Testcontainers.Redis;
@@ -79,10 +80,12 @@ public class GauntletShopIdempotencyTests : IAsyncLifetime
                 host.ConfigureServices(services =>
                 {
                     // Override the shop catalogue with a deterministic test stub so we don't depend
-                    // on the shipped catalogue's exact ids/prices. A Gear def stub backs the
-                    // Pitchfork entry's payloadId (own-once kinds need a resolvable payloadId).
+                    // on the shipped catalogue's exact ids/prices. A test gear def backs the
+                    // Pitchfork entry's payloadId (own-once kinds need a resolvable payloadId). It is
+                    // added to the shipped gear, not swapped for it: the real prize table is validated
+                    // against this provider at boot and names real pieces.
                     services.AddSingleton<IGearDefinitionProvider>(
-                        new StubGearDefinitionProvider(new GearDefinition
+                        new ShippedGearPlus(new GearDefinitionProvider(FindApiContentRoot()), new GearDefinition
                         {
                             Id   = PitchforkGearPayload,
                             Name = "Shop Test Gear",
@@ -265,14 +268,19 @@ public class GauntletShopIdempotencyTests : IAsyncLifetime
         public GauntletShopEntry? GetById(string id) => _entries.FirstOrDefault(e => e.Id == id);
     }
 
-    private sealed class StubGearDefinitionProvider : IGearDefinitionProvider
+    private sealed class ShippedGearPlus : IGearDefinitionProvider
     {
+        private readonly IGearDefinitionProvider _shipped;
         private readonly GearDefinition _gear;
-        public StubGearDefinitionProvider(GearDefinition gear) => _gear = gear;
-        public GearDefinition? GetById(string id) => id == _gear.Id ? _gear : null;
-        public IReadOnlyList<GearDefinition> GetAll() => new[] { _gear };
+        public ShippedGearPlus(IGearDefinitionProvider shipped, GearDefinition gear)
+        {
+            _shipped = shipped;
+            _gear = gear;
+        }
+        public GearDefinition? GetById(string id) => id == _gear.Id ? _gear : _shipped.GetById(id);
+        public IReadOnlyList<GearDefinition> GetAll() => _shipped.GetAll().Append(_gear).ToList();
         public IReadOnlyList<GearDefinition> GetBySlot(string slot)
-            => _gear.Slot == slot ? new[] { _gear } : Array.Empty<GearDefinition>();
+            => _gear.Slot == slot ? _shipped.GetBySlot(slot).Append(_gear).ToList() : _shipped.GetBySlot(slot);
     }
 
     private sealed class EmptyRecipeProvider : ICraftingRecipeProvider
