@@ -120,7 +120,7 @@ public class PlayerRoleTests
         tokens.Setup(r => r.CreateAsync(It.IsAny<RefreshToken>(), It.IsAny<CancellationToken>()))
               .ReturnsAsync((RefreshToken t, CancellationToken _) => t);
 
-        return new AuthService(players.Object, tokens.Object, BuildConfig(privateKey), lockout.Object, auditLog.Object, betaKeys.Object, new Mock<IAchievementService>().Object,
+        return new AuthService(players.Object, tokens.Object, BuildConfig(privateKey), lockout.Object, auditLog.Object, betaKeys.Object, new Mock<ICheckInService>().Object,
             new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object, new Mock<IEquipmentService>().Object);
     }
 
@@ -169,7 +169,7 @@ public class PlayerRoleTests
               .ReturnsAsync((RefreshToken t, CancellationToken _) => t);
 
         var betaKeysMock = new Mock<IBetaKeyRepository>();
-        var service = new AuthService(players.Object, tokens.Object, BuildConfig(key), lockout.Object, auditLog.Object, betaKeysMock.Object, new Mock<IAchievementService>().Object,
+        var service = new AuthService(players.Object, tokens.Object, BuildConfig(key), lockout.Object, auditLog.Object, betaKeysMock.Object, new Mock<ICheckInService>().Object,
             new Mock<IPasswordResetTokenRepository>().Object, new Mock<IEmailNotificationService>().Object, new Mock<IEquipmentService>().Object);
 
         var result = await service.LoginAsync(

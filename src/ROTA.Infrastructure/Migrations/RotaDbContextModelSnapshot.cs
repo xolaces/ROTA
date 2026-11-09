@@ -1866,6 +1866,65 @@ namespace ROTA.Infrastructure.Migrations
                     b.ToTable("player_commander_gear", (string)null);
                 });
 
+            modelBuilder.Entity("ROTA.Domain.Entities.PlayerDailyChest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<DateOnly>("ChestDay")
+                        .HasColumnType("date")
+                        .HasColumnName("chest_day");
+
+                    b.Property<string>("ContentsJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("contents");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_deleted");
+
+                    b.Property<DateTimeOffset?>("PickedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("picked_at");
+
+                    b.Property<short?>("PickedIndex")
+                        .HasColumnType("smallint")
+                        .HasColumnName("picked_index");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("player_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId", "ChestDay")
+                        .IsUnique()
+                        .HasDatabaseName("ix_player_daily_chests_player_day");
+
+                    b.ToTable("player_daily_chests", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_player_daily_chests_picked_index", "picked_index IS NULL OR (picked_index >= 0 AND picked_index < 6)");
+                        });
+                });
+
             modelBuilder.Entity("ROTA.Domain.Entities.PlayerEquipment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3355,6 +3414,15 @@ namespace ROTA.Infrastructure.Migrations
                     b.HasOne("ROTA.Domain.Entities.Player", null)
                         .WithMany()
                         .HasForeignKey("BlockerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ROTA.Domain.Entities.PlayerDailyChest", b =>
+                {
+                    b.HasOne("ROTA.Domain.Entities.Player", null)
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

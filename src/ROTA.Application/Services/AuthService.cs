@@ -29,7 +29,7 @@ public sealed class AuthService : IAuthService
     private readonly IAuthLockoutService _lockout;
     private readonly IAuditLogRepository _auditLog;
     private readonly IBetaKeyRepository _betaKeys;
-    private readonly IAchievementService _achievements;
+    private readonly ICheckInService _checkIn;
     private readonly IPasswordResetTokenRepository _resetTokens;
     private readonly IEmailNotificationService _emails;
     private readonly IEquipmentService _equipment;
@@ -41,7 +41,7 @@ public sealed class AuthService : IAuthService
         IAuthLockoutService lockout,
         IAuditLogRepository auditLog,
         IBetaKeyRepository betaKeys,
-        IAchievementService achievements,
+        ICheckInService checkIn,
         IPasswordResetTokenRepository resetTokens,
         IEmailNotificationService emails,
         IEquipmentService equipment)
@@ -52,7 +52,7 @@ public sealed class AuthService : IAuthService
         _lockout = lockout;
         _auditLog = auditLog;
         _betaKeys = betaKeys;
-        _achievements = achievements;
+        _checkIn = checkIn;
         _resetTokens = resetTokens;
         _emails = emails;
         _equipment = equipment;
@@ -185,27 +185,25 @@ public sealed class AuthService : IAuthService
             player.Id, "Login", null,
             "Login successful", ipAddress));
 
-        // Achievements (TICKET 46) — days-played login hook. Increment DaysPlayed only when the UTC
-        // calendar day advances (RecordLogin is idempotent per day), then record the metric with a
-        // per-day referenceId so a re-login never double-counts. Best-effort: NEVER blocks login.
+        await TryCheckInAsync(player.Id);
+
+        return await IssueTokenPairAsync(player, ipAddress);
+    }
+
+    // System 29 S1 — day bookkeeping (DaysPlayed + its achievement metric) on EVERY successful
+    // authentication, login and refresh alike. It used to run on password login only, and the client
+    // resumes on a persisted refresh token, so returning players stopped being counted. Best-effort:
+    // a failure costs one uncounted check-in, which the next refresh (≤15 min of play) retries.
+    private async Task TryCheckInAsync(Guid playerId)
+    {
         try
         {
-            var today = DateOnly.FromDateTime(DateTime.UtcNow);
-            if (player.RecordLogin(today))
-            {
-                await _players.UpdateAsync(player);
-                await _achievements.RecordProgressAsync(
-                    player.Id, Domain.Enums.AchievementMetric.DaysPlayed, 1,
-                    $"ach:day:{player.Id}:{today:yyyy-MM-dd}");
-                await _achievements.EvaluateCompletionsAsync(player.Id);
-            }
+            await _checkIn.CheckInAsync(playerId);
         }
         catch
         {
-            // swallow — achievement tracking must never break authentication
+            // swallow — day tracking must never break authentication
         }
-
-        return await IssueTokenPairAsync(player, ipAddress);
     }
 
     public async Task<AuthResponse?> RefreshAsync(RefreshRequest request, string ipAddress)
@@ -265,6 +263,9 @@ public sealed class AuthService : IAuthService
         await _auditLog.AppendAsync(AuditLog.Create(
             player.Id, "TokenRefresh", null,
             "Token rotated", ipAddress));
+
+        // After rotation succeeded, so only a legitimate refresh counts the day.
+        await TryCheckInAsync(player.Id);
 
         return await IssueTokenPairAsync(player, ipAddress);
     }

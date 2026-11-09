@@ -95,6 +95,9 @@ public class RotaDbContext : DbContext
     public DbSet<AchievementAward> AchievementAwards => Set<AchievementAward>();
     public DbSet<AchievementProgressEvent> AchievementProgressEvents => Set<AchievementProgressEvent>();
 
+    // ----- System 29 — Daily Chest -----
+    public DbSet<PlayerDailyChest> PlayerDailyChests => Set<PlayerDailyChest>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

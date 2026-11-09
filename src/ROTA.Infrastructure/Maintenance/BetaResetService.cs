@@ -69,6 +69,7 @@ public sealed class BetaResetService : IBetaResetService
         "player_magic_honors", "player_magics", "player_masteries", "player_mastery_activities",
         "player_quest_difficulty_progress", "player_quest_progress", "player_units",
         "player_resources", "player_stats",
+        "player_daily_chests",   // System 29 — RESTRICT FK to players, so it must go before a purge
         // ── then the parents whose children are now gone ──────────────────────────────────────
         "raid_magics", "raid_participants", "active_raids",
         "gauntlet_entries",
@@ -96,6 +97,8 @@ public sealed class BetaResetService : IBetaResetService
         "player_quest_progress", "player_quest_difficulty_progress",
         "achievement_progress", "achievement_awards", "achievement_progress_events",
         "gem_transactions", "refresh_tokens", "password_reset_tokens",
+        // System 29 — spared for a kept account so a reset can't hand it a second pick the same day.
+        "player_daily_chests",
     };
 
     public async Task<BetaResetReport> RunAsync(

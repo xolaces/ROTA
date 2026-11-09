@@ -1,0 +1,13 @@
+{
+  "_note": "BETA-PLACEHOLDER pool. What the chest holds is owner decision System 29 §6.1. Potions only until then: sigils gate raids (open decision 0k) and stat bags feed the SP curve, so neither goes in by default.",
+  "pool": [
+    { "itemDefinitionId": "potion_energy_minor",    "quantity": 1, "weight": 30 },
+    { "itemDefinitionId": "potion_stamina_minor",   "quantity": 1, "weight": 30 },
+    { "itemDefinitionId": "potion_health_minor",    "quantity": 1, "weight": 30 },
+    { "itemDefinitionId": "potion_energy_major",    "quantity": 1, "weight": 8 },
+    { "itemDefinitionId": "potion_stamina_major",   "quantity": 1, "weight": 8 },
+    { "itemDefinitionId": "potion_health_major",    "quantity": 1, "weight": 8 },
+    { "itemDefinitionId": "potion_energy_greater",  "quantity": 1, "weight": 2 },
+    { "itemDefinitionId": "potion_stamina_greater", "quantity": 1, "weight": 2 }
+  ]
+}
