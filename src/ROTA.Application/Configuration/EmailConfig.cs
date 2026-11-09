@@ -24,6 +24,11 @@ public sealed class EmailConfig
     /// <summary>SMTP password / app-password — from user-secrets (Email:Password). Temporary; rotate.</summary>
     public string Password { get; set; } = string.Empty;
 
+    /// <summary>True when a send can go out at all: switched on, with credentials to log in with.</summary>
+    public bool CanSend => Enabled
+        && !string.IsNullOrWhiteSpace(Username)
+        && !string.IsNullOrWhiteSpace(Password);
+
     public string FromAddress { get; set; } = "operator@example.com";
     public string FromName { get; set; } = "ROTA Ops";
 

@@ -35,6 +35,8 @@ services:
       Seed__AdminEmail: ${SEED_ADMIN_EMAIL:-admin@rota.local}
       Developer__Usernames__0: ${DEV_USERNAME:-}
       Email__Enabled: ${EMAIL_ENABLED:-false}
+      Email__Host: ${EMAIL_HOST:-smtp.gmail.com}
+      Email__Port: ${EMAIL_PORT:-587}
       Email__Username: ${EMAIL_USERNAME:-}
       Email__Password: ${EMAIL_PASSWORD:-}
       Email__FromAddress: ${EMAIL_FROM:-operator@example.com}

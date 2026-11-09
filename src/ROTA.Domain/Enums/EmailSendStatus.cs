@@ -12,4 +12,8 @@ public enum EmailSendStatus
 
     /// <summary>Send attempted and failed; see <c>LastSendError</c>. Still visible in the dashboard.</summary>
     Failed = 3,
+
+    /// <summary>Not sent, because email is switched off. Never retried: turning email back on must not
+    /// deliver a backlog of stale mail.</summary>
+    Skipped = 4,
 }

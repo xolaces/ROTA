@@ -101,6 +101,14 @@ public class OutboundEmail
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
+    /// <summary>Records that no send was attempted because email is switched off.</summary>
+    public void MarkSkipped()
+    {
+        SendStatus = EmailSendStatus.Skipped;
+        LastSendError = "Email is switched off.";
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
     /// <summary>Operator triage: acknowledged / actioned.</summary>
     public void Approve(Guid reviewerId)
     {

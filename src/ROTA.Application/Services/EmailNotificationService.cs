@@ -87,6 +87,14 @@ public sealed class EmailNotificationService : IEmailNotificationService
         if (email.SendStatus == Domain.Enums.EmailSendStatus.Sent)
             return true; // already delivered (startup sweep + retry can overlap a live enqueue)
 
+        // Nothing goes out while email is off, so the row must not claim it was delivered.
+        if (!_cfg.Enabled)
+        {
+            email.MarkSkipped();
+            await _emails.UpdateAsync(email, ct);
+            return true;
+        }
+
         try
         {
             await _email.SendAsync(new EmailMessage

@@ -42,8 +42,9 @@ Optional:
 
 | Env var | Default | Meaning |
 |---|---|---|
-| `Email__Username` / `Email__Password` | empty | SMTP creds (Gmail app password). Unset → sends skip, rows still persist |
-| `Email__Enabled` | `true` | Master email switch |
+| `Email__Username` / `Email__Password` | empty | SMTP login. Unset → sends fail, and password reset answers 503 |
+| `Email__Host` / `Email__Port` | `smtp.gmail.com` / `587` | SMTP server. Many hosts block outbound 25, 465 and 587: use a relay's alternate port, often 2525 |
+| `Email__Enabled` | `true` | Master email switch. Off → rows persist as Skipped, and password reset answers 503 |
 | `BetaGate__Enabled` | `true` | Beta-key requirement on registration |
 | `Seed__AdminEmail` | `admin@rota.local` | Seeded admin email |
 | `Admin__PlayerIds__0...` | — | Break-glass admin allowlist |

@@ -1,6 +1,8 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using ROTA.Application.Configuration;
 using ROTA.Application.Interfaces;
 using ROTA.Shared.DTOs;
 
@@ -23,6 +25,7 @@ public sealed class AuthController : ControllerBase
     private readonly IValidator<RefreshRequest> _refreshValidator;
     private readonly IValidator<PasswordResetRequest> _resetRequestValidator;
     private readonly IValidator<ResetPasswordRequest> _resetConfirmValidator;
+    private readonly EmailConfig _email;
 
     public AuthController(
         IAuthService auth,
@@ -31,8 +34,10 @@ public sealed class AuthController : ControllerBase
         IValidator<LoginRequest> loginValidator,
         IValidator<RefreshRequest> refreshValidator,
         IValidator<PasswordResetRequest> resetRequestValidator,
-        IValidator<ResetPasswordRequest> resetConfirmValidator)
+        IValidator<ResetPasswordRequest> resetConfirmValidator,
+        IOptions<EmailConfig> email)
     {
+        _email = email.Value;
         _auth = auth;
         _rateLimiter = rateLimiter;
         _registerValidator = registerValidator;
@@ -104,15 +109,22 @@ public sealed class AuthController : ControllerBase
         return NoContent();
     }
 
-    /// <summary>T65 step 1 — always 202 whether or not the email exists (anti-enumeration).</summary>
+    /// <summary>T65 step 1 — always 202 whether or not the email exists (anti-enumeration). 503 when email
+    /// cannot send: that depends on no account, so it reveals nothing, and it stops a player waiting
+    /// for a code that will never arrive.</summary>
     [HttpPost("password-reset/request")]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
     public async Task<IActionResult> RequestPasswordReset([FromBody] PasswordResetRequest request)
     {
         var v = await _resetRequestValidator.ValidateAsync(request);
         if (!v.IsValid) return InvalidRequest(v);
+
+        if (!_email.CanSend)
+            return StatusCode(StatusCodes.Status503ServiceUnavailable,
+                new { message = "Password reset is down right now. Try again later." });
 
         if (!await _rateLimiter.TryConsumeAsync("pwreset-request", EmailRateKey(request.Email),
                 GetIpAddress(), ResetRequestPerEmailPerHour, ResetRequestPerIpPerHour))

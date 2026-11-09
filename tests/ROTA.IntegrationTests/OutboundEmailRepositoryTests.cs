@@ -114,7 +114,10 @@ public class OutboundEmailRepositoryTests : IAsyncLifetime
         for (int i = 0; i < maxAttempts; i++) exhausted.MarkFailed("smtp down");
         var sent = Make(EmailPriority.Normal);
         sent.MarkSent();
+        var skipped = Make(EmailPriority.Normal);
+        skipped.MarkSkipped();
 
+        await repo.AddAsync(skipped);
         await repo.AddAsync(queued);
         await repo.AddAsync(retryableFailed);
         await repo.AddAsync(exhausted);
@@ -126,5 +129,6 @@ public class OutboundEmailRepositoryTests : IAsyncLifetime
         pending.Should().Contain(retryableFailed.Id, "Failed with attempts remaining retries");
         pending.Should().NotContain(exhausted.Id, "exhausted rows stay Failed for dashboard triage");
         pending.Should().NotContain(sent.Id);
+        pending.Should().NotContain(skipped.Id, "turning email on must not deliver a backlog of stale mail");
     }
 }

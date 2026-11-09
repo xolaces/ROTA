@@ -134,6 +134,34 @@ public class EmailNotificationServiceTests
     }
 
     [Fact]
+    public async Task ProcessSend_WithEmailOff_IsRecordedAsSkipped_NotSent()
+    {
+        var (service, emails, _, email, _) = BuildService(new EmailConfig { Enabled = false });
+        var row = OutboundEmail.Create(EmailType.BugReport, "[ROTA][BugReport] x",
+            "operator@example.com", "bug", null, "T38", "{}", null);
+        emails.Setup(r => r.GetByIdAsync(row.Id, It.IsAny<CancellationToken>())).ReturnsAsync(row);
+
+        var settled = await service.ProcessSendAsync(row.Id);
+
+        settled.Should().BeTrue("a skipped row is not retried");
+        row.SendStatus.Should().Be(EmailSendStatus.Skipped);
+        row.SendAttempts.Should().Be(0, "no send was attempted");
+        email.Verify(s => s.SendAsync(It.IsAny<EmailMessage>(), It.IsAny<CancellationToken>()), Times.Never);
+        emails.Verify(r => r.UpdateAsync(row, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(true, "user", "pass", true)]
+    [InlineData(false, "user", "pass", false)]
+    [InlineData(true, "", "pass", false)]
+    [InlineData(true, "user", " ", false)]
+    public void CanSend_NeedsTheSwitch_AndALogin(bool enabled, string username, string password, bool expected)
+    {
+        new EmailConfig { Enabled = enabled, Username = username, Password = password }
+            .CanSend.Should().Be(expected);
+    }
+
+    [Fact]
     public async Task ProcessSend_MarksFailed_AndSwallows_OnSendException()
     {
         var (service, emails, _, email, _) = BuildService();

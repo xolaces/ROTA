@@ -33,6 +33,8 @@ public sealed class EmailSendBackgroundService : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _log.LogInformation("Outbound email sender started.");
+        if (!_cfg.CanSend)
+            _log.LogWarning("Email cannot send (switched off or no credentials): password reset is unavailable.");
 
         await RecoverStrandedAsync(stoppingToken);
 
