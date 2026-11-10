@@ -66,6 +66,46 @@ public class PasswordResetTests
         }
     }
 
+    // ── Owner-issued codes (admin CLI issue-reset-code, 2026-11-10) ──
+
+    [Fact]
+    public async Task IssuePasswordResetCodeAsync_ByUsername_IssuesRedeemableCode_SendsNoEmail()
+    {
+        var h = new Harness();
+        var player = MakePlayer();
+        h.Players.Setup(r => r.FindByEmailAsync("testplayer", It.IsAny<CancellationToken>())).ReturnsAsync((Player?)null);
+        h.Players.Setup(r => r.FindByUsernameAsync("testplayer", It.IsAny<CancellationToken>())).ReturnsAsync(player);
+        PasswordResetToken? stored = null;
+        h.ResetTokens.Setup(r => r.CreateAsync(It.IsAny<PasswordResetToken>(), It.IsAny<CancellationToken>()))
+                     .Callback<PasswordResetToken, CancellationToken>((t, _) => stored = t);
+
+        var issued = await h.Service.IssuePasswordResetCodeAsync("testplayer", TimeSpan.FromMinutes(60), "admin-cli");
+
+        issued.Should().NotBeNull();
+        issued!.Username.Should().Be("testplayer");
+        issued.Email.Should().Be("test@rota.test");
+        issued.Code.Should().NotBeNullOrWhiteSpace();
+        stored.Should().NotBeNull();
+        stored!.PlayerId.Should().Be(player.Id);
+        stored.CodeHash.Should().NotContain(issued.Code);
+        stored.ExpiresAt.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(60), TimeSpan.FromMinutes(1));
+        h.ResetTokens.Verify(r => r.InvalidateActiveAsync(player.Id, It.IsAny<CancellationToken>()), Times.Once);
+        h.Emails.Verify(e => e.QueueAsync(It.IsAny<EmailPayload>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task IssuePasswordResetCodeAsync_BannedOrUnknown_ReturnsNull_NoToken()
+    {
+        var h = new Harness();
+        h.Players.Setup(r => r.FindByEmailAsync("banned@rota.test", It.IsAny<CancellationToken>())).ReturnsAsync(MakePlayer(isBanned: true));
+        h.Players.Setup(r => r.FindByEmailAsync("ghost", It.IsAny<CancellationToken>())).ReturnsAsync((Player?)null);
+        h.Players.Setup(r => r.FindByUsernameAsync("ghost", It.IsAny<CancellationToken>())).ReturnsAsync((Player?)null);
+
+        (await h.Service.IssuePasswordResetCodeAsync("banned@rota.test", TimeSpan.FromMinutes(60), "admin-cli")).Should().BeNull();
+        (await h.Service.IssuePasswordResetCodeAsync("ghost", TimeSpan.FromMinutes(60), "admin-cli")).Should().BeNull();
+        h.ResetTokens.Verify(r => r.CreateAsync(It.IsAny<PasswordResetToken>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
     [Fact]
     public async Task RequestPasswordResetAsync_UnknownEmail_SilentNoToken_NoEmail_Audited()
     {

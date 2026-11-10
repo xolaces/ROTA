@@ -29,6 +29,7 @@ namespace ROTA.Api;
 ///   dotnet run --project src/ROTA.Api -- gauntlet-open {name} {startsAt} {endsAt}
 ///   dotnet run --project src/ROTA.Api -- gauntlet-close {eventId}
 ///   dotnet run --project src/ROTA.Api -- gauntlet-settle {eventId}
+///   dotnet run --project src/ROTA.Api -- issue-reset-code {email|user} [minutes]
 ///   dotnet run --project src/ROTA.Api -- beta-reset [--purge-accounts] [--keep name,name] [--confirm WIPE-BETA]
 /// </code>
 /// </remarks>
@@ -51,6 +52,7 @@ public static class AdminCli
             "gauntlet-close",
             "gauntlet-settle",
             "beta-reset",
+            "issue-reset-code",
         };
 
     /// <summary>Returns true if <paramref name="firstArg"/> is a recognised CLI command.</summary>
@@ -92,6 +94,7 @@ public static class AdminCli
                 "gauntlet-close"           => await RunGauntletClose(app.Services, args),
                 "gauntlet-settle"          => await RunGauntletSettle(app.Services, args),
                 "beta-reset"               => await RunBetaReset(app.Services, args),
+                "issue-reset-code"         => await RunIssueResetCode(app.Services, args),
                 _                          => UnknownCommand(command),
             };
         }
@@ -193,6 +196,40 @@ public static class AdminCli
         }
 
         Console.WriteLine($"{verb}: {status}");
+        return 0;
+    }
+
+    // Password reset without email: prints a one-time code for the owner to pass to the player, who
+    // enters it on the login screen (Forgot password? -> Have a code?) with their email and a new
+    // password. Nobody but the player ever knows the new password.
+    private static async Task<int> RunIssueResetCode(IServiceProvider services, string[] args)
+    {
+        if (args.Length < 2)
+        {
+            Console.Error.WriteLine("Usage: issue-reset-code {email|user} [minutes, default 60, max 1440]");
+            return 1;
+        }
+        int minutes = 60;
+        if (args.Length >= 3 && (!int.TryParse(args[2], out minutes) || minutes < 1 || minutes > 1440))
+        {
+            Console.Error.WriteLine($"issue-reset-code: minutes must be 1-1440, got '{args[2]}'.");
+            return 1;
+        }
+
+        using var scope = services.CreateScope();
+        var auth = scope.ServiceProvider.GetRequiredService<IAuthService>();
+        var issued = await auth.IssuePasswordResetCodeAsync(args[1], TimeSpan.FromMinutes(minutes), "admin-cli");
+        if (issued is null)
+        {
+            Console.Error.WriteLine($"issue-reset-code: no active account matches '{args[1]}'.");
+            return 1;
+        }
+
+        Console.WriteLine($"issue-reset-code: account {issued.Username} ({issued.Email})");
+        Console.WriteLine($"  code    : {issued.Code}");
+        Console.WriteLine($"  expires : {issued.ExpiresAt:yyyy-MM-dd HH:mm} UTC");
+        Console.WriteLine("  The player opens Forgot password?, taps Have a code?, and enters this email, the code");
+        Console.WriteLine("  and a new password. Any earlier code for this account no longer works.");
         return 0;
     }
 

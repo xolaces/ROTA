@@ -353,6 +353,25 @@ public sealed class AuthService : IAuthService
         }, ipAddress);
     }
 
+    public async Task<IssuedResetCode?> IssuePasswordResetCodeAsync(string emailOrUsername, TimeSpan ttl, string issuedBy)
+    {
+        var key = (emailOrUsername ?? string.Empty).Trim();
+        var player = await _players.FindByEmailAsync(key) ?? await _players.FindByUsernameAsync(key);
+        if (player is null || player.IsBanned)
+            return null;
+
+        await _resetTokens.InvalidateActiveAsync(player.Id);
+        var code = GenerateResetCode();
+        await _resetTokens.CreateAsync(PasswordResetToken.Create(
+            player.Id, HashToken(NormalizeResetCode(code)), ttl));
+
+        await _auditLog.AppendAsync(AuditLog.Create(
+            player.Id, "PasswordResetCodeIssuedByAdmin", null,
+            $"Reset code issued by {issuedBy}, no email sent (ttl={(int)ttl.TotalMinutes}m)", "admin-cli"));
+
+        return new IssuedResetCode(player.Username, player.Email, code, DateTimeOffset.UtcNow.Add(ttl));
+    }
+
     public async Task<bool> ResetPasswordAsync(ResetPasswordRequest request, string ipAddress)
     {
         var player = await _players.FindByEmailAsync(request.Email);
