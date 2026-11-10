@@ -206,13 +206,13 @@ public static class AdminCli
     {
         if (args.Length < 2)
         {
-            Console.Error.WriteLine("Usage: issue-reset-code {email|user} [minutes, default 60, max 1440]");
+            Console.Error.WriteLine("Usage: issue-reset-code {email|user} [minutes, default 60, max 43200 = 30 days]");
             return 1;
         }
         int minutes = 60;
-        if (args.Length >= 3 && (!int.TryParse(args[2], out minutes) || minutes < 1 || minutes > 1440))
+        if (args.Length >= 3 && (!int.TryParse(args[2], out minutes) || minutes < 1 || minutes > 43200))
         {
-            Console.Error.WriteLine($"issue-reset-code: minutes must be 1-1440, got '{args[2]}'.");
+            Console.Error.WriteLine($"issue-reset-code: minutes must be 1-43200 (30 days), got '{args[2]}'.");
             return 1;
         }
 
@@ -229,7 +229,7 @@ public static class AdminCli
         Console.WriteLine($"  code    : {issued.Code}");
         Console.WriteLine($"  expires : {issued.ExpiresAt:yyyy-MM-dd HH:mm} UTC");
         Console.WriteLine("  The player opens Forgot password?, taps Have a code?, and enters this email, the code");
-        Console.WriteLine("  and a new password. Any earlier code for this account no longer works.");
+        Console.WriteLine("  and a new password. The code works once; any earlier code for this account no longer works.");
         return 0;
     }
 
