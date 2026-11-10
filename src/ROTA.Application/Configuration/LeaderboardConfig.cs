@@ -45,11 +45,17 @@ public class LeaderboardConfig
     // Q10 — LOCKED global only (no per-league split)
     public bool Global { get; set; } = true;
 
-    // Q11 — LOCKED L20 floor
+    // Q11 — L20 floor originally; the owner lowered it to 1 for the beta (2026-11-10) in
+    // appsettings.json, so every tester shows on the boards.
     public int MinLevel { get; set; } = 20;
 
     // Q11 — LOCKED exclude Admin accounts; Moderators appear as regular players
     public bool ExcludeAdmins { get; set; } = true;
+
+    // How often LeaderboardStatSnapshotService copies players' ATK / DEF / Discernment into the three
+    // Live stat boards. Before 2026-11-10 nothing ran the snapshot on a schedule, so those boards
+    // stayed empty unless an admin triggered it by hand.
+    public int StatSnapshotSeconds { get; set; } = 300;
 }
 
 // ── Config-local supporting enums ───────────────────────────────────────────

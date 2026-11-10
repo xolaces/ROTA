@@ -310,6 +310,7 @@ builder.Services.AddHostedService<EmailSendBackgroundService>();
 
 // periodic per-league rank snapshot for the active Gauntlet event.
 builder.Services.AddHostedService<GauntletRankSnapshotService>();
+builder.Services.AddHostedService<LeaderboardStatSnapshotService>();
 
 // Settles World (timer-only) raids whose clock has run out. Expiry is their only ending — nothing
 // else pays the damage ladder they banked.
