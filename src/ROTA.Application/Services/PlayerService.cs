@@ -98,6 +98,7 @@ public sealed class PlayerService : IPlayerService
         {
             Id               = player.Id,
             Username         = player.Username,
+            EmailChangeAllowed = player.EmailChangeAllowed,
             DisplayName      = string.IsNullOrWhiteSpace(player.DisplayName) ? player.Username : player.DisplayName,
             Email            = player.Email,
             Level            = player.Level,
@@ -138,6 +139,38 @@ public sealed class PlayerService : IPlayerService
             $"Username changed to {request.Username}", null), ct);
 
         return new UpdateUsernameResult(PlayerUpdateStatus.Success, player.Username, player.UpdatedAt);
+    }
+
+    public async Task<EmailChangeStatus> ChangeOwnEmailAsync(
+        Guid playerId, ChangeEmailRequest request, CancellationToken ct = default)
+    {
+        var player = await _players.FindByIdAsync(playerId, ct);
+        if (player is null) return EmailChangeStatus.NotFound;
+
+        // Owner-gated by design: without the allowance there is no way to change an email.
+        if (!player.EmailChangeAllowed) return EmailChangeStatus.NotAllowed;
+
+        if (!BCrypt.Net.BCrypt.Verify(request.Password ?? string.Empty, player.PasswordHash))
+            return EmailChangeStatus.WrongPassword;
+
+        var newEmail = (request.NewEmail ?? string.Empty).Trim().ToLowerInvariant();
+        if (newEmail.Length == 0 || newEmail.Length > 255
+            || !System.Net.Mail.MailAddress.TryCreate(newEmail, out var parsed)
+            || !string.Equals(parsed.Address, newEmail, StringComparison.OrdinalIgnoreCase))
+            return EmailChangeStatus.InvalidEmail;
+
+        var holder = await _players.FindByEmailAsync(newEmail, ct);
+        if (holder is not null && holder.Id != player.Id) return EmailChangeStatus.EmailTaken;
+
+        var oldEmail = player.Email;
+        player.ChangeEmail(newEmail);
+        await _players.UpdateAsync(player, ct);
+
+        await _auditLog.AppendAsync(AuditLog.Create(
+            playerId, "EmailChanged", null,
+            $"Email changed by the player with the owner's allowance (was {oldEmail})", null), ct);
+
+        return EmailChangeStatus.Success;
     }
 
     public async Task<UpdateDisplayNameResult> UpdateDisplayNameAsync(

@@ -335,4 +335,81 @@ public class PlayerServiceTests
         var result = await validator.ValidateAsync(new UpdateDisplayNameRequest(name));
         result.IsValid.Should().BeFalse($"'{name}' should fail validation");
     }
+
+    // ── Owner-gated email change (2026-11-10) ──
+
+    private static Player MakePlayerWithPassword(string password)
+        => Player.Create("mailer", "old@rota.test", BCrypt.Net.BCrypt.HashPassword(password, 4));
+
+    [Fact]
+    public async Task ChangeOwnEmail_WithoutOwnerAllowance_IsRefused_AndNothingSaved()
+    {
+        var (service, players, _, _) = BuildService();
+        var player = MakePlayerWithPassword("Correct1");
+        players.Setup(r => r.FindByIdAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+
+        var status = await service.ChangeOwnEmailAsync(player.Id,
+            new ChangeEmailRequest { NewEmail = "new@rota.test", Password = "Correct1" });
+
+        status.Should().Be(EmailChangeStatus.NotAllowed);
+        player.Email.Should().Be("old@rota.test");
+        players.Verify(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ChangeOwnEmail_WrongPassword_IsRefused_AllowanceKept()
+    {
+        var (service, players, _, _) = BuildService();
+        var player = MakePlayerWithPassword("Correct1");
+        player.AllowEmailChange();
+        players.Setup(r => r.FindByIdAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+
+        var status = await service.ChangeOwnEmailAsync(player.Id,
+            new ChangeEmailRequest { NewEmail = "new@rota.test", Password = "Wrong1" });
+
+        status.Should().Be(EmailChangeStatus.WrongPassword);
+        player.EmailChangeAllowed.Should().BeTrue();
+        player.Email.Should().Be("old@rota.test");
+    }
+
+    [Fact]
+    public async Task ChangeOwnEmail_TakenOrInvalid_IsRefused()
+    {
+        var (service, players, _, _) = BuildService();
+        var player = MakePlayerWithPassword("Correct1");
+        player.AllowEmailChange();
+        var other = Player.Create("other", "taken@rota.test", "hash");
+        players.Setup(r => r.FindByIdAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+        players.Setup(r => r.FindByEmailAsync("taken@rota.test", It.IsAny<CancellationToken>())).ReturnsAsync(other);
+
+        (await service.ChangeOwnEmailAsync(player.Id,
+            new ChangeEmailRequest { NewEmail = "Taken@rota.test", Password = "Correct1" }))
+            .Should().Be(EmailChangeStatus.EmailTaken);
+        (await service.ChangeOwnEmailAsync(player.Id,
+            new ChangeEmailRequest { NewEmail = "not an email", Password = "Correct1" }))
+            .Should().Be(EmailChangeStatus.InvalidEmail);
+        player.EmailChangeAllowed.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ChangeOwnEmail_WithAllowance_ChangesLowercased_AndSpendsAllowance()
+    {
+        var (service, players, _, auditLog) = BuildService();
+        var player = MakePlayerWithPassword("Correct1");
+        player.AllowEmailChange();
+        players.Setup(r => r.FindByIdAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+
+        var status = await service.ChangeOwnEmailAsync(player.Id,
+            new ChangeEmailRequest { NewEmail = "  New.Person@Rota.Test ", Password = "Correct1" });
+
+        status.Should().Be(EmailChangeStatus.Success);
+        player.Email.Should().Be("new.person@rota.test");
+        player.EmailChangeAllowed.Should().BeFalse("the allowance is one change only");
+        players.Verify(r => r.UpdateAsync(player, It.IsAny<CancellationToken>()), Times.Once);
+        auditLog.Verify(a => a.AppendAsync(It.Is<AuditLog>(l => l.Action == "EmailChanged"), It.IsAny<CancellationToken>()), Times.Once);
+
+        (await service.ChangeOwnEmailAsync(player.Id,
+            new ChangeEmailRequest { NewEmail = "again@rota.test", Password = "Correct1" }))
+            .Should().Be(EmailChangeStatus.NotAllowed);
+    }
 }

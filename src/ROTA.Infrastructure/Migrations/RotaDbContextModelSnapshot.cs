@@ -1690,6 +1690,12 @@ namespace ROTA.Infrastructure.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("email");
 
+                    b.Property<bool>("EmailChangeAllowed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("email_change_allowed");
+
                     b.Property<long>("Experience")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")

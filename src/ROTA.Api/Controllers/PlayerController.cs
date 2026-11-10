@@ -36,6 +36,28 @@ public sealed class PlayerController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>Spends a one-time email change the owner allowed. Needs the current password.</summary>
+    [HttpPut("me/email")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailRequest request)
+    {
+        var status = await _players.ChangeOwnEmailAsync(GetPlayerId(), request);
+        return status switch
+        {
+            EmailChangeStatus.Success       => NoContent(),
+            EmailChangeStatus.NotFound      => NotFound(),
+            EmailChangeStatus.NotAllowed    => StatusCode(StatusCodes.Status403Forbidden,
+                                                   new { message = "Email changes need the owner's go-ahead." }),
+            EmailChangeStatus.WrongPassword => BadRequest(new { message = "That password is wrong." }),
+            EmailChangeStatus.InvalidEmail  => BadRequest(new { message = "That isn't a valid email address." }),
+            EmailChangeStatus.EmailTaken    => Conflict(new { message = "Another account already uses that email." }),
+            _                               => StatusCode(500),
+        };
+    }
+
     [HttpPut("me")]
     [ProducesResponseType(typeof(UpdateUsernameResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

@@ -29,6 +29,14 @@ public class PlayerProfileResponse
     public int MasteryRatingActive { get; set; }
     // Achievements (TICKET 46) — total Achievement Points, SUMMED from the award ledger.
     public int TotalAchievementPoints { get; set; }
+    // The owner allowed one email change (admin CLI allow-email-change); the client prompts for it.
+    public bool EmailChangeAllowed { get; set; }
+}
+
+public class ChangeEmailRequest
+{
+    public string NewEmail { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
 }
 
 public class ResourceValueResponse

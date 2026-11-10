@@ -147,13 +147,13 @@ public class RefreshTokenRevokeReasonTests : IAsyncLifetime
     [Fact]
     public async Task Migration_BackfillsTokensRevokedBeforeReasonsExisted_AsRotated()
     {
-        // Stop one migration short, write the rows the old code would have written, then finish.
+        // Seed the player with today's model, then roll back to just before revoke reasons, write the
+        // token rows the old code would have written (raw SQL, old shape), then finish. Seeding the
+        // player after the rollback breaks once a later migration adds a players column.
+        await MigrateFullyAsync();
+        var player = await SeedPlayerAsync("legacy");
         await using (var db = NewDbContext())
             await db.GetService<IMigrator>().MigrateAsync(MigrationBeforeReasons);
-
-        // The players table is unchanged by this migration, so EF can still seed it; refresh_tokens is
-        // not, so its rows go in as raw SQL in the old shape.
-        var player = await SeedPlayerAsync("legacy");
         Guid revokedId = Guid.NewGuid(), liveId = Guid.NewGuid();
         await using (var conn = new NpgsqlConnection(_postgres.GetConnectionString()))
         {

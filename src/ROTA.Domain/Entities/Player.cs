@@ -269,6 +269,29 @@ public class Player
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
+    /// <summary>
+    /// One email change the owner has allowed (admin CLI <c>allow-email-change</c>). Players cannot
+    /// change their email otherwise. The game prompts while this is set; using it clears it.
+    /// </summary>
+    public bool EmailChangeAllowed { get; private set; }
+
+    public void AllowEmailChange()
+    {
+        EmailChangeAllowed = true;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
+    /// Spends the owner's one-time allowance. Stored lowercased, as at registration. The caller checks
+    /// the allowance, the format and that no other account uses the address.
+    /// </summary>
+    public void ChangeEmail(string email)
+    {
+        Email = email.Trim().ToLowerInvariant();
+        EmailChangeAllowed = false;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
     public void UpdateUsername(string username)
     {
         Username = username;

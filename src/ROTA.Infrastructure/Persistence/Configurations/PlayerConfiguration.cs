@@ -26,6 +26,11 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
             .HasMaxLength(255)
             .IsRequired();
 
+        builder.Property(p => p.EmailChangeAllowed)
+            .HasColumnName("email_change_allowed")
+            .HasDefaultValue(false)
+            .IsRequired();
+
         builder.Property(p => p.PasswordHash)
             .HasColumnName("password_hash")
             .IsRequired();

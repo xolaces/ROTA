@@ -30,6 +30,7 @@ namespace ROTA.Api;
 ///   dotnet run --project src/ROTA.Api -- gauntlet-close {eventId}
 ///   dotnet run --project src/ROTA.Api -- gauntlet-settle {eventId}
 ///   dotnet run --project src/ROTA.Api -- issue-reset-code {email|user} [minutes]
+///   dotnet run --project src/ROTA.Api -- allow-email-change {user|guid}
 ///   dotnet run --project src/ROTA.Api -- beta-reset [--purge-accounts] [--keep name,name] [--confirm WIPE-BETA]
 /// </code>
 /// </remarks>
@@ -53,6 +54,7 @@ public static class AdminCli
             "gauntlet-settle",
             "beta-reset",
             "issue-reset-code",
+            "allow-email-change",
         };
 
     /// <summary>Returns true if <paramref name="firstArg"/> is a recognised CLI command.</summary>
@@ -95,6 +97,7 @@ public static class AdminCli
                 "gauntlet-settle"          => await RunGauntletSettle(app.Services, args),
                 "beta-reset"               => await RunBetaReset(app.Services, args),
                 "issue-reset-code"         => await RunIssueResetCode(app.Services, args),
+                "allow-email-change"       => await RunAllowEmailChange(app.Services, args),
                 _                          => UnknownCommand(command),
             };
         }
@@ -230,6 +233,39 @@ public static class AdminCli
         Console.WriteLine($"  expires : {issued.ExpiresAt:yyyy-MM-dd HH:mm} UTC");
         Console.WriteLine("  The player opens Forgot password?, taps Have a code?, and enters this email, the code");
         Console.WriteLine("  and a new password. The code works once; any earlier code for this account no longer works.");
+        return 0;
+    }
+
+    // Email changes are owner-gated by design (2026-11-10): the player makes the change themselves, in
+    // game, but only after the owner allows one here. The game prompts them while it is allowed.
+    private static async Task<int> RunAllowEmailChange(IServiceProvider services, string[] args)
+    {
+        if (args.Length < 2)
+        {
+            Console.Error.WriteLine("Usage: allow-email-change {user|guid}");
+            return 1;
+        }
+
+        using var scope = services.CreateScope();
+        var playerRepo = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
+        var audit      = scope.ServiceProvider.GetRequiredService<IAuditLogRepository>();
+
+        Player? player = Guid.TryParse(args[1], out var id)
+            ? await playerRepo.FindByIdAsync(id)
+            : await playerRepo.FindByUsernameAsync(args[1]);
+        if (player is null)
+        {
+            Console.Error.WriteLine($"allow-email-change: player '{args[1]}' not found.");
+            return 1;
+        }
+
+        player.AllowEmailChange();
+        await playerRepo.UpdateAsync(player);
+        await audit.AppendAsync(AuditLog.Create(
+            player.Id, "EmailChangeAllowed", null, "One email change allowed by admin-cli", "admin-cli"));
+
+        Console.WriteLine($"allow-email-change: '{player.Username}' ({player.Email}) may change their email once.");
+        Console.WriteLine("  The game asks them for a new email (and their password) the next time they log in.");
         return 0;
     }
 
