@@ -42,8 +42,9 @@ OneDrive — earlier docs referenced a OneDrive path and that is no longer true.
 - **API:** `8605be0`.
 - **Database:** has every migration through `AddRefreshTokenRevokeReason`. The snapshot taken just
   before is `/opt/rota/backups/rota-20261109-pre-8605be0.dump` on the droplet.
-- **WebGL client:** built from `ROTA.Client6` `ded775d` (`feat/ui-glass-shell`), the glass shell
-  and raid combat. `/opt/rota/web.prev` holds the previous build (`65ba9e8`).
+- **WebGL client:** built from `ROTA.Client6` `f0db5ae` (`feat/ui-glass-shell`). Every screen is in
+  the glass style. `/opt/rota/web.prev` holds the previous build (`ded775d`, glass shell and raid
+  combat only).
 - **Email:** switched off on the droplet, so password reset answers 503 until it is configured.
 
 A deploy that adds a migration is a schema change, not just a code push. Note that **every admin CLI
@@ -80,12 +81,20 @@ The approved layout is a design canvas:
 [ROTA UI Rework](https://claude.ai/artifact/79Uzm9i9mi1S7afZDvapku) (private to the owner). It has 10
 screens: Home, Quest, Raids, Raid combat, Leaderboards, Profile, Legion, Gauntlet, Guild, Bazaar.
 
-**In the Unity client so far** (`feat/ui-glass-shell`, live 2026-11-09):
+**In the Unity client** (`feat/ui-glass-shell`, live 2026-11-09 at `f0db5ae`):
 
-- **Shared shell:** top bar, collapsible rail, framed stage, chat dock.
-- **Raid combat.**
-- **Where it lives:** `Resources/UI/Glass.uss`, loaded after `Theme.uss`. The other screens keep
-  `Theme.uss` until they are ported.
+- **Shared shell and raid combat** are laid out like their canvas boards: top bar, collapsible rail,
+  framed stage, chat dock.
+- **Every other screen has the canvas colours and controls, in its old layout.** That means:
+  - glass panels and cards;
+  - gold-tint buttons, with solid gold for a screen's one main action;
+  - underlined tabs and sentence-case headings.
+- **Where it lives:**
+  - The shell and raid combat are in `Resources/UI/Glass.uss`, loaded after `Theme.uss`.
+  - The other screens get the look from `Theme.uss` itself, which was recoloured in place.
+- **The logged-out login card keeps its Obsidian Gilt look.** A restore block in `Glass.uss`, scoped
+  to `.app-root--bare`, puts back the classes it shares with the game. A class added to the login
+  later needs an entry there too.
 - **Two compromises for the 960px WebGL canvas:**
   - Glass is translucency without blur, because UI Toolkit has no backdrop filter.
   - Magic sits under the raid's top bar, not in its bottom bar.
@@ -159,9 +168,9 @@ recolour to match. An unaffordable action reads "N short" instead of going grey.
 - **Public chat is read-only.** World and raid chat receive but cannot send (needs a Unity SignalR
   client). Private messages work — they ride REST.
 - **No achievement browse screen.** Points show on the profile and the endpoint is live.
-- **Most screens still render Obsidian Gilt inside the new frame.** Only the shell and raid combat
-  are ported in `ROTA.Client6`: Home, Campaign, Guild, Legion, Profile, Crafting, Bazaar, Gauntlet
-  and the raid list are next. `rota-web` has not started.
+- **Screens other than raid combat keep their old layouts.** Their colours and controls match the
+  canvas, but they are still stacked cards. They do not yet use the canvas boards' stage art with
+  panels floating over it. `rota-web` is still Obsidian Gilt throughout.
 
 ## Read order for a new session
 

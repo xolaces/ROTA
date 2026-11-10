@@ -89,9 +89,11 @@ owner's own confirmation. Everything else RE1 asked for is done.
 >
 > - **API:** `8605be0`. Migrations `AddDailyChest` and `AddRefreshTokenRevokeReason` are applied;
 >   the snapshot from just before is `/opt/rota/backups/rota-20261109-pre-8605be0.dump`.
-> - **Client:** built from `ded775d` on `feat/ui-glass-shell`, which sits on
+> - **Client:** built from `f0db5ae` on `feat/ui-glass-shell`, which sits on
 >   `feat/mock-playtest-accounts`. Neither is merged to `master`. The live client includes:
 >   - the glass shell and raid combat (Barlow, Iron & Crimson, collapsible rail, docked chat);
+>   - every other screen in the same colours and controls: glass panels, gold-tint buttons,
+>     underlined tabs, sentence-case headings. The login card keeps its locked look;
 >   - logout that ends the session on the server too;
 >   - the WebGL emoji fix;
 >   - the client's 503 message for password reset;
@@ -103,8 +105,9 @@ owner's own confirmation. Everything else RE1 asked for is done.
 >   - The daily chest endpoints are live (no client UI yet).
 >   - `DaysPlayed` counts on refresh.
 >   - Password reset answers 503 while email is off. Email is off on the droplet.
-> - **Next on the UI:** port the remaining screens to `Glass.uss`, one at a time, starting with the
->   raid list and Home.
+> - **Next on the UI:** lay the screens out like their canvas boards, one at a time, starting with
+>   the raid list and Home. That means stage art behind them and panels floating over it. Their
+>   colours already match.
 > - **Build WebGL from the main `ROTA.Client6` checkout only.** See `docs/STATE.md` for why, and for
 >   the `touch` a rollback needs.
 >
