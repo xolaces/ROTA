@@ -72,8 +72,27 @@ public sealed class SocialService : ISocialService
             return AdminActionResult.Fail("A friend request is already pending.");
         }
 
-        if (!await _friends.AddAsync(Friendship.Create(requesterId, target.Id), ct))
+        var mine = Friendship.Create(requesterId, target.Id);
+        if (!await _friends.AddAsync(mine, ct))
             return AdminActionResult.Fail("A friend request already exists.");
+
+        // Two players asking each other at the same moment both pass the check above (neither row
+        // exists yet) and the unique index is on the ORDERED pair, so both rows land. Look again now
+        // that mine is committed: whichever request commits second is guaranteed to see the other.
+        // Both sides apply the same rule (keep the lower id), so running it twice ends in one
+        // accepted friendship, never two rows.
+        var theirs = await _friends.FindDirectedAsync(target.Id, requesterId, ct);
+        if (theirs is not null)
+        {
+            var (keep, drop) = mine.Id.CompareTo(theirs.Id) < 0 ? (mine, theirs) : (theirs, mine);
+            keep.Accept();
+            drop.Remove();
+            await _friends.UpdateAsync(keep, ct);
+            await _friends.UpdateAsync(drop, ct);
+            await Audit(requesterId, "FriendRequestAccepted", $"friendship={keep.Id} (mutual, crossed)", ct);
+            return AdminActionResult.Ok();
+        }
+
         await Audit(requesterId, "FriendRequestSent", $"requester={requesterId} target={target.Id}", ct);
         return AdminActionResult.Ok();
     }

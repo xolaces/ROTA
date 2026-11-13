@@ -553,6 +553,9 @@ app.UseAuthentication();
 // The per-player bucket must key on the signature-VERIFIED identity — keying on an unverified JWT
 // 'sub' let attackers exhaust a victim's bucket with forged tokens (targeted DoS). Per-IP limiting
 // of /api/auth and of unauthenticated traffic still happens here, before authorization/DB work.
+// Maintenance gate: after authentication (an Admin token passes), before anything is spent on the request.
+app.UseMiddleware<MaintenanceMiddleware>();
+
 app.UseMiddleware<RateLimitMiddleware>();
 
 // [8] Authorization

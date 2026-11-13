@@ -31,6 +31,8 @@ namespace ROTA.Api;
 ///   dotnet run --project src/ROTA.Api -- gauntlet-settle {eventId}
 ///   dotnet run --project src/ROTA.Api -- issue-reset-code {email|user} [minutes]
 ///   dotnet run --project src/ROTA.Api -- allow-email-change {user|guid}
+///   dotnet run --project src/ROTA.Api -- maintenance {on [message]|off|status}
+///   dotnet run --project src/ROTA.Api -- motd {set <text>|clear}
 ///   dotnet run --project src/ROTA.Api -- beta-reset [--purge-accounts] [--keep name,name] [--confirm WIPE-BETA]
 /// </code>
 /// </remarks>
@@ -55,6 +57,8 @@ public static class AdminCli
             "beta-reset",
             "issue-reset-code",
             "allow-email-change",
+            "maintenance",
+            "motd",
         };
 
     /// <summary>Returns true if <paramref name="firstArg"/> is a recognised CLI command.</summary>
@@ -98,6 +102,8 @@ public static class AdminCli
                 "beta-reset"               => await RunBetaReset(app.Services, args),
                 "issue-reset-code"         => await RunIssueResetCode(app.Services, args),
                 "allow-email-change"       => await RunAllowEmailChange(app.Services, args),
+                "maintenance"              => await RunMaintenance(app.Services, args),
+                "motd"                     => await RunMotd(app.Services, args),
                 _                          => UnknownCommand(command),
             };
         }
@@ -266,6 +272,49 @@ public static class AdminCli
 
         Console.WriteLine($"allow-email-change: '{player.Username}' ({player.Email}) may change their email once.");
         Console.WriteLine("  The game asks them for a new email (and their password) the next time they log in.");
+        return 0;
+    }
+
+    // Maintenance mode: every game request is answered 503 with this line until it is switched off.
+    // Admin accounts still get in. Switch it on before a deploy and off once the new build checks out.
+    private static async Task<int> RunMaintenance(IServiceProvider services, string[] args)
+    {
+        var notices = services.GetRequiredService<IServiceNoticeStore>();
+        string mode = args.Length >= 2 ? args[1].ToLowerInvariant() : "status";
+        switch (mode)
+        {
+            case "on":
+                await notices.SetMaintenanceAsync(true, args.Length >= 3 ? string.Join(' ', args.Skip(2)) : null);
+                break;
+            case "off":
+                await notices.SetMaintenanceAsync(false, null);
+                break;
+            case "status":
+                break;
+            default:
+                Console.Error.WriteLine("Usage: maintenance {on [message]|off|status}");
+                return 1;
+        }
+        var n = await notices.GetAsync();
+        Console.WriteLine(n.Maintenance ? $"maintenance: ON  \"{n.MaintenanceMessage}\"" : "maintenance: off");
+        Console.WriteLine("  The running API sees a change within about five seconds.");
+        return 0;
+    }
+
+    // Message of the day: one line shown on Home.
+    private static async Task<int> RunMotd(IServiceProvider services, string[] args)
+    {
+        var notices = services.GetRequiredService<IServiceNoticeStore>();
+        string mode = args.Length >= 2 ? args[1].ToLowerInvariant() : "";
+        if (mode == "set" && args.Length >= 3) await notices.SetMotdAsync(string.Join(' ', args.Skip(2)));
+        else if (mode == "clear") await notices.SetMotdAsync(null);
+        else
+        {
+            Console.Error.WriteLine("Usage: motd {set <text>|clear}");
+            return 1;
+        }
+        var n = await notices.GetAsync();
+        Console.WriteLine(n.Motd is null ? "motd: (none)" : $"motd: \"{n.Motd}\"");
         return 0;
     }
 

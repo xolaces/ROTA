@@ -117,7 +117,7 @@ public sealed class MagicService : IMagicService
         var raid = await _raids.FindByIdAsync(raidId, ct);
         if (raid is null)
             return Fail(MagicApplyFailureCode.RaidNotFound, "Raid not found.");
-        if (raid.IsDefeated || raid.ExpiresAt < DateTimeOffset.UtcNow)
+        if (raid.IsDefeated || raid.ExpiresAt <= DateTimeOffset.UtcNow)
             return Fail(MagicApplyFailureCode.RaidNotActive, "Raid is no longer active.");
 
         // World gate: World raids are Admin-only for magic.

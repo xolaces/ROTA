@@ -8,6 +8,8 @@ public interface IFriendshipRepository
     /// <summary>Finds the friendship between two players regardless of who requested (or null).</summary>
     Task<Friendship?> FindBetweenAsync(Guid a, Guid b, CancellationToken ct = default);
     Task<Friendship?> GetByIdAsync(Guid id, CancellationToken ct = default);
+    /// <summary>The active row in exactly this direction (requester asked addressee), or null.</summary>
+    Task<Friendship?> FindDirectedAsync(Guid requesterId, Guid addresseeId, CancellationToken ct = default);
     /// <summary>Inserts the friendship. Returns false if a concurrent insert won the unique index (no throw).</summary>
     Task<bool> AddAsync(Friendship friendship, CancellationToken ct = default);
     Task UpdateAsync(Friendship friendship, CancellationToken ct = default);

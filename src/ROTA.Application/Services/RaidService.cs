@@ -699,7 +699,7 @@ public sealed class RaidService : IRaidService
             return HitFail(RaidHitFailureCode.RaidNotFound, "Raid not found.");
 
         // 2. Timer expired (pre-spend, no cost to player).
-        if (raid.ExpiresAt < DateTimeOffset.UtcNow)
+        if (raid.ExpiresAt <= DateTimeOffset.UtcNow)
             return HitFail(RaidHitFailureCode.RaidExpired,
                 "The raid has faded into the void — no rewards, no stamina spent.");
 
@@ -870,7 +870,7 @@ public sealed class RaidService : IRaidService
         var applied = await _raids.AtomicApplyHitAsync(activeRaidId, async lockedRaid =>
         {
             // Re-check under lock — covers the window between the pre-spend check and now.
-            if (lockedRaid.IsDefeated || lockedRaid.ExpiresAt < DateTimeOffset.UtcNow)
+            if (lockedRaid.IsDefeated || lockedRaid.ExpiresAt <= DateTimeOffset.UtcNow)
             {
                 raceCondition = true;
                 return false;

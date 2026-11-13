@@ -90,6 +90,7 @@ public static class ServiceCollectionExtensions
         // only on the singleton mux + IOptions<RateLimitConfig>.
         services.AddSingleton<IChatRateLimiter, ChatRateLimiter>();
         services.AddSingleton<IActionPacer, RedisActionPacer>();
+        services.AddSingleton<IServiceNoticeStore, RedisServiceNoticeStore>();
         // World-chat ring buffer
         services.AddScoped<IWorldChatStore, RedisWorldChatStore>();
         // Guild-chat ring buffer (System 21 Slice 2) — per-guild keyed

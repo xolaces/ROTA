@@ -18,6 +18,10 @@ public sealed class FriendshipRepository : IFriendshipRepository
     public Task<Friendship?> GetByIdAsync(Guid id, CancellationToken ct = default)
         => _db.Friendships.FirstOrDefaultAsync(f => f.Id == id && !f.IsDeleted, ct);
 
+    public Task<Friendship?> FindDirectedAsync(Guid requesterId, Guid addresseeId, CancellationToken ct = default)
+        => _db.Friendships.FirstOrDefaultAsync(
+            f => !f.IsDeleted && f.RequesterId == requesterId && f.AddresseeId == addresseeId, ct);
+
     public async Task<bool> AddAsync(Friendship friendship, CancellationToken ct = default)
     {
         try
