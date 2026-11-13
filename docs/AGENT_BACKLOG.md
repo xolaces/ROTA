@@ -85,35 +85,46 @@ owner's own confirmation. Everything else RE1 asked for is done.
 > each lane; lanes U and Q interleave. `[owner]` = needs a human input before it can finish;
 > `[migration]` = needs a schema change, so it ships behind the owner applying the migration.
 
-> **Resume here (2026-11-09).** Everything marked ✅ is live.
+> **Resume here (2026-11-12).** Everything marked ✅ is live.
 >
-> - **API:** `8605be0`. Migrations `AddDailyChest` and `AddRefreshTokenRevokeReason` are applied;
->   the snapshot from just before is `/opt/rota/backups/rota-20261109-pre-8605be0.dump`.
-> - **Client:** built from `f0db5ae` on `feat/ui-glass-shell`, which sits on
+> - **API:** `a600ab3`. Every migration through `AddEmailChangeAllowed` is applied; the snapshot from
+>   just before that one is `/opt/rota/backups/rota-20261110-pre-895f1b8.dump`.
+> - **Client:** built from `a3ab1c7` on `feat/ui-glass-shell`, which sits on
 >   `feat/mock-playtest-accounts`. Neither is merged to `master`. The live client includes:
 >   - the glass shell and raid combat (Barlow, Iron & Crimson, collapsible rail, docked chat);
 >   - every other screen in the same colours and controls: glass panels, gold-tint buttons,
 >     underlined tabs, sentence-case headings. The login card keeps its locked look;
+>   - chat that connects and sends from a browser (`BrowserChatClient` + `RotaChatSocket.jslib`);
+>   - an Account section in Options: change password, log out, log out everywhere;
+>   - the "Have a code?" link on the reset screen and the owner-allowed email change prompt;
 >   - logout that ends the session on the server too;
 >   - the WebGL emoji fix;
 >   - the client's 503 message for password reset;
 >   - the chat button, which no longer collapses under ✎ at 960px.
-> - **Tests:** green, 1,370 unit and 229 integration.
+> - **Tests:** green, 1,385 unit and 229 integration.
 > - **Server changes now live:**
 >   - Refresh tokens record why they were revoked, and only a replayed rotated token logs out every
 >     device.
 >   - The daily chest endpoints are live (no client UI yet).
 >   - `DaysPlayed` counts on refresh.
 >   - Password reset answers 503 while email is off. Email is off on the droplet.
+>   - The stat leaderboards fill on a schedule (every 5 minutes); the level floor is 1 for the beta.
+>   - Owner commands `issue-reset-code` and `allow-email-change` (see `docs/STATE.md`).
+>   - Change password while logged in, and log out everywhere (S8).
 > - **Next on the UI:** lay the screens out like their canvas boards, one at a time, starting with
 >   the raid list and Home. That means stage art behind them and panels floating over it. Their
 >   colours already match.
 > - **Build WebGL from the main `ROTA.Client6` checkout only.** See `docs/STATE.md` for why, and for
 >   the `touch` a rollback needs.
 >
-> Next items: U8, U2 shared classes, U6, S8, S5, S9, S10.
+> Next items: canvas layouts (Home, raid list), S10, S9, S5, U7.
 
 ### Lane U — UI refresh (client)
+> **Superseded 2026-11-09 by the glass style** (see "UI direction" in `docs/STATE.md`). The tab strip in
+> U1 is now a left rail, the fonts in U2 are Barlow, and U2's shared classes and U6 were done by
+> recolouring `Theme.uss` in place. U8 is fixed (only the bars shrink at 960px). What is left in this
+> lane is the canvas layouts, U7 and U9.
+
 - ✅ **U1. Top bar + tab strip.** *(client, 2026-10-12)* Rail → horizontal tabs (Home · Campaign · Raids · Guild · Legion ·
   Profile · Crafting · Bazaar · Gauntlet) with counters; bars get names, numbers, regen timers.
 - 🔶 **U2. Fonts + shared classes.** Fonts done: Outfit (headings) + Nunito Sans (text), OFL, owner
@@ -151,7 +162,7 @@ owner's own confirmation. Everything else RE1 asked for is done.
   timestamp.
 - ✅ **S6. Mastery Rating boards default to `Live`** (today a bare GET is 400).
 - 🔶 **S7. Supply chain.** *(`10385f6`; pins done, lock files not added; secret-scanning push protection is a repo setting — owner)* Pin package versions + lock files; Dependabot (NuGet + Actions) and CodeQL.
-- **S8. Change password while logged in** (revokes other sessions) + **log out everywhere**.
+- ✅ **S8. Change password while logged in** (revokes other sessions) + **log out everywhere**. *(`a600ab3`; client `a3ab1c7`)*
 - **S9. Maintenance mode + message of the day.** Config flag → 503 with message; banner in client.
 - **S10. Client version gate.** API publishes a minimum client build; a stale cached WebGL build
   prompts a reload.

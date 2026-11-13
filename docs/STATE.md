@@ -1,6 +1,6 @@
 # ROTA — where the project actually is
 
-*Single source for "what is the state of things". Updated 2026-11-09.*
+*Single source for "what is the state of things". Updated 2026-11-12.*
 
 > This file replaces three overlapping documents (`CURRENT_TASK.md`, `PROJECT_STATE.md`,
 > `SESSION_HANDOFF.md`) that had drifted into a chain of stale pointers aimed at each other, all
@@ -29,23 +29,42 @@ OneDrive — earlier docs referenced a OneDrive path and that is no longer true.
 ## Build
 
 - **0 errors.** `dotnet build ROTA.slnx` (one known warning: CS8604 in `StarterKitRegistrationTests`)
-- **1,370 unit tests green.** `dotnet test tests/ROTA.UnitTests`
+- **1,385 unit tests green.** `dotnet test tests/ROTA.UnitTests`
 - **229 integration tests green.** `dotnet test tests/ROTA.IntegrationTests` (needs Docker)
-- 57 migrations, all applied locally and in production. 137 endpoints across 31 controllers.
+- 58 migrations, all applied locally and in production. 140 endpoints across 31 controllers.
 - Content: 7 chapters / 26 zones / 139 quest nodes · 176 items · 111 gear in 13 sets · 41 magics ·
   37 units · 10 legions · 37 raids · 23 recipes · 435 placeholder icons.
 
 ## Live server vs local
 
-**Production runs `main`.** Deployed 2026-11-09:
+**Production runs `main`.** Deployed 2026-11-12:
 
-- **API:** `8605be0`.
-- **Database:** has every migration through `AddRefreshTokenRevokeReason`. The snapshot taken just
-  before is `/opt/rota/backups/rota-20261109-pre-8605be0.dump` on the droplet.
-- **WebGL client:** built from `ROTA.Client6` `f0db5ae` (`feat/ui-glass-shell`). Every screen is in
-  the glass style. `/opt/rota/web.prev` holds the previous build (`ded775d`, glass shell and raid
-  combat only).
-- **Email:** switched off on the droplet, so password reset answers 503 until it is configured.
+- **API:** `a600ab3`.
+- **Database:** has every migration through `AddEmailChangeAllowed`. The snapshot taken just before
+  that one is `/opt/rota/backups/rota-20261110-pre-895f1b8.dump` on the droplet.
+- **WebGL client:** built from `ROTA.Client6` `a3ab1c7` (`feat/ui-glass-shell`). It adds browser chat
+  and the Account section in Options. `/opt/rota/web.prev` holds the previous build (`6e3ef3a`).
+- **Email:** switched off on the droplet, so "Forgot password?" answers 503 until it is configured.
+  `issue-reset-code` below is the way round it.
+
+**Production does not migrate on startup.** A deploy with a migration goes in this order:
+
+1. Snapshot the database.
+2. Build the new image.
+3. Run any admin CLI command from the new image (`docker compose ... run --rm --no-deps api <command>`).
+   Every CLI command applies pending migrations first.
+4. Start the new API.
+
+## Owner commands for accounts
+
+Run on the droplet as `docker exec rota-api dotnet ROTA.Api.dll <command>`.
+
+| Command | What it does |
+|---|---|
+| `issue-reset-code {email\|user} [minutes]` | Prints a one-time password reset code without sending email. Default 60 minutes, at most 43200 (30 days). The player redeems it on the login screen: **Forgot password?**, then **Have a code?**, with their email and a new password. A new code replaces the old one. |
+| `allow-email-change {user\|guid}` | Allows that player one email change. The game asks them for a new email and their password at their next login; saving it spends the allowance. Players cannot change their email any other way. |
+
+Neither command lets the owner see or set a player's password.
 
 A deploy that adds a migration is a schema change, not just a code push. Note that **every admin CLI
 command calls `Database.Migrate()` before it runs**, including `beta-reset` and `gen-beta-key`, so the
@@ -62,8 +81,9 @@ crashes with "memory access out of bounds".
 
 1. **`content/legal/terms.md` is placeholder text** and registration requires accepting it. This is
    the one blocker that is not a command to run.
-2. **Email is off on the droplet.** Until it sends, password reset answers 503. DigitalOcean blocks
-   SMTP on 587, so use a relay's alternate port through `EMAIL_HOST` / `EMAIL_PORT`.
+2. **Email is off on the droplet.** Until it sends, "Forgot password?" answers 503 and every reset
+   needs an owner-issued code. DigitalOcean blocks SMTP on 587, so use a relay's alternate port
+   through `EMAIL_HOST` / `EMAIL_PORT`.
 
 ## Open owner decisions
 
@@ -165,8 +185,6 @@ recolour to match. An unaffordable action reads "N short" instead of going grey.
 
 - **Icons exist but nothing draws them.** 435 placeholder tiles are generated and every content entry
   has a path, but the only sprite load in the client is the class emblem.
-- **Public chat is read-only.** World and raid chat receive but cannot send (needs a Unity SignalR
-  client). Private messages work — they ride REST.
 - **No achievement browse screen.** Points show on the profile and the endpoint is live.
 - **Screens other than raid combat keep their old layouts.** Their colours and controls match the
   canvas, but they are still stacked cards. They do not yet use the canvas boards' stage art with
