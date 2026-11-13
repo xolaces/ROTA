@@ -53,3 +53,10 @@ public class AuthResponse
     /// <summary>T68 — the server's current terms version (what /api/legal/accept expects).</summary>
     public int CurrentTermsVersion { get; set; }
 }
+
+/// <summary>Change the password of the logged-in account. Needs the current password.</summary>
+public class ChangePasswordRequest
+{
+    public string CurrentPassword { get; set; } = string.Empty;
+    public string NewPassword { get; set; } = string.Empty;
+}

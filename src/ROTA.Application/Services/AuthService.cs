@@ -406,6 +406,49 @@ public sealed class AuthService : IAuthService
         return true;
     }
 
+    public async Task<ChangePasswordResult> ChangePasswordAsync(
+        Guid playerId, ChangePasswordRequest request, string ipAddress)
+    {
+        var player = await _players.FindByIdAsync(playerId);
+        if (player is null || player.IsBanned)
+            return new ChangePasswordResult(ChangePasswordStatus.NotFound);
+
+        if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, player.PasswordHash))
+        {
+            await _auditLog.AppendAsync(AuditLog.Create(
+                player.Id, "PasswordChangeFailed", null, "Wrong current password", ipAddress));
+            return new ChangePasswordResult(ChangePasswordStatus.WrongPassword);
+        }
+
+        if (request.NewPassword == request.CurrentPassword)
+            return new ChangePasswordResult(ChangePasswordStatus.SamePassword);
+
+        player.SetPasswordHash(BCrypt.Net.BCrypt.HashPassword(request.NewPassword, BcryptWorkFactor));
+        await _players.UpdateAsync(player);
+
+        // SECURITY: a password change must cut off anyone else holding a session. Every refresh token
+        // goes, then this device gets a new pair so the player who made the change stays in.
+        await _refreshTokens.RevokeAllActiveAsync(player.Id, RefreshTokenRevokeReason.PasswordChanged);
+        var tokens = await IssueTokenPairAsync(player, ipAddress);
+
+        await _auditLog.AppendAsync(AuditLog.Create(
+            player.Id, "PasswordChanged", null,
+            "Password changed while logged in. Other sessions revoked", ipAddress));
+
+        return new ChangePasswordResult(ChangePasswordStatus.Success, tokens);
+    }
+
+    public async Task<bool> LogoutEverywhereAsync(Guid playerId, string ipAddress)
+    {
+        var player = await _players.FindByIdAsync(playerId);
+        if (player is null) return false;
+
+        await _refreshTokens.RevokeAllActiveAsync(player.Id, RefreshTokenRevokeReason.LoggedOutEverywhere);
+        await _auditLog.AppendAsync(AuditLog.Create(
+            player.Id, "LogoutEverywhere", null, "All sessions ended by the player", ipAddress));
+        return true;
+    }
+
     /// <summary>8 chars in XXXX-XXXX form. ~49 bits of entropy at a 15-min single-use TTL.</summary>
     private static string GenerateResetCode()
     {

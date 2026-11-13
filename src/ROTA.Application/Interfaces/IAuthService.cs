@@ -31,7 +31,21 @@ public interface IAuthService
     /// Returns false on unknown email / wrong / expired / already-used code.
     /// </summary>
     Task<bool> ResetPasswordAsync(ResetPasswordRequest request, string ipAddress);
+
+    /// <summary>
+    /// Changes the logged-in player's password. Ends every session, then issues a fresh token pair for
+    /// the device that made the change, so it stays logged in and nothing else does.
+    /// </summary>
+    Task<ChangePasswordResult> ChangePasswordAsync(Guid playerId, ChangePasswordRequest request, string ipAddress);
+
+    /// <summary>Ends every session of the logged-in player, this one included. False if no such player.</summary>
+    Task<bool> LogoutEverywhereAsync(Guid playerId, string ipAddress);
 }
 
 /// <summary>A reset code issued by the owner, and the account it belongs to.</summary>
 public sealed record IssuedResetCode(string Username, string Email, string Code, DateTimeOffset ExpiresAt);
+
+public enum ChangePasswordStatus { Success, NotFound, WrongPassword, SamePassword }
+
+/// <summary>Tokens is set only on Success.</summary>
+public sealed record ChangePasswordResult(ChangePasswordStatus Status, ROTA.Shared.DTOs.AuthResponse? Tokens = null);

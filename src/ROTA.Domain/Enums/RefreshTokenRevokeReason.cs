@@ -25,4 +25,9 @@ public enum RefreshTokenRevokeReason
     RoleRevoked    = 6,
     /// <summary>The player was banned.</summary>
     Banned         = 7,
+    /// <summary>The player changed their password while logged in; every session is ended and the
+    /// device that made the change gets a new one.</summary>
+    PasswordChanged = 8,
+    /// <summary>The player chose "log out everywhere".</summary>
+    LoggedOutEverywhere = 9,
 }

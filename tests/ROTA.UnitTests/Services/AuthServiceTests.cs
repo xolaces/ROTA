@@ -696,4 +696,98 @@ public class AuthServiceTests
         await act.Should().NotThrowAsync("double-logout or unknown token must be silently ignored");
         tokens.Verify(r => r.RevokeAsync(It.IsAny<RefreshToken>(), It.IsAny<RefreshTokenRevokeReason>(), It.IsAny<CancellationToken>()), Times.Never);
     }
+
+    // ── S8: change password while logged in, log out everywhere (2026-11-12) ──
+
+    [Fact]
+    public async Task ChangePassword_CorrectCurrent_SetsNewHash_RevokesAllSessions_ThenIssuesOneNewPair()
+    {
+        var key = GenerateTestRsaPrivateKey();
+        var (service, players, tokens, _, auditLog) = BuildService(key);
+        var player = MakePlayer();
+        players.Setup(r => r.FindByIdAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+
+        var order = new List<string>();
+        tokens.Setup(r => r.RevokeAllActiveAsync(player.Id, RefreshTokenRevokeReason.PasswordChanged, It.IsAny<CancellationToken>()))
+              .Callback(() => order.Add("revoke-all")).Returns(Task.CompletedTask);
+        tokens.Setup(r => r.CreateAsync(It.IsAny<RefreshToken>(), It.IsAny<CancellationToken>()))
+              .Callback(() => order.Add("create"));
+
+        var result = await service.ChangePasswordAsync(player.Id,
+            new ChangePasswordRequest { CurrentPassword = "Correct1", NewPassword = "Brandnew2" }, "127.0.0.1");
+
+        result.Status.Should().Be(ChangePasswordStatus.Success);
+        result.Tokens.Should().NotBeNull();
+        result.Tokens!.AccessToken.Should().NotBeNullOrWhiteSpace();
+        result.Tokens.RefreshToken.Should().NotBeNullOrWhiteSpace();
+        BCrypt.Net.BCrypt.Verify("Brandnew2", player.PasswordHash).Should().BeTrue();
+        BCrypt.Net.BCrypt.Verify("Correct1", player.PasswordHash).Should().BeFalse();
+        order.Should().Equal(new[] { "revoke-all", "create" },
+            "the new session must be created after the sweep, or the sweep would end it too");
+        auditLog.Verify(a => a.AppendAsync(It.Is<AuditLog>(l => l.Action == "PasswordChanged"), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ChangePassword_WrongCurrent_ChangesNothing_AndIsAudited()
+    {
+        var (service, players, tokens, _, auditLog) = BuildService();
+        var player = MakePlayer();
+        var hashBefore = player.PasswordHash;
+        players.Setup(r => r.FindByIdAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+
+        var result = await service.ChangePasswordAsync(player.Id,
+            new ChangePasswordRequest { CurrentPassword = "Wrong1xx", NewPassword = "Brandnew2" }, "127.0.0.1");
+
+        result.Status.Should().Be(ChangePasswordStatus.WrongPassword);
+        result.Tokens.Should().BeNull();
+        player.PasswordHash.Should().Be(hashBefore);
+        players.Verify(r => r.UpdateAsync(It.IsAny<Player>(), It.IsAny<CancellationToken>()), Times.Never);
+        tokens.Verify(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<RefreshTokenRevokeReason>(), It.IsAny<CancellationToken>()), Times.Never);
+        auditLog.Verify(a => a.AppendAsync(It.Is<AuditLog>(l => l.Action == "PasswordChangeFailed"), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ChangePassword_SameAsCurrent_OrBannedAccount_IsRefused()
+    {
+        var (service, players, tokens, _, _) = BuildService();
+        var player = MakePlayer();
+        var banned = MakePlayer(isBanned: true);
+        players.Setup(r => r.FindByIdAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+        players.Setup(r => r.FindByIdAsync(banned.Id, It.IsAny<CancellationToken>())).ReturnsAsync(banned);
+
+        (await service.ChangePasswordAsync(player.Id,
+            new ChangePasswordRequest { CurrentPassword = "Correct1", NewPassword = "Correct1" }, "ip"))
+            .Status.Should().Be(ChangePasswordStatus.SamePassword);
+        (await service.ChangePasswordAsync(banned.Id,
+            new ChangePasswordRequest { CurrentPassword = "Correct1", NewPassword = "Brandnew2" }, "ip"))
+            .Status.Should().Be(ChangePasswordStatus.NotFound);
+        tokens.Verify(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<RefreshTokenRevokeReason>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task LogoutEverywhere_RevokesEverySession_WithItsOwnReason()
+    {
+        var (service, players, tokens, _, _) = BuildService();
+        var player = MakePlayer();
+        players.Setup(r => r.FindByIdAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+
+        (await service.LogoutEverywhereAsync(player.Id, "ip")).Should().BeTrue();
+        (await service.LogoutEverywhereAsync(Guid.NewGuid(), "ip")).Should().BeFalse();
+
+        tokens.Verify(r => r.RevokeAllActiveAsync(player.Id, RefreshTokenRevokeReason.LoggedOutEverywhere, It.IsAny<CancellationToken>()), Times.Once);
+        tokens.Verify(r => r.RevokeAllActiveAsync(It.IsAny<Guid>(), It.IsAny<RefreshTokenRevokeReason>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData("Correct1", "short1A", false)]          // under 8
+    [InlineData("Correct1", "alllowercase1", false)]    // no uppercase
+    [InlineData("Correct1", "NoDigitsHere", false)]     // no digit
+    [InlineData("", "Brandnew2", false)]                // current password missing
+    [InlineData("Correct1", "Brandnew2", true)]
+    public void ChangePasswordValidator_HoldsTheRegistrationBar(string current, string next, bool valid)
+    {
+        var v = new ROTA.Application.Validators.ChangePasswordRequestValidator();
+        v.Validate(new ChangePasswordRequest { CurrentPassword = current, NewPassword = next })
+         .IsValid.Should().Be(valid);
+    }
 }

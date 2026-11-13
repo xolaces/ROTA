@@ -17,6 +17,9 @@ public sealed class AuthController : ControllerBase
     private const int ResetRequestPerIpPerHour = 10;
     private const int ResetConfirmPerEmailPerHour = 10;
     private const int ResetConfirmPerIpPerHour = 20;
+    // The current password is the secret being guessed here; a stolen access token gets few tries.
+    private const int PasswordChangePerPlayerPerHour = 10;
+    private const int PasswordChangePerIpPerHour = 30;
 
     private readonly IAuthService _auth;
     private readonly ISubmissionRateLimiter _rateLimiter;
@@ -25,6 +28,7 @@ public sealed class AuthController : ControllerBase
     private readonly IValidator<RefreshRequest> _refreshValidator;
     private readonly IValidator<PasswordResetRequest> _resetRequestValidator;
     private readonly IValidator<ResetPasswordRequest> _resetConfirmValidator;
+    private readonly IValidator<ChangePasswordRequest> _changePasswordValidator;
     private readonly EmailConfig _email;
 
     public AuthController(
@@ -35,6 +39,7 @@ public sealed class AuthController : ControllerBase
         IValidator<RefreshRequest> refreshValidator,
         IValidator<PasswordResetRequest> resetRequestValidator,
         IValidator<ResetPasswordRequest> resetConfirmValidator,
+        IValidator<ChangePasswordRequest> changePasswordValidator,
         IOptions<EmailConfig> email)
     {
         _email = email.Value;
@@ -45,6 +50,7 @@ public sealed class AuthController : ControllerBase
         _refreshValidator = refreshValidator;
         _resetRequestValidator = resetRequestValidator;
         _resetConfirmValidator = resetConfirmValidator;
+        _changePasswordValidator = changePasswordValidator;
     }
 
     [HttpPost("register")]
@@ -156,6 +162,49 @@ public sealed class AuthController : ControllerBase
 
         return NoContent();
     }
+
+    /// <summary>
+    /// S8: change the password while logged in. Every other session is ended; the response carries a
+    /// fresh token pair for this device.
+    /// </summary>
+    [HttpPost("change-password")]
+    [Authorize]
+    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+    {
+        var v = await _changePasswordValidator.ValidateAsync(request);
+        if (!v.IsValid) return InvalidRequest(v);
+
+        var playerId = GetPlayerId();
+        if (!await _rateLimiter.TryConsumeAsync("pwchange", playerId, GetIpAddress(),
+                PasswordChangePerPlayerPerHour, PasswordChangePerIpPerHour))
+            return TooManyRequests();
+
+        var result = await _auth.ChangePasswordAsync(playerId, request, GetIpAddress());
+        return result.Status switch
+        {
+            ChangePasswordStatus.Success       => Ok(result.Tokens),
+            ChangePasswordStatus.WrongPassword => BadRequest(new { message = "That isn't your current password." }),
+            ChangePasswordStatus.SamePassword  => BadRequest(new { message = "The new password is the same as the current one." }),
+            _                                  => Unauthorized(),
+        };
+    }
+
+    /// <summary>S8: end every session of this account, this one included.</summary>
+    [HttpPost("logout-everywhere")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> LogoutEverywhere()
+    {
+        return await _auth.LogoutEverywhereAsync(GetPlayerId(), GetIpAddress()) ? NoContent() : Unauthorized();
+    }
+
+    private Guid GetPlayerId()
+        => Guid.Parse(User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)!.Value);
 
     // The rate limiter keys on a player Guid; pre-auth there is none, so derive a stable
     // pseudo-id from the normalized email — giving true per-email budgets.

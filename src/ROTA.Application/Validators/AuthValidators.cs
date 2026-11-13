@@ -124,3 +124,22 @@ public sealed class RefreshRequestValidator : AbstractValidator<RefreshRequest>
             .MaximumLength(512);   // Base64Url 256-bit is ~43 chars; 512 gives headroom
     }
 }
+
+public sealed class ChangePasswordRequestValidator : AbstractValidator<ChangePasswordRequest>
+{
+    public ChangePasswordRequestValidator()
+    {
+        RuleFor(x => x.CurrentPassword)
+            .NotEmpty()
+            .Must(PasswordRules.FitsBcrypt).WithMessage(PasswordRules.TooLongMessage);
+
+        // Same complexity bar as registration and reset.
+        RuleFor(x => x.NewPassword)
+            .NotEmpty()
+            .MinimumLength(8)
+            .Must(PasswordRules.FitsBcrypt).WithMessage(PasswordRules.TooLongMessage)
+            .Matches(@"[A-Z]").WithMessage("Password must contain at least one uppercase letter.")
+            .Matches(@"[a-z]").WithMessage("Password must contain at least one lowercase letter.")
+            .Matches(@"\d").WithMessage("Password must contain at least one digit.");
+    }
+}
