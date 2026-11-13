@@ -85,15 +85,16 @@ owner's own confirmation. Everything else RE1 asked for is done.
 > each lane; lanes U and Q interleave. `[owner]` = needs a human input before it can finish;
 > `[migration]` = needs a schema change, so it ships behind the owner applying the migration.
 
-> **Resume here (2026-11-12).** Everything marked ✅ is live.
+> **Resume here (2026-11-13).** Everything marked ✅ is live.
 >
 > - **API:** `a600ab3`. Every migration through `AddEmailChangeAllowed` is applied; the snapshot from
 >   just before that one is `/opt/rota/backups/rota-20261110-pre-895f1b8.dump`.
-> - **Client:** built from `a3ab1c7` on `feat/ui-glass-shell`, which sits on
+> - **Client:** built from `e0d5ec7` on `feat/ui-glass-shell`, which sits on
 >   `feat/mock-playtest-accounts`. Neither is merged to `master`. The live client includes:
 >   - the glass shell and raid combat (Barlow, Iron & Crimson, collapsible rail, docked chat);
 >   - every other screen in the same colours and controls: glass panels, gold-tint buttons,
 >     underlined tabs, sentence-case headings. The login card keeps its locked look;
+>   - Home ("Today") and the raid list in the canvas layout, and the Daily Chest on Home;
 >   - chat that connects and sends from a browser (`BrowserChatClient` + `RotaChatSocket.jslib`);
 >   - an Account section in Options: change password, log out, log out everywhere;
 >   - the "Have a code?" link on the reset screen and the owner-allowed email change prompt;
@@ -105,19 +106,19 @@ owner's own confirmation. Everything else RE1 asked for is done.
 > - **Server changes now live:**
 >   - Refresh tokens record why they were revoked, and only a replayed rotated token logs out every
 >     device.
->   - The daily chest endpoints are live (no client UI yet).
+>   - The daily chest endpoints are live, with the client UI on Home.
 >   - `DaysPlayed` counts on refresh.
 >   - Password reset answers 503 while email is off. Email is off on the droplet.
 >   - The stat leaderboards fill on a schedule (every 5 minutes); the level floor is 1 for the beta.
 >   - Owner commands `issue-reset-code` and `allow-email-change` (see `docs/STATE.md`).
 >   - Change password while logged in, and log out everywhere (S8).
-> - **Next on the UI:** lay the screens out like their canvas boards, one at a time, starting with
->   the raid list and Home. That means stage art behind them and panels floating over it. Their
->   colours already match.
+> - **Next on the UI:** lay the remaining screens out like their canvas boards: Gauntlet, Guild,
+>   Profile, Legion, Bazaar, Quest, Leaderboards. Home and the raid list are done. Not yet clicked
+>   through on a real account: the raid list's filters and Sort menu.
 > - **Build WebGL from the main `ROTA.Client6` checkout only.** See `docs/STATE.md` for why, and for
 >   the `touch` a rollback needs.
 >
-> Next items: canvas layouts (Home, raid list), S10, S9, S5, U7.
+> Next items: canvas layouts (Gauntlet, Guild, Profile), S10, S9, S5, U7.
 
 ### Lane U — UI refresh (client)
 > **Superseded 2026-11-09 by the glass style** (see "UI direction" in `docs/STATE.md`). The tab strip in

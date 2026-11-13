@@ -1,6 +1,6 @@
 # ROTA — where the project actually is
 
-*Single source for "what is the state of things". Updated 2026-11-12.*
+*Single source for "what is the state of things". Updated 2026-11-13.*
 
 > This file replaces three overlapping documents (`CURRENT_TASK.md`, `PROJECT_STATE.md`,
 > `SESSION_HANDOFF.md`) that had drifted into a chain of stale pointers aimed at each other, all
@@ -42,8 +42,9 @@ OneDrive — earlier docs referenced a OneDrive path and that is no longer true.
 - **API:** `a600ab3`.
 - **Database:** has every migration through `AddEmailChangeAllowed`. The snapshot taken just before
   that one is `/opt/rota/backups/rota-20261110-pre-895f1b8.dump` on the droplet.
-- **WebGL client:** built from `ROTA.Client6` `a3ab1c7` (`feat/ui-glass-shell`). It adds browser chat
-  and the Account section in Options. `/opt/rota/web.prev` holds the previous build (`6e3ef3a`).
+- **WebGL client:** built from `ROTA.Client6` `e0d5ec7` (`feat/ui-glass-shell`), deployed 2026-11-13.
+  It adds Home and the raid list in the canvas layout, and the Daily Chest. `/opt/rota/web.prev`
+  holds the previous build (`a3ab1c7`, browser chat and the Account section in Options).
 - **Email:** switched off on the droplet, so "Forgot password?" answers 503 until it is configured.
   `issue-reset-code` below is the way round it.
 
@@ -103,8 +104,11 @@ screens: Home, Quest, Raids, Raid combat, Leaderboards, Profile, Legion, Gauntle
 
 **In the Unity client** (`feat/ui-glass-shell`, live 2026-11-09 at `f0db5ae`):
 
-- **Shared shell and raid combat** are laid out like their canvas boards: top bar, collapsible rail,
-  framed stage, chat dock.
+- **Laid out like their canvas boards:** the shared shell (top bar, collapsible rail, framed stage,
+  chat dock), raid combat, Home and the raid list.
+- **Home** is "Today": the Gauntlet row, Daily Chest, your raids, the current quest node, and a
+  "More" panel for Masteries, Leaderboards and Achievements. The board's Assignments panel is left
+  out until daily assignments have a backend.
 - **Every other screen has the canvas colours and controls, in its old layout.** That means:
   - glass panels and cards;
   - gold-tint buttons, with solid gold for a screen's one main action;
@@ -186,8 +190,8 @@ recolour to match. An unaffordable action reads "N short" instead of going grey.
 - **Icons exist but nothing draws them.** 435 placeholder tiles are generated and every content entry
   has a path, but the only sprite load in the client is the class emblem.
 - **No achievement browse screen.** Points show on the profile and the endpoint is live.
-- **Screens other than raid combat keep their old layouts.** Their colours and controls match the
-  canvas, but they are still stacked cards. They do not yet use the canvas boards' stage art with
+- **Most screens keep their old layouts.** Raid combat, Home and the raid list match their canvas
+  boards. The rest have the canvas colours and controls but are still stacked cards. They do not yet use the canvas boards' stage art with
   panels floating over it. `rota-web` is still Obsidian Gilt throughout.
 
 ## Read order for a new session
