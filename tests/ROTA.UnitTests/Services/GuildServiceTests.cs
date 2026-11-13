@@ -83,6 +83,19 @@ public class GuildServiceTests
             => Task.FromResult(Rows.FirstOrDefault(r => r.GuildId == guildId && r.PlayerId == playerId && r.Kind == kind && r.Status == GuildJoinRequestStatus.Pending && !r.IsDeleted));
         public Task<GuildJoinRequest> CreateAsync(GuildJoinRequest request, CancellationToken ct = default) { if (!Rows.Contains(request)) Rows.Add(request); return Task.FromResult(request); }
         public Task UpdateAsync(GuildJoinRequest request, CancellationToken ct = default) { if (!Rows.Contains(request)) Rows.Add(request); return Task.CompletedTask; }
+        // The conditional UPDATE: moves the row only if it is still in `from`, as the SQL does.
+        public int MoveCalls;
+        // Set to play the loser of a race: the row still reads Pending, but someone else's UPDATE won.
+        public bool LoseNextMove;
+        public Task<bool> TryMoveAsync(Guid requestId, GuildJoinRequestStatus from, GuildJoinRequestStatus to, CancellationToken ct = default)
+        {
+            MoveCalls++;
+            if (LoseNextMove) { LoseNextMove = false; return Task.FromResult(false); }
+            var row = Rows.FirstOrDefault(r => r.Id == requestId && !r.IsDeleted);
+            if (row is null || row.Status != from) return Task.FromResult(false);
+            typeof(GuildJoinRequest).GetProperty(nameof(GuildJoinRequest.Status))!.SetValue(row, to);
+            return Task.FromResult(true);
+        }
     }
 
     private sealed class FakePlayerRepo : IPlayerRepository
@@ -331,6 +344,55 @@ public class GuildServiceTests
         joiner.GuildId.Should().Be(gid);
         joiner.GuildRank.Should().Be("Member");
         h.Requests.Rows.Single().Status.Should().Be(GuildJoinRequestStatus.Accepted);
+    }
+
+    // Patch 0.5.0: resolving a request is a conditional move, so it happens once.
+
+    [Fact]
+    public async Task AcceptApplication_LosingTheRaceToAnotherOfficer_DoesNotJoinTwice()
+    {
+        var h = new Harness();
+        var leader = h.AddPlayer("alice");
+        var joiner = h.AddPlayer("bob");
+        var gid = await h.Found(leader, policy: GuildJoinPolicy.Application);
+        var apply = await h.Service.ApplyAsync(joiner.Id, gid);
+
+        // The request still reads Pending to this officer, but the other officer's accept landed first.
+        h.Requests.LoseNextMove = true;
+        var lost = await h.Service.AcceptApplicationAsync(leader.Id, gid, apply.RequestId!.Value);
+
+        lost.Success.Should().BeFalse();
+        lost.FailureReason.Should().Contain("no longer pending");
+        joiner.GuildId.Should().BeNull("the loser of the race must not run the join");
+        h.Guilds.Guilds.Single().MemberCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task AcceptThenReject_TheSecondIsRefused_AndTheRequestStaysAccepted()
+    {
+        var h = new Harness();
+        var leader = h.AddPlayer("alice");
+        var joiner = h.AddPlayer("bob");
+        var gid = await h.Found(leader, policy: GuildJoinPolicy.Application);
+        var apply = await h.Service.ApplyAsync(joiner.Id, gid);
+
+        (await h.Service.AcceptApplicationAsync(leader.Id, gid, apply.RequestId!.Value)).Success.Should().BeTrue();
+        var again = await h.Service.AcceptApplicationAsync(leader.Id, gid, apply.RequestId!.Value);
+        var reject = await h.Service.RejectApplicationAsync(leader.Id, gid, apply.RequestId!.Value);
+
+        again.Success.Should().BeFalse();
+        reject.Success.Should().BeFalse();
+        h.Requests.Rows.Single().Status.Should().Be(GuildJoinRequestStatus.Accepted);
+        h.Guilds.Guilds.Single().MemberCount.Should().Be(2);
+    }
+
+    [Fact]
+    public void JoinRequest_OnceResolved_IgnoresFurtherTransitions()
+    {
+        var req = GuildJoinRequest.Create(Guid.NewGuid(), Guid.NewGuid(), GuildJoinRequestKind.Application);
+        req.Reject();
+        req.Accept();
+        req.Status.Should().Be(GuildJoinRequestStatus.Rejected);
     }
 
     [Fact]

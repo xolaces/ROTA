@@ -39,4 +39,11 @@ public interface IGuildJoinRequestRepository
 
     Task<GuildJoinRequest> CreateAsync(GuildJoinRequest request, CancellationToken ct = default);
     Task UpdateAsync(GuildJoinRequest request, CancellationToken ct = default);
+
+    /// <summary>
+    /// Moves a request from one status to another in a single conditional UPDATE, and says whether
+    /// this caller was the one that moved it. This is the latch for resolving a request: two officers
+    /// accepting at the same moment both read "Pending", but only one UPDATE matches.
+    /// </summary>
+    Task<bool> TryMoveAsync(Guid requestId, GuildJoinRequestStatus from, GuildJoinRequestStatus to, CancellationToken ct = default);
 }

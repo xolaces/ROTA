@@ -213,4 +213,16 @@ public sealed class GuildJoinRequestRepository : IGuildJoinRequestRepository
         _db.GuildJoinRequests.Update(request);
         await _db.SaveChangesAsync(ct);
     }
+
+    public async Task<bool> TryMoveAsync(
+        Guid requestId, GuildJoinRequestStatus from, GuildJoinRequestStatus to, CancellationToken ct = default)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var rows = await _db.GuildJoinRequests
+            .Where(r => r.Id == requestId && r.Status == from)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(r => r.Status, to)
+                .SetProperty(r => r.UpdatedAt, now), ct);
+        return rows == 1;
+    }
 }

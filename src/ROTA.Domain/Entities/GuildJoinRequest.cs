@@ -44,8 +44,11 @@ public class GuildJoinRequest
     public void Withdraw() => SetStatus(GuildJoinRequestStatus.Withdrawn);
     public void Expire() => SetStatus(GuildJoinRequestStatus.Expired);
 
+    // A request is resolved once. Pending is the only state with a way out; the service resolves
+    // through IGuildJoinRequestRepository.TryMoveAsync, and this keeps the entity saying the same.
     private void SetStatus(GuildJoinRequestStatus status)
     {
+        if (Status != GuildJoinRequestStatus.Pending) return;
         Status = status;
         UpdatedAt = DateTimeOffset.UtcNow;
     }

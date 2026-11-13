@@ -295,19 +295,39 @@ public sealed class GuildService : IGuildService
         if (target.GuildId is not null || await _memberships.FindByPlayerAsync(req.PlayerId, ct) is not null)
         {
             // Applicant joined elsewhere in the meantime — mark the stale request rejected.
-            req.Reject();
-            await _requests.UpdateAsync(req, ct);
+            await _requests.TryMoveAsync(req.Id, GuildJoinRequestStatus.Pending, GuildJoinRequestStatus.Rejected, ct);
             return Conflict(GuildFailureCode.AlreadyInGuild, "The applicant has already joined a guild.");
         }
         if (await _memberships.CountActiveAsync(guildId, ct) >= guild.MemberCap)
             return Conflict(GuildFailureCode.MemberCapReached, "The guild is full.");
 
-        await JoinAsMemberAsync(guild, target, ct);
-        req.Accept();
-        await _requests.UpdateAsync(req, ct);
+        var joined = await ResolveAndJoinAsync(req, guild, target, ct);
+        if (joined is not null) return joined;
 
         await Audit(actorId, "GuildApplicationAccepted", $"guild={guildId} request={requestId} player={target.Id}", ct);
         return GuildActionResult.Ok();
+    }
+
+    // Claim the request, then join. The status check earlier in each accept path reads "Pending"
+    // for every caller that arrives at the same moment; this conditional move lets exactly one of
+    // them through, so two officers accepting together can no longer both run the join. If the join
+    // itself throws, the request goes back to Pending so it can be tried again.
+    // Returns null on success, or the refusal to hand back.
+    private async Task<GuildActionResult?> ResolveAndJoinAsync(
+        GuildJoinRequest req, Guild guild, Player player, CancellationToken ct)
+    {
+        if (!await _requests.TryMoveAsync(req.Id, GuildJoinRequestStatus.Pending, GuildJoinRequestStatus.Accepted, ct))
+            return Conflict(GuildFailureCode.Conflict, "That request is no longer pending.");
+        try
+        {
+            await JoinAsMemberAsync(guild, player, ct);
+            return null;
+        }
+        catch
+        {
+            await _requests.TryMoveAsync(req.Id, GuildJoinRequestStatus.Accepted, GuildJoinRequestStatus.Pending, CancellationToken.None);
+            throw;
+        }
     }
 
     public async Task<GuildActionResult> RejectApplicationAsync(Guid actorId, Guid guildId, Guid requestId, CancellationToken ct = default)
@@ -324,8 +344,8 @@ public sealed class GuildService : IGuildService
         if (req.Status != GuildJoinRequestStatus.Pending)
             return Conflict(GuildFailureCode.Conflict, "That application is no longer pending.");
 
-        req.Reject();
-        await _requests.UpdateAsync(req, ct);
+        if (!await _requests.TryMoveAsync(req.Id, GuildJoinRequestStatus.Pending, GuildJoinRequestStatus.Rejected, ct))
+            return Conflict(GuildFailureCode.Conflict, "That application is no longer pending.");
         await Audit(actorId, "GuildApplicationRejected", $"guild={guildId} request={requestId} player={req.PlayerId}", ct);
         return GuildActionResult.Ok();
     }
@@ -394,9 +414,8 @@ public sealed class GuildService : IGuildService
         if (await _memberships.CountActiveAsync(guild.Id, ct) >= guild.MemberCap)
             return Conflict(GuildFailureCode.MemberCapReached, "The guild is full.");
 
-        await JoinAsMemberAsync(guild, player, ct);
-        req.Accept();
-        await _requests.UpdateAsync(req, ct);
+        var joined = await ResolveAndJoinAsync(req, guild, player, ct);
+        if (joined is not null) return joined;
 
         await Audit(playerId, "GuildInviteAccepted", $"guild={guild.Id} request={requestId}", ct);
         return GuildActionResult.Ok();
