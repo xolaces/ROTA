@@ -55,6 +55,8 @@ public class GauntletLadderTests : IAsyncLifetime
                     {
                         ["ConnectionStrings:DefaultConnection"] = _postgres.GetConnectionString(),
                         ["ConnectionStrings:Redis"]             = _redis.GetConnectionString(),
+                        // These tests fire hits back to back; the 0.8 s pacing between raid hits is not what they test.
+                        ["CombatConfig:MinRaidHitIntervalMs"]    = "0",
                         ["Jwt:PublicKey"]                       = publicKeyPem,
                         ["Jwt:Issuer"]                          = "rota-test",
                         ["Jwt:Audience"]                        = "rota-test",
