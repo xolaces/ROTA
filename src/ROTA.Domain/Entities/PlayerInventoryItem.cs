@@ -22,6 +22,11 @@ public class PlayerInventoryItem
     public string ItemDefinitionId { get; private set; } = string.Empty;
     public int Quantity { get; private set; }
     public DateTimeOffset AcquiredAt { get; private set; }
+    /// <summary>
+    /// Unused: nothing reads it, and an empty stack is known by Quantity == 0. No longer written
+    /// (0.5.0.1); the column is dropped in a later patch, separately, so this API can still be
+    /// rolled back onto a database that has it.
+    /// </summary>
     public bool IsUsed { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
@@ -35,11 +40,7 @@ public class PlayerInventoryItem
     public void ConsumeQuantity(int amount)
     {
         Quantity -= amount;
-        if (Quantity <= 0)
-        {
-            Quantity = 0;
-            IsUsed = true;
-        }
+        if (Quantity < 0) Quantity = 0;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 }

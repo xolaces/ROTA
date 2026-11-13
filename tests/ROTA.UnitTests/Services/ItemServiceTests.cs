@@ -123,7 +123,7 @@ public class ItemServiceTests
         var playerId = Guid.NewGuid();
 
         var consumed = MakeInvItem("statbag_minor", 1);
-        consumed.ConsumeQuantity(1); // Quantity=0, IsUsed=true
+        consumed.ConsumeQuantity(1); // Quantity=0
 
         b.Inventory.Setup(r => r.GetAllForPlayerAsync(playerId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<PlayerInventoryItem> { consumed });
@@ -208,7 +208,7 @@ public class ItemServiceTests
         result.RaidSummoned!.Name.Should().Be("The Iron Colossus");
         result.RemainingQuantity.Should().Be(0);
         b.Raids.Verify(r => r.SummonRaidAsync(playerId, "raid_ironcolossus", RaidDifficulty.Normal, RaidSize.Personal, It.IsAny<CancellationToken>()), Times.Once);
-        b.Inventory.Verify(r => r.UpdateAsync(It.Is<PlayerInventoryItem>(i => i.Quantity == 0 && i.IsUsed), It.IsAny<CancellationToken>()), Times.Once);
+        b.Inventory.Verify(r => r.UpdateAsync(It.Is<PlayerInventoryItem>(i => i.Quantity == 0), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     // The partial-restore sibling of the sigil bug. RefillEnergyAsync clamps at the pool max, so
