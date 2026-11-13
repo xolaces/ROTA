@@ -16,15 +16,18 @@ public sealed class StatController : ControllerBase
     private readonly IStatService _stats;
     private readonly IClassService _classes;
     private readonly IValidator<AllocateStatRequest> _allocateValidator;
+    private readonly IValidator<AllocateStatsRequest> _allocateManyValidator;
 
     public StatController(
         IStatService stats,
         IClassService classes,
-        IValidator<AllocateStatRequest> allocateValidator)
+        IValidator<AllocateStatRequest> allocateValidator,
+        IValidator<AllocateStatsRequest> allocateManyValidator)
     {
         _stats             = stats;
         _classes           = classes;
         _allocateValidator = allocateValidator;
+        _allocateManyValidator = allocateManyValidator;
     }
 
     [HttpGet("me")]
@@ -57,6 +60,23 @@ public sealed class StatController : ControllerBase
             return UnprocessableEntity(result);
 
         return Ok(result);
+    }
+
+    /// <summary>Several stats at once, all or nothing. 422 means nothing was spent.</summary>
+    [HttpPost("allocate-many")]
+    [ProducesResponseType(typeof(AllocateStatResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(AllocateStatResponse), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> AllocateStats([FromBody] AllocateStatsRequest request)
+    {
+        var v = await _allocateManyValidator.ValidateAsync(request);
+        if (!v.IsValid) return InvalidRequest(v);
+
+        var set = request.Allocations
+            .Select(a => (Enum.Parse<StatType>(a.StatType, ignoreCase: true), a.Amount))
+            .ToList();
+        var result = await _stats.AllocateStatPointsAsync(GetPlayerId(), set);
+        return result.Success ? Ok(result) : UnprocessableEntity(result);
     }
 
     [HttpGet("class")]

@@ -6,6 +6,15 @@ public class AllocateStatRequest
     public int Amount { get; set; } = 1;
 }
 
+/// <summary>
+/// Several stats in one request, applied all together or not at all. The profile's allocation
+/// screen sends its whole pending set this way, so a refusal can never leave half of it spent.
+/// </summary>
+public class AllocateStatsRequest
+{
+    public List<AllocateStatRequest> Allocations { get; set; } = new();
+}
+
 public class AllocateStatResponse
 {
     public bool Success { get; set; }
@@ -39,6 +48,13 @@ public class PlayerStatsResponse
     public long StaminaInvestment { get; set; }
     public long DiscernmentInvestment { get; set; }
     public decimal CurrentLsi { get; set; }
+    /// <summary>The LSI ceiling the server enforces: (Energy + Stamina x StaminaLsiWeight) / Level may not
+    /// exceed it. Sent so the client never hardcodes it (it once showed 9.0 against a real 7.45).</summary>
+    public decimal LsiCap { get; set; }
+    /// <summary>How much one Stamina point counts toward LSI, against Energy's one.</summary>
+    public decimal StaminaLsiWeight { get; set; }
+    /// <summary>Skill points charged per point, for the stats that do not cost 1 (Stamina costs 2).</summary>
+    public Dictionary<string, int> SkillPointCosts { get; set; } = new();
     public long MaxEnergy { get; set; }
     public long MaxStamina { get; set; }
     public int MaxGuildStamina { get; set; }

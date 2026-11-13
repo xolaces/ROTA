@@ -58,6 +58,61 @@ public sealed class StatService : IStatService
         Guid playerId, StatType statType, int amount, CancellationToken ct = default)
         => _mutationLock.RunAsync(playerId, () => AllocateStatPointCoreAsync(playerId, statType, amount, ct), ct);
 
+    public Task<AllocateStatResponse> AllocateStatPointsAsync(
+        Guid playerId, IReadOnlyList<(StatType Stat, int Amount)> allocations, CancellationToken ct = default)
+        => _mutationLock.RunAsync(playerId, () => AllocateStatPointsCoreAsync(playerId, allocations, ct), ct);
+
+    // All-or-nothing. The whole set is priced and cap-checked up front, under the same per-player lock
+    // the single-stat path takes; only then is each stat applied through that path. Nothing else can
+    // change this player's stats in between, so once the set passes, no single step can be refused.
+    private async Task<AllocateStatResponse> AllocateStatPointsCoreAsync(
+        Guid playerId, IReadOnlyList<(StatType Stat, int Amount)> allocations, CancellationToken ct)
+    {
+        if (allocations is null || allocations.Count == 0)
+            return Fail("Nothing to allocate.");
+
+        var player = await _players.FindByIdWithStatsAsync(playerId, ct);
+        if (player?.Stats is null)
+            return Fail("Player or stats not found.");
+        var stats = player.Stats;
+
+        long totalCost = 0, addEnergy = 0, addStamina = 0;
+        foreach (var (stat, amount) in allocations)
+        {
+            if (amount < 1) return Fail("Amount must be at least 1.");
+            totalCost += (long)amount * _levelingConfig.Value.SkillPointCost(stat.ToString());
+            if (stat == StatType.Energy) addEnergy += amount;
+            if (stat == StatType.Stamina) addStamina += amount;
+        }
+
+        if (stats.SkillPoints < totalCost)
+            return Fail($"Insufficient SkillPoints. Have {stats.SkillPoints}, need {totalCost}. Nothing was spent.");
+
+        if (addEnergy + addStamina > 0)
+        {
+            double newLsi = player.Level > 0
+                ? (stats.EnergyInvestment + addEnergy
+                   + (stats.StaminaInvestment + addStamina) * PlayerStats.StaminaLsiWeight) / player.Level
+                : 0;
+            if (newLsi > LsiCap)
+                return Fail(DescribeLsiRefusal(addStamina > 0 && addEnergy == 0 ? StatType.Stamina : StatType.Energy,
+                                               player.Level, stats.EnergyInvestment, stats.StaminaInvestment)
+                            + " Nothing was spent.");
+        }
+
+        AllocateStatResponse last = Fail("Nothing to allocate.");
+        long allocated = 0;
+        foreach (var (stat, amount) in allocations)
+        {
+            last = await AllocateStatPointCoreAsync(playerId, stat, amount, ct);
+            if (!last.Success) return last;   // unreachable while the checks above mirror the single path
+            allocated += amount;
+        }
+        last.AmountAllocated = allocated;
+        last.StatType = allocations.Count == 1 ? last.StatType : "Several";
+        return last;
+    }
+
     private async Task<AllocateStatResponse> AllocateStatPointCoreAsync(
         Guid playerId, StatType statType, int amount, CancellationToken ct = default)
     {
@@ -291,6 +346,9 @@ public sealed class StatService : IStatService
             StaminaInvestment      = stats.StaminaInvestment,
             DiscernmentInvestment  = stats.DiscernmentInvestment,
             CurrentLsi             = (decimal)stats.ComputeLSI(player.Level),
+            LsiCap                 = (decimal)LsiCap,
+            StaminaLsiWeight       = (decimal)PlayerStats.StaminaLsiWeight,
+            SkillPointCosts        = new Dictionary<string, int>(_levelingConfig.Value.SkillPointCostByStat),
             MaxEnergy              = stats.ComputeMaxEnergy(),
             MaxStamina             = stats.ComputeMaxStamina(),
             MaxGuildStamina        = player.Level,

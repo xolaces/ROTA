@@ -24,3 +24,16 @@ public class AllocateStatRequestValidator : AbstractValidator<AllocateStatReques
             .LessThanOrEqualTo(100_000_000).WithMessage("Amount cannot exceed 100,000,000.");
     }
 }
+
+public class AllocateStatsRequestValidator : AbstractValidator<AllocateStatsRequest>
+{
+    public AllocateStatsRequestValidator()
+    {
+        RuleFor(r => r.Allocations)
+            .NotEmpty().WithMessage("Nothing to allocate.")
+            .Must(a => a == null || a.Count <= 6).WithMessage("At most one entry per stat.")
+            .Must(a => a == null || a.Select(x => (x.StatType ?? "").ToLowerInvariant()).Distinct().Count() == a.Count)
+            .WithMessage("Each stat may appear once.");
+        RuleForEach(r => r.Allocations).SetValidator(new AllocateStatRequestValidator());
+    }
+}

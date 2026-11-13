@@ -845,4 +845,78 @@ public class StatServiceTests
         result.FailureReason.Should().Contain("No more Energy",
             "\"0 more\" reads as a bug; \"no more\" reads as a rule");
     }
+
+    // ── All-or-nothing allocation (patch 0.5.0) ──
+    // The profile screen used to send one request per stat, so a refused stat left the others spent.
+
+    private static (StatType, int)[] Set(params (StatType, int)[] a) => a;
+
+    [Fact]
+    public async Task AllocateMany_AppliesEveryStat_AndChargesStaminaDouble()
+    {
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: 10, skillPoints: 20);
+        SetupPlayer(b, player);
+
+        var result = await b.Service.AllocateStatPointsAsync(player.Id,
+            Set((StatType.Attack, 4), (StatType.Energy, 6), (StatType.Stamina, 5)));
+
+        result.Success.Should().BeTrue();
+        result.AmountAllocated.Should().Be(15);
+        result.NewSkillPointsRemaining.Should().Be(0, "4 + 6 + 5 x 2 = 20");
+        player.Stats!.EnergyInvestment.Should().Be(6);
+        player.Stats.StaminaInvestment.Should().Be(5);
+    }
+
+    [Fact]
+    public async Task AllocateMany_TooFewSkillPointsForTheSet_SpendsNothing()
+    {
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: 10, skillPoints: 13);
+        SetupPlayer(b, player);
+
+        // Attack 4 alone is affordable; with Stamina 5 (10 SP) the set costs 14.
+        var result = await b.Service.AllocateStatPointsAsync(player.Id,
+            Set((StatType.Attack, 4), (StatType.Stamina, 5)));
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("need 14").And.Contain("Nothing was spent");
+        player.Stats!.SkillPoints.Should().Be(13);
+        player.Stats.StaminaInvestment.Should().Be(0);
+        b.Players.Verify(p => p.UpdateStatsAsync(It.IsAny<PlayerStats>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AllocateMany_SetOverTheLsiCap_SpendsNothing_EvenTheStatsTheCapDoesNotTouch()
+    {
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: 2, skillPoints: 50);
+        SetupPlayer(b, player);
+
+        // Level 2: cap units = 7.45 x 2 = 14.9. Energy 5 fits (5), Stamina 5 fits alone (10); together 15 > 14.9.
+        var result = await b.Service.AllocateStatPointsAsync(player.Id,
+            Set((StatType.Defense, 3), (StatType.Energy, 5), (StatType.Stamina, 5)));
+
+        result.Success.Should().BeFalse();
+        result.FailureReason.Should().Contain("Nothing was spent");
+        player.Stats!.SkillPoints.Should().Be(50);
+        player.Stats.EnergyInvestment.Should().Be(0);
+        b.Players.Verify(p => p.UpdateStatsAsync(It.IsAny<PlayerStats>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetStats_ReportsTheRealCapAndCosts_SoTheClientNeverHardcodesThem()
+    {
+        var b = BuildService();
+        var player = MakePlayerWithStats(level: 10, skillPoints: 0);
+        b.Players.Setup(p => p.FindByIdWithStatsAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+        b.Players.Setup(p => p.FindByIdAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+
+        var stats = await b.Service.GetStatsAsync(player.Id);
+
+        stats.Should().NotBeNull();
+        stats!.LsiCap.Should().Be(7.45m);
+        stats.StaminaLsiWeight.Should().Be(2m);
+        stats.SkillPointCosts.Should().Contain("Stamina", 2);
+    }
 }
