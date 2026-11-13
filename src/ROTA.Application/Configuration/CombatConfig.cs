@@ -42,6 +42,13 @@ public class CombatConfig
     };
     public int RaidHealthCostDefault { get; set; } = 5;
 
+    /// <summary>
+    /// The least time between two raid hits by one player, in milliseconds (0 = no limit). One hit
+    /// is one request whatever its size, so x20 is unaffected. Quests have had the same 0.8 s since
+    /// 2026-10-12; raids had none, and a live log showed hits 0.115 s apart (2026-11-13).
+    /// </summary>
+    public int MinRaidHitIntervalMs { get; set; } = 800;
+
     public double GauntletHealthBaseDamage { get; set; } = 8.0;
     public double GauntletHealthPerStage { get; set; } = 0.25;
     public int    GauntletHealthRampStage { get; set; } = 200;

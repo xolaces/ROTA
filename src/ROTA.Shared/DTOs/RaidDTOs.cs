@@ -178,6 +178,8 @@ public class RaidHitResult
     public RaidHitFailureCode FailureCode { get; set; }
     public string? FailureReason { get; set; }
     public RaidHitResponse? Response { get; set; }
+    /// <summary>TooFast only: how long until the next hit is accepted.</summary>
+    public int RetryAfterMs { get; set; }
 }
 
 public class ShareRaidResult
@@ -229,6 +231,7 @@ public enum RaidHitFailureCode
     InsufficientEnergy  = 10, // World raid hit paid in Energy: not enough for this hit size (→ 422)
     InvalidResource     = 11, // the requested pool is not one this raid takes (→ 400)
     InProgress          = 12, // the same idempotency key is still being resolved (→ 409)
+    TooFast             = 13, // under CombatConfig.MinRaidHitIntervalMs since the last hit (→ 429, RetryAfterMs set)
 }
 
 public enum ShareRaidFailureCode

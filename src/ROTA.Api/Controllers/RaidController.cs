@@ -197,6 +197,13 @@ public sealed class RaidController : ControllerBase
         if (result.Success)
             return Ok(result.Response);
 
+        if (result.FailureCode == RaidHitFailureCode.TooFast)
+        {
+            Response.Headers["Retry-After"] = Math.Max(1, (int)Math.Ceiling(result.RetryAfterMs / 1000.0)).ToString();
+            return StatusCode(StatusCodes.Status429TooManyRequests,
+                new { message = result.FailureReason, retryAfterMs = result.RetryAfterMs });
+        }
+
         return result.FailureCode switch
         {
             RaidHitFailureCode.RaidNotFound        => NotFound(new { message = result.FailureReason }),

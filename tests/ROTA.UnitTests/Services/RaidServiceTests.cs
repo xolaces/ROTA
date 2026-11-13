@@ -57,7 +57,7 @@ public class RaidServiceTests
         Mock<IFriendshipRepository> Friendships,
         Mock<IGauntletBattalionService> Battalion);
 
-    private static ServiceBundle BuildService(Random? random = null, MagicConfig? magicConfig = null, LegionConfig? legionConfig = null, CombatConfig? combatConfig = null, GauntletConfig? gauntletConfig = null, QuestConfig? questConfig = null)
+    private static ServiceBundle BuildService(Random? random = null, MagicConfig? magicConfig = null, LegionConfig? legionConfig = null, CombatConfig? combatConfig = null, GauntletConfig? gauntletConfig = null, QuestConfig? questConfig = null, IActionPacer? pacer = null)
     {
         var raids          = new Mock<IActiveRaidRepository>();
         var participants   = new Mock<IRaidParticipantRepository>();
@@ -237,7 +237,7 @@ public class RaidServiceTests
             trophyRepo.Object, gauntletContent.Object, playerEventMagics.Object,
             playerMagicHonors.Object, strikes.Object, gauntletScoring.Object, gauntletCfg,
             gauntletCurrency.Object, guildMemberships.Object, guildEconomy.Object, mastery.Object,
-            achievements.Object, friendships.Object, battalion.Object, questCfg, Options.Create(new RaidConfig()), random);
+            achievements.Object, friendships.Object, battalion.Object, questCfg, Options.Create(new RaidConfig()), random, pacer);
 
         return new ServiceBundle(service, raids, participants, players, resources, energy, gems,
             stats, inventory, itemDefs, lootTables, auditLog, definitions, hitCache, equipment,
@@ -4707,5 +4707,41 @@ public class RaidServiceTests
         r1.Success.Should().BeTrue();
         r2.Success.Should().BeTrue();
         r1.Response!.GoldGained.Should().BeGreaterThan(r2.Response!.GoldGained, "Hoard ×2 boosts on-hit gold");
+    }
+
+    // ── Patch 0.5.0: least time between raid hits ──
+
+    [Fact]
+    public async Task Hit_InsideTheMinimumInterval_IsRefusedTooFast_BeforeAnythingIsReservedOrSpent()
+    {
+        var pacer = new Mock<IActionPacer>();
+        pacer.Setup(p => p.TryBeginAsync("raidhit", It.IsAny<Guid>(), TimeSpan.FromMilliseconds(800), It.IsAny<CancellationToken>()))
+             .ReturnsAsync(TimeSpan.FromMilliseconds(430));
+        var b = BuildService(new Random(0), pacer: pacer.Object);
+        var player = MakePlayer();
+        var raid = MakeRaid();
+        SetupHitScaffolding(b, player, raid);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 20, Guid.NewGuid().ToString());
+
+        result.Success.Should().BeFalse();
+        result.FailureCode.Should().Be(RaidHitFailureCode.TooFast);
+        result.RetryAfterMs.Should().Be(430);
+        b.HitCache.Verify(c => c.TryAcquireSlotAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never,
+            "an early hit must not reserve the idempotency slot");
+    }
+
+    [Fact]
+    public async Task Hit_WhenTheIntervalIsSwitchedOff_NeverAsksThePacer()
+    {
+        var pacer = new Mock<IActionPacer>(MockBehavior.Strict);
+        var b = BuildService(new Random(0), combatConfig: new CombatConfig { MinRaidHitIntervalMs = 0 }, pacer: pacer.Object);
+        var player = MakePlayer();
+        var raid = MakeRaid();
+        SetupHitScaffolding(b, player, raid);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 1, Guid.NewGuid().ToString());
+
+        result.FailureCode.Should().NotBe(RaidHitFailureCode.TooFast);
     }
 }

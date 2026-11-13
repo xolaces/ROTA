@@ -85,6 +85,7 @@ public sealed class RaidService : IRaidService
     // leaderboard write hooks
     private readonly ILeaderboardService _leaderboards;
     private readonly CombatConfig _combatConfig;
+    private readonly IActionPacer? _pacer;   // patch 0.5.0 — least time between raid hits
     // Shared boss-gem reward rules (flat amount + chapter-scaled drop chance) — unified across quest
     // bosses and raid bosses. Lives in QuestConfig; raids read it for parity.
     private readonly QuestConfig _questConfig;
@@ -156,8 +157,10 @@ public sealed class RaidService : IRaidService
         IGauntletBattalionService battalion,
         IOptions<QuestConfig> questConfig,
         IOptions<RaidConfig> raidConfig,
-        Random? random = null)
+        Random? random = null,
+        IActionPacer? pacer = null)
     {
+        _pacer = pacer;
         _raids           = raids;
         _participants    = participants;
         _players         = players;
@@ -741,6 +744,22 @@ public sealed class RaidService : IRaidService
             return HitFail(RaidHitFailureCode.InvalidHitSize, "Gauntlet strikes are always a single hit.");
         if (hitSize != 1 && hitSize != 5 && hitSize != 20)
             return HitFail(RaidHitFailureCode.InvalidHitSize, "Hit size must be 1, 5, or 20.");
+
+        // Pacing: one hit per MinRaidHitIntervalMs per player, across all raids. It runs after the
+        // cheap validation above and before anything is reserved, locked or spent, so an early click
+        // costs one Redis round trip. A network retry of a hit that already landed can be answered
+        // 429 here; the client waits and retries, and then gets the cached response below.
+        if (_pacer is not null && _combatConfig.MinRaidHitIntervalMs > 0)
+        {
+            var wait = await _pacer.TryBeginAsync(
+                "raidhit", playerId, TimeSpan.FromMilliseconds(_combatConfig.MinRaidHitIntervalMs), ct);
+            if (wait is { } left)
+            {
+                var fail = HitFail(RaidHitFailureCode.TooFast, "Too fast. Your next hit is ready in a moment.");
+                fail.RetryAfterMs = Math.Max(1, (int)Math.Ceiling(left.TotalMilliseconds));
+                return fail;
+            }
+        }
 
         // 5. Atomic idempotency: reserve the slot (SET NX) or return cached response.
         //    Closes the check-then-set race from the previous GetAsync/SetAsync pattern.
