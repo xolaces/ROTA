@@ -37,14 +37,20 @@ OneDrive — earlier docs referenced a OneDrive path and that is no longer true.
 
 ## Live server vs local
 
-**Production runs `main`.** Deployed 2026-11-12:
+**Production runs `main`.** Patch 0.5.0, deployed 2026-11-13:
 
-- **API:** `a600ab3`.
+- **API:** the `main` commit that carries this line (0.5.0). It adds maintenance mode and the message
+  of the day, all-or-nothing stat allocation, the 0.8 s pause between raid hits, the one-winner guild
+  join and friend request fixes. No migration in this patch.
 - **Database:** has every migration through `AddEmailChangeAllowed`. The snapshot taken just before
   that one is `/opt/rota/backups/rota-20261110-pre-895f1b8.dump` on the droplet.
-- **WebGL client:** built from `ROTA.Client6` `e0d5ec7` (`feat/ui-glass-shell`), deployed 2026-11-13.
-  It adds Home and the raid list in the canvas layout, and the Daily Chest. `/opt/rota/web.prev`
-  holds the previous build (`a3ab1c7`, browser chat and the Account section in Options).
+- **WebGL client:** 0.5.0, built from `ROTA.Client6` `14a0c26` (`feat/ui-glass-shell`). Themed login,
+  window fills the browser, skill-point screen with real costs, raid Difficulty and Size filters,
+  update banner, `/patch-notes/`, maintenance overlay. `/opt/rota/web.prev` holds the previous build
+  (`e0d5ec7`).
+- **Maintenance mode:** `docker exec rota-api dotnet ROTA.Api.dll maintenance on "line"` / `off` /
+  `status`; `motd set <text>` / `motd clear`. Held in Redis, so it survives an API restart. Admin
+  accounts pass the gate. Switch it on before a deploy and off after checking the new build.
 - **Email:** switched off on the droplet, so "Forgot password?" answers 503 until it is configured.
   `issue-reset-code` below is the way round it.
 

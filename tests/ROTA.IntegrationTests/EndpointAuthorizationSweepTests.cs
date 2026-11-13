@@ -42,6 +42,7 @@ public class EndpointAuthorizationSweepTests : IAsyncLifetime
         "api/auth/refresh",
         "api/auth/password-reset/request",
         "api/auth/password-reset/confirm",
+        "api/status",          // maintenance flag and message of the day; the client polls it while closed
         "api/legal/terms",
         "api/legal/privacy",
     };
