@@ -1,6 +1,6 @@
 # ROTA — where the project actually is
 
-*Single source for "what is the state of things". Updated 2026-11-13.*
+*Single source for "what is the state of things". Updated 2026-11-16.*
 
 > This file replaces three overlapping documents (`CURRENT_TASK.md`, `PROJECT_STATE.md`,
 > `SESSION_HANDOFF.md`) that had drifted into a chain of stale pointers aimed at each other, all
@@ -13,7 +13,7 @@
 
 | What | Where | State |
 |---|---|---|
-| Backend + content | `C:\Dev\ROTA` | branch `main`, level with `origin/main` |
+| Backend + content | `C:\Dev\ROTA` | branch `main`, ahead of `origin/main` by the 0.5.0.1 commits (not pushed) |
 | Unity client | `C:\Dev\ROTA.Client6` | live builds come from `feat/ui-glass-shell`, which sits on `feat/mock-playtest-accounts` (neither merged to `master`) |
 | Web client | `C:\Dev\rota-web` | branch `master`, static Stitch screens (still Obsidian Gilt) |
 | Ops dashboard | `C:\Dev\rota-ops-dashboard` | separate repo, private |
@@ -29,8 +29,8 @@ OneDrive — earlier docs referenced a OneDrive path and that is no longer true.
 ## Build
 
 - **0 errors.** `dotnet build ROTA.slnx` (one known warning: CS8604 in `StarterKitRegistrationTests`)
-- **1,385 unit tests green.** `dotnet test tests/ROTA.UnitTests`
-- **229 integration tests green.** `dotnet test tests/ROTA.IntegrationTests` (needs Docker)
+- **1,410 unit tests green.** `dotnet test tests/ROTA.UnitTests`
+- **231 integration tests green.** `dotnet test tests/ROTA.IntegrationTests` (needs Docker)
 - 58 migrations, all applied locally and in production. 140 endpoints across 31 controllers.
 - Content: 7 chapters / 26 zones / 139 quest nodes · 176 items · 111 gear in 13 sets · 41 magics ·
   37 units · 10 legions · 37 raids · 23 recipes · 435 placeholder icons.
@@ -53,6 +53,28 @@ OneDrive — earlier docs referenced a OneDrive path and that is no longer true.
   accounts pass the gate. Switch it on before a deploy and off after checking the new build.
 - **Email:** switched off on the droplet, so "Forgot password?" answers 503 until it is configured.
   `issue-reset-code` below is the way round it.
+
+**Patch 0.5.0.1: built and checked locally, NOT deployed.** Waiting for the owner's go.
+
+- **API** (`main`, after `8691fef`): `0b435f2` maintenance-mode integration tests; `c665717` stops
+  writing the unused `IsUsed` inventory flag (the column stays; it is dropped in the patch after);
+  `59d8701` `tools/deploy-server.ps1` (dry run by default, never run for real yet); `82fb66e` two
+  players asking each other to be friends at the same moment now end as friends (the losing insert
+  accepts the other request). No migration.
+- **Client** (`feat/ui-glass-shell`, after `14a0c26`): `a10f60e` `deploy-webgl.ps1` refuses test
+  builds, uncommitted trees and an unbumped version; `8878188` version 0.5.0.1 and patch notes;
+  `579e507` the screen under "Down for an update" reloads when the game reopens, and chat reconnects;
+  `9bf735c` raid-list tags wrap instead of overlapping the Health column.
+- **Clicked through on the local API (2026-11-16):** login shows v0.5.0.1; message of the day shows
+  and clears with no empty box; maintenance overlay appears with the owner's line, Try again reopens
+  the game, an Admin plays normally while it is on; raid Difficulty/Size filters move the rows and
+  every tab count together and show the "No raids match" line; the Admin Gauntlet "Open run" creates
+  a run that the Gauntlet screen shows; the Leaderboards admin note shows; the Patch notes link
+  opens `/patch-notes/` with 0.5.0.1. Not checked: chat across a maintenance window.
+- **Production WebGL build** is in `ROTA.Client6\dist\ROTA-WebGL`, built from `9bf735c` on a clean
+  tree (no test lines, no NOT-FOR-DEPLOY marker). Booted locally: v0.5.0.1, talks to the live API.
+- **Deploy:** the runbook in the build plan (maintenance on, pull, build, up, then
+  `tools/deploy-webgl.ps1`). Push both repos first.
 
 **Production does not migrate on startup.** A deploy with a migration goes in this order:
 
