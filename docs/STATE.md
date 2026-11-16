@@ -29,8 +29,8 @@ OneDrive — earlier docs referenced a OneDrive path and that is no longer true.
 ## Build
 
 - **0 errors.** `dotnet build ROTA.slnx` (one known warning: CS8604 in `StarterKitRegistrationTests`)
-- **1,410 unit tests green.** `dotnet test tests/ROTA.UnitTests`
-- **231 integration tests green.** `dotnet test tests/ROTA.IntegrationTests` (needs Docker)
+- **1,423 unit tests green.** `dotnet test tests/ROTA.UnitTests`
+- **233 integration tests green.** `dotnet test tests/ROTA.IntegrationTests` (needs Docker)
 - 58 migrations, all applied locally and in production. 140 endpoints across 31 controllers.
 - Content: 7 chapters / 26 zones / 139 quest nodes · 176 items · 111 gear in 13 sets · 41 magics ·
   37 units · 10 legions · 37 raids · 23 recipes · 435 placeholder icons.
@@ -60,18 +60,23 @@ OneDrive — earlier docs referenced a OneDrive path and that is no longer true.
   writing the unused `IsUsed` inventory flag (the column stays; it is dropped in the patch after);
   `59d8701` `tools/deploy-server.ps1` (dry run by default, never run for real yet); `82fb66e` two
   players asking each other to be friends at the same moment now end as friends (the losing insert
-  accepts the other request). No migration.
+  accepts the other request); `29b1d5c` raid HP scales with size on top of difficulty
+  (`RaidConfig.HpMultiplierBySize`: Personal 1, Small 1, Medium 2.5, Large 5, Titanic 20; guild,
+  Gauntlet and World raids unchanged) and a World-raid hit paid with Energy earns 1.5 XP per point
+  (`CombatConfig.EnergyHitXpPerPoint*`). No migration. Every sigil in `items.json` summons Small, so
+  the size multipliers reach players only through admin summons (Large) or future bigger sigils.
 - **Client** (`feat/ui-glass-shell`, after `14a0c26`): `a10f60e` `deploy-webgl.ps1` refuses test
   builds, uncommitted trees and an unbumped version; `8878188` version 0.5.0.1 and patch notes;
   `579e507` the screen under "Down for an update" reloads when the game reopens, and chat reconnects;
-  `9bf735c` raid-list tags wrap instead of overlapping the Health column.
+  `9bf735c` raid-list tags wrap instead of overlapping the Health column; `5c826a3` patch notes for
+  the raid changes, and the mock follows the Energy XP rule.
 - **Clicked through on the local API (2026-11-16):** login shows v0.5.0.1; message of the day shows
   and clears with no empty box; maintenance overlay appears with the owner's line, Try again reopens
   the game, an Admin plays normally while it is on; raid Difficulty/Size filters move the rows and
   every tab count together and show the "No raids match" line; the Admin Gauntlet "Open run" creates
   a run that the Gauntlet screen shows; the Leaderboards admin note shows; the Patch notes link
   opens `/patch-notes/` with 0.5.0.1. Not checked: chat across a maintenance window.
-- **Production WebGL build** is in `ROTA.Client6\dist\ROTA-WebGL`, built from `9bf735c` on a clean
+- **Production WebGL build** is in `ROTA.Client6\dist\ROTA-WebGL`, built from `5c826a3` on a clean
   tree (no test lines, no NOT-FOR-DEPLOY marker). Booted locally: v0.5.0.1, talks to the live API.
 - **Deploy:** the runbook in the build plan (maintenance on, pull, build, up, then
   `tools/deploy-webgl.ps1`). Push both repos first.
