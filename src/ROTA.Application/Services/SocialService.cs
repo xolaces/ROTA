@@ -74,13 +74,24 @@ public sealed class SocialService : ISocialService
 
         var mine = Friendship.Create(requesterId, target.Id);
         if (!await _friends.AddAsync(mine, ct))
+        {
+            // The pair index (ix_friendships_pair_undirected) allows one live row per pair, either
+            // direction. Losing it here usually means the other player asked at the same moment:
+            // read the winner and, if it is their request to me, accept it like the path above.
+            var winner = await _friends.FindBetweenAsync(requesterId, target.Id, ct);
+            if (winner is not null && winner.Status == FriendshipStatus.Pending && winner.AddresseeId == requesterId)
+            {
+                winner.Accept();
+                await _friends.UpdateAsync(winner, ct);
+                await Audit(requesterId, "FriendRequestAccepted", $"friendship={winner.Id} (mutual, crossed)", ct);
+                return AdminActionResult.Ok();
+            }
             return AdminActionResult.Fail("A friend request already exists.");
+        }
 
-        // Two players asking each other at the same moment both pass the check above (neither row
-        // exists yet) and the unique index is on the ORDERED pair, so both rows land. Look again now
-        // that mine is committed: whichever request commits second is guaranteed to see the other.
-        // Both sides apply the same rule (keep the lower id), so running it twice ends in one
-        // accepted friendship, never two rows.
+        // Fallback for a database without the pair index: two crossed requests could both land.
+        // Look again now that mine is committed; whichever commits second sees the other. Both
+        // sides keep the lower id, so running this twice still ends in one accepted friendship.
         var theirs = await _friends.FindDirectedAsync(target.Id, requesterId, ct);
         if (theirs is not null)
         {

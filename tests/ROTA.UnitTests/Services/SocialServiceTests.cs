@@ -86,6 +86,50 @@ public class SocialServiceTests
         updated.Single(f => !f.IsDeleted).Id.Should().Be(updated.Min(f => f.Id));
     }
 
+    // With the pair index, the second of two crossed requests loses the insert; it must accept the
+    // other player's request instead of reporting "already exists" and leaving it Pending.
+    [Fact]
+    public async Task SendFriendRequest_WhenTheInsertLosesToTheirRequest_AcceptsIt()
+    {
+        var (service, players, friends, blocks, _, _, _, _) = Build();
+        var requester = Guid.NewGuid();
+        var target = MakePlayer("bob");
+        var theirs = Friendship.Create(target.Id, requester);
+        players.Setup(p => p.FindByUsernameAsync("bob", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+        blocks.Setup(b => b.EitherBlockedAsync(requester, target.Id, It.IsAny<CancellationToken>())).ReturnsAsync(false);
+        friends.SetupSequence(f => f.FindBetweenAsync(requester, target.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Friendship?)null)
+            .ReturnsAsync(theirs);
+        friends.Setup(f => f.AddAsync(It.IsAny<Friendship>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+
+        var result = await service.SendFriendRequestAsync(requester, "bob");
+
+        result.Success.Should().BeTrue();
+        theirs.Status.Should().Be(FriendshipStatus.Accepted);
+        friends.Verify(f => f.UpdateAsync(theirs, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SendFriendRequest_WhenTheInsertLosesToMyOwnEarlierRequest_StillFails()
+    {
+        var (service, players, friends, blocks, _, _, _, _) = Build();
+        var requester = Guid.NewGuid();
+        var target = MakePlayer("bob");
+        var mineEarlier = Friendship.Create(requester, target.Id);
+        players.Setup(p => p.FindByUsernameAsync("bob", It.IsAny<CancellationToken>())).ReturnsAsync(target);
+        blocks.Setup(b => b.EitherBlockedAsync(requester, target.Id, It.IsAny<CancellationToken>())).ReturnsAsync(false);
+        friends.SetupSequence(f => f.FindBetweenAsync(requester, target.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Friendship?)null)
+            .ReturnsAsync(mineEarlier);
+        friends.Setup(f => f.AddAsync(It.IsAny<Friendship>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+
+        var result = await service.SendFriendRequestAsync(requester, "bob");
+
+        result.Success.Should().BeFalse();
+        mineEarlier.Status.Should().Be(FriendshipStatus.Pending);
+        friends.Verify(f => f.UpdateAsync(It.IsAny<Friendship>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
     [Fact]
     public async Task SendFriendRequest_NoCrossedRequest_LeavesOnePendingRow()
     {
