@@ -29,8 +29,8 @@ OneDrive — earlier docs referenced a OneDrive path and that is no longer true.
 ## Build
 
 - **0 errors.** `dotnet build ROTA.slnx` (one known warning: CS8604 in `StarterKitRegistrationTests`)
-- **1,423 unit tests green.** `dotnet test tests/ROTA.UnitTests`
-- **233 integration tests green.** `dotnet test tests/ROTA.IntegrationTests` (needs Docker)
+- **1,427 unit tests green.** `dotnet test tests/ROTA.UnitTests`
+- **243 integration tests green.** `dotnet test tests/ROTA.IntegrationTests` (needs Docker)
 - 58 migrations, all applied locally and in production. 140 endpoints across 31 controllers.
 - Content: 7 chapters / 26 zones / 139 quest nodes · 176 items · 111 gear in 13 sets · 41 magics ·
   37 units · 10 legions · 37 raids · 23 recipes · 435 placeholder icons.
@@ -63,8 +63,11 @@ OneDrive — earlier docs referenced a OneDrive path and that is no longer true.
   accepts the other request); `29b1d5c` raid HP scales with size on top of difficulty
   (`RaidConfig.HpMultiplierBySize`: Personal 1, Small 1, Medium 2.5, Large 5, Titanic 20; guild,
   Gauntlet and World raids unchanged) and a World-raid hit paid with Energy earns 1.5 XP per point
-  (`CombatConfig.EnergyHitXpPerPoint*`). No migration. Every sigil in `items.json` summons Small, so
-  the size multipliers reach players only through admin summons (Large) or future bigger sigils.
+  (`CombatConfig.EnergyHitXpPerPoint*`); every campaign raid's base HP (BaseHp and PersonalBaseHp)
+  is multiplied per raid through `RaidConfig.BaseHpMultiplierByRaid` (one value per chapter, 125 to
+  400; World, guild and Gauntlet raids unlisted, so unchanged), applied before difficulty and size.
+  No migration. Every sigil in `items.json` summons Small, so the size multipliers reach players
+  only through admin summons (Large) or future bigger sigils.
 - **Client** (`feat/ui-glass-shell`, after `14a0c26`): `a10f60e` `deploy-webgl.ps1` refuses test
   builds, uncommitted trees and an unbumped version; `8878188` version 0.5.0.1 and patch notes;
   `579e507` the screen under "Down for an update" reloads when the game reopens, and chat reconnects;

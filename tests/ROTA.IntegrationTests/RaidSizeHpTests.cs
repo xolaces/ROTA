@@ -74,8 +74,37 @@ public class RaidSizeHpTests : IAsyncLifetime
         cfg.HpMultiplierFor(RaidSize.Titanic).Should().Be(20.0);
     }
 
+    // Per-chapter base HP rebase (owner, 2026-11-16): every campaign raid is listed, with one multiplier
+    // per chapter; World raids (MaxHp 0 in content), guild raids, Gauntlet stages and anything unlisted
+    // stay at 1. The provider also registers guild and Gauntlet definitions, so the list is Standard only.
+    [Theory]
+    [InlineData("raid_c1z1b",          125.0)]
+    [InlineData("raid_c2z3b",          400.0)]
+    [InlineData("raid_c3z0b",          400.0)]
+    [InlineData("raid_c4z3b",          325.0)]
+    [InlineData("raid_c5z0b",          250.0)]
+    [InlineData("raid_c6z4b",          200.0)]
+    [InlineData("raid_lastwatch_lamp", 160.0)]
+    [InlineData("raid_ironcolossus",     1.0)]
+    [InlineData("raid_not_a_raid",       1.0)]
+    public void BaseHpMultipliers_BindFromAppsettings(string raidId, double expected)
+    {
+        var cfg = _factory.Services.GetRequiredService<IOptions<RaidConfig>>().Value;
+        cfg.BaseHpMultiplierFor(raidId).Should().Be(expected);
+    }
+
     [Fact]
-    public async Task SummonedMediumHardRaid_HasBaseHp_TimesHard_TimesMedium()
+    public void EveryCampaignRaid_HasABaseHpMultiplier()
+    {
+        var cfg  = _factory.Services.GetRequiredService<IOptions<RaidConfig>>().Value;
+        var defs = _factory.Services.GetRequiredService<IRaidDefinitionProvider>().GetAll()
+            .Where(d => d.Tier == "Standard" && d.BaseHp > 0).Select(d => d.Id).ToList();
+        defs.Should().NotBeEmpty();
+        cfg.BaseHpMultiplierByRaid.Keys.Should().BeEquivalentTo(defs);
+    }
+
+    [Fact]
+    public async Task SummonedMediumHardRaid_HasBaseHp_TimesRaidMultiplier_TimesHard_TimesMedium()
     {
         using var scope = _factory.Services.CreateScope();
         var sp = scope.ServiceProvider;
@@ -88,7 +117,9 @@ public class RaidSizeHpTests : IAsyncLifetime
             .SummonRaidAsync(player.Id, "raid_c1z1b", RaidDifficulty.Hard, RaidSize.Medium);
 
         result.Success.Should().BeTrue(result.FailureReason);
-        long expected = (long)(def!.BaseHp * 1.4 * 2.5);
+        var cfg = _factory.Services.GetRequiredService<IOptions<RaidConfig>>().Value;
+        cfg.BaseHpMultiplierFor("raid_c1z1b").Should().Be(125.0);
+        long expected = (long)(def!.BaseHp * 125.0 * 1.4 * 2.5);
         result.Response!.MaxHp.Should().Be(expected);
 
         using var read = _factory.Services.CreateScope();

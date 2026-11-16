@@ -423,7 +423,8 @@ public sealed class RaidService : IRaidService
         long baseHp = size == RaidSize.Personal && definition.PersonalBaseHp > 0
             ? definition.PersonalBaseHp
             : definition.BaseHp;
-        long finalHp = (long)(baseHp * HpMultipliers[difficulty] * _raidConfig.HpMultiplierFor(size));
+        long finalHp = (long)(baseHp * _raidConfig.BaseHpMultiplierFor(raidDefinitionId)
+            * HpMultipliers[difficulty] * _raidConfig.HpMultiplierFor(size));
         var expiresAt = DateTimeOffset.UtcNow.AddHours(definition.TimerHours);
         var raid = ActiveRaid.Create(raidDefinitionId, playerId, finalHp, expiresAt, difficulty, size);
         await _raids.CreateAsync(raid, ct);

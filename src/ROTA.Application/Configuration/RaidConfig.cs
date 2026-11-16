@@ -35,4 +35,15 @@ public class RaidConfig
     /// <summary>The size's HP multiplier; 1 when the size is missing or set to zero or less.</summary>
     public double HpMultiplierFor(RaidSize size)
         => HpMultiplierBySize.TryGetValue(size.ToString(), out var m) && m > 0 ? m : 1.0;
+
+    // Per-raid multiplier on the content base HP (BaseHp, or PersonalBaseHp for Personal), applied
+    // before difficulty and size, for raids summoned through RaidService.SummonRaidAsync (owner,
+    // 2026-11-16). Lets the server rebase a raid's health without a content change. A raid not listed
+    // keeps its content value. Guild raids, Gauntlet stages and World raids do not read this. Raids
+    // already alive keep their HP.
+    public Dictionary<string, double> BaseHpMultiplierByRaid { get; set; } = new();
+
+    /// <summary>The raid's base HP multiplier; 1 when the raid is not listed or set to zero or less.</summary>
+    public double BaseHpMultiplierFor(string raidDefinitionId)
+        => BaseHpMultiplierByRaid.TryGetValue(raidDefinitionId, out var m) && m > 0 ? m : 1.0;
 }

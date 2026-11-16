@@ -57,7 +57,7 @@ public class RaidServiceTests
         Mock<IFriendshipRepository> Friendships,
         Mock<IGauntletBattalionService> Battalion);
 
-    private static ServiceBundle BuildService(Random? random = null, MagicConfig? magicConfig = null, LegionConfig? legionConfig = null, CombatConfig? combatConfig = null, GauntletConfig? gauntletConfig = null, QuestConfig? questConfig = null, IActionPacer? pacer = null)
+    private static ServiceBundle BuildService(Random? random = null, MagicConfig? magicConfig = null, LegionConfig? legionConfig = null, CombatConfig? combatConfig = null, GauntletConfig? gauntletConfig = null, QuestConfig? questConfig = null, IActionPacer? pacer = null, RaidConfig? raidConfig = null)
     {
         var raids          = new Mock<IActiveRaidRepository>();
         var participants   = new Mock<IRaidParticipantRepository>();
@@ -237,7 +237,7 @@ public class RaidServiceTests
             trophyRepo.Object, gauntletContent.Object, playerEventMagics.Object,
             playerMagicHonors.Object, strikes.Object, gauntletScoring.Object, gauntletCfg,
             gauntletCurrency.Object, guildMemberships.Object, guildEconomy.Object, mastery.Object,
-            achievements.Object, friendships.Object, battalion.Object, questCfg, Options.Create(new RaidConfig()), random, pacer);
+            achievements.Object, friendships.Object, battalion.Object, questCfg, Options.Create(raidConfig ?? new RaidConfig()), random, pacer);
 
         return new ServiceBundle(service, raids, participants, players, resources, energy, gems,
             stats, inventory, itemDefs, lootTables, auditLog, definitions, hitCache, equipment,
@@ -1092,6 +1092,47 @@ public class RaidServiceTests
         cfg.HpMultiplierFor(RaidSize.Medium).Should().Be(1.0);
         cfg.HpMultiplierFor(RaidSize.Titanic).Should().Be(1.0);
         cfg.HpMultiplierFor(RaidSize.Large).Should().Be(5.0);
+    }
+
+    // Per-raid base multiplier (owner, 2026-11-16): applied to BaseHp or PersonalBaseHp before
+    // difficulty and size, so every size and difficulty of a rebased raid moves together.
+    [Theory]
+    [InlineData(RaidSize.Small,    RaidDifficulty.Normal,    12_500_000)]
+    [InlineData(RaidSize.Personal, RaidDifficulty.Normal,        62_500)]
+    [InlineData(RaidSize.Titanic,  RaidDifficulty.Nightmare, 900_000_000)]
+    public async Task Summon_AppliesThePerRaidBaseMultiplier_BeforeDifficultyAndSize(RaidSize size, RaidDifficulty difficulty, long expectedHp)
+    {
+        var cfg = new RaidConfig();
+        cfg.BaseHpMultiplierByRaid["raid_ironcolossus"] = 125;
+        cfg.BaseHpMultiplierByRaid["raid_other"]        = 400;
+        var b = BuildService(raidConfig: cfg);
+        var player = MakePlayer();
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+        b.Players.Setup(p => p.FindByIdAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+        b.Raids.Setup(r => r.CreateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ActiveRaid r, CancellationToken _) => r);
+
+        var result = await b.Service.SummonRaidAsync(player.Id, "raid_ironcolossus", difficulty, size);
+
+        result.Success.Should().BeTrue();
+        result.Response!.MaxHp.Should().Be(expectedHp);
+        b.Raids.Verify(r => r.CreateAsync(
+            It.Is<ActiveRaid>(a => a.MaxHp == expectedHp && a.CurrentHp == expectedHp),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public void RaidConfig_BaseHpMultiplier_UnlistedOrNotPositive_IsOne()
+    {
+        var cfg = new RaidConfig();
+        cfg.BaseHpMultiplierByRaid["raid_zero"]     = 0;
+        cfg.BaseHpMultiplierByRaid["raid_negative"] = -5;
+        cfg.BaseHpMultiplierByRaid["raid_c1z1b"]    = 125;
+
+        cfg.BaseHpMultiplierFor("raid_unlisted").Should().Be(1.0);
+        cfg.BaseHpMultiplierFor("raid_zero").Should().Be(1.0);
+        cfg.BaseHpMultiplierFor("raid_negative").Should().Be(1.0);
+        cfg.BaseHpMultiplierFor("raid_c1z1b").Should().Be(125.0);
     }
 
     [Fact]
