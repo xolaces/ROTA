@@ -327,7 +327,8 @@ public class RaidServiceTests
         b.Raids.Setup(r => r.CreateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((ActiveRaid r, CancellationToken _) => r);
 
-        var result = await b.Service.SummonRaidAsync(player.Id, "raid_ironcolossus", difficulty);
+        // Small has a size multiplier of 1, so this isolates the difficulty multiplier.
+        var result = await b.Service.SummonRaidAsync(player.Id, "raid_ironcolossus", difficulty, RaidSize.Small);
 
         result.Success.Should().BeTrue();
         result.Response!.MaxHp.Should().Be(expectedHp);
@@ -1051,8 +1052,50 @@ public class RaidServiceTests
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    // Size scales HP on top of difficulty (owner, 2026-11-16). BaseHp 100,000; Personal uses
+    // PersonalBaseHp 500 with multiplier 1.
+    [Theory]
+    [InlineData(RaidSize.Personal, RaidDifficulty.Normal,       500)]
+    [InlineData(RaidSize.Small,    RaidDifficulty.Normal,   100_000)]
+    [InlineData(RaidSize.Medium,   RaidDifficulty.Normal,   250_000)]
+    [InlineData(RaidSize.Large,    RaidDifficulty.Normal,   500_000)]
+    [InlineData(RaidSize.Titanic,  RaidDifficulty.Normal, 2_000_000)]
+    [InlineData(RaidSize.Medium,   RaidDifficulty.Hard,     350_000)]
+    [InlineData(RaidSize.Titanic,  RaidDifficulty.Nightmare, 7_200_000)]
+    public async Task Summon_ScalesHp_BySize_OnTopOfDifficulty(RaidSize size, RaidDifficulty difficulty, long expectedHp)
+    {
+        var b = BuildService();
+        var player = MakePlayer();
+        b.Definitions.Setup(d => d.GetById("raid_ironcolossus")).Returns(IronColossus());
+        b.Players.Setup(p => p.FindByIdAsync(player.Id, It.IsAny<CancellationToken>())).ReturnsAsync(player);
+        b.Raids.Setup(r => r.CreateAsync(It.IsAny<ActiveRaid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ActiveRaid r, CancellationToken _) => r);
+
+        var result = await b.Service.SummonRaidAsync(player.Id, "raid_ironcolossus", difficulty, size);
+
+        result.Success.Should().BeTrue();
+        result.Response!.MaxHp.Should().Be(expectedHp);
+        b.Raids.Verify(r => r.CreateAsync(
+            It.Is<ActiveRaid>(a => a.MaxHp == expectedHp && a.CurrentHp == expectedHp && a.Size == size),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(0.0)]
+    [InlineData(-2.0)]
+    public void RaidConfig_SizeMultiplier_MissingOrNotPositive_IsOne(double configured)
+    {
+        var cfg = new RaidConfig();
+        cfg.HpMultiplierBySize["Medium"] = configured;
+        cfg.HpMultiplierBySize.Remove("Titanic");
+
+        cfg.HpMultiplierFor(RaidSize.Medium).Should().Be(1.0);
+        cfg.HpMultiplierFor(RaidSize.Titanic).Should().Be(1.0);
+        cfg.HpMultiplierFor(RaidSize.Large).Should().Be(5.0);
+    }
+
     [Fact]
-    public async Task Summon_LargeRaid_StillUsesBaseHp()
+    public async Task Summon_LargeRaid_UsesBaseHp_TimesTheLargeMultiplier()
     {
         var b = BuildService();
         var player = MakePlayer();
@@ -1065,7 +1108,7 @@ public class RaidServiceTests
         var result = await b.Service.SummonRaidAsync(player.Id, "raid_ironcolossus", RaidDifficulty.Normal, RaidSize.Large);
 
         result.Success.Should().BeTrue();
-        result.Response!.MaxHp.Should().Be(100000, "Large raid ignores PersonalBaseHp and uses BaseHp");
+        result.Response!.MaxHp.Should().Be(500000, "Large ignores PersonalBaseHp: BaseHp 100,000 x Large 5");
         result.Response.Size.Should().Be("Large");
     }
 
@@ -1171,6 +1214,41 @@ public class RaidServiceTests
         int staminaCost = hitSize; // StaminaCostPerHit=1
         result.Response!.XpGained.Should().Be(staminaCost * 3,
             "min==max==3.0 ⇒ the per-hit roll is exactly 3.0, so XP = staminaCost × 3 (config-driven)");
+    }
+
+    // A World-raid hit paid with Energy earns Energy's quest rate (owner, 2026-11-16); Stamina and
+    // Guild Stamina keep the Stamina rate.
+    [Theory]
+    [InlineData(ResourceType.Energy,       2)]
+    [InlineData(ResourceType.Stamina,      3)]
+    [InlineData(ResourceType.GuildStamina, 3)]
+    public async Task Hit_WorldRaid_XpRate_FollowsThePoolThatPays(ResourceType pool, int xpPerPoint)
+    {
+        var cfg = new CombatConfig
+        {
+            XpPerStaminaRollMin = 3.0, XpPerStaminaRollMax = 3.0,
+            EnergyHitXpPerPointMin = 2.0, EnergyHitXpPerPointMax = 2.0,
+        };
+        var b = BuildService(new Random(0), combatConfig: cfg);
+        var player = MakePlayer();
+        var raid = MakeRaid();
+        SetupHitScaffolding(b, player, raid);
+        SetupFreshParticipant(b, player, raid);
+        SetupPool(b, player, pool, success: true, left: 7);
+
+        var result = await b.Service.HitRaidAsync(player.Id, raid.Id, 20, Guid.NewGuid().ToString(), pool);
+
+        result.Success.Should().BeTrue(result.FailureReason);
+        result.Response!.XpGained.Should().Be(20 * xpPerPoint);
+    }
+
+    [Fact]
+    public void CombatConfig_EnergyHitXp_DefaultsToTheQuestEnergyRate()
+    {
+        var combat = new CombatConfig();
+        var quest = new QuestConfig();
+        combat.EnergyHitXpPerPointMin.Should().Be(quest.XpPerEnergyRollMin);
+        combat.EnergyHitXpPerPointMax.Should().Be(quest.XpPerEnergyRollMax);
     }
 
     [Theory]

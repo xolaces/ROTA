@@ -423,7 +423,7 @@ public sealed class RaidService : IRaidService
         long baseHp = size == RaidSize.Personal && definition.PersonalBaseHp > 0
             ? definition.PersonalBaseHp
             : definition.BaseHp;
-        long finalHp = (long)(baseHp * HpMultipliers[difficulty]);
+        long finalHp = (long)(baseHp * HpMultipliers[difficulty] * _raidConfig.HpMultiplierFor(size));
         var expiresAt = DateTimeOffset.UtcNow.AddHours(definition.TimerHours);
         var raid = ActiveRaid.Create(raidDefinitionId, playerId, finalHp, expiresAt, difficulty, size);
         await _raids.CreateAsync(raid, ct);
@@ -1308,8 +1308,13 @@ public sealed class RaidService : IRaidService
             // 2026-06-14: SUMMED per-stamina roll — each point of stamina independently rolls Uniform
             // [min, max] and the rolls are summed (batching-invariant, tight spread ⇒ ~50 on a 20-stamina
             // hit). Defaults [1.0, 5.0]. Quests run the same model over energy (QuestService.RollEnergyXp).
+            // A World-raid hit paid with Energy earns Energy's quest rate, not Stamina's (owner,
+            // 2026-11-16), so a point of Energy is worth the same XP wherever it is spent.
+            bool energyPaid = !isGauntlet && pool == ResourceType.Energy;
             xpGained = Math.Max(1L, ResourceReward.RollSummed(
-                _random, staminaCost, _combatConfig.XpPerStaminaRollMin, _combatConfig.XpPerStaminaRollMax));
+                _random, staminaCost,
+                energyPaid ? _combatConfig.EnergyHitXpPerPointMin : _combatConfig.XpPerStaminaRollMin,
+                energyPaid ? _combatConfig.EnergyHitXpPerPointMax : _combatConfig.XpPerStaminaRollMax));
             // Gold mirrors the XP roll — staminaCost × Uniform[min,max] (default 3-8/stamina).
             double goldMin  = _combatConfig.GoldPerStaminaRollMin;
             double goldMax  = _combatConfig.GoldPerStaminaRollMax;

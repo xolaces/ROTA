@@ -26,6 +26,11 @@ public class CombatConfig
     public double XpPerStaminaRollMin { get; set; } = 1.0;
     public double XpPerStaminaRollMax { get; set; } = 5.0;
 
+    // XP per point for a World-raid hit paid with Energy (owner, 2026-11-16): the same as a quest's
+    // XP per energy (QuestConfig.XpPerEnergyRoll*), so Energy is worth the same XP wherever it is spent.
+    public double EnergyHitXpPerPointMin { get; set; } = 1.5;
+    public double EnergyHitXpPerPointMax { get; set; } = 1.5;
+
     // On-hit raid GOLD = staminaCost × Uniform[GoldPerStaminaRollMin, GoldPerStaminaRollMax]
     // (mirrors the XP roll). Replaces the old flat RaidDefinition.GoldPerStamina multiplier.
     public double GoldPerStaminaRollMin { get; set; } = 3.0;
