@@ -63,8 +63,8 @@ OneDrive — earlier docs referenced a OneDrive path and that is no longer true.
   accepts the other request); `29b1d5c` raid HP scales with size on top of difficulty
   (`RaidConfig.HpMultiplierBySize`: Personal 1, Small 1, Medium 2.5, Large 5, Titanic 20; guild,
   Gauntlet and World raids unchanged) and a World-raid hit paid with Energy earns 1.5 XP per point
-  (`CombatConfig.EnergyHitXpPerPoint*`); every campaign raid's base HP (BaseHp and PersonalBaseHp)
-  is multiplied per raid through `RaidConfig.BaseHpMultiplierByRaid` (one value per chapter, 125 to
+  (`CombatConfig.EnergyHitXpPerPoint*`); `7573218` every campaign raid's base HP (BaseHp and
+  PersonalBaseHp) is multiplied per raid through `RaidConfig.BaseHpMultiplierByRaid` (one value per chapter, 125 to
   400; World, guild and Gauntlet raids unlisted, so unchanged), applied before difficulty and size.
   No migration. Every sigil in `items.json` summons Small, so the size multipliers reach players
   only through admin summons (Large) or future bigger sigils.
@@ -72,7 +72,8 @@ OneDrive — earlier docs referenced a OneDrive path and that is no longer true.
   builds, uncommitted trees and an unbumped version; `8878188` version 0.5.0.1 and patch notes;
   `579e507` the screen under "Down for an update" reloads when the game reopens, and chat reconnects;
   `9bf735c` raid-list tags wrap instead of overlapping the Health column; `5c826a3` patch notes for
-  the raid changes, and the mock follows the Energy XP rule.
+  the raid changes, and the mock follows the Energy XP rule; `3c35b97` patch note for the base HP
+  rebase (`dist` refreshed with `apply-webgl-bg.ps1`; the WebGL build itself is unchanged).
 - **Clicked through on the local API (2026-11-16):** login shows v0.5.0.1; message of the day shows
   and clears with no empty box; maintenance overlay appears with the owner's line, Try again reopens
   the game, an Admin plays normally while it is on; raid Difficulty/Size filters move the rows and
