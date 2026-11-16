@@ -13,7 +13,7 @@
 
 | What | Where | State |
 |---|---|---|
-| Backend + content | `C:\Dev\ROTA` | branch `main`, ahead of `origin/main` by the 0.5.0.1 commits (not pushed) |
+| Backend + content | `C:\Dev\ROTA` | branch `main`, level with `origin/main` (0.5.0.1 pushed and deployed 2026-11-16) |
 | Unity client | `C:\Dev\ROTA.Client6` | live builds come from `feat/ui-glass-shell`, which sits on `feat/mock-playtest-accounts` (neither merged to `master`) |
 | Web client | `C:\Dev\rota-web` | branch `master`, static Stitch screens (still Obsidian Gilt) |
 | Ops dashboard | `C:\Dev\rota-ops-dashboard` | separate repo, private |
@@ -54,7 +54,7 @@ OneDrive — earlier docs referenced a OneDrive path and that is no longer true.
 - **Email:** switched off on the droplet, so "Forgot password?" answers 503 until it is configured.
   `issue-reset-code` below is the way round it.
 
-**Patch 0.5.0.1: built and checked locally, NOT deployed.** Waiting for the owner's go.
+**Patch 0.5.0.1: deployed 2026-11-16** (owner's go). API on `4a8a1ed` through `tools/deploy-server.ps1 -Go` (its first real run; no migration), client `3c35b97` through `deploy-webgl.ps1`; `web.prev` holds 0.5.0. Maintenance was left ON for the owner to check and switch off.
 
 - **API** (`main`, after `8691fef`): `0b435f2` maintenance-mode integration tests; `c665717` stops
   writing the unused `IsUsed` inventory flag (the column stays; it is dropped in the patch after);
